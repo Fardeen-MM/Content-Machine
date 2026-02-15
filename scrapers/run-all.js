@@ -5,6 +5,8 @@ loadEnv();
 const reddit = require('./reddit');
 const rss = require('./rss');
 const youtube = require('./youtube');
+const googleNews = require('./google-news');
+const hackernews = require('./hackernews');
 
 async function runAll() {
   console.log('=== Content Machine Scraper Run ===');
@@ -13,7 +15,7 @@ async function runAll() {
   const existingTriggers = readJSON('trigger-queue.json');
   console.log(`Existing triggers in queue: ${existingTriggers.length}`);
 
-  const results = { reddit: [], rss: [], youtube: [] };
+  const results = { reddit: [], rss: [], youtube: [], 'google-news': [], hackernews: [] };
 
   // Run scrapers with error isolation
   try {
@@ -34,10 +36,24 @@ async function runAll() {
     console.error('[scraper] YouTube failed:', err.message);
   }
 
+  try {
+    results['google-news'] = await googleNews.scrapeAll(existingTriggers);
+  } catch (err) {
+    console.error('[scraper] Google News failed:', err.message);
+  }
+
+  try {
+    results.hackernews = await hackernews.scrapeAll(existingTriggers);
+  } catch (err) {
+    console.error('[scraper] Hacker News failed:', err.message);
+  }
+
   const newTriggers = [
     ...results.reddit,
     ...results.rss,
-    ...results.youtube
+    ...results.youtube,
+    ...results['google-news'],
+    ...results.hackernews
   ];
 
   if (newTriggers.length > 0) {
@@ -47,6 +63,8 @@ async function runAll() {
     console.log(`  Reddit: ${results.reddit.length}`);
     console.log(`  RSS: ${results.rss.length}`);
     console.log(`  YouTube: ${results.youtube.length}`);
+    console.log(`  Google News: ${results['google-news'].length}`);
+    console.log(`  Hacker News: ${results.hackernews.length}`);
   } else {
     console.log('\nNo new triggers found this run.');
   }

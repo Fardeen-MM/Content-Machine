@@ -271,6 +271,8 @@ h1, h2, h3, h4 { font-family: 'Fraunces', serif; }
 .badge-url { background: var(--purple); color: white; }
 .badge-competitor { background: #0891b2; color: white; }
 .badge-question { background: #ea580c; color: white; }
+.badge-google-news { background: #4285f4; color: white; }
+.badge-hackernews { background: #ff6600; color: white; }
 
 /* Content card metadata row */
 .content-meta-row {
@@ -877,6 +879,110 @@ h1, h2, h3, h4 { font-family: 'Fraunces', serif; }
 }
 
 .theme-toggle:hover { color: white; border-color: rgba(255,255,255,0.4); }
+
+/* Social Previews */
+.social-preview { border-radius: var(--radius-sm); overflow: hidden; margin: 16px 20px; }
+
+.linkedin-preview {
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-sm);
+  font-family: -apple-system, system-ui, sans-serif;
+}
+.linkedin-preview-header {
+  display: flex; gap: 10px; padding: 12px 16px; align-items: center;
+}
+.linkedin-avatar {
+  width: 48px; height: 48px; border-radius: 50%;
+  background: var(--navy); display: flex; align-items: center; justify-content: center;
+  color: white; font-weight: 700; font-size: 18px; font-family: 'Fraunces', serif;
+}
+.linkedin-name { font-weight: 600; font-size: 14px; color: var(--gray-900); }
+.linkedin-title { font-size: 12px; color: var(--gray-500); }
+.linkedin-body { padding: 0 16px 16px; font-size: 14px; line-height: 1.5; white-space: pre-wrap; color: var(--gray-800); }
+.linkedin-actions {
+  display: flex; gap: 4px; padding: 8px 16px; border-top: 1px solid var(--gray-200);
+}
+.linkedin-action { flex:1; text-align:center; padding:8px; font-size:12px; font-weight:600; color:var(--gray-500); border-radius:4px; }
+
+.tweet-preview {
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: 16px;
+  padding: 12px 16px;
+  font-family: -apple-system, system-ui, sans-serif;
+}
+.tweet-header { display: flex; gap: 10px; align-items: center; margin-bottom: 8px; }
+.tweet-avatar {
+  width: 40px; height: 40px; border-radius: 50%;
+  background: var(--navy); display: flex; align-items: center; justify-content: center;
+  color: white; font-weight: 700; font-size: 16px; font-family: 'Fraunces', serif;
+}
+.tweet-name { font-weight: 700; font-size: 15px; color: var(--gray-900); }
+.tweet-handle { font-size: 14px; color: var(--gray-500); }
+.tweet-body { font-size: 15px; line-height: 1.4; color: var(--gray-900); margin-bottom: 12px; }
+.tweet-actions-bar {
+  display: flex; gap: 0; padding-top: 8px; border-top: 1px solid var(--gray-100);
+}
+.tweet-action-item { flex:1; text-align:center; font-size:13px; color:var(--gray-400); padding:4px; }
+
+[data-theme="dark"] .linkedin-preview, [data-theme="dark"] .tweet-preview { background: #0f172a; border-color: #334155; }
+[data-theme="dark"] .linkedin-name, [data-theme="dark"] .tweet-name { color: #f1f5f9; }
+[data-theme="dark"] .linkedin-body, [data-theme="dark"] .tweet-body { color: #cbd5e1; }
+
+/* Analytics charts */
+.analytics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px; }
+.chart-card { background: var(--white); border-radius: var(--radius); border: 1px solid var(--gray-200); padding: 20px; }
+.chart-card h4 { font-size: 14px; color: var(--gray-600); margin-bottom: 16px; }
+.bar-chart { display: flex; align-items: flex-end; gap: 8px; height: 160px; padding-top: 8px; }
+.bar-col { display: flex; flex-direction: column; align-items: center; flex: 1; gap: 4px; }
+.bar-fill { width: 100%; border-radius: 4px 4px 0 0; transition: height 0.5s ease; min-height: 2px; }
+.bar-label { font-size: 10px; color: var(--gray-400); text-align: center; white-space: nowrap; }
+.bar-value { font-size: 11px; font-weight: 700; color: var(--gray-600); }
+.donut-chart { position: relative; width: 140px; height: 140px; margin: 0 auto; }
+.donut-center { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); text-align:center; }
+.donut-center .big { font-family:'Fraunces',serif; font-size:28px; font-weight:700; color:var(--navy); }
+.donut-center .small { font-size:11px; color:var(--gray-400); }
+.metric-row { display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid var(--gray-100); }
+.metric-row:last-child { border-bottom:none; }
+.metric-label { font-size:13px; color:var(--gray-500); }
+.metric-value { font-size:13px; font-weight:700; color:var(--navy); }
+
+[data-theme="dark"] .chart-card { background: #1e293b; border-color: #334155; }
+[data-theme="dark"] .donut-center .big { color: #f1f5f9; }
+[data-theme="dark"] .metric-value { color: #f1f5f9; }
+
+/* Bulk select */
+.bulk-checkbox {
+  width: 18px; height: 18px; border-radius: 4px; border: 2px solid var(--gray-300);
+  cursor: pointer; appearance: none; -webkit-appearance: none; background: var(--white);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  transition: var(--transition);
+}
+.bulk-checkbox:checked { background: var(--blue); border-color: var(--blue); }
+.bulk-checkbox:checked::after { content: '✓'; color: white; font-size: 12px; font-weight: 700; }
+.bulk-bar {
+  position: sticky; top: 60px; z-index: 30; background: var(--blue);
+  color: white; padding: 10px 20px; border-radius: var(--radius-sm);
+  display: flex; align-items: center; gap: 12px; margin-bottom: 16px;
+  box-shadow: var(--shadow-lg); animation: slideUp 0.2s ease;
+}
+.bulk-bar .btn { background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3); }
+.bulk-bar .btn:hover { background: rgba(255,255,255,0.3); }
+
+/* Preview toggle */
+.preview-toggle {
+  display: flex; border: 1px solid var(--gray-300); border-radius: var(--radius-sm); overflow: hidden;
+}
+.preview-toggle-btn {
+  padding: 4px 10px; font-size: 11px; font-weight: 600; cursor: pointer;
+  background: var(--white); color: var(--gray-500); border: none; transition: var(--transition);
+}
+.preview-toggle-btn.active { background: var(--blue); color: white; }
+
+@media (max-width: 768px) {
+  .analytics-grid { grid-template-columns: 1fr; }
+}
 </style>
 </head>
 <body>
@@ -911,7 +1017,9 @@ const state = {
   darkMode: localStorage.getItem('darkMode') === 'true',
   searchQuery: '',
   expandedTrigger: null,
-  lastRefreshed: null
+  lastRefreshed: null,
+  selectedContent: new Set(),
+  previewMode: {}, // contentId:formatKey -> 'raw' | 'preview'
 };
 
 // --- API Calls ---
@@ -1009,6 +1117,120 @@ async function generateForTrigger(triggerId) {
   render();
 }
 
+async function bulkApprove() {
+  for (const id of state.selectedContent) {
+    await api(`/api/content/${id}/approve`, { method: 'POST', body: {} });
+  }
+  state.selectedContent = new Set();
+  toast(`Approved ${state.selectedContent.size || 'all selected'} pieces`, 'success');
+  await loadData();
+}
+
+async function bulkReject() {
+  for (const id of state.selectedContent) {
+    await api(`/api/content/${id}/reject`, { method: 'POST', body: {} });
+  }
+  state.selectedContent = new Set();
+  toast('Rejected selected pieces', 'error');
+  await loadData();
+}
+
+function exportApprovedContent() {
+  const approved = state.content.filter(c => c.status === 'approved' ||
+    Object.values(c.formats || {}).some(f => f.status === 'approved'));
+
+  if (approved.length === 0) {
+    toast('No approved content to export', 'error');
+    return;
+  }
+
+  let csv = 'Trigger,Source,Category,Pillar,Format,Status,Content\n';
+  for (const item of approved) {
+    for (const [key, fmt] of Object.entries(item.formats || {})) {
+      if (fmt.status !== 'approved' || !fmt.content) continue;
+      const text = Array.isArray(fmt.content) ? fmt.content.join(' | ') : fmt.content;
+      const escaped = '"' + text.replace(/"/g, '""').replace(/\n/g, ' ') + '"';
+      const pillar = categoryToPillar(item.trigger_category).label;
+      csv += `"${(item.trigger_title||'').replace(/"/g,'""')}","${sourceLabel(item.trigger_source)}","${categoryLabel(item.trigger_category)}","${pillar}","${formatName(key)}","${fmt.status}",${escaped}\n`;
+    }
+  }
+
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `content-machine-export-${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast(`Exported ${approved.length} pieces`, 'success');
+}
+
+function exportAllMarkdown() {
+  const approved = state.content.filter(c =>
+    Object.values(c.formats || {}).some(f => f.status === 'approved'));
+
+  if (approved.length === 0) {
+    toast('No approved content to export', 'error');
+    return;
+  }
+
+  let md = '# Content Machine Export\n\n';
+  md += `Generated: ${new Date().toISOString().slice(0,10)}\n\n---\n\n`;
+
+  for (const item of approved) {
+    md += `## ${item.trigger_title}\n\n`;
+    md += `**Source:** ${sourceLabel(item.trigger_source)} | **Category:** ${categoryLabel(item.trigger_category)} | **Pillar:** ${categoryToPillar(item.trigger_category).label}\n\n`;
+    for (const [key, fmt] of Object.entries(item.formats || {})) {
+      if (fmt.status !== 'approved' || !fmt.content) continue;
+      md += `### ${formatName(key)}\n\n`;
+      if (Array.isArray(fmt.content)) {
+        fmt.content.forEach((t, i) => { md += `**${i+1}.** ${t}\n\n`; });
+      } else {
+        md += fmt.content + '\n\n';
+      }
+    }
+    md += '---\n\n';
+  }
+
+  const blob = new Blob([md], { type: 'text/markdown' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `content-machine-export-${new Date().toISOString().slice(0,10)}.md`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast(`Exported as Markdown`, 'success');
+}
+
+function toggleSelectContent(id) {
+  if (state.selectedContent.has(id)) {
+    state.selectedContent.delete(id);
+  } else {
+    state.selectedContent.add(id);
+  }
+  render();
+}
+
+function selectAllContent() {
+  const visible = getFilteredContent();
+  if (state.selectedContent.size === visible.length) {
+    state.selectedContent = new Set();
+  } else {
+    state.selectedContent = new Set(visible.map(c => c.id));
+  }
+  render();
+}
+
+function getFilteredContent() {
+  let filtered = [...state.content];
+  if (state.filter.status !== 'all') filtered = filtered.filter(c => c.status === state.filter.status);
+  if (state.searchQuery) {
+    const q = state.searchQuery.toLowerCase();
+    filtered = filtered.filter(c => `${c.trigger_title} ${c.trigger_source} ${c.trigger_category}`.toLowerCase().includes(q));
+  }
+  return filtered;
+}
+
 function updateContentInState(updated) {
   const idx = state.content.findIndex(c => c.id === updated.id);
   if (idx !== -1) state.content[idx] = updated;
@@ -1087,7 +1309,9 @@ function sourceBadgeClass(source) {
     youtube: 'badge-youtube',
     url: 'badge-url',
     competitor: 'badge-competitor',
-    question: 'badge-question'
+    question: 'badge-question',
+    'google-news': 'badge-google-news',
+    hackernews: 'badge-hackernews'
   };
   return map[source] || 'badge-pending';
 }
@@ -1099,7 +1323,9 @@ function sourceLabel(source) {
     youtube: 'YouTube',
     url: 'URL',
     competitor: 'Competitor Intel',
-    question: 'Audience Q&A'
+    question: 'Audience Q&A',
+    'google-news': 'Google News',
+    hackernews: 'Hacker News'
   };
   return labels[source] || source;
 }
@@ -1165,6 +1391,7 @@ document.addEventListener('keydown', (e) => {
   if (e.key === '2' && !e.ctrlKey && !e.metaKey && !isEditing()) { state.page = 'content'; render(); }
   if (e.key === '3' && !e.ctrlKey && !e.metaKey && !isEditing()) { state.page = 'triggers'; render(); }
   if (e.key === '4' && !e.ctrlKey && !e.metaKey && !isEditing()) { state.page = 'calendar'; render(); }
+  if (e.key === '5' && !e.ctrlKey && !e.metaKey && !isEditing()) { state.page = 'analytics'; render(); }
   if ((e.key === 'd' || e.key === 'D') && !e.ctrlKey && !e.metaKey && !isEditing()) { toggleDarkMode(); }
   if (e.key === 'Escape') { state.editingFormat = null; state.sidebarOpen = false; render(); }
 });
@@ -1188,7 +1415,10 @@ const icons = {
   refresh: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>',
   play: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>',
   globe: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>',
-  expand: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>'
+  expand: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>',
+  analytics: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>',
+  download: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>',
+  eye: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>'
 };
 
 // --- Render Functions ---
@@ -1224,7 +1454,8 @@ function renderSidebar() {
     { id: 'dashboard', icon: icons.dashboard, label: 'Dashboard', key: '1' },
     { id: 'content', icon: icons.content, label: 'Content', key: '2' },
     { id: 'triggers', icon: icons.triggers, label: 'Triggers', key: '3' },
-    { id: 'calendar', icon: icons.calendar, label: 'Calendar', key: '4' }
+    { id: 'calendar', icon: icons.calendar, label: 'Calendar', key: '4' },
+    { id: 'analytics', icon: icons.analytics, label: 'Analytics', key: '5' }
   ];
 
   return h('nav', { className: `sidebar ${state.sidebarOpen ? 'open' : ''}` },
@@ -1270,6 +1501,7 @@ function renderTopbar() {
     content: 'Content Review',
     triggers: 'Trigger Queue',
     calendar: 'Content Calendar',
+    analytics: 'Analytics',
     'save-url': 'Save URL'
   };
 
@@ -1324,7 +1556,7 @@ function statCard(label, value, sub, colorClass) {
 function renderSourceBreakdown(s) {
   const sources = s.triggers.by_source || {};
   const total = s.triggers.total || 1;
-  const colors = { reddit: '#ff4500', rss: '#2563eb', youtube: '#cc0000', url: '#7c3aed', competitor: '#0891b2', question: '#ea580c' };
+  const colors = { reddit: '#ff4500', rss: '#2563eb', youtube: '#cc0000', url: '#7c3aed', competitor: '#0891b2', question: '#ea580c', 'google-news': '#4285f4', hackernews: '#ff6600' };
 
   return h('div', { className: 'card', style: { padding: '20px' } },
     h('h4', { style: { fontSize: '14px', marginBottom: '12px', color: 'var(--gray-600)' } }, 'Triggers by Source'),
@@ -1515,10 +1747,10 @@ function renderContentCard(content) {
         h('strong', {}, 'Category: '),
         categoryLabel(content.trigger_category)
       ),
-      content.trigger_source === 'reddit' || content.trigger_source === 'rss' || content.trigger_source === 'youtube'
+      ['reddit','rss','youtube','google-news','hackernews'].includes(content.trigger_source)
         ? h('div', { className: 'meta-divider' })
         : null,
-      content.trigger_source === 'reddit' || content.trigger_source === 'rss' || content.trigger_source === 'youtube'
+      ['reddit','rss','youtube','google-news','hackernews'].includes(content.trigger_source)
         ? h('div', { className: 'meta-item' },
             h('strong', {}, 'From: '),
             content.trigger_url ? content.trigger_url.split('/').slice(0, 4).join('/') : 'N/A'
@@ -1600,10 +1832,32 @@ function renderFormatContent(content, formatKey, fmt) {
   const expandKey = `${content.id}:${formatKey}`;
   const isExpanded = state.expandedFormats[expandKey];
   const shouldCollapse = isLong && !isExpanded;
+  const previewKey = `${content.id}:${formatKey}`;
+  const showPreview = state.previewMode[previewKey] === 'preview';
+  const canPreview = formatKey === 'linkedin' || formatKey === 'x_single';
 
   return h('div', {},
-    // Content display
-    isThread
+    // Preview toggle for LinkedIn and Tweet
+    canPreview
+      ? h('div', { style: { padding: '8px 20px', display: 'flex', justifyContent: 'flex-end' } },
+          h('div', { className: 'preview-toggle' },
+            h('button', {
+              className: `preview-toggle-btn ${!showPreview ? 'active' : ''}`,
+              onclick: () => { state.previewMode[previewKey] = 'raw'; render(); }
+            }, 'Raw'),
+            h('button', {
+              className: `preview-toggle-btn ${showPreview ? 'active' : ''}`,
+              onclick: () => { state.previewMode[previewKey] = 'preview'; render(); }
+            }, h('span', { innerHTML: icons.eye, style: { width: '12px', height: '12px', marginRight: '4px', display: 'inline-flex' } }), 'Preview')
+          )
+        )
+      : null,
+    // Social preview or raw content
+    showPreview && formatKey === 'linkedin'
+      ? renderLinkedInPreview(text)
+      : showPreview && formatKey === 'x_single'
+        ? renderTweetPreview(text)
+        : isThread
       ? h('div', { className: 'format-content', style: { maxHeight: '400px' } },
           ...fmt.content.map((tweet, i) =>
             h('div', { className: 'thread-tweet' },
@@ -1679,30 +1933,31 @@ function renderFormatContent(content, formatKey, fmt) {
 }
 
 function renderContentPage() {
-  let filtered = [...state.content];
-  if (state.filter.status !== 'all') {
-    filtered = filtered.filter(c => c.status === state.filter.status);
-  }
-  if (state.searchQuery) {
-    const q = state.searchQuery.toLowerCase();
-    filtered = filtered.filter(c => {
-      const searchable = `${c.trigger_title} ${c.trigger_source} ${c.trigger_category}`.toLowerCase();
-      return searchable.includes(q);
-    });
-  }
+  const filtered = getFilteredContent();
+  const hasSelected = state.selectedContent.size > 0;
 
   return h('div', { className: 'page-content' },
-    // Filter bar with search
+    // Filter bar with search and export
     h('div', { className: 'filter-bar' },
       ...['all', 'review', 'approved', 'rejected'].map(s =>
         h('span', {
           className: `filter-chip ${state.filter.status === s ? 'active' : ''}`,
-          onclick: () => { state.filter.status = s; render(); }
+          onclick: () => { state.filter.status = s; state.selectedContent = new Set(); render(); }
         }, s === 'all' ? 'All' : s.charAt(0).toUpperCase() + s.slice(1),
           s !== 'all' ? ` (${state.content.filter(c => c.status === s).length})` : ` (${state.content.length})`
         )
       ),
       h('span', { style: { flex: '1' } }),
+      h('button', {
+        className: 'btn btn-outline btn-sm',
+        onclick: exportApprovedContent,
+        title: 'Export approved content as CSV'
+      }, h('span', { innerHTML: icons.download, style: { width: '14px', height: '14px' } }), ' CSV'),
+      h('button', {
+        className: 'btn btn-outline btn-sm',
+        onclick: exportAllMarkdown,
+        title: 'Export approved content as Markdown'
+      }, h('span', { innerHTML: icons.download, style: { width: '14px', height: '14px' } }), ' MD'),
       h('input', {
         className: 'search-input',
         type: 'text',
@@ -1711,6 +1966,37 @@ function renderContentPage() {
         oninput: (e) => { state.searchQuery = e.target.value; render(); }
       })
     ),
+    // Bulk action bar
+    hasSelected
+      ? h('div', { className: 'bulk-bar' },
+          h('input', {
+            type: 'checkbox', className: 'bulk-checkbox', checked: true,
+            onclick: () => { state.selectedContent = new Set(); render(); }
+          }),
+          h('span', { style: { fontWeight: '600', fontSize: '13px' } },
+            `${state.selectedContent.size} selected`
+          ),
+          h('button', {
+            className: 'btn btn-sm',
+            onclick: bulkApprove
+          }, h('span', { innerHTML: icons.check, style: { width: '14px', height: '14px' } }), ' Approve All'),
+          h('button', {
+            className: 'btn btn-sm',
+            onclick: bulkReject
+          }, h('span', { innerHTML: icons.x, style: { width: '14px', height: '14px' } }), ' Reject All'),
+          h('button', {
+            className: 'btn btn-sm',
+            onclick: () => { state.selectedContent = new Set(); render(); }
+          }, 'Cancel')
+        )
+      : h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' } },
+          h('input', {
+            type: 'checkbox', className: 'bulk-checkbox',
+            checked: filtered.length > 0 && state.selectedContent.size === filtered.length,
+            onclick: selectAllContent
+          }),
+          h('span', { style: { fontSize: '12px', color: 'var(--gray-400)' } }, 'Select all')
+        ),
     // Content list
     filtered.length === 0
       ? h('div', { className: 'empty-state' },
@@ -1718,9 +2004,285 @@ function renderContentPage() {
           h('p', {}, state.searchQuery ? 'Try a different search term.' : 'Try changing your filters or generate new content.')
         )
       : h('div', { className: 'content-list' },
-          ...filtered.map(renderContentCard)
+          ...filtered.map(c => renderContentCardWithSelect(c))
         )
   );
+}
+
+function renderContentCardWithSelect(content) {
+  return h('div', { style: { display: 'flex', gap: '12px', alignItems: 'flex-start' } },
+    h('input', {
+      type: 'checkbox', className: 'bulk-checkbox',
+      checked: state.selectedContent.has(content.id),
+      onclick: (e) => { e.stopPropagation(); toggleSelectContent(content.id); },
+      style: { marginTop: '20px' }
+    }),
+    h('div', { style: { flex: '1' } }, renderContentCard(content))
+  );
+}
+
+function renderLinkedInPreview(text) {
+  return h('div', { className: 'social-preview' },
+    h('div', { className: 'linkedin-preview' },
+      h('div', { className: 'linkedin-preview-header' },
+        h('div', { className: 'linkedin-avatar' }, 'M'),
+        h('div', {},
+          h('div', { className: 'linkedin-name' }, 'Mortar Metrics'),
+          h('div', { className: 'linkedin-title' }, 'Legal Marketing Agency | More signed cases. More revenue. Less guesswork.'),
+          h('div', { style: { fontSize: '11px', color: 'var(--gray-400)' } }, 'Just now')
+        )
+      ),
+      h('div', { className: 'linkedin-body' }, text),
+      h('div', { className: 'linkedin-actions' },
+        h('span', { className: 'linkedin-action' }, 'Like'),
+        h('span', { className: 'linkedin-action' }, 'Comment'),
+        h('span', { className: 'linkedin-action' }, 'Repost'),
+        h('span', { className: 'linkedin-action' }, 'Send')
+      )
+    )
+  );
+}
+
+function renderTweetPreview(text) {
+  return h('div', { className: 'social-preview' },
+    h('div', { className: 'tweet-preview' },
+      h('div', { className: 'tweet-header' },
+        h('div', { className: 'tweet-avatar' }, 'M'),
+        h('div', {},
+          h('div', { style: { display: 'flex', gap: '4px', alignItems: 'center' } },
+            h('span', { className: 'tweet-name' }, 'Mortar Metrics'),
+            h('span', { className: 'tweet-handle' }, '@MortarMetrics')
+          ),
+          h('div', { style: { fontSize: '12px', color: 'var(--gray-400)' } }, 'Just now')
+        )
+      ),
+      h('div', { className: 'tweet-body' }, text),
+      h('div', { className: 'tweet-actions-bar' },
+        h('span', { className: 'tweet-action-item' }, 'Reply'),
+        h('span', { className: 'tweet-action-item' }, 'Repost'),
+        h('span', { className: 'tweet-action-item' }, 'Like'),
+        h('span', { className: 'tweet-action-item' }, 'Share')
+      )
+    )
+  );
+}
+
+function renderAnalyticsPage() {
+  const content = state.content;
+  const triggers = state.triggers;
+  const s = state.stats;
+  if (!s) return h('div', { className: 'page-content' }, h('div', { className: 'spinner' }));
+
+  // Calculate metrics
+  const totalFormats = Object.values(content).reduce((sum, c) =>
+    sum + Object.keys(c.formats || {}).length, 0);
+  const approvedFormats = Object.values(content).reduce((sum, c) =>
+    sum + Object.values(c.formats || {}).filter(f => f.status === 'approved').length, 0);
+  const rejectedFormats = Object.values(content).reduce((sum, c) =>
+    sum + Object.values(c.formats || {}).filter(f => f.status === 'rejected').length, 0);
+  const reviewFormats = totalFormats - approvedFormats - rejectedFormats;
+  const approvalRate = totalFormats > 0 ? Math.round((approvedFormats / totalFormats) * 100) : 0;
+
+  // Format breakdown
+  const formatCounts = {};
+  for (const c of content) {
+    for (const [key, fmt] of Object.entries(c.formats || {})) {
+      if (!formatCounts[key]) formatCounts[key] = { total: 0, approved: 0, rejected: 0, review: 0 };
+      formatCounts[key].total++;
+      formatCounts[key][fmt.status || 'review']++;
+    }
+  }
+
+  // Source performance
+  const sourceCounts = {};
+  for (const c of content) {
+    const src = c.trigger_source || 'unknown';
+    if (!sourceCounts[src]) sourceCounts[src] = { total: 0, approved: 0 };
+    sourceCounts[src].total++;
+    if (c.status === 'approved') sourceCounts[src].approved++;
+  }
+
+  // Pillar distribution
+  const pillarCounts = {};
+  for (const c of content) {
+    const p = categoryToPillar(c.trigger_category).label;
+    pillarCounts[p] = (pillarCounts[p] || 0) + 1;
+  }
+
+  // Category distribution
+  const catCounts = {};
+  for (const t of triggers) {
+    const cat = categoryLabel(t.category);
+    catCounts[cat] = (catCounts[cat] || 0) + 1;
+  }
+
+  // Score distribution
+  const scoreBuckets = { '0-5': 0, '6-10': 0, '11-15': 0, '16-20': 0, '21+': 0 };
+  for (const t of triggers) {
+    const sc = t.score || 0;
+    if (sc <= 5) scoreBuckets['0-5']++;
+    else if (sc <= 10) scoreBuckets['6-10']++;
+    else if (sc <= 15) scoreBuckets['11-15']++;
+    else if (sc <= 20) scoreBuckets['16-20']++;
+    else scoreBuckets['21+']++;
+  }
+
+  const donutSvg = buildDonutSVG(approvedFormats, reviewFormats, rejectedFormats);
+
+  return h('div', { className: 'page-content' },
+    // Key metrics row
+    h('div', { className: 'stats-grid' },
+      statCard('Approval Rate', approvalRate + '%', `${approvedFormats} of ${totalFormats} formats`, 'green'),
+      statCard('Pipeline Health', content.filter(c => c.status === 'review').length, 'pieces in review', 'amber'),
+      statCard('Avg Score', triggers.length ? Math.round(triggers.reduce((s,t) => s + (t.score||0), 0) / triggers.length) : 0, 'trigger quality score', 'accent'),
+      statCard('Content Sources', Object.keys(s.triggers.by_source || {}).length, 'active sources feeding pipeline', 'purple')
+    ),
+    // Charts row
+    h('div', { className: 'analytics-grid' },
+      // Donut chart — format status
+      h('div', { className: 'chart-card' },
+        h('h4', {}, 'Format Status Breakdown'),
+        h('div', { style: { display: 'flex', alignItems: 'center', gap: '24px' } },
+          h('div', { className: 'donut-chart', innerHTML: donutSvg }),
+          h('div', { style: { flex: '1' } },
+            h('div', { className: 'metric-row' },
+              h('span', { className: 'metric-label' }, h('span', { style: { display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', background: 'var(--green)', marginRight: '6px' } }), 'Approved'),
+              h('span', { className: 'metric-value' }, String(approvedFormats))
+            ),
+            h('div', { className: 'metric-row' },
+              h('span', { className: 'metric-label' }, h('span', { style: { display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', background: 'var(--amber)', marginRight: '6px' } }), 'In Review'),
+              h('span', { className: 'metric-value' }, String(reviewFormats))
+            ),
+            h('div', { className: 'metric-row' },
+              h('span', { className: 'metric-label' }, h('span', { style: { display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', background: 'var(--red)', marginRight: '6px' } }), 'Rejected'),
+              h('span', { className: 'metric-value' }, String(rejectedFormats))
+            )
+          )
+        )
+      ),
+      // Bar chart — trigger score distribution
+      h('div', { className: 'chart-card' },
+        h('h4', {}, 'Trigger Score Distribution'),
+        h('div', { className: 'bar-chart' },
+          ...Object.entries(scoreBuckets).map(([range, count]) => {
+            const maxCount = Math.max(...Object.values(scoreBuckets), 1);
+            return h('div', { className: 'bar-col' },
+              h('div', { className: 'bar-value' }, String(count)),
+              h('div', {
+                className: 'bar-fill',
+                style: { height: `${(count/maxCount)*130}px`, background: 'var(--blue)' }
+              }),
+              h('div', { className: 'bar-label' }, range)
+            );
+          })
+        )
+      )
+    ),
+    // Second row
+    h('div', { className: 'analytics-grid' },
+      // Format performance
+      h('div', { className: 'chart-card' },
+        h('h4', {}, 'Performance by Format'),
+        h('div', { className: 'bar-chart' },
+          ...Object.entries(formatCounts).map(([key, counts]) => {
+            const maxCount = Math.max(...Object.values(formatCounts).map(c => c.total), 1);
+            return h('div', { className: 'bar-col' },
+              h('div', { className: 'bar-value' }, `${counts.approved}/${counts.total}`),
+              h('div', { style: { width: '100%', height: `${(counts.total/maxCount)*130}px`, display: 'flex', flexDirection: 'column', borderRadius: '4px 4px 0 0', overflow: 'hidden' } },
+                h('div', { style: { flex: counts.rejected, background: 'var(--red)' } }),
+                h('div', { style: { flex: counts.review, background: 'var(--amber)' } }),
+                h('div', { style: { flex: counts.approved, background: 'var(--green)' } })
+              ),
+              h('div', { className: 'bar-label' }, formatName(key).replace(' Script', ''))
+            );
+          })
+        )
+      ),
+      // Content pillar distribution
+      h('div', { className: 'chart-card' },
+        h('h4', {}, 'Content Pillar Mix'),
+        h('div', { style: { display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '8px' } },
+          ...Object.entries(pillarCounts).sort((a,b) => b[1]-a[1]).map(([pillar, count]) => {
+            const maxCount = Math.max(...Object.values(pillarCounts));
+            const pillarColor = { 'Hot Take': '#dc2626', 'Tactical How-To': '#2563eb', 'Industry Insight': '#059669', 'Social Proof': '#d97706', 'General': '#64748b' }[pillar] || '#94a3b8';
+            return h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px' } },
+              h('span', { style: { fontSize: '12px', fontWeight: '600', width: '110px', color: 'var(--gray-500)' } }, pillar),
+              h('div', { style: { flex: '1', height: '20px', background: 'var(--gray-100)', borderRadius: '4px', overflow: 'hidden' } },
+                h('div', { style: { width: `${(count/maxCount)*100}%`, height: '100%', background: pillarColor, borderRadius: '4px', transition: 'width 0.5s ease', display: 'flex', alignItems: 'center', paddingLeft: '8px' } },
+                  h('span', { style: { fontSize: '11px', fontWeight: '700', color: 'white' } }, String(count))
+                )
+              )
+            );
+          })
+        ),
+        h('div', { style: { marginTop: '16px', padding: '12px', background: 'var(--gray-50)', borderRadius: 'var(--radius-sm)' } },
+          h('div', { style: { fontSize: '11px', color: 'var(--gray-400)', marginBottom: '4px' } }, 'TARGET MIX'),
+          h('div', { style: { fontSize: '12px', color: 'var(--gray-500)' } },
+            'Insight 35% | How-To 25% | Social Proof 20% | Hot Takes 10% | BTS 10%'
+          )
+        )
+      )
+    ),
+    // Third row — source performance + category breakdown
+    h('div', { className: 'analytics-grid' },
+      h('div', { className: 'chart-card' },
+        h('h4', {}, 'Content by Source'),
+        h('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px' } },
+          ...Object.entries(sourceCounts).sort((a,b) => b[1].total - a[1].total).map(([src, data]) => {
+            const maxCount = Math.max(...Object.values(sourceCounts).map(d => d.total));
+            const colors = { reddit: '#ff4500', rss: '#2563eb', youtube: '#cc0000', url: '#7c3aed', competitor: '#0891b2', question: '#ea580c', 'google-news': '#4285f4', hackernews: '#ff6600' };
+            return h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px' } },
+              h('span', { style: { fontSize: '12px', fontWeight: '600', width: '100px', color: 'var(--gray-500)' } }, sourceLabel(src)),
+              h('div', { style: { flex: '1', height: '12px', background: 'var(--gray-100)', borderRadius: '6px', overflow: 'hidden' } },
+                h('div', { style: { width: `${(data.total/maxCount)*100}%`, height: '100%', background: colors[src] || '#94a3b8', borderRadius: '6px' } })
+              ),
+              h('span', { style: { fontSize: '12px', fontWeight: '700', color: 'var(--gray-600)', minWidth: '30px', textAlign: 'right' } }, String(data.total))
+            );
+          })
+        )
+      ),
+      h('div', { className: 'chart-card' },
+        h('h4', {}, 'Trigger Categories'),
+        h('div', { className: 'bar-chart' },
+          ...Object.entries(catCounts).sort((a,b) => b[1]-a[1]).map(([cat, count]) => {
+            const maxCount = Math.max(...Object.values(catCounts), 1);
+            const catColors = { 'Pain Point': '#dc2626', 'Question': '#2563eb', 'Data & Stats': '#059669', 'Industry News': '#d97706', 'Content Idea': '#7c3aed', 'Client Win': '#0891b2' };
+            return h('div', { className: 'bar-col' },
+              h('div', { className: 'bar-value' }, String(count)),
+              h('div', {
+                className: 'bar-fill',
+                style: { height: `${(count/maxCount)*130}px`, background: catColors[cat] || '#94a3b8' }
+              }),
+              h('div', { className: 'bar-label' }, cat)
+            );
+          })
+        )
+      )
+    )
+  );
+}
+
+function buildDonutSVG(approved, review, rejected) {
+  const total = approved + review + rejected || 1;
+  const r = 54, cx = 70, cy = 70, sw = 12;
+  const circumference = 2 * Math.PI * r;
+
+  const segments = [
+    { value: approved, color: '#059669' },
+    { value: review, color: '#d97706' },
+    { value: rejected, color: '#dc2626' }
+  ];
+
+  let offset = 0;
+  const paths = segments.map(seg => {
+    const pct = seg.value / total;
+    const dashLen = circumference * pct;
+    const dashOffset = -offset;
+    offset += dashLen;
+    return `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${seg.color}" stroke-width="${sw}" stroke-dasharray="${dashLen} ${circumference - dashLen}" stroke-dashoffset="${dashOffset}" transform="rotate(-90 ${cx} ${cy})" />`;
+  }).join('');
+
+  return `<svg viewBox="0 0 140 140" width="140" height="140">${paths}<text x="${cx}" y="${cy - 6}" text-anchor="middle" font-family="Fraunces,serif" font-size="28" font-weight="700" fill="currentColor">${Math.round((approved/total)*100)}%</text><text x="${cx}" y="${cy + 14}" text-anchor="middle" font-size="11" fill="#94a3b8">approved</text></svg>`;
 }
 
 function renderTriggersPage() {
@@ -1735,7 +2297,7 @@ function renderTriggersPage() {
 
   return h('div', { className: 'page-content' },
     h('div', { className: 'filter-bar' },
-      ...['all', 'reddit', 'rss', 'youtube', 'competitor', 'question', 'url'].map(s =>
+      ...['all', 'reddit', 'rss', 'youtube', 'google-news', 'hackernews', 'competitor', 'question', 'url'].map(s =>
         h('span', {
           className: `filter-chip ${state.filter.source === s ? 'active' : ''}`,
           onclick: () => { state.filter.source = s; render(); }
@@ -1973,6 +2535,7 @@ function render() {
         : state.page === 'content' ? renderContentPage()
         : state.page === 'triggers' ? renderTriggersPage()
         : state.page === 'calendar' ? renderCalendarPage()
+        : state.page === 'analytics' ? renderAnalyticsPage()
         : state.page === 'save-url' ? renderSaveUrlPage()
         : renderDashboardPage()
     ),

@@ -1478,6 +1478,12 @@ function renderSidebar() {
       },
         h('span', { innerHTML: item.icon }),
         h('span', {}, item.label),
+        item.id === 'content' && state.content.filter(c => c.status === 'review').length > 0
+          ? h('span', { style: {
+              background: 'var(--red)', color: 'white', borderRadius: '10px',
+              fontSize: '10px', padding: '1px 6px', marginLeft: '4px', fontWeight: '700'
+            }}, String(state.content.filter(c => c.status === 'review').length))
+          : null,
         h('span', { className: 'kbd', style: { marginLeft: 'auto' } }, item.key)
       )
     ),

@@ -871,7 +871,8 @@ const state = {
   generating: false,
   expandedFormats: {}, // track which long formats are expanded
   darkMode: localStorage.getItem('darkMode') === 'true',
-  searchQuery: ''
+  searchQuery: '',
+  expandedTrigger: null
 };
 
 // --- API Calls ---
@@ -1594,6 +1595,10 @@ function renderTriggersPage() {
   if (state.filter.source !== 'all') {
     filtered = filtered.filter(t => t.source === state.filter.source);
   }
+  if (state.searchQuery) {
+    const q = state.searchQuery.toLowerCase();
+    filtered = filtered.filter(t => `${t.title} ${t.source} ${t.category} ${t.raw_content || ''}`.toLowerCase().includes(q));
+  }
 
   return h('div', { className: 'page-content' },
     h('div', { className: 'filter-bar' },
@@ -1604,7 +1609,14 @@ function renderTriggersPage() {
         }, s === 'all' ? 'All Sources' : s.charAt(0).toUpperCase() + s.slice(1))
       ),
       h('span', { style: { flex: '1' } }),
-      h('span', { style: { fontSize: '13px', color: 'var(--gray-500)' } },
+      h('input', {
+        className: 'search-input',
+        type: 'text',
+        placeholder: 'Search triggers...',
+        value: state.searchQuery,
+        oninput: (e) => { state.searchQuery = e.target.value; render(); }
+      }),
+      h('span', { style: { fontSize: '13px', color: 'var(--gray-500)', marginLeft: '8px' } },
         `${filtered.length} triggers`
       )
     ),
@@ -1622,41 +1634,56 @@ function renderTriggersPage() {
           )
         ),
         h('tbody', {},
-          ...filtered.map(trigger =>
-            h('tr', {},
-              h('td', {},
-                h('div', { className: 'score-bar' },
-                  h('span', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)', minWidth: '20px' } }, String(trigger.score || 0)),
-                  h('div', { className: 'score-bg' },
-                    h('div', { className: 'score-fill', style: { width: `${Math.min((trigger.score || 0) / 20 * 100, 100)}%` } })
+          ...filtered.flatMap(trigger => {
+            const isExpanded = state.expandedTrigger === trigger.id;
+            const rows = [
+              h('tr', { style: { cursor: 'pointer' }, onclick: () => { state.expandedTrigger = isExpanded ? null : trigger.id; render(); } },
+                h('td', {},
+                  h('div', { className: 'score-bar' },
+                    h('span', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)', minWidth: '20px' } }, String(trigger.score || 0)),
+                    h('div', { className: 'score-bg' },
+                      h('div', { className: 'score-fill', style: { width: `${Math.min((trigger.score || 0) / 20 * 100, 100)}%` } })
+                    )
+                  )
+                ),
+                h('td', {}, h('span', { className: `badge ${sourceBadgeClass(trigger.source)}` }, trigger.source)),
+                h('td', {},
+                  h('div', { className: 'trigger-title' }, trigger.title),
+                  h('div', { style: { fontSize: '11px', color: 'var(--gray-400)', marginTop: '2px' } }, trigger.source_detail || '')
+                ),
+                h('td', {},
+                  h('span', { style: { fontSize: '12px', color: 'var(--gray-500)', textTransform: 'capitalize' } },
+                    (trigger.category || '').replace(/_/g, ' ').toLowerCase()
+                  )
+                ),
+                h('td', {}, h('span', { className: `badge badge-${trigger.status}` }, trigger.status)),
+                h('td', { style: { fontSize: '12px', color: 'var(--gray-400)', whiteSpace: 'nowrap' } }, timeAgo(trigger.captured_at)),
+                h('td', { onclick: (e) => e.stopPropagation() },
+                  trigger.status === 'pending'
+                    ? h('button', {
+                        className: 'btn btn-primary btn-sm',
+                        onclick: () => generateForTrigger(trigger.id),
+                        disabled: state.generating
+                      }, state.generating ? h('span', { className: 'spinner' }) : 'Generate')
+                    : h('span', { style: { fontSize: '12px', color: 'var(--gray-400)' } }, 'used')
+                )
+              )
+            ];
+            if (isExpanded && trigger.raw_content) {
+              rows.push(
+                h('tr', {},
+                  h('td', { colspan: '7', style: { padding: '16px 20px', background: 'var(--gray-50)', fontSize: '13px', lineHeight: '1.7', color: 'var(--gray-600)', whiteSpace: 'pre-wrap' } },
+                    trigger.raw_content.slice(0, 1000),
+                    trigger.raw_content.length > 1000 ? '...' : '',
+                    trigger.url ? h('div', { style: { marginTop: '8px' } },
+                      h('a', { href: trigger.url, target: '_blank', rel: 'noopener', style: { color: 'var(--blue)', fontSize: '12px' } }, 'View source')
+                    ) : null
                   )
                 )
-              ),
-              h('td', {}, h('span', { className: `badge ${sourceBadgeClass(trigger.source)}` }, trigger.source)),
-              h('td', {},
-                h('div', { className: 'trigger-title', onclick: () => trigger.url && window.open(trigger.url, '_blank') },
-                  trigger.title
-                ),
-                h('div', { style: { fontSize: '11px', color: 'var(--gray-400)', marginTop: '2px' } }, trigger.source_detail || '')
-              ),
-              h('td', {},
-                h('span', { style: { fontSize: '12px', color: 'var(--gray-500)', textTransform: 'capitalize' } },
-                  (trigger.category || '').replace(/_/g, ' ').toLowerCase()
-                )
-              ),
-              h('td', {}, h('span', { className: `badge badge-${trigger.status}` }, trigger.status)),
-              h('td', { style: { fontSize: '12px', color: 'var(--gray-400)', whiteSpace: 'nowrap' } }, timeAgo(trigger.captured_at)),
-              h('td', {},
-                trigger.status === 'pending'
-                  ? h('button', {
-                      className: 'btn btn-primary btn-sm',
-                      onclick: () => generateForTrigger(trigger.id),
-                      disabled: state.generating
-                    }, state.generating ? h('span', { className: 'spinner' }) : 'Generate')
-                  : h('span', { style: { fontSize: '12px', color: 'var(--gray-400)' } }, 'used')
-              )
-            )
-          )
+              );
+            }
+            return rows;
+          })
         )
       )
     )

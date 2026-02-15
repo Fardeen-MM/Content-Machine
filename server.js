@@ -413,7 +413,9 @@ async function handleRequest(req, res) {
 
 const server = http.createServer(handleRequest);
 
-server.listen(PORT, () => {
+const HOST = process.env.HOST || '0.0.0.0';
+
+server.listen(PORT, HOST, () => {
   console.log(`\n  Content Machine Dashboard`);
   console.log(`  ========================`);
   console.log(`  Running at: http://localhost:${PORT}`);

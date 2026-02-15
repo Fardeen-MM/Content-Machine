@@ -83,8 +83,27 @@
 4. **Calendar pillar rotation** — Mon: Insight, Tue: How-To, Wed: Social Proof, Thu: Insight, Fri: Hot Take, Sat: BTS, Sun: How-To. Matches the 35/25/20/10/10 weight distribution.
 5. **Format-level approve/reject** — Each piece independently controllable, matching the requirement to approve LinkedIn but reject X thread from same trigger.
 
+### Phase 6: Additional Features (Complete)
+- Dark mode with localStorage persistence (press D or click toggle)
+- Search bars on Content and Triggers pages
+- Expandable trigger rows — click to see full raw_content
+- SVG favicon
+- Last refreshed timestamp in topbar
+- Format progress bar (green/amber/red stripe) on content cards
+- Better Save URL page with tips and saved URL history
+- Comprehensive API testing — all 12 endpoints verified
+
+### Final Stats
+- **63KB** single-file dashboard (HTML + CSS + JS, zero build step)
+- **18 triggers** seeded across 5 sources
+- **8 content pieces** with 32 format variations
+- **7 commits** total
+- **Zero npm dependencies**
+- **12 API endpoints**, all tested and working
+- **~5,300 lines** of code total
+
 ### Known Limitations
 - No WebSocket/SSE for real-time generation progress (would need to add for long-running operations)
-- Blog/YouTube script collapse only uses CSS gradient overlay — could add explicit expand button
 - No auto-save on edit (must click Save button)
 - Calendar only shows current week (no previous/next week navigation)
+- edit flag stays true after revert (cosmetic only, doesn't affect functionality)

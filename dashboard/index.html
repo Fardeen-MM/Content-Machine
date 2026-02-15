@@ -1657,6 +1657,38 @@ function renderDashboardPage() {
         h('div', { innerHTML: icons.calendar, style: { width: '24px', height: '24px', margin: '0 auto 8px', color: 'var(--purple)' } }),
         h('div', { style: { fontSize: '13px', fontWeight: '600', color: 'var(--navy)' } }, 'Calendar'),
         h('div', { style: { fontSize: '11px', color: 'var(--gray-400)' } }, `${state.calendar?.stats?.coverage || 0}% coverage`)
+      ),
+      h('div', {
+        className: 'card',
+        style: { padding: '16px', cursor: 'pointer', textAlign: 'center', transition: 'var(--transition)' },
+        onclick: async () => {
+          toast('Generating content for top 5 triggers...', 'info');
+          try {
+            await api('/api/generate-daily', { method: 'POST', body: { count: 5 } });
+            toast('Generation complete!', 'success');
+            await loadData();
+          } catch (err) { toast('Generation failed — check API key', 'error'); }
+        }
+      },
+        h('div', { innerHTML: icons.play, style: { width: '24px', height: '24px', margin: '0 auto 8px', color: 'var(--green)' } }),
+        h('div', { style: { fontSize: '13px', fontWeight: '600', color: 'var(--navy)' } }, 'Generate Top 5'),
+        h('div', { style: { fontSize: '11px', color: 'var(--gray-400)' } }, 'AI content batch')
+      ),
+      h('div', {
+        className: 'card',
+        style: { padding: '16px', cursor: 'pointer', textAlign: 'center', transition: 'var(--transition)' },
+        onclick: async () => {
+          toast('Running all scrapers...', 'info');
+          try {
+            await api('/api/scrape-now', { method: 'POST', body: {} });
+            toast('Scrape complete!', 'success');
+            await loadData();
+          } catch (err) { toast('Scrape failed', 'error'); }
+        }
+      },
+        h('div', { innerHTML: icons.refresh, style: { width: '24px', height: '24px', margin: '0 auto 8px', color: 'var(--red)' } }),
+        h('div', { style: { fontSize: '13px', fontWeight: '600', color: 'var(--navy)' } }, 'Scrape Now'),
+        h('div', { style: { fontSize: '11px', color: 'var(--gray-400)' } }, `${(state.settings?.scrapers || []).length} scrapers`)
       )
     ),
     // Content awaiting review
@@ -1698,12 +1730,41 @@ function renderDashboardPage() {
   );
 }
 
+function contentQualityScore(content) {
+  let score = 0;
+  const formats = Object.entries(content.formats || {});
+  const filledFormats = formats.filter(([,v]) => v.content);
+  // Format coverage (0-40 pts)
+  score += Math.round((filledFormats.length / Math.max(formats.length, 1)) * 40);
+  // Content length (0-20 pts)
+  const totalLen = filledFormats.reduce((sum, [,v]) => sum + (v.content || '').length, 0);
+  score += Math.min(Math.round(totalLen / 200), 20);
+  // Has blog? +15
+  if (content.formats?.blog?.content) score += 15;
+  // Has video script? +10
+  if (content.formats?.short_video?.content || content.formats?.youtube_script?.content) score += 10;
+  // Has image prompt? +5
+  if (content.image_prompt) score += 5;
+  // Edited by human? +10
+  if (filledFormats.some(([,v]) => v.edited)) score += 10;
+  return Math.min(score, 100);
+}
+
+function qualityLabel(score) {
+  if (score >= 80) return { text: 'Excellent', color: 'var(--green)' };
+  if (score >= 60) return { text: 'Good', color: 'var(--blue)' };
+  if (score >= 40) return { text: 'Fair', color: 'var(--amber)' };
+  return { text: 'Needs Work', color: 'var(--red)' };
+}
+
 function renderContentCard(content) {
   const formats = Object.entries(content.formats || {}).filter(([,v]) => v.content);
   const activeFormat = getActiveFormat(content.id) || (formats[0] ? formats[0][0] : null);
   const activeFmt = activeFormat ? content.formats[activeFormat] : null;
 
   const pillar = categoryToPillar(content.trigger_category);
+  const qScore = contentQualityScore(content);
+  const qLabel = qualityLabel(qScore);
 
   return h('div', { className: 'content-card' },
     // Header
@@ -1717,7 +1778,11 @@ function renderContentCard(content) {
             className: 'badge',
             style: { background: pillar.color + '18', color: pillar.color, border: `1px solid ${pillar.color}33` }
           }, pillar.label),
-          h('span', { style: { fontSize: '12px', color: 'var(--gray-400)' } }, timeAgo(content.generated_at))
+          h('span', { style: { fontSize: '12px', color: 'var(--gray-400)' } }, timeAgo(content.generated_at)),
+          h('span', {
+            style: { fontSize: '10px', color: qLabel.color, fontWeight: '600', border: `1px solid ${qLabel.color}44`, borderRadius: '4px', padding: '1px 6px' },
+            title: `Quality: ${qScore}/100`
+          }, `${qLabel.text} ${qScore}`)
         )
       ),
       h('div', { style: { display: 'flex', gap: '6px', alignItems: 'center', flexShrink: '0' } },
@@ -2682,6 +2747,13 @@ function render() {
 
 // --- Init ---
 loadData();
+
+// Auto-refresh every 60 seconds when on dashboard
+setInterval(() => {
+  if (state.page === 'dashboard' && !state.loading && document.visibilityState === 'visible') {
+    loadData();
+  }
+}, 60000);
 </script>
 </body>
 </html>

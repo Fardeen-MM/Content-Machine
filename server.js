@@ -461,7 +461,7 @@ async function handleRequest(req, res) {
         api_key: !!process.env.ANTHROPIC_API_KEY,
         ideogram_key: !!process.env.IDEOGRAM_API_KEY,
         youtube_key: !!process.env.YOUTUBE_API_KEY,
-        scrapers: ['reddit', 'rss', 'youtube', 'google-news', 'hackernews'],
+        scrapers: ['reddit', 'rss', 'youtube', 'google-news', 'hackernews', 'competitors'],
         data: {
           triggers: triggers.length,
           content: content.length,

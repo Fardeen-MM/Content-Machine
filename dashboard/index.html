@@ -1036,16 +1036,18 @@ async function loadData() {
   state.loading = true;
   render();
   try {
-    const [content, triggers, stats, calendar] = await Promise.all([
+    const [content, triggers, stats, calendar, settings] = await Promise.all([
       api('/api/content'),
       api('/api/triggers'),
       api('/api/stats'),
-      api('/api/calendar')
+      api('/api/calendar'),
+      api('/api/settings').catch(() => ({}))
     ]);
     state.content = content;
     state.triggers = triggers;
     state.stats = stats;
     state.calendar = calendar;
+    state.settings = settings;
   } catch (err) {
     console.error('Failed to load data:', err);
     toast('Failed to load data', 'error');
@@ -1118,20 +1120,20 @@ async function generateForTrigger(triggerId) {
 }
 
 async function bulkApprove() {
-  for (const id of state.selectedContent) {
-    await api(`/api/content/${id}/approve`, { method: 'POST', body: {} });
-  }
+  const ids = [...state.selectedContent];
+  const count = ids.length;
+  await api('/api/content/bulk-approve', { method: 'POST', body: { ids } });
   state.selectedContent = new Set();
-  toast(`Approved ${state.selectedContent.size || 'all selected'} pieces`, 'success');
+  toast(`Approved ${count} pieces`, 'success');
   await loadData();
 }
 
 async function bulkReject() {
-  for (const id of state.selectedContent) {
-    await api(`/api/content/${id}/reject`, { method: 'POST', body: {} });
-  }
+  const ids = [...state.selectedContent];
+  const count = ids.length;
+  await api('/api/content/bulk-reject', { method: 'POST', body: { ids } });
   state.selectedContent = new Set();
-  toast('Rejected selected pieces', 'error');
+  toast(`Rejected ${count} pieces`, 'error');
   await loadData();
 }
 
@@ -1392,6 +1394,7 @@ document.addEventListener('keydown', (e) => {
   if (e.key === '3' && !e.ctrlKey && !e.metaKey && !isEditing()) { state.page = 'triggers'; render(); }
   if (e.key === '4' && !e.ctrlKey && !e.metaKey && !isEditing()) { state.page = 'calendar'; render(); }
   if (e.key === '5' && !e.ctrlKey && !e.metaKey && !isEditing()) { state.page = 'analytics'; render(); }
+  if (e.key === '6' && !e.ctrlKey && !e.metaKey && !isEditing()) { state.page = 'settings'; render(); }
   if ((e.key === 'd' || e.key === 'D') && !e.ctrlKey && !e.metaKey && !isEditing()) { toggleDarkMode(); }
   if (e.key === 'Escape') { state.editingFormat = null; state.sidebarOpen = false; render(); }
 });
@@ -1418,7 +1421,10 @@ const icons = {
   expand: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>',
   analytics: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>',
   download: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>',
-  eye: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>'
+  eye: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>',
+  settings: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>',
+  trash: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>',
+  ban: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>'
 };
 
 // --- Render Functions ---
@@ -1455,7 +1461,8 @@ function renderSidebar() {
     { id: 'content', icon: icons.content, label: 'Content', key: '2' },
     { id: 'triggers', icon: icons.triggers, label: 'Triggers', key: '3' },
     { id: 'calendar', icon: icons.calendar, label: 'Calendar', key: '4' },
-    { id: 'analytics', icon: icons.analytics, label: 'Analytics', key: '5' }
+    { id: 'analytics', icon: icons.analytics, label: 'Analytics', key: '5' },
+    { id: 'settings', icon: icons.settings, label: 'Settings', key: '6' }
   ];
 
   return h('nav', { className: `sidebar ${state.sidebarOpen ? 'open' : ''}` },
@@ -1502,6 +1509,7 @@ function renderTopbar() {
     triggers: 'Trigger Queue',
     calendar: 'Content Calendar',
     analytics: 'Analytics',
+    settings: 'Settings',
     'save-url': 'Save URL'
   };
 
@@ -2353,14 +2361,37 @@ function renderTriggersPage() {
                 ),
                 h('td', {}, h('span', { className: `badge badge-${trigger.status}` }, trigger.status)),
                 h('td', { style: { fontSize: '12px', color: 'var(--gray-400)', whiteSpace: 'nowrap' } }, timeAgo(trigger.captured_at)),
-                h('td', { onclick: (e) => e.stopPropagation() },
+                h('td', { onclick: (e) => e.stopPropagation(), style: { display: 'flex', gap: '4px' } },
                   trigger.status === 'pending'
                     ? h('button', {
                         className: 'btn btn-primary btn-sm',
                         onclick: () => generateForTrigger(trigger.id),
                         disabled: state.generating
                       }, state.generating ? h('span', { className: 'spinner' }) : 'Generate')
-                    : h('span', { style: { fontSize: '12px', color: 'var(--gray-400)' } }, 'used')
+                    : h('span', { style: { fontSize: '12px', color: 'var(--gray-400)' } }, 'used'),
+                  trigger.status === 'pending'
+                    ? h('button', {
+                        className: 'btn btn-sm',
+                        style: { color: 'var(--gray-400)', padding: '4px 6px', fontSize: '11px' },
+                        title: 'Reject trigger',
+                        onclick: async () => {
+                          await api(`/api/triggers/${trigger.id}/reject`, { method: 'POST', body: {} });
+                          toast('Trigger rejected', 'info');
+                          await loadData();
+                        }
+                      }, h('span', { innerHTML: icons.ban, style: { width: '12px', height: '12px' } }))
+                    : null,
+                  h('button', {
+                    className: 'btn btn-sm',
+                    style: { color: 'var(--red)', padding: '4px 6px', fontSize: '11px', opacity: '0.5' },
+                    title: 'Delete trigger',
+                    onclick: async () => {
+                      if (!confirm('Delete this trigger?')) return;
+                      await api(`/api/triggers/${trigger.id}`, { method: 'DELETE' });
+                      toast('Trigger deleted', 'info');
+                      await loadData();
+                    }
+                  }, h('span', { innerHTML: icons.trash, style: { width: '12px', height: '12px' } }))
                 )
               )
             ];
@@ -2458,6 +2489,100 @@ function renderCalendarSlot(slot, label, className) {
   );
 }
 
+function renderSettingsPage() {
+  const settings = state.settings || {};
+
+  return h('div', { className: 'page-content' },
+    h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', maxWidth: '900px' } },
+      // System Status
+      h('div', { className: 'card', style: { padding: '24px' } },
+        h('h3', { style: { fontSize: '16px', color: 'var(--navy)', marginBottom: '16px' } }, 'System Status'),
+        h('div', { style: { display: 'flex', flexDirection: 'column', gap: '12px' } },
+          settingRow('Anthropic API', settings.api_key, 'Content generation'),
+          settingRow('Ideogram API', settings.ideogram_key, 'Image generation'),
+          settingRow('YouTube API', settings.youtube_key, 'YouTube scraping'),
+        )
+      ),
+      // Scrapers
+      h('div', { className: 'card', style: { padding: '24px' } },
+        h('h3', { style: { fontSize: '16px', color: 'var(--navy)', marginBottom: '16px' } }, 'Active Scrapers'),
+        h('div', { style: { display: 'flex', flexDirection: 'column', gap: '10px' } },
+          ...(settings.scrapers || ['reddit', 'rss', 'youtube', 'google-news', 'hackernews']).map(s =>
+            h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px' } },
+              h('div', { style: { width: '8px', height: '8px', borderRadius: '50%', background: 'var(--green)' } }),
+              h('span', { style: { fontWeight: '500' } }, sourceLabel(s)),
+              h('span', { className: `badge ${sourceBadgeClass(s)}`, style: { fontSize: '10px' } }, s)
+            )
+          )
+        ),
+        h('button', {
+          className: 'btn btn-primary',
+          style: { marginTop: '16px', width: '100%' },
+          onclick: async () => {
+            toast('Running scrapers...', 'info');
+            try {
+              await api('/api/scrape-now', { method: 'POST', body: {} });
+              toast('Scrape complete — refresh to see new triggers', 'success');
+              await loadData();
+            } catch (err) {
+              toast('Scrape failed: ' + err.message, 'error');
+            }
+          }
+        }, 'Run All Scrapers Now')
+      ),
+      // Data
+      h('div', { className: 'card', style: { padding: '24px' } },
+        h('h3', { style: { fontSize: '16px', color: 'var(--navy)', marginBottom: '16px' } }, 'Data Overview'),
+        h('div', { style: { display: 'flex', flexDirection: 'column', gap: '10px' } },
+          h('div', { style: { display: 'flex', justifyContent: 'space-between' } },
+            h('span', { style: { color: 'var(--gray-500)' } }, 'Total Triggers'),
+            h('span', { style: { fontWeight: '600' } }, String(settings.data?.triggers || state.triggers.length))
+          ),
+          h('div', { style: { display: 'flex', justifyContent: 'space-between' } },
+            h('span', { style: { color: 'var(--gray-500)' } }, 'Content Pieces'),
+            h('span', { style: { fontWeight: '600' } }, String(settings.data?.content || state.content.length))
+          ),
+          h('div', { style: { display: 'flex', justifyContent: 'space-between' } },
+            h('span', { style: { color: 'var(--gray-500)' } }, 'Published'),
+            h('span', { style: { fontWeight: '600' } }, String(settings.data?.published || 0))
+          )
+        )
+      ),
+      // Keyboard Shortcuts
+      h('div', { className: 'card', style: { padding: '24px' } },
+        h('h3', { style: { fontSize: '16px', color: 'var(--navy)', marginBottom: '16px' } }, 'Keyboard Shortcuts'),
+        h('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px' } },
+          ...[
+            ['1', 'Dashboard'], ['2', 'Content'], ['3', 'Triggers'], ['4', 'Calendar'],
+            ['5', 'Analytics'], ['6', 'Settings'], ['D', 'Toggle Dark Mode'], ['Esc', 'Close Modal']
+          ].map(([key, label]) =>
+            h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
+              h('span', { style: { color: 'var(--gray-500)', fontSize: '13px' } }, label),
+              h('kbd', { style: {
+                background: 'var(--gray-100)', border: '1px solid var(--gray-200)',
+                borderRadius: '4px', padding: '2px 8px', fontSize: '12px', fontFamily: 'monospace'
+              }}, key)
+            )
+          )
+        )
+      )
+    )
+  );
+}
+
+function settingRow(name, isConfigured, description) {
+  return h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
+    h('div', {},
+      h('div', { style: { fontWeight: '500', fontSize: '14px' } }, name),
+      h('div', { style: { fontSize: '12px', color: 'var(--gray-400)' } }, description)
+    ),
+    h('span', {
+      className: `badge ${isConfigured ? 'badge-approved' : 'badge-pending'}`,
+      style: { fontSize: '11px' }
+    }, isConfigured ? 'Active' : 'Not Set')
+  );
+}
+
 function renderSaveUrlPage() {
   const urlTriggers = state.triggers.filter(t => t.source === 'url');
 
@@ -2536,6 +2661,7 @@ function render() {
         : state.page === 'triggers' ? renderTriggersPage()
         : state.page === 'calendar' ? renderCalendarPage()
         : state.page === 'analytics' ? renderAnalyticsPage()
+        : state.page === 'settings' ? renderSettingsPage()
         : state.page === 'save-url' ? renderSaveUrlPage()
         : renderDashboardPage()
     ),

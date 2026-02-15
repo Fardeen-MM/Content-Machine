@@ -373,6 +373,103 @@ async function handleRequest(req, res) {
       }
     }
 
+    // POST /api/content/bulk-approve
+    if (pathname === '/api/content/bulk-approve' && method === 'POST') {
+      const body = await parseBody(req);
+      const ids = body.ids || [];
+      if (!ids.length) return json(res, { error: 'ids required' }, 400);
+
+      const content = readJSON('content.json');
+      let updated = 0;
+      for (const id of ids) {
+        const idx = content.findIndex(c => c.id === id);
+        if (idx === -1) continue;
+        for (const key of Object.keys(content[idx].formats)) {
+          if (content[idx].formats[key].status !== 'rejected') {
+            content[idx].formats[key].status = 'approved';
+          }
+        }
+        content[idx].status = 'approved';
+        updated++;
+      }
+      writeJSON('content.json', content);
+      return json(res, { ok: true, updated });
+    }
+
+    // POST /api/content/bulk-reject
+    if (pathname === '/api/content/bulk-reject' && method === 'POST') {
+      const body = await parseBody(req);
+      const ids = body.ids || [];
+      if (!ids.length) return json(res, { error: 'ids required' }, 400);
+
+      const content = readJSON('content.json');
+      let updated = 0;
+      for (const id of ids) {
+        const idx = content.findIndex(c => c.id === id);
+        if (idx === -1) continue;
+        for (const key of Object.keys(content[idx].formats)) {
+          content[idx].formats[key].status = 'rejected';
+        }
+        content[idx].status = 'rejected';
+        updated++;
+      }
+      writeJSON('content.json', content);
+      return json(res, { ok: true, updated });
+    }
+
+    // POST /api/content/:id/schedule
+    const scheduleMatch = pathname.match(/^\/api\/content\/([a-f0-9]+)\/schedule$/);
+    if (scheduleMatch && method === 'POST') {
+      const content = readJSON('content.json');
+      const idx = content.findIndex(c => c.id === scheduleMatch[1]);
+      if (idx === -1) return json(res, { error: 'Not found' }, 404);
+
+      const body = await parseBody(req);
+      content[idx].scheduled_date = body.date || null;
+      content[idx].scheduled_platforms = body.platforms || [];
+      writeJSON('content.json', content);
+      return json(res, content[idx]);
+    }
+
+    // DELETE /api/triggers/:id
+    const triggerDeleteMatch = pathname.match(/^\/api\/triggers\/([a-zA-Z0-9_-]+)$/);
+    if (triggerDeleteMatch && method === 'DELETE') {
+      const triggers = readJSON('trigger-queue.json');
+      const filtered = triggers.filter(t => t.id !== triggerDeleteMatch[1]);
+      if (filtered.length === triggers.length) return json(res, { error: 'Not found' }, 404);
+      writeJSON('trigger-queue.json', filtered);
+      return json(res, { ok: true });
+    }
+
+    // POST /api/triggers/:id/reject
+    const triggerRejectMatch = pathname.match(/^\/api\/triggers\/([a-zA-Z0-9_-]+)\/reject$/);
+    if (triggerRejectMatch && method === 'POST') {
+      const triggers = readJSON('trigger-queue.json');
+      const idx = triggers.findIndex(t => t.id === triggerRejectMatch[1]);
+      if (idx === -1) return json(res, { error: 'Not found' }, 404);
+      triggers[idx].status = 'rejected';
+      writeJSON('trigger-queue.json', triggers);
+      return json(res, { ok: true });
+    }
+
+    // GET /api/settings
+    if (pathname === '/api/settings' && method === 'GET') {
+      const triggers = readJSON('trigger-queue.json');
+      const content = readJSON('content.json');
+      const published = readJSON('published.json');
+      return json(res, {
+        api_key: !!process.env.ANTHROPIC_API_KEY,
+        ideogram_key: !!process.env.IDEOGRAM_API_KEY,
+        youtube_key: !!process.env.YOUTUBE_API_KEY,
+        scrapers: ['reddit', 'rss', 'youtube', 'google-news', 'hackernews'],
+        data: {
+          triggers: triggers.length,
+          content: content.length,
+          published: published.length
+        }
+      });
+    }
+
     // POST /api/scrape-now — run all scrapers
     if (pathname === '/api/scrape-now' && method === 'POST') {
       try {

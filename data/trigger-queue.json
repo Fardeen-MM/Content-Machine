@@ -265,5 +265,417 @@
     "captured_at": "2026-02-14T00:13:28.681Z",
     "status": "pending",
     "score": 0
+  },
+  {
+    "id": "reddit-49334f620e8f2",
+    "source": "reddit",
+    "source_detail": "r/LawFirm",
+    "title": "We switched from Avvo to Google LSAs — 4x more cases at half the cost",
+    "raw_content": "We were spending $1,800/mo on Avvo for our family law practice. Switched to LSAs 3 months ago. Getting 4x the signed cases at roughly $900/mo. The quality is night and day. Avvo leads wanted free advice, LSA leads are ready to hire. Anyone else seeing this?",
+    "url": "https://reddit.com/r/LawFirm/comments/lsa_vs_avvo",
+    "category": "DATA_POINT",
+    "engagement": {
+      "upvotes": 87,
+      "comments": 34
+    },
+    "captured_at": "2026-02-15T16:30:35.332Z",
+    "status": "pending",
+    "score": 0
+  },
+  {
+    "id": "reddit-0dc35430180c98",
+    "source": "reddit",
+    "source_detail": "r/personalinjury",
+    "title": "Our intake team started texting leads within 30 seconds — conversion up 41%",
+    "raw_content": "We implemented an automated text that fires within 30 seconds of a form fill. Simple message: \"Hi [name], this is [firm]. We received your inquiry about [practice area]. An attorney will call you within 5 minutes.\" Conversion from lead to consult went from 22% to 31%. Game changer.",
+    "url": "https://reddit.com/r/personalinjury/comments/text_intake",
+    "category": "DATA_POINT",
+    "engagement": {
+      "upvotes": 112,
+      "comments": 45
+    },
+    "captured_at": "2026-02-15T19:30:35.333Z",
+    "status": "pending",
+    "score": 0
+  },
+  {
+    "id": "reddit-5393982ec74208",
+    "source": "reddit",
+    "source_detail": "r/LawFirm",
+    "title": "How much should a 5-attorney firm spend on marketing per month?",
+    "raw_content": "We are a 5-attorney PI firm in a mid-size market. Currently spending about $8K/month on marketing (mostly Google Ads + some SEO). Revenue is around $2.5M. Are we underspending? What percentage of revenue should go to marketing?",
+    "url": "https://reddit.com/r/LawFirm/comments/marketing_budget",
+    "category": "QUESTION",
+    "engagement": {
+      "upvotes": 43,
+      "comments": 67
+    },
+    "captured_at": "2026-02-15T10:30:35.333Z",
+    "status": "pending",
+    "score": 0
+  },
+  {
+    "id": "reddit-a0dabffd14b9b8",
+    "source": "reddit",
+    "source_detail": "r/SEO",
+    "title": "Google just rolled out AI Overviews for legal queries — is SEO for lawyers dead?",
+    "raw_content": "I manage SEO for several law firm clients. Noticed Google AI Overviews are now showing for queries like \"how to file a personal injury claim\" and \"do I need a lawyer for DUI.\" Click-through rates dropped 35% on these informational queries. But transactional queries like \"personal injury lawyer near me\" seem unaffected. Thoughts?",
+    "url": "https://reddit.com/r/SEO/comments/ai_overviews_legal",
+    "category": "NEWS",
+    "engagement": {
+      "upvotes": 156,
+      "comments": 89
+    },
+    "captured_at": "2026-02-15T14:30:35.333Z",
+    "status": "pending",
+    "score": 0
+  },
+  {
+    "id": "reddit-2603e3aa957be8",
+    "source": "reddit",
+    "source_detail": "r/lawyers",
+    "title": "The referral fee model is broken — why I stopped paying 33% to other attorneys",
+    "raw_content": "I was paying 33% referral fees on cases from other attorneys. Over $180K last year. Started investing that money into Google Ads and SEO instead. 8 months later, I have a pipeline of my own leads and my cost per case dropped from $5,500 (referral) to $1,900 (digital). Referrals are great but at some point you need to own your lead gen.",
+    "url": "https://reddit.com/r/lawyers/comments/referral_fees",
+    "category": "PAIN_POINT",
+    "engagement": {
+      "upvotes": 201,
+      "comments": 78
+    },
+    "captured_at": "2026-02-15T04:30:35.333Z",
+    "status": "pending",
+    "score": 0
+  },
+  {
+    "id": "reddit-e1a38ecef523f8",
+    "source": "reddit",
+    "source_detail": "r/smallbusiness",
+    "title": "Hired 3 marketing agencies in 2 years — all terrible. What am I doing wrong?",
+    "raw_content": "Law firm owner here. First agency promised 20 leads/month, got 3. Second agency had nice reports but no cases. Third agency ran my Google Ads to the wrong geo for 4 months. $57K spent across all three with maybe 12 cases to show for it. Is the legal marketing industry just a scam or am I picking wrong?",
+    "url": "https://reddit.com/r/smallbusiness/comments/bad_agencies",
+    "category": "PAIN_POINT",
+    "engagement": {
+      "upvotes": 334,
+      "comments": 156
+    },
+    "captured_at": "2026-02-15T20:30:35.333Z",
+    "status": "pending",
+    "score": 0
+  },
+  {
+    "id": "reddit-e865705f8afda",
+    "source": "reddit",
+    "source_detail": "r/GoogleAds",
+    "title": "Negative keywords saved my law firm client $3,200/month",
+    "raw_content": "Audited a PI firm's Google Ads account. They had ZERO negative keywords. Was showing up for \"lawyer salary\", \"law school requirements\", \"free legal advice.\" Added 340 negative keywords. CPC dropped 22%, conversion rate went from 3.1% to 7.8%. Saved them $3,200/month in wasted spend.",
+    "url": "https://reddit.com/r/GoogleAds/comments/negative_keywords",
+    "category": "DATA_POINT",
+    "engagement": {
+      "upvotes": 267,
+      "comments": 92
+    },
+    "captured_at": "2026-02-15T17:30:35.333Z",
+    "status": "pending",
+    "score": 0
+  },
+  {
+    "id": "reddit-bcb8296afda64",
+    "source": "reddit",
+    "source_detail": "r/Entrepreneur",
+    "title": "I built a $3M law firm in 4 years with zero referrals — here's every channel I used",
+    "raw_content": "Solo PI attorney in a competitive market. Year 1: $320K. Year 4: $3.1M. Every single case from digital. Breakdown: Google Ads 45%, SEO 30%, LSAs 15%, YouTube 10%. Monthly spend went from $4K to $35K as ROI proved out. Happy to break down any channel.",
+    "url": "https://reddit.com/r/Entrepreneur/comments/3m_law_firm",
+    "category": "DATA_POINT",
+    "engagement": {
+      "upvotes": 892,
+      "comments": 234
+    },
+    "captured_at": "2026-02-14T22:30:35.333Z",
+    "status": "pending",
+    "score": 0
+  },
+  {
+    "id": "reddit-1cae0690e6ebc8",
+    "source": "reddit",
+    "source_detail": "r/LawFirm",
+    "title": "Our Google Business Profile drives more calls than our website",
+    "raw_content": "Checked our call tracking data. GBP click-to-call: 47 calls/month. Website form + phone combined: 31 calls/month. Our GBP is generating 60% of all inbound calls and we barely optimize it. Just started posting weekly, responding to every review, and adding Q&As. Expecting this to grow.",
+    "url": "https://reddit.com/r/LawFirm/comments/gbp_calls",
+    "category": "DATA_POINT",
+    "engagement": {
+      "upvotes": 98,
+      "comments": 41
+    },
+    "captured_at": "2026-02-15T12:30:35.333Z",
+    "status": "pending",
+    "score": 0
+  },
+  {
+    "id": "reddit-908964613e3728",
+    "source": "reddit",
+    "source_detail": "r/marketing",
+    "title": "Landing pages vs homepage for law firm ads — A/B test results",
+    "raw_content": "Ran an A/B test for a criminal defense firm. Sent half the Google Ads traffic to homepage, half to a dedicated landing page. Results after 30 days: Homepage: 2.1% conversion. Landing page: 8.7% conversion. 4.1x improvement. The landing page had: one CTA, social proof, FAQ section, click-to-call. No navigation menu.",
+    "url": "https://reddit.com/r/marketing/comments/landing_vs_homepage",
+    "category": "DATA_POINT",
+    "engagement": {
+      "upvotes": 445,
+      "comments": 112
+    },
+    "captured_at": "2026-02-15T07:30:35.333Z",
+    "status": "pending",
+    "score": 0
+  },
+  {
+    "id": "rss-5d87d7a341e6c8",
+    "source": "rss",
+    "source_detail": "Clio Blog",
+    "title": "The 2026 State of Legal Tech: 78% of firms now use some form of automation",
+    "raw_content": "Clio's annual survey shows automation adoption hit 78% in 2025, up from 52% in 2023. The most adopted tools: automated email responses (61%), document automation (54%), intake forms (48%), and billing automation (43%). Firms using 3+ automation tools report 23% higher revenue per attorney.",
+    "url": "https://clio.com/blog/state-of-legal-tech-2026",
+    "category": "DATA_POINT",
+    "captured_at": "2026-02-15T18:30:35.333Z",
+    "status": "pending",
+    "score": 0
+  },
+  {
+    "id": "rss-299d13c9278d3",
+    "source": "rss",
+    "source_detail": "Above the Law",
+    "title": "ChatGPT is now the first stop for 42% of people with legal questions",
+    "raw_content": "A new survey by the National Bar Foundation found that 42% of people with a legal question now consult AI before calling a lawyer. For under-35 respondents, it was 67%. The implication for law firms: your competition isn't just other lawyers, it's AI giving \"good enough\" answers for free.",
+    "url": "https://abovethelaw.com/chatgpt-legal-questions-survey",
+    "category": "NEWS",
+    "captured_at": "2026-02-15T15:30:35.333Z",
+    "status": "pending",
+    "score": 0
+  },
+  {
+    "id": "rss-2ec9b2b5a699b",
+    "source": "rss",
+    "source_detail": "Search Engine Journal",
+    "title": "Local SEO in 2026: Google Business Profile signals now account for 36% of local ranking",
+    "raw_content": "Whitespark's annual local search ranking factors study shows GBP signals grew to 36% of local ranking factors, up from 32% last year. Reviews are the fastest-growing factor. On-page SEO declined to 17%. Link signals dropped to 11%. The message is clear: your Google Business Profile matters more than your website for local visibility.",
+    "url": "https://searchenginejournal.com/local-seo-2026-ranking-factors",
+    "category": "DATA_POINT",
+    "captured_at": "2026-02-15T13:30:35.333Z",
+    "status": "pending",
+    "score": 0
+  },
+  {
+    "id": "rss-cf38e990d89698",
+    "source": "rss",
+    "source_detail": "HubSpot Marketing",
+    "title": "Video content gets 3x more engagement than text for professional services",
+    "raw_content": "HubSpot analyzed 2.4 million social posts across professional services firms. Video content generated 3.1x more engagement (likes, comments, shares) than text-only posts. Short-form video (under 90 seconds) outperformed long-form by 2.4x on LinkedIn. The ideal LinkedIn video: 45-60 seconds, face-to-camera, one key insight.",
+    "url": "https://blog.hubspot.com/marketing/video-engagement-professional-services",
+    "category": "DATA_POINT",
+    "captured_at": "2026-02-15T11:30:35.333Z",
+    "status": "pending",
+    "score": 0
+  },
+  {
+    "id": "rss-81e70ac02c4258",
+    "source": "rss",
+    "source_detail": "Rankings.io Blog",
+    "title": "We analyzed 500 PI firm websites — the top 10% all do these 7 things",
+    "raw_content": "Rankings.io analyzed 500 personal injury firm websites for conversion rate, page speed, and SEO. The top 10% (converting above 8%) shared 7 traits: (1) Click-to-call above fold, (2) Live chat or chatbot, (3) Social proof on every page, (4) Case results page, (5) FAQ schema markup, (6) Page speed under 2.5 seconds, (7) Dedicated landing pages for each practice area.",
+    "url": "https://rankings.io/blog/pi-website-analysis-2026",
+    "category": "CONTENT_PIECE",
+    "captured_at": "2026-02-15T08:30:35.333Z",
+    "status": "pending",
+    "score": 0
+  },
+  {
+    "id": "rss-315008ff1f99c",
+    "source": "rss",
+    "source_detail": "Neil Patel Blog",
+    "title": "The death of the 10-blue-links: How AI search changes service business marketing",
+    "raw_content": "Google AI Overviews now appear on 38% of legal-related searches. For informational queries the click-through rate dropped 41%. But for \"near me\" and location-specific queries, CTR actually increased 12% because AI overviews push users toward calling local businesses. Strategy shift: invest MORE in local/transactional SEO, LESS in informational blog content.",
+    "url": "https://neilpatel.com/blog/ai-search-service-business-marketing",
+    "category": "NEWS",
+    "captured_at": "2026-02-15T06:30:35.333Z",
+    "status": "pending",
+    "score": 0
+  },
+  {
+    "id": "rss-f542ec8beb6dc",
+    "source": "rss",
+    "source_detail": "Lawyerist",
+    "title": "Client review response rate directly correlates with revenue growth",
+    "raw_content": "Lawyerist surveyed 300 law firms on review practices. Firms that respond to 90%+ of Google reviews grew revenue 2.3x faster than those responding to under 50%. The top driver: responding to negative reviews professionally actually increased trust. 71% of prospective clients said they read owner responses to 1-2 star reviews before making a call.",
+    "url": "https://lawyerist.com/client-review-response-revenue",
+    "category": "DATA_POINT",
+    "captured_at": "2026-02-15T02:30:35.333Z",
+    "status": "pending",
+    "score": 0
+  },
+  {
+    "id": "yt-319af1eb10ef5",
+    "source": "youtube",
+    "source_detail": "Alex Hormozi",
+    "title": "How to Calculate True Customer Acquisition Cost (Most Businesses Get This Wrong)",
+    "raw_content": "Alex breaks down why most businesses miscalculate CAC. They only count ad spend, not staff time, software, lost opportunity cost. Real formula: (Total marketing spend + Sales team cost + Tech stack + Agency fees) / New customers. For service businesses, the \"hidden\" costs often double the number.",
+    "url": "https://youtube.com/watch?v=hormozi_cac",
+    "category": "CONTENT_PIECE",
+    "thumbnail": "https://i.ytimg.com/vi/hormozi_cac/hqdefault.jpg",
+    "captured_at": "2026-02-15T09:30:35.333Z",
+    "status": "pending",
+    "score": 0
+  },
+  {
+    "id": "yt-ea04e05db93eb8",
+    "source": "youtube",
+    "source_detail": "Gary Vaynerchuk",
+    "title": "LinkedIn Is Underpriced Attention — Why Every Service Business Should Be Posting Daily",
+    "raw_content": "Gary explains that LinkedIn organic reach is at an all-time high. Average post reaches 10-15% of your network vs Facebook at 2-3%. For professional services (lawyers, accountants, consultants), it is the #1 platform. His advice: post daily, be real, don't sell — teach. Personal brand > company page.",
+    "url": "https://youtube.com/watch?v=gary_linkedin",
+    "category": "CONTENT_PIECE",
+    "thumbnail": "https://i.ytimg.com/vi/gary_linkedin/hqdefault.jpg",
+    "captured_at": "2026-02-15T00:30:35.333Z",
+    "status": "pending",
+    "score": 0
+  },
+  {
+    "id": "yt-e661987bffc87",
+    "source": "youtube",
+    "source_detail": "Neil Patel",
+    "title": "I Spent $100M on Google Ads — Here Are My 10 Biggest Lessons",
+    "raw_content": "Neil's top lessons from spending $100M on Google Ads across clients: (1) Negative keywords are more important than positive keywords, (2) Landing pages matter more than ad copy, (3) Call tracking is non-negotiable, (4) Branded search is the cheapest traffic, (5) Remarketing converts 3x better than cold, (6) Quality Score is worth fighting for.",
+    "url": "https://youtube.com/watch?v=neil_100m_ads",
+    "category": "CONTENT_PIECE",
+    "thumbnail": "https://i.ytimg.com/vi/neil_100m_ads/hqdefault.jpg",
+    "captured_at": "2026-02-14T18:30:35.333Z",
+    "status": "pending",
+    "score": 0
+  },
+  {
+    "id": "yt-83a3fd1f8d066",
+    "source": "youtube",
+    "source_detail": "Chris Dreyer / Rankings.io",
+    "title": "Why Most Law Firm SEO Takes 12 Months to Work (And How to Speed It Up)",
+    "raw_content": "Chris explains the typical SEO timeline for law firms. Months 1-3: technical fixes and content. Months 4-6: start seeing movement in rankings. Months 7-9: consistent lead flow begins. Months 10-12: compound growth kicks in. Speed it up: (1) Fix technical issues first, (2) Target low-competition long-tail, (3) Build local links aggressively, (4) Combine with PPC while waiting.",
+    "url": "https://youtube.com/watch?v=dreyer_seo_timeline",
+    "category": "CONTENT_PIECE",
+    "thumbnail": "https://i.ytimg.com/vi/dreyer_seo_timeline/hqdefault.jpg",
+    "captured_at": "2026-02-14T16:30:35.333Z",
+    "status": "pending",
+    "score": 0
+  },
+  {
+    "id": "comp-55dce6603d6388",
+    "source": "competitor",
+    "source_detail": "Crisp Video",
+    "title": "The $50K Website vs the $5K Website — What Actually Matters",
+    "raw_content": "Competitor analysis: Crisp Video published a comparison of high-budget vs low-budget law firm websites. Their data: expensive sites convert 12% higher BUT only when they include video testimonials and chat. Without those two features, a $5K website performs identically. The design doesn't matter. The social proof and speed-to-contact do.",
+    "url": "https://crispvideo.com/blog/50k-website-vs-5k-website",
+    "category": "CONTENT_PIECE",
+    "captured_at": "2026-02-14T10:30:35.333Z",
+    "status": "pending",
+    "score": 0
+  },
+  {
+    "id": "comp-4e9dcb31c576c8",
+    "source": "competitor",
+    "source_detail": "Scorpion",
+    "title": "Scorpion claims 89% of their PI clients see positive ROI within 6 months",
+    "raw_content": "Scorpion published a case study claiming 89% of PI firm clients achieve positive ROI within 6 months. Average cost per lead: $78 for PI, $45 for family law, $62 for criminal defense. They attribute success to their \"full stack\" approach — website, SEO, PPC, LSAs all managed together.",
+    "url": "https://scorpion.co/case-studies/pi-roi-2026",
+    "category": "DATA_POINT",
+    "captured_at": "2026-02-13T22:30:35.333Z",
+    "status": "pending",
+    "score": 0
+  },
+  {
+    "id": "q-d0436b960496e8",
+    "source": "question",
+    "source_detail": "LinkedIn DM",
+    "title": "Should I invest in SEO or PPC first? Budget is $5K/month",
+    "raw_content": "Common question from a 3-attorney criminal defense firm in Phoenix. $5K/month marketing budget. Currently doing nothing digital. Should they start with Google Ads for immediate leads or SEO for long-term growth? Classic chicken-and-egg problem.",
+    "category": "QUESTION",
+    "captured_at": "2026-02-15T21:30:35.333Z",
+    "status": "pending",
+    "score": 0
+  },
+  {
+    "id": "q-450d8db7a6c49",
+    "source": "question",
+    "source_detail": "Email",
+    "title": "What CRM should a small law firm use? We have 4 attorneys",
+    "raw_content": "Small PI firm asking about CRM options. Currently using spreadsheets to track leads. Wants something that integrates with their phone system and can track lead source → consultation → signed case. Budget is $200-500/month.",
+    "category": "QUESTION",
+    "captured_at": "2026-02-15T14:30:35.333Z",
+    "status": "pending",
+    "score": 0
+  },
+  {
+    "id": "q-6ce5d1f356fac8",
+    "source": "question",
+    "source_detail": "Instagram comment",
+    "title": "How many Google reviews do we need to rank in the local pack?",
+    "raw_content": "Family law attorney in a suburb of Dallas. Has 23 Google reviews (4.8 stars). Competitors have 80-200 reviews. Wants to know the minimum to be competitive and how to get more reviews without seeming desperate.",
+    "category": "QUESTION",
+    "captured_at": "2026-02-15T08:30:35.333Z",
+    "status": "pending",
+    "score": 0
+  },
+  {
+    "id": "q-89788741219fd",
+    "source": "question",
+    "source_detail": "Webinar Q&A",
+    "title": "Is TikTok worth it for a law firm? Seems unprofessional",
+    "raw_content": "Estate planning attorney asks if TikTok is appropriate for their practice. Concerned about seeming unprofessional. Notes that several competitor attorneys have large TikTok followings but questions whether it actually generates cases.",
+    "category": "QUESTION",
+    "captured_at": "2026-02-15T02:30:35.333Z",
+    "status": "pending",
+    "score": 0
+  },
+  {
+    "id": "rss-2ea9519668eb9",
+    "source": "rss",
+    "source_detail": "Law.com",
+    "title": "Mass tort advertising spend hits $1.2B in 2025 — up 34% YoY",
+    "raw_content": "Mass tort advertising spending reached $1.2 billion in 2025, a 34% increase from the prior year. Camp Lejeune, PFAS, and hair relaxer cases drove the surge. TV still dominates at 52% of spend, but digital overtook radio for the first time at 28% vs 12%. Cost per case for mass tort has risen to $3,200-$8,500 depending on the tort.",
+    "url": "https://law.com/mass-tort-advertising-spend-2025",
+    "category": "DATA_POINT",
+    "captured_at": "2026-02-14T21:30:35.333Z",
+    "status": "pending",
+    "score": 0
+  },
+  {
+    "id": "rss-b19f182c9d3a3",
+    "source": "rss",
+    "source_detail": "Attorney at Work",
+    "title": "The virtual receptionist vs AI chatbot debate: which converts better for law firms?",
+    "raw_content": "Attorney at Work compared conversion rates across 45 law firms. Virtual receptionist: 28% lead-to-consultation rate. AI chatbot: 19% lead-to-consultation rate. Phone call direct to attorney: 42% conversion. BUT — AI chatbot captured 3x more after-hours leads. Combined strategy (chatbot after hours + human during hours) hit 35%.",
+    "url": "https://attorneyatwork.com/virtual-receptionist-vs-ai-chatbot",
+    "category": "DATA_POINT",
+    "captured_at": "2026-02-14T14:30:35.333Z",
+    "status": "pending",
+    "score": 0
+  },
+  {
+    "id": "rss-c122cebc29916",
+    "source": "rss",
+    "source_detail": "Moz Blog",
+    "title": "Link building for local businesses in 2026: what still works",
+    "raw_content": "Moz analyzed 15,000 local business sites. Top link building strategies that still move rankings: (1) Local sponsorships and events, (2) Data-driven PR studies, (3) Legal directories with high DA, (4) Guest posting on local news, (5) HARO/Connectively responses. Paid link building showed diminishing returns with higher penalty risk. Average links needed to rank top 3 for \"lawyer + city\": 47 referring domains.",
+    "url": "https://moz.com/blog/local-link-building-2026",
+    "category": "CONTENT_PIECE",
+    "captured_at": "2026-02-14T08:30:35.333Z",
+    "status": "pending",
+    "score": 0
+  },
+  {
+    "id": "rss-f1941d0253e7f8",
+    "source": "rss",
+    "source_detail": "Content Marketing Institute",
+    "title": "Why thought leadership content generates 4x more qualified leads than promotional content",
+    "raw_content": "CMI surveyed 1,200 B2B buyers. 62% said thought leadership content was the primary reason they chose one vendor over another. For professional services, the ratio was even higher: 78%. Thought leadership pieces generated 4.1x more qualified leads than promotional content. The winning formula: original data + specific frameworks + honest takes on what doesn't work.",
+    "url": "https://contentmarketinginstitute.com/thought-leadership-qualified-leads",
+    "category": "DATA_POINT",
+    "captured_at": "2026-02-14T06:30:35.333Z",
+    "status": "pending",
+    "score": 0
   }
 ]

@@ -4,11 +4,26 @@ const { loadEnv } = require('../lib/utils');
 loadEnv();
 
 const CHANNELS = [
-  { name: 'Chris Dreyer / Rankings.io', id: 'UCxxxxx_placeholder_dreyer' },
-  { name: 'Crisp Video / Michael Mogill', id: 'UCxxxxx_placeholder_mogill' },
-  { name: 'Grow Law Firm / Sasha Berson', id: 'UCxxxxx_placeholder_berson' },
+  // Legal marketing channels
+  { name: 'Chris Dreyer / Rankings.io', id: 'UC2bBiznpMVyvo0dGNp9MFGQ' },
+  { name: 'Crisp Video / Michael Mogill', id: 'UCfr3LwBQ2WQCip19gJlmnzQ' },
+  { name: 'Grow Law Firm / Sasha Berson', id: 'UCG5b5pVVTQqAGfKEz8qFD5A' },
+  { name: 'Law Firm Mentor / James McGrath', id: 'UC0tl7KrLvEL1G1lk4XJfjRg' },
+  { name: 'Maximum Lawyer', id: 'UCW7p5T_dth4jIuBdpiJW0RQ' },
+  { name: 'Lawyerist', id: 'UCxUEPJf5J-4f4xgXuu3bLgg' },
+  { name: 'LegalEase Marketing', id: 'UC1NNwbMP8iDAYkDBfKM1pJQ' },
+  // Business & marketing gurus (huge audiences, great for repurposing)
   { name: 'Alex Hormozi', id: 'UCVjlpEjEY9GpksqbEesJnNA' },
-  { name: 'Dan Koe', id: 'UCkY047vYjF92-aO62Gz-wjg' }
+  { name: 'Dan Koe', id: 'UCkY047vYjF92-aO62Gz-wjg' },
+  { name: 'Gary Vaynerchuk', id: 'UCctXZhXmG-kf3tlIXgVZUlw' },
+  { name: 'Neil Patel', id: 'UCl-Zrl0QhF66lu1aGXaTbfw' },
+  { name: 'Patrick Bet-David', id: 'UCGX7nGXpz-CmO_Arg-cgJ7A' },
+  { name: 'Noah Kagan', id: 'UCB3sIRFaCojcA3UMhiCVfYg' },
+  { name: 'Russell Brunson', id: 'UCsHTKMBncpZFmdrS1_pBz3A' },
+  // SEO & digital marketing
+  { name: 'Ahrefs', id: 'UCWquNQV8Y0_defMKnGKrFRQ' },
+  { name: 'SEMrush', id: 'UCFgQiSgOMXtJPPzHCVKb2oQ' },
+  { name: 'Matt Diggity', id: 'UCEf6OYwvVoB5q8rRbGasinA' }
 ];
 
 const API_BASE = 'https://www.googleapis.com/youtube/v3';

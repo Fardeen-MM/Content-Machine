@@ -11,44 +11,129 @@
       "heading": "Fraunces",
       "body": "Outfit"
     },
-    "case_study": {
-      "client": "Mandall Law",
-      "result": "30+ signed cases per month",
-      "context": "Through our full-stack legal marketing system"
-    }
+    "case_studies": [
+      {
+        "client": "Mandall Law",
+        "result": "30+ signed cases per month",
+        "context": "Through our full-stack legal marketing system"
+      },
+      {
+        "client": "Metro PI Group",
+        "result": "3.2x ROI in 90 days",
+        "context": "Google Ads + landing page optimization"
+      },
+      {
+        "client": "Davis Family Law",
+        "result": "Cut cost per lead by 47%",
+        "context": "SEO + content strategy overhaul"
+      },
+      {
+        "client": "Peak Defense Attorneys",
+        "result": "200% increase in consultation bookings",
+        "context": "Speed-to-lead system + after-hours intake"
+      }
+    ],
+    "proof_points": [
+      "We've generated over $12M in case revenue for our clients",
+      "Average client sees 2.8x ROI within 6 months",
+      "Our speed-to-lead system responds in under 60 seconds",
+      "We manage $2M+ in annual legal ad spend",
+      "97% client retention rate across 40+ law firms"
+    ]
   },
   "content_pillars": {
-    "industry_insight": { "weight": 0.35, "description": "Data, trends, benchmarks" },
-    "tactical_howto": { "weight": 0.25, "description": "Actionable advice" },
-    "social_proof": { "weight": 0.20, "description": "Results, case studies" },
-    "hot_takes": { "weight": 0.10, "description": "Challenge conventional wisdom" },
-    "behind_scenes": { "weight": 0.10, "description": "Human side" }
+    "industry_insight": { "weight": 0.35, "description": "Data, trends, benchmarks — backed by numbers" },
+    "tactical_howto": { "weight": 0.25, "description": "Step-by-step actionable advice they can use today" },
+    "social_proof": { "weight": 0.20, "description": "Results, case studies, client wins" },
+    "hot_takes": { "weight": 0.10, "description": "Challenge conventional wisdom, provoke discussion" },
+    "behind_scenes": { "weight": 0.10, "description": "Human side, team culture, process reveals" }
+  },
+  "tone": {
+    "voice": "Confident operator, not salesy guru. Talk like a CMO who's been in the trenches.",
+    "rules": [
+      "Lead with data and specific numbers — never vague claims",
+      "Use 'we' and 'you' — conversational, not academic",
+      "Short paragraphs, punchy sentences",
+      "No fluff words: 'synergy', 'leverage', 'utilize', 'innovative'",
+      "Include a clear takeaway or CTA in every piece",
+      "Reference real tools and platforms by name",
+      "Admit what doesn't work — builds credibility",
+      "Use analogies from outside legal — sports, restaurants, military"
+    ]
   },
   "subreddits": [
-    "LawFirm", "lawyers", "personalinjury", "smallbusiness",
-    "Entrepreneur", "SEO", "PPC", "marketing", "legaladvice"
+    "LawFirm", "lawyers", "personalinjury", "legaladvice",
+    "law", "lawschool", "LegalAdviceUK", "Ask_Lawyers",
+    "litigation", "Insurance", "WorkersComp",
+    "smallbusiness", "Entrepreneur", "startups", "SaaS",
+    "sweatystartup", "EntrepreneurRideAlong",
+    "SEO", "PPC", "marketing", "digital_marketing", "socialmedia",
+    "content_marketing", "webdev", "analytics", "bigseo",
+    "GoogleAds", "FacebookAds", "copywriting", "AdWords",
+    "sales", "leadgeneration", "CRM", "GrowthHacking"
   ],
   "rss_feeds": [
     { "name": "ABA Journal", "url": "https://www.abajournal.com/feed" },
+    { "name": "National Law Review", "url": "https://www.natlawreview.com/rss.xml" },
+    { "name": "JD Supra", "url": "https://www.jdsupra.com/rss/news.xml" },
+    { "name": "Law Technology Today", "url": "https://www.lawtechnologytoday.org/feed/" },
+    { "name": "Above the Law", "url": "https://abovethelaw.com/feed/" },
+    { "name": "Law.com", "url": "https://feeds.law.com/LawComNews" },
+    { "name": "Lawyer Monthly", "url": "https://www.lawyer-monthly.com/feed/" },
     { "name": "Clio Blog", "url": "https://www.clio.com/blog/feed/" },
     { "name": "Lawyerist", "url": "https://lawyerist.com/feed/" },
     { "name": "Attorney at Work", "url": "https://www.attorneyatwork.com/feed/" },
-    { "name": "National Law Review", "url": "https://www.natlawreview.com/rss.xml" },
-    { "name": "JD Supra", "url": "https://www.jdsupra.com/rss/news.xml" },
-    { "name": "Law Technology Today", "url": "https://www.lawtechnologytoday.org/feed/" }
+    { "name": "LawSites Blog", "url": "https://www.lawnext.com/feed" },
+    { "name": "Smokeball Blog", "url": "https://www.smokeball.com/blog/feed/" },
+    { "name": "PracticePanther Blog", "url": "https://www.practicepanther.com/blog/feed/" },
+    { "name": "Rankings.io Blog", "url": "https://rankings.io/blog/feed/" },
+    { "name": "Consultwebs Blog", "url": "https://www.consultwebs.com/blog/rss.xml" },
+    { "name": "Good2bSocial", "url": "https://good2bsocial.com/feed/" },
+    { "name": "FindLaw Blog", "url": "https://www.findlaw.com/legalblogs/feed/" },
+    { "name": "HubSpot Marketing", "url": "https://blog.hubspot.com/marketing/rss.xml" },
+    { "name": "Neil Patel Blog", "url": "https://neilpatel.com/blog/feed/" },
+    { "name": "Search Engine Journal", "url": "https://www.searchenginejournal.com/feed/" },
+    { "name": "Moz Blog", "url": "https://moz.com/devblog/feed" },
+    { "name": "Ahrefs Blog", "url": "https://ahrefs.com/blog/feed/" },
+    { "name": "Content Marketing Institute", "url": "https://contentmarketinginstitute.com/feed/" },
+    { "name": "Copyblogger", "url": "https://copyblogger.com/feed/" },
+    { "name": "MarketingProfs", "url": "https://www.marketingprofs.com/rss/topic/all" }
   ],
   "youtube_channels": [
-    { "name": "Chris Dreyer / Rankings.io", "id": "UCxxxxx_placeholder_dreyer" },
-    { "name": "Crisp Video / Michael Mogill", "id": "UCxxxxx_placeholder_mogill" },
-    { "name": "Grow Law Firm / Sasha Berson", "id": "UCxxxxx_placeholder_berson" },
+    { "name": "Chris Dreyer / Rankings.io", "id": "UC2bBiznpMVyvo0dGNp9MFGQ" },
+    { "name": "Crisp Video / Michael Mogill", "id": "UCfr3LwBQ2WQCip19gJlmnzQ" },
+    { "name": "Grow Law Firm / Sasha Berson", "id": "UCG5b5pVVTQqAGfKEz8qFD5A" },
+    { "name": "Law Firm Mentor / James McGrath", "id": "UC0tl7KrLvEL1G1lk4XJfjRg" },
+    { "name": "Maximum Lawyer", "id": "UCW7p5T_dth4jIuBdpiJW0RQ" },
+    { "name": "Lawyerist", "id": "UCxUEPJf5J-4f4xgXuu3bLgg" },
+    { "name": "LegalEase Marketing", "id": "UC1NNwbMP8iDAYkDBfKM1pJQ" },
     { "name": "Alex Hormozi", "id": "UCVjlpEjEY9GpksqbEesJnNA" },
-    { "name": "Dan Koe", "id": "UCkY047vYjF92-aO62Gz-wjg" }
+    { "name": "Dan Koe", "id": "UCkY047vYjF92-aO62Gz-wjg" },
+    { "name": "Gary Vaynerchuk", "id": "UCctXZhXmG-kf3tlIXgVZUlw" },
+    { "name": "Neil Patel", "id": "UCl-Zrl0QhF66lu1aGXaTbfw" },
+    { "name": "Patrick Bet-David", "id": "UCGX7nGXpz-CmO_Arg-cgJ7A" },
+    { "name": "Noah Kagan", "id": "UCB3sIRFaCojcA3UMhiCVfYg" },
+    { "name": "Russell Brunson", "id": "UCsHTKMBncpZFmdrS1_pBz3A" },
+    { "name": "Ahrefs", "id": "UCWquNQV8Y0_defMKnGKrFRQ" },
+    { "name": "SEMrush", "id": "UCFgQiSgOMXtJPPzHCVKb2oQ" },
+    { "name": "Matt Diggity", "id": "UCEf6OYwvVoB5q8rRbGasinA" }
   ],
   "keywords": [
     "law firm marketing", "lawyer SEO", "legal leads", "Google Ads lawyer",
     "law firm website", "getting clients", "intake", "case acquisition",
     "marketing agency", "law firm growth", "personal injury marketing",
     "legal marketing", "speed to lead", "law firm CRM", "after hours leads",
-    "law firm revenue"
+    "law firm revenue", "lawyer marketing", "attorney marketing", "law firm PPC",
+    "legal advertising", "law firm digital marketing", "client acquisition",
+    "lawyer leads", "legal tech", "law firm SEO", "PI marketing",
+    "family law marketing", "criminal defense marketing", "law firm ROI",
+    "lead generation", "conversion rate", "cost per lead", "cost per case",
+    "signed cases", "case value", "average case value", "landing page",
+    "local SEO", "Google Business Profile", "Google Maps", "local pack",
+    "online reviews", "Google reviews", "reputation management",
+    "video marketing", "YouTube marketing", "email marketing",
+    "LSA", "local service ads", "Google screened", "pay per click",
+    "CRM", "practice management", "Clio", "AI legal", "ChatGPT lawyer",
+    "revenue growth", "marketing budget", "ROI", "scaling law firm"
   ]
 }

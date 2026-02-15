@@ -1,8 +1,19 @@
 const { sleep, generateId, now, matchesKeywords, stripHtml, truncate } = require('../lib/utils');
 
 const SUBREDDITS = [
-  'LawFirm', 'lawyers', 'personalinjury', 'smallbusiness',
-  'Entrepreneur', 'SEO', 'PPC', 'marketing', 'legaladvice'
+  // Legal profession
+  'LawFirm', 'lawyers', 'personalinjury', 'legaladvice',
+  'law', 'lawschool', 'LegalAdviceUK', 'Ask_Lawyers',
+  'litigation', 'Insurance', 'WorkersComp',
+  // Business & entrepreneurship
+  'smallbusiness', 'Entrepreneur', 'startups', 'SaaS',
+  'sweatystartup', 'EntrepreneurRideAlong',
+  // Digital marketing
+  'SEO', 'PPC', 'marketing', 'digital_marketing', 'socialmedia',
+  'content_marketing', 'webdev', 'analytics', 'bigseo',
+  'GoogleAds', 'FacebookAds', 'copywriting', 'AdWords',
+  // Sales & growth
+  'sales', 'leadgeneration', 'CRM', 'GrowthHacking'
 ];
 
 const USER_AGENT = 'ContentMachine/1.0 (educational research bot)';

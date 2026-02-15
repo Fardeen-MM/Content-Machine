@@ -3,7 +3,13 @@ const { keywordScore, daysAgo } = require('../lib/utils');
 const HIGH_VALUE_TERMS = [
   'ROI', 'cases', 'intake', 'revenue', 'signed cases', 'cost per case',
   'cost per lead', 'conversion rate', 'retainer', 'close rate',
-  'speed to lead', 'after hours', 'missed calls'
+  'speed to lead', 'after hours', 'missed calls', 'cost per acquisition',
+  'client lifetime value', 'average case value', 'marketing spend',
+  'Google Ads', 'LSA', 'local service ads', 'Google screened',
+  'landing page', 'call tracking', 'form conversion', 'chat widget',
+  'virtual receptionist', 'AI intake', 'automation',
+  'Google Business Profile', 'local SEO', 'link building',
+  'content strategy', 'video marketing', 'reputation management'
 ];
 
 function scoreTrigger(trigger) {

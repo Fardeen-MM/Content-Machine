@@ -766,6 +766,79 @@ h1, h2, h3, h4 { font-family: 'Fraunces', serif; }
 
 /* Smooth page transitions */
 .page-content { animation: fadeIn 0.2s ease; }
+
+/* Search input */
+.search-input {
+  padding: 8px 14px 8px 36px;
+  border: 1px solid var(--gray-300);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-family: 'Outfit', sans-serif;
+  outline: none;
+  transition: var(--transition);
+  width: 220px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: 10px center;
+}
+
+.search-input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); width: 280px; }
+
+/* Dark mode */
+[data-theme="dark"] {
+  --gray-50: #0f172a;
+  --gray-100: #1e293b;
+  --gray-200: #334155;
+  --gray-300: #475569;
+  --gray-400: #64748b;
+  --gray-500: #94a3b8;
+  --gray-600: #cbd5e1;
+  --gray-700: #e2e8f0;
+  --gray-800: #f1f5f9;
+  --gray-900: #f8fafc;
+  --white: #1e293b;
+  --shadow: 0 1px 3px rgba(0,0,0,0.3);
+  --shadow-lg: 0 10px 15px rgba(0,0,0,0.3);
+}
+
+[data-theme="dark"] body { background: #0f172a; color: #e2e8f0; }
+[data-theme="dark"] .sidebar { background: #0c1929; }
+[data-theme="dark"] .topbar { background: #1e293b; border-color: #334155; }
+[data-theme="dark"] .card, [data-theme="dark"] .stat-card, [data-theme="dark"] .content-card { background: #1e293b; border-color: #334155; }
+[data-theme="dark"] .format-content { color: #cbd5e1; }
+[data-theme="dark"] .format-actions { background: #0f172a; border-color: #334155; }
+[data-theme="dark"] .trigger-table th { background: #0f172a; border-color: #334155; }
+[data-theme="dark"] .trigger-table td { border-color: #334155; }
+[data-theme="dark"] .content-card-title { color: #f1f5f9; }
+[data-theme="dark"] .stat-card .value { color: #f1f5f9; }
+[data-theme="dark"] .format-tab { color: #94a3b8; }
+[data-theme="dark"] .format-tab.active { color: var(--blue-light); border-color: var(--blue-light); }
+[data-theme="dark"] .format-content.collapsed::after { background: linear-gradient(transparent, #1e293b); }
+[data-theme="dark"] .calendar-day { background: #1e293b; border-color: #334155; }
+[data-theme="dark"] .thread-tweet { background: #0f172a; }
+[data-theme="dark"] .edit-textarea { background: #0f172a; color: #e2e8f0; border-color: var(--blue); }
+[data-theme="dark"] .url-input, [data-theme="dark"] .search-input { background: #0f172a; color: #e2e8f0; border-color: #475569; }
+[data-theme="dark"] .btn-outline { background: #1e293b; color: #cbd5e1; border-color: #475569; }
+[data-theme="dark"] .filter-chip { background: #1e293b; border-color: #475569; color: #94a3b8; }
+[data-theme="dark"] .modal { background: #1e293b; }
+[data-theme="dark"] .modal-header, [data-theme="dark"] .modal-footer { border-color: #334155; }
+
+/* Dark mode toggle button */
+.theme-toggle {
+  background: none;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: var(--radius-sm);
+  color: rgba(255,255,255,0.6);
+  cursor: pointer;
+  padding: 6px 10px;
+  font-size: 14px;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.theme-toggle:hover { color: white; border-color: rgba(255,255,255,0.4); }
 </style>
 </head>
 <body>
@@ -796,7 +869,9 @@ const state = {
   urlInput: '',
   savingUrl: false,
   generating: false,
-  expandedFormats: {} // track which long formats are expanded
+  expandedFormats: {}, // track which long formats are expanded
+  darkMode: localStorage.getItem('darkMode') === 'true',
+  searchQuery: ''
 };
 
 // --- API Calls ---
@@ -914,6 +989,19 @@ function copyToClipboard(text) {
   });
 }
 
+// --- Dark Mode ---
+function toggleDarkMode() {
+  state.darkMode = !state.darkMode;
+  localStorage.setItem('darkMode', state.darkMode);
+  document.documentElement.setAttribute('data-theme', state.darkMode ? 'dark' : 'light');
+  render();
+}
+
+// Apply saved theme on load
+if (state.darkMode) {
+  document.documentElement.setAttribute('data-theme', 'dark');
+}
+
 // --- Toast ---
 let toastTimeout;
 function toast(msg, type = 'success') {
@@ -980,6 +1068,7 @@ document.addEventListener('keydown', (e) => {
   if (e.key === '2' && !e.ctrlKey && !e.metaKey && !isEditing()) { state.page = 'content'; render(); }
   if (e.key === '3' && !e.ctrlKey && !e.metaKey && !isEditing()) { state.page = 'triggers'; render(); }
   if (e.key === '4' && !e.ctrlKey && !e.metaKey && !isEditing()) { state.page = 'calendar'; render(); }
+  if ((e.key === 'd' || e.key === 'D') && !e.ctrlKey && !e.metaKey && !isEditing()) { toggleDarkMode(); }
   if (e.key === 'Escape') { state.editingFormat = null; state.sidebarOpen = false; render(); }
 });
 
@@ -1063,10 +1152,16 @@ function renderSidebar() {
       h('span', {}, 'Save URL')
     ),
     h('div', { className: 'sidebar-footer' },
-      h('div', { style: { fontSize: '11px', color: 'rgba(255,255,255,0.4)' } },
+      h('button', {
+        className: 'theme-toggle',
+        onclick: () => { toggleDarkMode(); }
+      }, state.darkMode ? 'Light Mode' : 'Dark Mode'),
+      h('div', { style: { fontSize: '11px', color: 'rgba(255,255,255,0.4)', marginTop: '10px' } },
         'Keyboard: 1-4 navigate',
         h('br'),
-        'Esc to close modals'
+        'Esc to close modals',
+        h('br'),
+        'D to toggle dark mode'
       )
     )
   );
@@ -1444,9 +1539,16 @@ function renderContentPage() {
   if (state.filter.status !== 'all') {
     filtered = filtered.filter(c => c.status === state.filter.status);
   }
+  if (state.searchQuery) {
+    const q = state.searchQuery.toLowerCase();
+    filtered = filtered.filter(c => {
+      const searchable = `${c.trigger_title} ${c.trigger_source} ${c.trigger_category}`.toLowerCase();
+      return searchable.includes(q);
+    });
+  }
 
   return h('div', { className: 'page-content' },
-    // Filter bar
+    // Filter bar with search
     h('div', { className: 'filter-bar' },
       ...['all', 'review', 'approved', 'rejected'].map(s =>
         h('span', {
@@ -1455,13 +1557,21 @@ function renderContentPage() {
         }, s === 'all' ? 'All' : s.charAt(0).toUpperCase() + s.slice(1),
           s !== 'all' ? ` (${state.content.filter(c => c.status === s).length})` : ` (${state.content.length})`
         )
-      )
+      ),
+      h('span', { style: { flex: '1' } }),
+      h('input', {
+        className: 'search-input',
+        type: 'text',
+        placeholder: 'Search content...',
+        value: state.searchQuery,
+        oninput: (e) => { state.searchQuery = e.target.value; render(); }
+      })
     ),
     // Content list
     filtered.length === 0
       ? h('div', { className: 'empty-state' },
           h('h3', {}, 'No content found'),
-          h('p', {}, 'Try changing your filters or generate new content.')
+          h('p', {}, state.searchQuery ? 'Try a different search term.' : 'Try changing your filters or generate new content.')
         )
       : h('div', { className: 'content-list' },
           ...filtered.map(renderContentCard)

@@ -746,6 +746,26 @@ h1, h2, h3, h4 { font-family: 'Fraunces', serif; }
 }
 
 .source-bar-segment { transition: width 0.5s ease; }
+
+/* Quick action cards */
+.card[style*="cursor: pointer"]:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+}
+
+/* Rejected format overlay */
+.badge-rejected { background: var(--red-light); color: var(--red); }
+
+/* Better toast stacking */
+.toast + .toast { margin-bottom: 60px; }
+
+/* Stats grid on smaller screens */
+@media (max-width: 900px) {
+  .stats-grid + div { grid-template-columns: 1fr !important; }
+}
+
+/* Smooth page transitions */
+.page-content { animation: fadeIn 0.2s ease; }
 </style>
 </head>
 <body>
@@ -1159,9 +1179,50 @@ function renderCategoryBreakdown(s) {
 
 function renderDashboardPage() {
   const reviewContent = state.content.filter(c => c.status === 'review').slice(0, 5);
+  const recentTriggers = state.triggers.slice(0, 5);
 
   return h('div', { className: 'page-content' },
     renderStats(),
+    // Quick actions row
+    h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px', marginBottom: '24px' } },
+      h('div', {
+        className: 'card',
+        style: { padding: '16px', cursor: 'pointer', textAlign: 'center', transition: 'var(--transition)' },
+        onclick: () => { state.page = 'content'; state.filter.status = 'review'; render(); }
+      },
+        h('div', { innerHTML: icons.content, style: { width: '24px', height: '24px', margin: '0 auto 8px', color: 'var(--blue)' } }),
+        h('div', { style: { fontSize: '13px', fontWeight: '600', color: 'var(--navy)' } }, 'Review Content'),
+        h('div', { style: { fontSize: '11px', color: 'var(--gray-400)' } }, `${state.content.filter(c=>c.status==='review').length} waiting`)
+      ),
+      h('div', {
+        className: 'card',
+        style: { padding: '16px', cursor: 'pointer', textAlign: 'center', transition: 'var(--transition)' },
+        onclick: () => { state.page = 'triggers'; render(); }
+      },
+        h('div', { innerHTML: icons.triggers, style: { width: '24px', height: '24px', margin: '0 auto 8px', color: 'var(--amber)' } }),
+        h('div', { style: { fontSize: '13px', fontWeight: '600', color: 'var(--navy)' } }, 'View Triggers'),
+        h('div', { style: { fontSize: '11px', color: 'var(--gray-400)' } }, `${state.triggers.filter(t=>t.status==='pending').length} pending`)
+      ),
+      h('div', {
+        className: 'card',
+        style: { padding: '16px', cursor: 'pointer', textAlign: 'center', transition: 'var(--transition)' },
+        onclick: () => { state.page = 'save-url'; render(); }
+      },
+        h('div', { innerHTML: icons.link, style: { width: '24px', height: '24px', margin: '0 auto 8px', color: 'var(--green)' } }),
+        h('div', { style: { fontSize: '13px', fontWeight: '600', color: 'var(--navy)' } }, 'Save URL'),
+        h('div', { style: { fontSize: '11px', color: 'var(--gray-400)' } }, 'Paste & generate')
+      ),
+      h('div', {
+        className: 'card',
+        style: { padding: '16px', cursor: 'pointer', textAlign: 'center', transition: 'var(--transition)' },
+        onclick: () => { state.page = 'calendar'; render(); }
+      },
+        h('div', { innerHTML: icons.calendar, style: { width: '24px', height: '24px', margin: '0 auto 8px', color: 'var(--purple)' } }),
+        h('div', { style: { fontSize: '13px', fontWeight: '600', color: 'var(--navy)' } }, 'Calendar'),
+        h('div', { style: { fontSize: '11px', color: 'var(--gray-400)' } }, `${state.calendar?.stats?.coverage || 0}% coverage`)
+      )
+    ),
+    // Content awaiting review
     h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' } },
       h('h3', { style: { fontSize: '18px', color: 'var(--navy)' } }, 'Awaiting Your Review'),
       h('button', {
@@ -1172,11 +1233,31 @@ function renderDashboardPage() {
     reviewContent.length === 0
       ? h('div', { className: 'empty-state' },
           h('h3', {}, 'All caught up!'),
-          h('p', {}, 'No content waiting for review.')
+          h('p', {}, 'No content waiting for review. Check the trigger queue for new ideas.')
         )
       : h('div', { className: 'content-list' },
           ...reviewContent.map(renderContentCard)
+        ),
+    // Recent triggers preview
+    h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', marginTop: '32px' } },
+      h('h3', { style: { fontSize: '18px', color: 'var(--navy)' } }, 'Top Triggers'),
+      h('button', {
+        className: 'btn btn-outline btn-sm',
+        onclick: () => { state.page = 'triggers'; render(); }
+      }, 'View All')
+    ),
+    h('div', { className: 'card', style: { overflow: 'hidden' } },
+      ...recentTriggers.map(t =>
+        h('div', { style: { padding: '12px 16px', borderBottom: '1px solid var(--gray-100)', display: 'flex', alignItems: 'center', gap: '12px' } },
+          h('div', { style: { minWidth: '28px', textAlign: 'center' } },
+            h('span', { style: { fontSize: '14px', fontWeight: '700', color: 'var(--navy)' } }, String(t.score || 0))
+          ),
+          h('span', { className: `badge ${sourceBadgeClass(t.source)}`, style: { fontSize: '10px' } }, t.source),
+          h('span', { style: { fontSize: '14px', color: 'var(--gray-700)', flex: '1' } }, t.title.length > 70 ? t.title.slice(0, 70) + '...' : t.title),
+          h('span', { style: { fontSize: '11px', color: 'var(--gray-400)' } }, timeAgo(t.captured_at))
         )
+      )
+    )
   );
 }
 

@@ -269,6 +269,43 @@ h1, h2, h3, h4 { font-family: 'Fraunces', serif; }
 .badge-rss { background: var(--blue); color: white; }
 .badge-youtube { background: #cc0000; color: white; }
 .badge-url { background: var(--purple); color: white; }
+.badge-competitor { background: #0891b2; color: white; }
+.badge-question { background: #ea580c; color: white; }
+
+/* Content card metadata row */
+.content-meta-row {
+  display: flex;
+  gap: 12px;
+  padding: 10px 20px;
+  background: var(--gray-50);
+  border-bottom: 1px solid var(--gray-100);
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--gray-500);
+}
+
+.meta-item strong {
+  font-weight: 600;
+  color: var(--gray-600);
+}
+
+.meta-divider {
+  width: 1px;
+  height: 14px;
+  background: var(--gray-300);
+}
+
+[data-theme="dark"] .content-meta-row { background: #0f172a; border-color: #334155; }
+[data-theme="dark"] .meta-item { color: #94a3b8; }
+[data-theme="dark"] .meta-item strong { color: #cbd5e1; }
+[data-theme="dark"] .meta-divider { background: #475569; }
 
 .badge-linkedin { background: #0077b5; color: white; }
 .badge-x { background: var(--gray-800); color: white; }
@@ -1044,7 +1081,63 @@ function formatBadgeClass(key) {
 }
 
 function sourceBadgeClass(source) {
-  return `badge-${source}`;
+  const map = {
+    reddit: 'badge-reddit',
+    rss: 'badge-rss',
+    youtube: 'badge-youtube',
+    url: 'badge-url',
+    competitor: 'badge-competitor',
+    question: 'badge-question'
+  };
+  return map[source] || 'badge-pending';
+}
+
+function sourceLabel(source) {
+  const labels = {
+    reddit: 'Reddit',
+    rss: 'RSS Feed',
+    youtube: 'YouTube',
+    url: 'URL',
+    competitor: 'Competitor Intel',
+    question: 'Audience Q&A'
+  };
+  return labels[source] || source;
+}
+
+function categoryLabel(cat) {
+  const labels = {
+    PAIN_POINT: 'Pain Point',
+    QUESTION: 'Question',
+    DATA_POINT: 'Data & Stats',
+    NEWS: 'Industry News',
+    CONTENT_PIECE: 'Content Idea',
+    CLIENT_WIN: 'Client Win'
+  };
+  return labels[cat] || (cat || '').replace(/_/g, ' ');
+}
+
+function categoryToAudience(cat) {
+  const map = {
+    PAIN_POINT: 'Law firm owners frustrated with marketing',
+    QUESTION: 'Attorneys seeking tactical advice',
+    DATA_POINT: 'Data-driven decision makers',
+    NEWS: 'Industry-aware firm leaders',
+    CONTENT_PIECE: 'Growth-focused attorneys',
+    CLIENT_WIN: 'Results-oriented firm owners'
+  };
+  return map[cat] || 'Law firm owners & attorneys';
+}
+
+function categoryToPillar(cat) {
+  const map = {
+    PAIN_POINT: { label: 'Hot Take', color: '#dc2626' },
+    QUESTION: { label: 'Tactical How-To', color: '#2563eb' },
+    DATA_POINT: { label: 'Industry Insight', color: '#059669' },
+    NEWS: { label: 'Industry Insight', color: '#059669' },
+    CONTENT_PIECE: { label: 'Tactical How-To', color: '#2563eb' },
+    CLIENT_WIN: { label: 'Social Proof', color: '#d97706' }
+  };
+  return map[cat] || { label: 'General', color: '#64748b' };
 }
 
 function timeAgo(dateStr) {
@@ -1231,7 +1324,7 @@ function statCard(label, value, sub, colorClass) {
 function renderSourceBreakdown(s) {
   const sources = s.triggers.by_source || {};
   const total = s.triggers.total || 1;
-  const colors = { reddit: '#ff4500', rss: '#2563eb', youtube: '#cc0000', url: '#7c3aed' };
+  const colors = { reddit: '#ff4500', rss: '#2563eb', youtube: '#cc0000', url: '#7c3aed', competitor: '#0891b2', question: '#ea580c' };
 
   return h('div', { className: 'card', style: { padding: '20px' } },
     h('h4', { style: { fontSize: '14px', marginBottom: '12px', color: 'var(--gray-600)' } }, 'Triggers by Source'),
@@ -1248,7 +1341,7 @@ function renderSourceBreakdown(s) {
       ...Object.entries(sources).map(([src, count]) =>
         h('div', { style: { display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px' } },
           h('div', { style: { width: '8px', height: '8px', borderRadius: '50%', background: colors[src] || '#94a3b8' } }),
-          h('span', { style: { color: 'var(--gray-500)', fontWeight: '500' } }, `${src} (${count})`)
+          h('span', { style: { color: 'var(--gray-500)', fontWeight: '500' } }, `${sourceLabel(src)} (${count})`)
         )
       )
     )
@@ -1356,7 +1449,7 @@ function renderDashboardPage() {
           h('div', { style: { minWidth: '28px', textAlign: 'center' } },
             h('span', { style: { fontSize: '14px', fontWeight: '700', color: 'var(--navy)' } }, String(t.score || 0))
           ),
-          h('span', { className: `badge ${sourceBadgeClass(t.source)}`, style: { fontSize: '10px' } }, t.source),
+          h('span', { className: `badge ${sourceBadgeClass(t.source)}`, style: { fontSize: '10px' } }, sourceLabel(t.source)),
           h('span', { style: { fontSize: '14px', color: 'var(--gray-700)', flex: '1' } }, t.title.length > 70 ? t.title.slice(0, 70) + '...' : t.title),
           h('span', { style: { fontSize: '11px', color: 'var(--gray-400)' } }, timeAgo(t.captured_at))
         )
@@ -1370,14 +1463,20 @@ function renderContentCard(content) {
   const activeFormat = getActiveFormat(content.id) || (formats[0] ? formats[0][0] : null);
   const activeFmt = activeFormat ? content.formats[activeFormat] : null;
 
+  const pillar = categoryToPillar(content.trigger_category);
+
   return h('div', { className: 'content-card' },
     // Header
     h('div', { className: 'content-card-header' },
-      h('div', {},
+      h('div', { style: { flex: '1' } },
         h('div', { className: 'content-card-title' }, content.trigger_title),
-        h('div', { style: { display: 'flex', gap: '6px', marginTop: '6px', flexWrap: 'wrap' } },
-          h('span', { className: `badge ${sourceBadgeClass(content.trigger_source)}` }, content.trigger_source),
+        h('div', { style: { display: 'flex', gap: '6px', marginTop: '6px', flexWrap: 'wrap', alignItems: 'center' } },
+          h('span', { className: `badge ${sourceBadgeClass(content.trigger_source)}` }, sourceLabel(content.trigger_source)),
           h('span', { className: `badge badge-${content.status}` }, content.status),
+          h('span', {
+            className: 'badge',
+            style: { background: pillar.color + '18', color: pillar.color, border: `1px solid ${pillar.color}33` }
+          }, pillar.label),
           h('span', { style: { fontSize: '12px', color: 'var(--gray-400)' } }, timeAgo(content.generated_at))
         )
       ),
@@ -1396,9 +1495,35 @@ function renderContentCard(content) {
               rel: 'noopener',
               className: 'btn btn-ghost btn-sm btn-icon',
               title: 'View source'
-            }, h('span', { innerHTML: icons.globe, style: { width: '16px', height: '16px' } }))
+            }, h('span', { innerHTML: icons.link, style: { width: '16px', height: '16px' } }))
           : null
       )
+    ),
+    // Metadata row
+    h('div', { className: 'content-meta-row' },
+      h('div', { className: 'meta-item' },
+        h('strong', {}, 'Voice: '),
+        'Mortar Metrics'
+      ),
+      h('div', { className: 'meta-divider' }),
+      h('div', { className: 'meta-item' },
+        h('strong', {}, 'Audience: '),
+        categoryToAudience(content.trigger_category)
+      ),
+      h('div', { className: 'meta-divider' }),
+      h('div', { className: 'meta-item' },
+        h('strong', {}, 'Category: '),
+        categoryLabel(content.trigger_category)
+      ),
+      content.trigger_source === 'reddit' || content.trigger_source === 'rss' || content.trigger_source === 'youtube'
+        ? h('div', { className: 'meta-divider' })
+        : null,
+      content.trigger_source === 'reddit' || content.trigger_source === 'rss' || content.trigger_source === 'youtube'
+        ? h('div', { className: 'meta-item' },
+            h('strong', {}, 'From: '),
+            content.trigger_url ? content.trigger_url.split('/').slice(0, 4).join('/') : 'N/A'
+          )
+        : null
     ),
     // Format tabs
     formats.length > 0
@@ -1610,11 +1735,11 @@ function renderTriggersPage() {
 
   return h('div', { className: 'page-content' },
     h('div', { className: 'filter-bar' },
-      ...['all', 'reddit', 'rss', 'youtube', 'url'].map(s =>
+      ...['all', 'reddit', 'rss', 'youtube', 'competitor', 'question', 'url'].map(s =>
         h('span', {
           className: `filter-chip ${state.filter.source === s ? 'active' : ''}`,
           onclick: () => { state.filter.source = s; render(); }
-        }, s === 'all' ? 'All Sources' : s.charAt(0).toUpperCase() + s.slice(1))
+        }, s === 'all' ? 'All Sources' : sourceLabel(s))
       ),
       h('span', { style: { flex: '1' } }),
       h('input', {
@@ -1654,7 +1779,7 @@ function renderTriggersPage() {
                     )
                   )
                 ),
-                h('td', {}, h('span', { className: `badge ${sourceBadgeClass(trigger.source)}` }, trigger.source)),
+                h('td', {}, h('span', { className: `badge ${sourceBadgeClass(trigger.source)}` }, sourceLabel(trigger.source))),
                 h('td', {},
                   h('div', { className: 'trigger-title' }, trigger.title),
                   h('div', { style: { fontSize: '11px', color: 'var(--gray-400)', marginTop: '2px' } }, trigger.source_detail || '')

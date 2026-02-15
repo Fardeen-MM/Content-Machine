@@ -1394,6 +1394,16 @@ function renderContentCard(content) {
     // Format tabs
     formats.length > 0
       ? h('div', { className: 'content-card-body' },
+          // Format progress bar (shows approval status at a glance)
+          h('div', { style: { display: 'flex', height: '3px' } },
+            ...formats.map(([key, fmt]) =>
+              h('div', { style: {
+                flex: '1',
+                background: fmt.status === 'approved' ? 'var(--green)' : fmt.status === 'rejected' ? 'var(--red)' : 'var(--amber)',
+                transition: 'background 0.3s ease'
+              }})
+            )
+          ),
           h('div', { className: 'format-tabs' },
             ...formats.map(([key, fmt]) =>
               h('div', {
@@ -1727,11 +1737,16 @@ function renderCalendarSlot(slot, label, className) {
 }
 
 function renderSaveUrlPage() {
+  const urlTriggers = state.triggers.filter(t => t.source === 'url');
+
   return h('div', { className: 'page-content' },
-    h('div', { className: 'card', style: { padding: '32px', maxWidth: '600px' } },
+    h('div', { className: 'card', style: { padding: '32px', maxWidth: '700px' } },
       h('h3', { style: { fontSize: '20px', color: 'var(--navy)', marginBottom: '8px' } }, 'Save a URL'),
       h('p', { style: { color: 'var(--gray-500)', marginBottom: '24px', fontSize: '14px' } },
-        'Paste any URL and the system will scrape it, create a trigger, and generate content from it.'
+        'Paste any URL — article, Reddit post, YouTube video, competitor blog — and the system will scrape it, create a trigger, and generate all content formats. ',
+        process.env?.ANTHROPIC_API_KEY
+          ? 'Content will be generated automatically.'
+          : h('span', { style: { color: 'var(--amber)' } }, 'Note: Set ANTHROPIC_API_KEY in .env to enable auto-generation.')
       ),
       h('div', { className: 'url-input-group' },
         h('input', {
@@ -1745,10 +1760,34 @@ function renderSaveUrlPage() {
         h('button', {
           className: 'btn btn-primary',
           onclick: saveUrl,
-          disabled: state.savingUrl
-        }, state.savingUrl ? h('span', { className: 'spinner' }) : 'Save & Generate')
+          disabled: state.savingUrl || !state.urlInput.trim()
+        }, state.savingUrl
+          ? h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } },
+              h('span', { className: 'spinner' }),
+              'Saving...'
+            )
+          : 'Save & Generate')
+      ),
+      // Example URLs
+      h('div', { style: { fontSize: '12px', color: 'var(--gray-400)', marginTop: '-12px' } },
+        'Try: Reddit posts, industry blog articles, competitor content, YouTube links'
       )
-    )
+    ),
+    // Previously saved URLs
+    urlTriggers.length > 0
+      ? h('div', { style: { maxWidth: '700px', marginTop: '24px' } },
+          h('h4', { style: { fontSize: '14px', color: 'var(--gray-500)', marginBottom: '12px' } }, 'Previously Saved URLs'),
+          h('div', { className: 'card' },
+            ...urlTriggers.map(t =>
+              h('div', { style: { padding: '12px 16px', borderBottom: '1px solid var(--gray-100)', display: 'flex', alignItems: 'center', gap: '12px' } },
+                h('span', { className: 'badge badge-url' }, 'url'),
+                h('span', { style: { flex: '1', fontSize: '14px' } }, t.title),
+                h('span', { style: { fontSize: '11px', color: 'var(--gray-400)' } }, timeAgo(t.captured_at))
+              )
+            )
+          )
+        )
+      : null
   );
 }
 

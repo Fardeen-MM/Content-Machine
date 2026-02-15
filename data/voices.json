@@ -1,0 +1,54 @@
+{
+  "brand": {
+    "name": "Mortar Metrics",
+    "tagline": "More signed cases. More revenue. Less guesswork.",
+    "colors": {
+      "navy": "#1e3a5f",
+      "electric_blue": "#2563eb",
+      "white": "#ffffff"
+    },
+    "fonts": {
+      "heading": "Fraunces",
+      "body": "Outfit"
+    },
+    "case_study": {
+      "client": "Mandall Law",
+      "result": "30+ signed cases per month",
+      "context": "Through our full-stack legal marketing system"
+    }
+  },
+  "content_pillars": {
+    "industry_insight": { "weight": 0.35, "description": "Data, trends, benchmarks" },
+    "tactical_howto": { "weight": 0.25, "description": "Actionable advice" },
+    "social_proof": { "weight": 0.20, "description": "Results, case studies" },
+    "hot_takes": { "weight": 0.10, "description": "Challenge conventional wisdom" },
+    "behind_scenes": { "weight": 0.10, "description": "Human side" }
+  },
+  "subreddits": [
+    "LawFirm", "lawyers", "personalinjury", "smallbusiness",
+    "Entrepreneur", "SEO", "PPC", "marketing", "legaladvice"
+  ],
+  "rss_feeds": [
+    { "name": "ABA Journal", "url": "https://www.abajournal.com/feed" },
+    { "name": "Clio Blog", "url": "https://www.clio.com/blog/feed/" },
+    { "name": "Lawyerist", "url": "https://lawyerist.com/feed/" },
+    { "name": "Attorney at Work", "url": "https://www.attorneyatwork.com/feed/" },
+    { "name": "National Law Review", "url": "https://www.natlawreview.com/rss.xml" },
+    { "name": "JD Supra", "url": "https://www.jdsupra.com/rss/news.xml" },
+    { "name": "Law Technology Today", "url": "https://www.lawtechnologytoday.org/feed/" }
+  ],
+  "youtube_channels": [
+    { "name": "Chris Dreyer / Rankings.io", "id": "UCxxxxx_placeholder_dreyer" },
+    { "name": "Crisp Video / Michael Mogill", "id": "UCxxxxx_placeholder_mogill" },
+    { "name": "Grow Law Firm / Sasha Berson", "id": "UCxxxxx_placeholder_berson" },
+    { "name": "Alex Hormozi", "id": "UCVjlpEjEY9GpksqbEesJnNA" },
+    { "name": "Dan Koe", "id": "UCkY047vYjF92-aO62Gz-wjg" }
+  ],
+  "keywords": [
+    "law firm marketing", "lawyer SEO", "legal leads", "Google Ads lawyer",
+    "law firm website", "getting clients", "intake", "case acquisition",
+    "marketing agency", "law firm growth", "personal injury marketing",
+    "legal marketing", "speed to lead", "law firm CRM", "after hours leads",
+    "law firm revenue"
+  ]
+}

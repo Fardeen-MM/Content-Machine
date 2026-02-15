@@ -1,0 +1,30 @@
+name: Generate Daily Content
+
+on:
+  schedule:
+    - cron: '0 11 * * *'  # 6 AM EST
+  workflow_dispatch:
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Generate content
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          IDEOGRAM_API_KEY: ${{ secrets.IDEOGRAM_API_KEY }}
+        run: node generator/run-daily.js
+
+      - name: Commit generated content
+        run: |
+          git config user.name "Content Machine Bot"
+          git config user.email "bot@mortarmetrics.com"
+          git add data/ blog-posts/ scripts/
+          git diff --staged --quiet || git commit -m "chore: generate daily content [$(date -u +%Y-%m-%dT%H:%M)]"
+          git push

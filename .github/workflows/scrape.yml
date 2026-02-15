@@ -1,0 +1,29 @@
+name: Scrape Content Triggers
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run scrapers
+        env:
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+        run: node scrapers/run-all.js
+
+      - name: Commit new triggers
+        run: |
+          git config user.name "Content Machine Bot"
+          git config user.email "bot@mortarmetrics.com"
+          git add data/trigger-queue.json
+          git diff --staged --quiet || git commit -m "chore: scrape new triggers [$(date -u +%Y-%m-%dT%H:%M)]"
+          git push

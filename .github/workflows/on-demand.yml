@@ -1,0 +1,54 @@
+name: On-Demand Run
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'What to run'
+        required: true
+        type: choice
+        options:
+          - scrape
+          - generate
+          - both
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run scrapers
+        if: inputs.action == 'scrape' || inputs.action == 'both'
+        env:
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+        run: node scrapers/run-all.js
+
+      - name: Commit scrape results
+        if: inputs.action == 'scrape' || inputs.action == 'both'
+        run: |
+          git config user.name "Content Machine Bot"
+          git config user.email "bot@mortarmetrics.com"
+          git add data/trigger-queue.json
+          git diff --staged --quiet || git commit -m "chore: on-demand scrape [$(date -u +%Y-%m-%dT%H:%M)]"
+          git push
+
+      - name: Generate content
+        if: inputs.action == 'generate' || inputs.action == 'both'
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          IDEOGRAM_API_KEY: ${{ secrets.IDEOGRAM_API_KEY }}
+        run: node generator/run-daily.js
+
+      - name: Commit generated content
+        if: inputs.action == 'generate' || inputs.action == 'both'
+        run: |
+          git config user.name "Content Machine Bot"
+          git config user.email "bot@mortarmetrics.com"
+          git add data/ blog-posts/ scripts/
+          git diff --staged --quiet || git commit -m "chore: on-demand generate [$(date -u +%Y-%m-%dT%H:%M)]"
+          git push

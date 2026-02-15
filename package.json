@@ -1,0 +1,18 @@
+{
+  "name": "content-machine",
+  "version": "1.0.0",
+  "description": "Automated content engine for Mortar Metrics legal marketing agency",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "scrape": "node scrapers/run-all.js",
+    "generate": "node generator/run-daily.js",
+    "seed": "node scripts/seed-data.js"
+  },
+  "author": "Mortar Metrics",
+  "license": "PRIVATE",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {}
+}

@@ -599,6 +599,30 @@ async function handleRequest(req, res) {
       });
     }
 
+    // POST /api/triggers/add — manually add a trigger
+    if (pathname === '/api/triggers/add' && method === 'POST') {
+      const body = await parseBody(req);
+      if (!body.title) return json(res, { error: 'title required' }, 400);
+
+      const trigger = {
+        id: `manual-${generateId()}`,
+        source: body.source || 'manual',
+        source_detail: body.source_detail || 'Hand-curated',
+        title: body.title,
+        raw_content: body.raw_content || body.title,
+        url: body.url || null,
+        category: body.category || 'CONTENT_PIECE',
+        captured_at: now(),
+        status: 'pending',
+        score: 0
+      };
+
+      const triggers = readJSON('trigger-queue.json');
+      triggers.push(trigger);
+      writeJSON('trigger-queue.json', triggers);
+      return json(res, { ok: true, trigger });
+    }
+
     // POST /api/scrape-now — run all scrapers
     if (pathname === '/api/scrape-now' && method === 'POST') {
       try {

@@ -1017,6 +1017,10 @@ const state = {
   memory: { approved_examples: [], style_notes: [] },
   memoryNote: '',
   generating: false,
+  showAddTrigger: false,
+  newTriggerTitle: '',
+  newTriggerContent: '',
+  newTriggerCategory: 'CONTENT_PIECE',
   expandedFormats: {}, // track which long formats are expanded
   darkMode: localStorage.getItem('darkMode') === 'true',
   searchQuery: '',
@@ -1349,7 +1353,8 @@ function sourceBadgeClass(source) {
     competitor: 'badge-competitor',
     question: 'badge-question',
     'google-news': 'badge-google-news',
-    hackernews: 'badge-hackernews'
+    hackernews: 'badge-hackernews',
+    manual: 'badge-url'
   };
   return map[source] || 'badge-pending';
 }
@@ -1363,7 +1368,8 @@ function sourceLabel(source) {
     competitor: 'Competitor Intel',
     question: 'Audience Q&A',
     'google-news': 'Google News',
-    hackernews: 'Hacker News'
+    hackernews: 'Hacker News',
+    manual: 'Manual'
   };
   return labels[source] || source;
 }
@@ -1616,7 +1622,7 @@ function statCard(label, value, sub, colorClass) {
 function renderSourceBreakdown(s) {
   const sources = s.triggers.by_source || {};
   const total = s.triggers.total || 1;
-  const colors = { reddit: '#ff4500', rss: '#2563eb', youtube: '#cc0000', url: '#7c3aed', competitor: '#0891b2', question: '#ea580c', 'google-news': '#4285f4', hackernews: '#ff6600' };
+  const colors = { reddit: '#ff4500', rss: '#2563eb', youtube: '#cc0000', url: '#7c3aed', competitor: '#0891b2', question: '#ea580c', 'google-news': '#4285f4', hackernews: '#ff6600', manual: '#7c3aed' };
 
   return h('div', { className: 'card', style: { padding: '20px' } },
     h('h4', { style: { fontSize: '14px', marginBottom: '12px', color: 'var(--gray-600)' } }, 'Triggers by Source'),
@@ -2383,7 +2389,7 @@ function renderAnalyticsPage() {
         h('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px' } },
           ...Object.entries(sourceCounts).sort((a,b) => b[1].total - a[1].total).map(([src, data]) => {
             const maxCount = Math.max(...Object.values(sourceCounts).map(d => d.total));
-            const colors = { reddit: '#ff4500', rss: '#2563eb', youtube: '#cc0000', url: '#7c3aed', competitor: '#0891b2', question: '#ea580c', 'google-news': '#4285f4', hackernews: '#ff6600' };
+            const colors = { reddit: '#ff4500', rss: '#2563eb', youtube: '#cc0000', url: '#7c3aed', competitor: '#0891b2', question: '#ea580c', 'google-news': '#4285f4', hackernews: '#ff6600', manual: '#7c3aed' };
             return h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px' } },
               h('span', { style: { fontSize: '12px', fontWeight: '600', width: '100px', color: 'var(--gray-500)' } }, sourceLabel(src)),
               h('div', { style: { flex: '1', height: '12px', background: 'var(--gray-100)', borderRadius: '6px', overflow: 'hidden' } },
@@ -2450,7 +2456,7 @@ function renderTriggersPage() {
 
   return h('div', { className: 'page-content' },
     h('div', { className: 'filter-bar' },
-      ...['all', 'reddit', 'rss', 'youtube', 'google-news', 'hackernews', 'competitor', 'question', 'url'].map(s =>
+      ...['all', 'reddit', 'rss', 'youtube', 'google-news', 'hackernews', 'competitor', 'question', 'url', 'manual'].map(s =>
         h('span', {
           className: `filter-chip ${state.filter.source === s ? 'active' : ''}`,
           onclick: () => { state.filter.source = s; render(); }
@@ -2466,8 +2472,84 @@ function renderTriggersPage() {
       }),
       h('span', { style: { fontSize: '13px', color: 'var(--gray-500)', marginLeft: '8px' } },
         `${filtered.length} triggers`
-      )
+      ),
+      h('button', {
+        className: 'btn btn-primary btn-sm',
+        onclick: () => { state.showAddTrigger = !state.showAddTrigger; render(); }
+      }, state.showAddTrigger ? 'Cancel' : '+ Add Trigger')
     ),
+    // Add trigger form
+    state.showAddTrigger
+      ? h('div', { className: 'card', style: { padding: '20px', marginBottom: '16px' } },
+          h('h4', { style: { fontSize: '14px', color: 'var(--navy)', marginBottom: '12px' } }, 'Add Custom Trigger'),
+          h('div', { style: { display: 'flex', flexDirection: 'column', gap: '10px' } },
+            h('input', {
+              type: 'text', placeholder: 'Trigger title — what topic should we create content about?',
+              value: state.newTriggerTitle,
+              oninput: (e) => { state.newTriggerTitle = e.target.value; },
+              style: { width: '100%', padding: '8px 12px', border: '1px solid var(--gray-200)', borderRadius: '8px', fontSize: '13px', fontFamily: 'Outfit, sans-serif' }
+            }),
+            h('textarea', {
+              placeholder: 'Optional: Add context, talking points, data, or notes to guide content generation...',
+              value: state.newTriggerContent,
+              oninput: (e) => { state.newTriggerContent = e.target.value; },
+              style: { width: '100%', padding: '8px 12px', border: '1px solid var(--gray-200)', borderRadius: '8px', fontSize: '13px', fontFamily: 'Outfit, sans-serif', minHeight: '80px', resize: 'vertical' }
+            }),
+            h('div', { style: { display: 'flex', gap: '10px', alignItems: 'center' } },
+              h('select', {
+                value: state.newTriggerCategory,
+                onchange: (e) => { state.newTriggerCategory = e.target.value; render(); },
+                style: { padding: '8px 12px', border: '1px solid var(--gray-200)', borderRadius: '8px', fontSize: '13px', fontFamily: 'Outfit, sans-serif' }
+              },
+                ...['CONTENT_PIECE', 'PAIN_POINT', 'QUESTION', 'DATA_POINT', 'NEWS', 'CLIENT_WIN'].map(cat =>
+                  h('option', { value: cat }, cat.replace(/_/g, ' '))
+                )
+              ),
+              h('button', {
+                className: 'btn btn-primary btn-sm',
+                disabled: !state.newTriggerTitle.trim(),
+                onclick: async () => {
+                  const res = await api('/api/triggers/add', {
+                    method: 'POST',
+                    body: {
+                      title: state.newTriggerTitle.trim(),
+                      raw_content: state.newTriggerContent.trim() || state.newTriggerTitle.trim(),
+                      category: state.newTriggerCategory
+                    }
+                  });
+                  state.newTriggerTitle = '';
+                  state.newTriggerContent = '';
+                  state.showAddTrigger = false;
+                  toast('Trigger added!', 'success');
+                  await loadData();
+                }
+              }, 'Add Trigger'),
+              h('button', {
+                className: 'btn btn-success btn-sm',
+                disabled: !state.newTriggerTitle.trim(),
+                onclick: async () => {
+                  toast('Adding trigger and generating...', 'info');
+                  const res = await api('/api/triggers/add', {
+                    method: 'POST',
+                    body: {
+                      title: state.newTriggerTitle.trim(),
+                      raw_content: state.newTriggerContent.trim() || state.newTriggerTitle.trim(),
+                      category: state.newTriggerCategory
+                    }
+                  });
+                  state.newTriggerTitle = '';
+                  state.newTriggerContent = '';
+                  state.showAddTrigger = false;
+                  await loadData();
+                  if (res.trigger) {
+                    await generateForTrigger(res.trigger.id);
+                  }
+                }
+              }, 'Add & Generate')
+            )
+          )
+        )
+      : null,
     h('div', { className: 'card', style: { overflow: 'auto' } },
       h('table', { className: 'trigger-table' },
         h('thead', {},

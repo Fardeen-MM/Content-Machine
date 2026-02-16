@@ -1119,6 +1119,18 @@ async function saveUrl() {
   render();
 }
 
+async function regenerateFormat(contentId, format) {
+  toast(`Regenerating ${formatName(format)}...`, 'info');
+  try {
+    const res = await api(`/api/content/${contentId}/regenerate`, { method: 'POST', body: { format } });
+    updateContentInState(res);
+    toast(`${formatName(format)} regenerated!`, 'success');
+    render();
+  } catch (err) {
+    toast('Regeneration failed — check API key', 'error');
+  }
+}
+
 async function generateForTrigger(triggerId) {
   state.generating = true;
   render();
@@ -1243,7 +1255,16 @@ function getFilteredContent() {
   if (state.filter.status !== 'all') filtered = filtered.filter(c => c.status === state.filter.status);
   if (state.searchQuery) {
     const q = state.searchQuery.toLowerCase();
-    filtered = filtered.filter(c => `${c.trigger_title} ${c.trigger_source} ${c.trigger_category}`.toLowerCase().includes(q));
+    filtered = filtered.filter(c => {
+      const meta = `${c.trigger_title} ${c.trigger_source} ${c.trigger_category}`.toLowerCase();
+      if (meta.includes(q)) return true;
+      // Also search within format content
+      for (const fmt of Object.values(c.formats || {})) {
+        const txt = typeof fmt.content === 'string' ? fmt.content : Array.isArray(fmt.content) ? fmt.content.join(' ') : '';
+        if (txt.toLowerCase().includes(q)) return true;
+      }
+      return false;
+    });
   }
   return filtered;
 }
@@ -1720,6 +1741,15 @@ function renderDashboardPage() {
         h('div', { innerHTML: icons.refresh, style: { width: '24px', height: '24px', margin: '0 auto 8px', color: 'var(--red)' } }),
         h('div', { style: { fontSize: '13px', fontWeight: '600', color: 'var(--navy)' } }, 'Scrape Now'),
         h('div', { style: { fontSize: '11px', color: 'var(--gray-400)' } }, `${(state.settings?.scrapers || []).length} scrapers`)
+      ),
+      h('div', {
+        className: 'card',
+        style: { padding: '16px', cursor: 'pointer', textAlign: 'center', transition: 'var(--transition)' },
+        onclick: () => { state.page = 'memory'; render(); }
+      },
+        h('div', { innerHTML: icons.brain, style: { width: '24px', height: '24px', margin: '0 auto 8px', color: 'var(--purple)' } }),
+        h('div', { style: { fontSize: '13px', fontWeight: '600', color: 'var(--navy)' } }, 'Brand Memory'),
+        h('div', { style: { fontSize: '11px', color: 'var(--gray-400)' } }, `${(state.memory?.approved_examples || []).length} examples`)
       )
     ),
     // Content awaiting review
@@ -1823,6 +1853,20 @@ function renderContentCard(content) {
               onclick: () => approveFormat(content.id, null),
               title: 'Approve all formats'
             }, h('span', { innerHTML: icons.check, style: { width: '14px', height: '14px' } }), ' All')
+          : null,
+        content.blog_keyword && !content.formats?.blog?.content
+          ? h('button', {
+              className: 'btn btn-outline btn-sm',
+              onclick: () => regenerateFormat(content.id, 'blog'),
+              title: `Generate blog for: ${content.blog_keyword}`
+            }, '+ Blog')
+          : null,
+        content.youtube_topic && !content.formats?.youtube_script?.content
+          ? h('button', {
+              className: 'btn btn-outline btn-sm',
+              onclick: () => regenerateFormat(content.id, 'youtube_script'),
+              title: `Generate script for: ${content.youtube_topic}`
+            }, '+ YouTube')
           : null,
         content.trigger_url
           ? h('a', {
@@ -2027,6 +2071,11 @@ function renderFormatContent(content, formatKey, fmt) {
         onclick: () => copyToClipboard(text),
         title: 'Copy to clipboard'
       }, h('span', { innerHTML: icons.copy, style: { width: '14px', height: '14px' } }), ' Copy'),
+      h('button', {
+        className: 'btn btn-outline btn-sm',
+        onclick: () => regenerateFormat(content.id, formatKey),
+        title: 'Regenerate this format with AI'
+      }, h('span', { innerHTML: icons.refresh, style: { width: '14px', height: '14px' } }), ' Regen'),
       h('span', { className: 'char-count' },
         isThread
           ? `${fmt.content.length} tweets`

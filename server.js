@@ -412,6 +412,61 @@ async function handleRequest(req, res) {
       }
     }
 
+    // POST /api/content/:id/regenerate — regenerate a single format
+    const regenMatch = pathname.match(/^\/api\/content\/([a-f0-9]+)\/regenerate$/);
+    if (regenMatch && method === 'POST') {
+      if (!process.env.ANTHROPIC_API_KEY) {
+        return json(res, { error: 'ANTHROPIC_API_KEY not configured' }, 500);
+      }
+      const content = readJSON('content.json');
+      const idx = content.findIndex(c => c.id === regenMatch[1]);
+      if (idx === -1) return json(res, { error: 'Not found' }, 404);
+
+      const body = await parseBody(req);
+      const format = body.format;
+      if (!format) return json(res, { error: 'format required' }, 400);
+
+      const item = content[idx];
+      const triggers = readJSON('trigger-queue.json');
+      const trigger = triggers.find(t => t.id === item.trigger_id);
+      if (!trigger) return json(res, { error: 'Original trigger not found' }, 404);
+
+      try {
+        const { buildSystemPromptWithMemory } = require('./generator/content-writer');
+        const systemPrompt = buildSystemPromptWithMemory();
+
+        if (format === 'blog') {
+          const { generateBlogPost } = require('./lib/claude');
+          const keyword = item.blog_keyword || trigger.title;
+          const blogContent = await generateBlogPost(trigger, keyword, systemPrompt);
+          content[idx].formats.blog = { content: blogContent, status: 'review', edited: false };
+          content[idx].blog_post = blogContent;
+        } else if (format === 'youtube_script') {
+          const { generateYouTubeScript } = require('./lib/claude');
+          const topic = item.youtube_topic || trigger.title;
+          const scriptContent = await generateYouTubeScript(trigger, topic, systemPrompt);
+          content[idx].formats.youtube_script = { content: scriptContent, status: 'review', edited: false };
+          content[idx].youtube_script = scriptContent;
+        } else {
+          // Social format — regenerate all social, extract the one we need
+          const { generateSocialContent } = require('./lib/claude');
+          const social = await generateSocialContent(trigger, systemPrompt);
+          const formatMap = {
+            linkedin: 'linkedin_post', x_single: 'x_single',
+            x_thread: 'x_thread', short_video: 'short_video_script'
+          };
+          const newContent = social?.[formatMap[format]] || null;
+          if (newContent) {
+            content[idx].formats[format] = { content: newContent, status: 'review', edited: false };
+          }
+        }
+        writeJSON('content.json', content);
+        return json(res, content[idx]);
+      } catch (err) {
+        return json(res, { error: err.message }, 500);
+      }
+    }
+
     // POST /api/content/bulk-approve
     if (pathname === '/api/content/bulk-approve' && method === 'POST') {
       const body = await parseBody(req);

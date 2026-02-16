@@ -169,12 +169,13 @@ async function handleRequest(req, res) {
 
       const body = await parseBody(req);
 
-      // Update format content
+      // Update format content (only if format exists)
       if (body.format && body.content !== undefined) {
-        if (content[idx].formats[body.format]) {
-          content[idx].formats[body.format].content = body.content;
-          content[idx].formats[body.format].edited = true;
+        if (!content[idx].formats[body.format]) {
+          return json(res, { error: `Unknown format: ${body.format}` }, 400);
         }
+        content[idx].formats[body.format].content = body.content;
+        content[idx].formats[body.format].edited = true;
       }
 
       // Update notes
@@ -284,6 +285,7 @@ async function handleRequest(req, res) {
 
       const body = await parseBody(req);
       const format = body.format;
+      if (!format) return json(res, { error: 'format required' }, 400);
 
       published.push({
         content_id: content[idx].id,
@@ -354,70 +356,73 @@ async function handleRequest(req, res) {
 
       if (!targetUrl) return json(res, { error: 'url required' }, 400);
 
+      // Validate URL format
+      let parsedUrl;
       try {
-        // Fetch the URL
+        parsedUrl = new URL(targetUrl);
+      } catch {
+        return json(res, { error: 'Invalid URL format' }, 400);
+      }
+
+      // Fetch the URL content (best-effort — create trigger even if fetch fails)
+      let title = targetUrl;
+      let content = '';
+      try {
         const fetchRes = await fetch(targetUrl, {
           headers: { 'User-Agent': 'ContentMachine/1.0' },
           signal: AbortSignal.timeout(15000)
         });
-
-        if (!fetchRes.ok) throw new Error(`HTTP ${fetchRes.status}`);
-        const html = await fetchRes.text();
-
-        // Extract title
-        const titleMatch = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
-        const title = titleMatch ? titleMatch[1].replace(/<[^>]+>/g, '').trim() : targetUrl;
-
-        // Extract main content (strip HTML)
-        const { stripHtml } = require('./lib/utils');
-        const content = stripHtml(html).slice(0, 3000);
-
-        // Create trigger
-        const trigger = {
-          id: `url-${generateId()}`,
-          source: 'url',
-          source_detail: new URL(targetUrl).hostname,
-          title: title.slice(0, 200),
-          raw_content: content,
-          url: targetUrl,
-          category: 'CONTENT_PIECE',
-          captured_at: now(),
-          status: 'pending',
-          score: 0,
-          requested_formats: selectedFormats.length > 0 ? selectedFormats : null
-        };
-
-        const triggers = readJSON('trigger-queue.json');
-        triggers.push(trigger);
-        writeJSON('trigger-queue.json', triggers);
-
-        // If queue_only, just save the trigger
-        if (queueOnly) {
-          return json(res, { ok: true, trigger, queued: true });
+        if (fetchRes.ok) {
+          const html = await fetchRes.text();
+          const titleMatch = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
+          title = titleMatch ? titleMatch[1].replace(/<[^>]+>/g, '').trim() : targetUrl;
+          const { stripHtml } = require('./lib/utils');
+          content = stripHtml(html).slice(0, 3000);
         }
-
-        // If API key available, generate content immediately
-        if (process.env.ANTHROPIC_API_KEY) {
-          try {
-            const { runDaily } = require('./generator/run-daily');
-            await runDaily({ triggerId: trigger.id, formats: selectedFormats });
-          } catch (err) {
-            console.error('[save-url] Generation failed:', err.message);
-          }
-        }
-
-        return json(res, { ok: true, trigger });
       } catch (err) {
-        return json(res, { error: err.message }, 500);
+        console.log(`[save-url] Fetch failed for ${targetUrl}: ${err.message} — creating trigger with URL only`);
       }
+
+      // Create trigger
+      const trigger = {
+        id: `url-${generateId()}`,
+        source: 'url',
+        source_detail: parsedUrl.hostname,
+        title: (title || targetUrl).slice(0, 200),
+        raw_content: content || title || targetUrl,
+        url: targetUrl,
+        category: 'CONTENT_PIECE',
+        captured_at: now(),
+        status: 'pending',
+        score: 0,
+        requested_formats: selectedFormats.length > 0 ? selectedFormats : null
+      };
+
+      const triggers = readJSON('trigger-queue.json');
+      triggers.push(trigger);
+      writeJSON('trigger-queue.json', triggers);
+
+      // If queue_only, just save the trigger
+      if (queueOnly) {
+        return json(res, { ok: true, trigger, queued: true });
+      }
+
+      // If API key available, generate content immediately
+      if (process.env.ANTHROPIC_API_KEY) {
+        try {
+          const { runDaily } = require('./generator/run-daily');
+          await runDaily({ triggerId: trigger.id, formats: selectedFormats });
+        } catch (err) {
+          console.error('[save-url] Generation failed:', err.message);
+        }
+      }
+
+      return json(res, { ok: true, trigger });
     }
 
     // POST /api/content/:id/regenerate — regenerate a single format
     const regenMatch = pathname.match(/^\/api\/content\/([a-f0-9]+)\/regenerate$/);
     if (regenMatch && method === 'POST') {
-      if (!process.env.ANTHROPIC_API_KEY) {
-        return json(res, { error: 'ANTHROPIC_API_KEY not configured' }, 500);
-      }
       const content = readJSON('content.json');
       const idx = content.findIndex(c => c.id === regenMatch[1]);
       if (idx === -1) return json(res, { error: 'Not found' }, 404);
@@ -425,6 +430,10 @@ async function handleRequest(req, res) {
       const body = await parseBody(req);
       const format = body.format;
       if (!format) return json(res, { error: 'format required' }, 400);
+
+      if (!process.env.ANTHROPIC_API_KEY) {
+        return json(res, { error: 'ANTHROPIC_API_KEY not configured' }, 500);
+      }
 
       const item = content[idx];
       const triggers = readJSON('trigger-queue.json');
@@ -555,23 +564,37 @@ async function handleRequest(req, res) {
     // POST /api/memory — add a style note or preference
     if (pathname === '/api/memory' && method === 'POST') {
       const body = await parseBody(req);
+      const validTypes = ['style_note', 'remove_example', 'remove_note'];
+      if (!body.type || !validTypes.includes(body.type)) {
+        return json(res, { error: `type required, must be one of: ${validTypes.join(', ')}` }, 400);
+      }
+
       const memory = readJSON('memory.json');
 
       if (body.type === 'style_note') {
+        if (!body.note || !body.note.trim()) {
+          return json(res, { error: 'note required for style_note type' }, 400);
+        }
         if (!memory.style_notes) memory.style_notes = [];
         memory.style_notes.push({
-          note: body.note,
+          note: body.note.trim(),
           added_at: now()
         });
       }
 
       if (body.type === 'remove_example') {
+        if (typeof body.index !== 'number') {
+          return json(res, { error: 'index required for remove_example type' }, 400);
+        }
         memory.approved_examples = (memory.approved_examples || []).filter(
           (e, i) => i !== body.index
         );
       }
 
       if (body.type === 'remove_note') {
+        if (typeof body.index !== 'number') {
+          return json(res, { error: 'index required for remove_note type' }, 400);
+        }
         memory.style_notes = (memory.style_notes || []).filter(
           (n, i) => i !== body.index
         );

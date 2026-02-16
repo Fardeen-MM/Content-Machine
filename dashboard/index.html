@@ -591,14 +591,269 @@ h1, h2, h3, h4 { font-family: 'Fraunces', serif; }
   overflow: hidden;
 }
 
-/* Calendar */
+/* Calendar V2 */
+.cal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.cal-nav {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.cal-nav-btn {
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: 8px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: var(--transition);
+}
+.cal-nav-btn:hover { background: var(--gray-50); border-color: var(--gray-300); }
+.cal-month-label {
+  font-family: 'Fraunces', serif;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--navy);
+  min-width: 180px;
+  text-align: center;
+}
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+  background: var(--gray-200);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.cal-weekday {
+  background: var(--navy);
+  color: white;
+  font-size: 11px;
+  font-weight: 600;
+  text-align: center;
+  padding: 8px 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.cal-cell {
+  background: var(--white);
+  min-height: 110px;
+  padding: 6px;
+  position: relative;
+  transition: var(--transition);
+}
+.cal-cell:hover { background: var(--gray-50); }
+.cal-cell.today { box-shadow: inset 0 0 0 2px var(--blue); }
+.cal-cell.past { opacity: 0.5; }
+.cal-cell.empty { background: var(--gray-50); min-height: 110px; }
+.cal-day-num {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gray-600);
+  margin-bottom: 4px;
+}
+.cal-cell.today .cal-day-num { color: var(--blue); font-weight: 700; }
+.cal-pillar-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  margin-left: 4px;
+  vertical-align: middle;
+}
+.cal-slot-chip {
+  display: block;
+  padding: 2px 5px;
+  margin-bottom: 2px;
+  border-radius: 4px;
+  font-size: 9px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: var(--transition);
+}
+.cal-slot-chip:hover { transform: scale(1.03); filter: brightness(0.95); }
+.cal-slot-chip.platform-linkedin { background: #dbeafe; color: #1d4ed8; }
+.cal-slot-chip.platform-x { background: #f1f5f9; color: #334155; }
+.cal-slot-chip.platform-video { background: #ede9fe; color: #6d28d9; }
+.cal-slot-chip.platform-blog { background: #dcfce7; color: #15803d; }
+.cal-slot-chip.platform-email { background: #fef3c7; color: #92400e; }
+.cal-slot-chip.platform-youtube { background: #fee2e2; color: #b91c1c; }
+.cal-slot-empty {
+  display: block;
+  padding: 2px 5px;
+  margin-bottom: 2px;
+  border-radius: 4px;
+  font-size: 9px;
+  color: var(--gray-300);
+  border: 1px dashed var(--gray-200);
+  cursor: pointer;
+  text-align: center;
+}
+.cal-slot-empty:hover { border-color: var(--blue); color: var(--blue); }
+
+/* Calendar day detail panel */
+.cal-detail {
+  background: var(--white);
+  border-radius: var(--radius);
+  border: 1px solid var(--gray-200);
+  padding: 20px;
+  margin-top: 16px;
+}
+.cal-detail h4 { font-size: 16px; margin-bottom: 12px; }
+.cal-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+.cal-time-col h5 {
+  font-size: 11px;
+  text-transform: uppercase;
+  color: var(--gray-400);
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+  font-family: 'Outfit', sans-serif;
+}
+.cal-platform-slot {
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid var(--gray-200);
+  margin-bottom: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.cal-platform-slot:hover { border-color: var(--blue); }
+.cal-platform-slot.filled { border-color: var(--green); background: var(--green-light); }
+.cal-platform-label {
+  font-weight: 600;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 2px;
+}
+
+/* Coverage tracker */
+.coverage-bar {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.coverage-track {
+  flex: 1;
+  height: 8px;
+  background: var(--gray-200);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.coverage-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.5s ease;
+}
+
+/* Performance page */
+.perf-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.perf-card {
+  background: var(--white);
+  border-radius: var(--radius);
+  border: 1px solid var(--gray-200);
+  padding: 20px;
+  text-align: center;
+}
+.perf-card .big-num {
+  font-family: 'Fraunces', serif;
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--navy);
+}
+.perf-card .label {
+  font-size: 12px;
+  color: var(--gray-500);
+  margin-top: 4px;
+}
+.perf-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.perf-table th {
+  text-align: left;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--gray-400);
+  padding: 8px 12px;
+  border-bottom: 2px solid var(--gray-200);
+  font-family: 'Outfit', sans-serif;
+}
+.perf-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--gray-100);
+}
+.perf-table tr:hover td { background: var(--gray-50); }
+.perf-form {
+  background: var(--white);
+  border-radius: var(--radius);
+  border: 1px solid var(--gray-200);
+  padding: 20px;
+  margin-top: 16px;
+}
+.perf-form label {
+  display: block;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--gray-500);
+  margin-bottom: 4px;
+  font-weight: 600;
+}
+.perf-form input, .perf-form select {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--gray-200);
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: 'Outfit', sans-serif;
+  margin-bottom: 12px;
+}
+.perf-form input:focus, .perf-form select:focus {
+  outline: none;
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+.perf-inputs-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.pillar-tag {
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+/* Legacy calendar compat */
 .calendar-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   gap: 12px;
   margin-top: 16px;
 }
-
 .calendar-day {
   background: var(--white);
   border-radius: var(--radius);
@@ -607,29 +862,6 @@ h1, h2, h3, h4 { font-family: 'Fraunces', serif; }
   min-height: 160px;
   transition: var(--transition);
 }
-
-.calendar-day:hover { box-shadow: var(--shadow); }
-
-.calendar-day-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid var(--gray-100);
-}
-
-.calendar-day-name {
-  font-weight: 600;
-  font-size: 13px;
-  color: var(--navy);
-}
-
-.calendar-day-date {
-  font-size: 11px;
-  color: var(--gray-400);
-}
-
 .calendar-slot {
   padding: 6px 8px;
   margin-bottom: 4px;
@@ -639,22 +871,12 @@ h1, h2, h3, h4 { font-family: 'Fraunces', serif; }
   cursor: pointer;
   transition: var(--transition);
 }
-
-.calendar-slot:hover { transform: scale(1.02); }
-
 .slot-linkedin { background: #e0f2fe; color: #0369a1; }
 .slot-x { background: var(--gray-100); color: var(--gray-700); }
 .slot-video { background: var(--purple-light); color: var(--purple); }
 .slot-blog { background: var(--green-light); color: var(--green); }
 .slot-youtube { background: var(--red-light); color: var(--red); }
 .slot-empty { background: var(--gray-50); color: var(--gray-300); border: 1px dashed var(--gray-200); }
-
-.pillar-tag {
-  font-size: 10px;
-  padding: 2px 8px;
-  border-radius: 4px;
-  font-weight: 600;
-}
 
 /* Modal */
 .modal-overlay {
@@ -820,6 +1042,11 @@ h1, h2, h3, h4 { font-family: 'Fraunces', serif; }
 /* Responsive */
 @media (max-width: 1024px) {
   .calendar-grid { grid-template-columns: repeat(3, 1fr); }
+  .cal-cell { min-height: 80px; }
+  .cal-slot-chip { font-size: 8px; }
+  .perf-grid { grid-template-columns: repeat(2, 1fr); }
+  .perf-inputs-grid { grid-template-columns: repeat(2, 1fr); }
+  .cal-detail-grid { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 768px) {
@@ -835,6 +1062,8 @@ h1, h2, h3, h4 { font-family: 'Fraunces', serif; }
   .format-tabs { font-size: 12px; }
   .content-card-header { flex-direction: column; }
   .url-input-group { flex-direction: column; }
+  .perf-grid { grid-template-columns: 1fr; }
+  .perf-inputs-grid { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 480px) {
@@ -948,6 +1177,19 @@ h1, h2, h3, h4 { font-family: 'Fraunces', serif; }
 [data-theme="dark"] .format-tab.active { color: var(--blue-light); border-color: var(--blue-light); }
 [data-theme="dark"] .format-content.collapsed::after { background: linear-gradient(transparent, #1e293b); }
 [data-theme="dark"] .calendar-day { background: #1e293b; border-color: #334155; }
+[data-theme="dark"] .cal-cell { background: #1e293b; }
+[data-theme="dark"] .cal-cell:hover { background: #0f172a; }
+[data-theme="dark"] .cal-cell.empty { background: #0f172a; }
+[data-theme="dark"] .cal-grid { background: #334155; }
+[data-theme="dark"] .cal-detail { background: #1e293b; border-color: #334155; }
+[data-theme="dark"] .cal-platform-slot { border-color: #334155; }
+[data-theme="dark"] .cal-nav-btn { background: #1e293b; border-color: #334155; color: #cbd5e1; }
+[data-theme="dark"] .perf-card { background: #1e293b; border-color: #334155; }
+[data-theme="dark"] .perf-card .big-num { color: #f1f5f9; }
+[data-theme="dark"] .perf-table th { border-color: #334155; color: #94a3b8; }
+[data-theme="dark"] .perf-table td { border-color: #1e293b; }
+[data-theme="dark"] .perf-form { background: #1e293b; border-color: #334155; }
+[data-theme="dark"] .perf-form input, [data-theme="dark"] .perf-form select { background: #0f172a; color: #e2e8f0; border-color: #475569; }
 [data-theme="dark"] .thread-tweet { background: #0f172a; }
 [data-theme="dark"] .edit-textarea { background: #0f172a; color: #e2e8f0; border-color: var(--blue); }
 [data-theme="dark"] .url-input, [data-theme="dark"] .search-input { background: #0f172a; color: #e2e8f0; border-color: #475569; }
@@ -1121,6 +1363,14 @@ const state = {
   lastRefreshed: null,
   selectedContent: new Set(),
   previewMode: {}, // contentId:formatKey -> 'raw' | 'preview'
+  // Calendar v2
+  calendarMonth: new Date().toISOString().slice(0, 7), // "2026-02"
+  monthCalendar: null,
+  calendarSelectedDay: null,
+  // Performance tracking
+  performance: [],
+  perfAnalytics: null,
+  perfForm: { content_id: '', format: '', impressions: '', engagement: '', clicks: '', leads: '', notes: '' },
 };
 
 // --- API Calls ---
@@ -1137,20 +1387,26 @@ async function loadData() {
   state.loading = true;
   render();
   try {
-    const [content, triggers, stats, calendar, settings, memory] = await Promise.all([
+    const [content, triggers, stats, calendar, monthCal, settings, memory, performance, perfAnalytics] = await Promise.all([
       api('/api/content'),
       api('/api/triggers'),
       api('/api/stats'),
       api('/api/calendar'),
+      api(`/api/calendar?month=${state.calendarMonth}`).catch(() => null),
       api('/api/settings').catch(() => ({})),
-      api('/api/memory').catch(() => ({ approved_examples: [], style_notes: [] }))
+      api('/api/memory').catch(() => ({ approved_examples: [], style_notes: [] })),
+      api('/api/performance').catch(() => []),
+      api('/api/analytics/performance').catch(() => null)
     ]);
     state.content = content;
     state.triggers = triggers;
     state.stats = stats;
     state.calendar = calendar;
+    state.monthCalendar = monthCal;
     state.settings = settings;
     state.memory = memory;
+    state.performance = performance;
+    state.perfAnalytics = perfAnalytics;
   } catch (err) {
     console.error('Failed to load data:', err);
     toast('Failed to load data', 'error');
@@ -1549,8 +1805,9 @@ document.addEventListener('keydown', (e) => {
   if (e.key === '3' && !e.ctrlKey && !e.metaKey && !isEditing()) { state.page = 'triggers'; render(); }
   if (e.key === '4' && !e.ctrlKey && !e.metaKey && !isEditing()) { state.page = 'calendar'; render(); }
   if (e.key === '5' && !e.ctrlKey && !e.metaKey && !isEditing()) { state.page = 'analytics'; render(); }
-  if (e.key === '6' && !e.ctrlKey && !e.metaKey && !isEditing()) { state.page = 'settings'; render(); }
-  if (e.key === '7' && !e.ctrlKey && !e.metaKey && !isEditing()) { state.page = 'memory'; render(); }
+  if (e.key === '6' && !e.ctrlKey && !e.metaKey && !isEditing()) { state.page = 'performance'; render(); }
+  if (e.key === '7' && !e.ctrlKey && !e.metaKey && !isEditing()) { state.page = 'settings'; render(); }
+  if (e.key === '8' && !e.ctrlKey && !e.metaKey && !isEditing()) { state.page = 'memory'; render(); }
   if ((e.key === 'd' || e.key === 'D') && !e.ctrlKey && !e.metaKey && !isEditing()) { toggleDarkMode(); }
   if (e.key === 'Escape') { state.editingFormat = null; state.sidebarOpen = false; render(); }
 });
@@ -1581,7 +1838,8 @@ const icons = {
   settings: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>',
   trash: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>',
   ban: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>',
-  brain: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9.5 2A5.5 5.5 0 005 7.5c0 .98.27 1.9.73 2.7A5.5 5.5 0 003 15.5 5.5 5.5 0 008.5 21h.5"/><path d="M14.5 2A5.5 5.5 0 0120 7.5c0 .98-.27 1.9-.73 2.7A5.5 5.5 0 0122 15.5a5.5 5.5 0 01-5.5 5.5H16"/><path d="M12 2v20"/></svg>'
+  brain: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9.5 2A5.5 5.5 0 005 7.5c0 .98.27 1.9.73 2.7A5.5 5.5 0 003 15.5 5.5 5.5 0 008.5 21h.5"/><path d="M14.5 2A5.5 5.5 0 0120 7.5c0 .98-.27 1.9-.73 2.7A5.5 5.5 0 0122 15.5a5.5 5.5 0 01-5.5 5.5H16"/><path d="M12 2v20"/></svg>',
+  performance: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>'
 };
 
 // --- Render Functions ---
@@ -1619,8 +1877,9 @@ function renderSidebar() {
     { id: 'triggers', icon: icons.triggers, label: 'Triggers', key: '3' },
     { id: 'calendar', icon: icons.calendar, label: 'Calendar', key: '4' },
     { id: 'analytics', icon: icons.analytics, label: 'Analytics', key: '5' },
-    { id: 'settings', icon: icons.settings, label: 'Settings', key: '6' },
-    { id: 'memory', icon: icons.brain, label: 'Memory', key: '7' }
+    { id: 'performance', icon: icons.performance, label: 'Performance', key: '6' },
+    { id: 'settings', icon: icons.settings, label: 'Settings', key: '7' },
+    { id: 'memory', icon: icons.brain, label: 'Memory', key: '8' }
   ];
 
   return h('nav', { className: `sidebar ${state.sidebarOpen ? 'open' : ''}` },
@@ -1662,7 +1921,7 @@ function renderSidebar() {
         onclick: () => { toggleDarkMode(); }
       }, state.darkMode ? 'Light Mode' : 'Dark Mode'),
       h('div', { style: { fontSize: '11px', color: 'rgba(255,255,255,0.4)', marginTop: '10px' } },
-        'Keyboard: 1-7 navigate',
+        'Keyboard: 1-8 navigate',
         h('br'),
         'Esc to close modals',
         h('br'),
@@ -1679,6 +1938,7 @@ function renderTopbar() {
     triggers: 'Trigger Queue',
     calendar: 'Content Calendar',
     analytics: 'Analytics',
+    performance: 'Performance Tracking',
     settings: 'Settings',
     memory: 'Brand Memory',
     'save-url': 'Save URL'
@@ -2884,54 +3144,253 @@ function renderTriggersPage() {
 }
 
 function renderCalendarPage() {
-  const cal = state.calendar;
+  const cal = state.monthCalendar;
   if (!cal) return h('div', { className: 'page-content' }, h('div', { className: 'spinner' }));
 
+  const platformLabels = { linkedin: 'LI', x: 'X', video: 'Vid', blog: 'Blog', email: 'Email', youtube: 'YT' };
+  const platformColors = {
+    linkedin: 'platform-linkedin', x: 'platform-x', video: 'platform-video',
+    blog: 'platform-blog', email: 'platform-email', youtube: 'platform-youtube'
+  };
+
+  // Pad start of month to align with day-of-week columns
+  const firstDayOfWeek = cal.days[0]?.dayOfWeek || 0;
+  const emptyBefore = [];
+  for (let i = 0; i < firstDayOfWeek; i++) {
+    emptyBefore.push(h('div', { className: 'cal-cell empty' }));
+  }
+
+  // Navigate months
+  function prevMonth() {
+    const [y, m] = state.calendarMonth.split('-').map(Number);
+    const d = new Date(y, m - 2, 1);
+    state.calendarMonth = d.toISOString().slice(0, 7);
+    state.calendarSelectedDay = null;
+    loadCalendarMonth();
+  }
+  function nextMonth() {
+    const [y, m] = state.calendarMonth.split('-').map(Number);
+    const d = new Date(y, m, 1);
+    state.calendarMonth = d.toISOString().slice(0, 7);
+    state.calendarSelectedDay = null;
+    loadCalendarMonth();
+  }
+
+  // Get current week start for auto-fill
+  function getCurrentWeekStart() {
+    if (state.calendarSelectedDay) {
+      const d = new Date(state.calendarSelectedDay);
+      const dayOfWeek = d.getDay();
+      d.setDate(d.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
+      return d.toISOString().split('T')[0];
+    }
+    const now = new Date();
+    const dayOfWeek = now.getDay();
+    now.setDate(now.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
+    return now.toISOString().split('T')[0];
+  }
+
+  // Count filled slots per day
+  function filledCount(day) {
+    return Object.values(day.slots).filter(Boolean).length;
+  }
+
   return h('div', { className: 'page-content' },
-    h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' } },
-      h('div', {},
-        h('div', { style: { fontSize: '13px', color: 'var(--gray-500)' } },
-          `Week of ${cal.week_start} to ${cal.week_end}`
-        )
+    // Header: nav + stats
+    h('div', { className: 'cal-header' },
+      h('div', { className: 'cal-nav' },
+        h('button', { className: 'cal-nav-btn', onclick: prevMonth }, '<'),
+        h('span', { className: 'cal-month-label' }, `${cal.month_name} ${cal.year}`),
+        h('button', { className: 'cal-nav-btn', onclick: nextMonth }, '>')
       ),
       h('div', { style: { display: 'flex', gap: '12px', alignItems: 'center' } },
-        h('span', { style: { fontSize: '13px', color: 'var(--gray-500)' } },
-          `Coverage: ${cal.stats.coverage}%`
+        h('div', { className: 'coverage-bar', style: { width: '180px' } },
+          h('span', { style: { fontSize: '12px', fontWeight: '600', color: 'var(--gray-500)', whiteSpace: 'nowrap' } },
+            `${cal.stats.coverage}% filled`
+          ),
+          h('div', { className: 'coverage-track' },
+            h('div', { className: 'coverage-fill', style: {
+              width: `${cal.stats.coverage}%`,
+              background: cal.stats.coverage > 60 ? 'var(--green)' : cal.stats.coverage > 30 ? 'var(--amber)' : 'var(--red)'
+            }})
+          )
         ),
-        h('div', { style: { width: '100px', height: '6px', background: 'var(--gray-200)', borderRadius: '3px', overflow: 'hidden' } },
-          h('div', { style: {
-            width: `${cal.stats.coverage}%`,
-            height: '100%',
-            background: cal.stats.coverage > 60 ? 'var(--green)' : cal.stats.coverage > 30 ? 'var(--amber)' : 'var(--red)',
-            borderRadius: '3px',
-            transition: 'width 0.5s ease'
-          }})
-        )
+        h('button', {
+          className: 'btn btn-primary btn-sm',
+          onclick: async () => {
+            const weekStart = getCurrentWeekStart();
+            toast('Auto-filling week...', 'info');
+            const res = await api('/api/calendar/auto-fill', { method: 'POST', body: { week_start: weekStart } });
+            toast(`Assigned ${res.assigned} content pieces!`, 'success');
+            await loadCalendarMonth();
+          }
+        }, 'Fill Week'),
+        h('button', {
+          className: 'btn btn-outline btn-sm',
+          onclick: () => {
+            state.calendarMonth = new Date().toISOString().slice(0, 7);
+            state.calendarSelectedDay = null;
+            loadCalendarMonth();
+          }
+        }, 'Today')
       )
     ),
-    h('div', { className: 'calendar-grid' },
-      ...cal.days.map(day =>
-        h('div', { className: 'calendar-day' },
-          h('div', { className: 'calendar-day-header' },
-            h('span', { className: 'calendar-day-name' }, day.day),
-            h('span', { className: 'calendar-day-date' }, day.date.split('-').slice(1).join('/'))
+
+    // Month grid
+    h('div', { className: 'cal-grid' },
+      // Weekday headers
+      ...['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d =>
+        h('div', { className: 'cal-weekday' }, d)
+      ),
+      // Empty padding cells
+      ...emptyBefore,
+      // Day cells
+      ...cal.days.map(day => {
+        const filled = filledCount(day);
+        const isSelected = state.calendarSelectedDay === day.date;
+        return h('div', {
+          className: `cal-cell ${day.isToday ? 'today' : ''} ${day.isPast ? 'past' : ''} ${isSelected ? 'today' : ''}`,
+          style: isSelected ? { boxShadow: 'inset 0 0 0 2px var(--blue)' } : {},
+          onclick: () => { state.calendarSelectedDay = day.date; render(); }
+        },
+          h('div', { className: 'cal-day-num' },
+            String(day.dayNum),
+            h('span', { className: 'cal-pillar-dot', style: { background: day.pillar_color } })
           ),
-          day.pillar_label
-            ? h('div', {
-                className: 'pillar-tag',
-                style: { background: day.pillar_color + '15', color: day.pillar_color, marginBottom: '8px', display: 'inline-block' }
-              }, day.pillar_label)
+          // Show platform chips for filled slots
+          ...Object.entries(day.slots)
+            .filter(([, v]) => v)
+            .slice(0, 4) // Max 4 chips visible
+            .map(([slotKey, slot]) => {
+              const platform = slotKey.split('_')[0];
+              return h('div', {
+                className: `cal-slot-chip ${platformColors[platform] || ''}`,
+                title: slot.title || slotKey,
+                onclick: (e) => {
+                  e.stopPropagation();
+                  if (slot.content_id) {
+                    state.page = 'content';
+                    state.activeContentId = slot.content_id;
+                    render();
+                  }
+                }
+              }, `${platformLabels[platform] || platform}: ${(slot.title || '').slice(0, 15)}`);
+            }),
+          // Show "+N more" if > 4 filled
+          filled > 4
+            ? h('div', { style: { fontSize: '9px', color: 'var(--gray-400)', textAlign: 'center' } }, `+${filled - 4} more`)
             : null,
-          // Slots
-          renderCalendarSlot(day.slots.linkedin, 'LinkedIn', 'slot-linkedin'),
-          renderCalendarSlot(day.slots.x, 'X/Twitter', 'slot-x'),
-          renderCalendarSlot(day.slots.video, 'Video', 'slot-video'),
-          renderCalendarSlot(day.slots.blog, 'Blog', 'slot-blog'),
-          renderCalendarSlot(day.slots.youtube, 'YouTube', 'slot-youtube')
+          // Empty indicator
+          filled === 0 && !day.isPast
+            ? h('div', { style: { fontSize: '9px', color: 'var(--gray-300)', marginTop: '4px' } }, 'No content')
+            : null
+        );
+      })
+    ),
+
+    // Day detail panel when a day is selected
+    state.calendarSelectedDay ? renderCalendarDayDetail(cal) : null,
+
+    // Weekly coverage breakdown
+    cal.weeklyStats && cal.weeklyStats.length > 0
+      ? h('div', { style: { marginTop: '24px' } },
+          h('h4', { style: { fontSize: '14px', fontFamily: "'Fraunces', serif", marginBottom: '12px', color: 'var(--navy)' } }, 'Weekly Platform Coverage'),
+          h('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px' } },
+            ...cal.weeklyStats.map((week, i) =>
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: '12px', background: 'var(--white)', padding: '10px 14px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)' } },
+                h('span', { style: { fontSize: '12px', fontWeight: '600', color: 'var(--gray-500)', minWidth: '110px' } },
+                  `Week ${i + 1}: ${week.start.slice(5)}`
+                ),
+                ...Object.entries(week.platformCoverage).map(([platform, data]) =>
+                  h('div', { style: { display: 'flex', alignItems: 'center', gap: '4px' } },
+                    h('span', { style: { fontSize: '10px', color: 'var(--gray-400)', width: '32px' } }, platformLabels[platform] || platform),
+                    h('div', { style: { width: '40px', height: '6px', background: 'var(--gray-200)', borderRadius: '3px', overflow: 'hidden' } },
+                      h('div', { style: {
+                        width: `${data.pct}%`,
+                        height: '100%',
+                        background: data.pct > 50 ? 'var(--green)' : data.pct > 0 ? 'var(--amber)' : 'var(--gray-300)',
+                        borderRadius: '3px'
+                      }})
+                    )
+                  )
+                )
+              )
+            )
+          )
+        )
+      : null
+  );
+}
+
+function renderCalendarDayDetail(cal) {
+  const day = cal.days.find(d => d.date === state.calendarSelectedDay);
+  if (!day) return null;
+
+  const timeLabels = { morning: 'Morning (8-10am)', midday: 'Midday (12-2pm)', evening: 'Evening (5-7pm)' };
+  const platformLabels = { linkedin: 'LinkedIn', x: 'X/Twitter', video: 'Video', blog: 'Blog', email: 'Email', youtube: 'YouTube' };
+
+  return h('div', { className: 'cal-detail' },
+    h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' } },
+      h('h4', {},
+        `${day.day}, ${day.date}`,
+        h('span', {
+          className: 'pillar-tag',
+          style: { background: day.pillar_color + '15', color: day.pillar_color, marginLeft: '12px' }
+        }, day.pillar_label)
+      ),
+      h('button', {
+        className: 'btn btn-ghost btn-sm',
+        onclick: () => { state.calendarSelectedDay = null; render(); }
+      }, 'Close')
+    ),
+    h('div', { className: 'cal-detail-grid' },
+      ...['morning', 'midday', 'evening'].map(time =>
+        h('div', { className: 'cal-time-col' },
+          h('h5', {}, timeLabels[time]),
+          ...['linkedin', 'x', 'video', 'blog', 'email', 'youtube'].map(platform => {
+            const slotKey = `${platform}_${time}`;
+            const slot = day.slots[slotKey];
+            return h('div', {
+              className: `cal-platform-slot ${slot ? 'filled' : ''}`,
+              onclick: async () => {
+                if (slot?.content_id) {
+                  state.page = 'content';
+                  state.activeContentId = slot.content_id;
+                  render();
+                }
+              }
+            },
+              h('div', { className: 'cal-platform-label' }, platformLabels[platform]),
+              slot
+                ? h('div', { style: { fontSize: '11px' } },
+                    h('span', { style: { fontWeight: '500' } }, (slot.title || '').slice(0, 30)),
+                    h('span', { style: { fontSize: '10px', color: 'var(--gray-400)', marginLeft: '4px' } },
+                      slot.format || ''
+                    ),
+                    h('button', {
+                      className: 'btn btn-ghost',
+                      style: { fontSize: '10px', padding: '1px 4px', marginLeft: '4px', color: 'var(--red)' },
+                      onclick: async (e) => {
+                        e.stopPropagation();
+                        await api(`/api/calendar/${day.date}`, { method: 'PUT', body: { slot: slotKey, clear: true } });
+                        toast('Slot cleared', 'success');
+                        await loadCalendarMonth();
+                      }
+                    }, 'x')
+                  )
+                : h('div', { style: { fontSize: '11px', color: 'var(--gray-300)' } }, 'Empty')
+            );
+          })
         )
       )
     )
   );
+}
+
+async function loadCalendarMonth() {
+  const monthCal = await api(`/api/calendar?month=${state.calendarMonth}`);
+  state.monthCalendar = monthCal;
+  render();
 }
 
 function renderCalendarSlot(slot, label, className) {
@@ -2953,6 +3412,223 @@ function renderCalendarSlot(slot, label, className) {
     slot.status === 'approved'
       ? h('span', { style: { fontSize: '10px' } }, ' ✓')
       : null
+  );
+}
+
+function renderPerformancePage() {
+  const perf = state.performance || [];
+  const analytics = state.perfAnalytics;
+  const content = state.content || [];
+  const pf = state.perfForm;
+
+  // Published/approved content for dropdown
+  const eligibleContent = content.filter(c => c.status === 'approved' || c.status === 'review');
+
+  // Get formats for selected content
+  const selectedItem = pf.content_id ? content.find(c => c.id === pf.content_id) : null;
+  const availableFormats = selectedItem
+    ? Object.entries(selectedItem.formats || {}).filter(([, f]) => f.content).map(([k]) => k)
+    : [];
+
+  return h('div', { className: 'page-content' },
+    // Summary stats
+    analytics ? h('div', { className: 'perf-grid' },
+      h('div', { className: 'perf-card' },
+        h('div', { className: 'big-num' }, String(analytics.totals?.impressions?.toLocaleString() || 0)),
+        h('div', { className: 'label' }, 'Total Impressions')
+      ),
+      h('div', { className: 'perf-card' },
+        h('div', { className: 'big-num' }, String(analytics.totals?.engagement?.toLocaleString() || 0)),
+        h('div', { className: 'label' }, 'Total Engagement')
+      ),
+      h('div', { className: 'perf-card' },
+        h('div', { className: 'big-num' }, String(analytics.totals?.clicks?.toLocaleString() || 0)),
+        h('div', { className: 'label' }, 'Total Clicks')
+      ),
+      h('div', { className: 'perf-card' },
+        h('div', { className: 'big-num' }, String(analytics.totals?.leads || 0)),
+        h('div', { className: 'label' }, 'Leads Generated')
+      )
+    ) : null,
+
+    // Format performance breakdown
+    analytics && Object.keys(analytics.by_format || {}).length > 0
+      ? h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '24px' } },
+          h('div', { style: { background: 'var(--white)', borderRadius: 'var(--radius)', border: '1px solid var(--gray-200)', padding: '20px' } },
+            h('h4', { style: { fontSize: '14px', fontFamily: "'Fraunces', serif", marginBottom: '12px' } }, 'Performance by Format'),
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px' } },
+              ...Object.entries(analytics.by_format)
+                .sort((a, b) => b[1].engagement - a[1].engagement)
+                .map(([format, data]) => {
+                  const maxEng = Math.max(...Object.values(analytics.by_format).map(d => d.engagement), 1);
+                  return h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } },
+                    h('span', { style: { fontSize: '11px', fontWeight: '600', width: '80px', color: 'var(--gray-500)' } }, formatName(format)),
+                    h('div', { style: { flex: '1', height: '14px', background: 'var(--gray-100)', borderRadius: '7px', overflow: 'hidden' } },
+                      h('div', { style: {
+                        width: `${(data.engagement / maxEng) * 100}%`,
+                        height: '100%',
+                        background: 'var(--blue)',
+                        borderRadius: '7px',
+                        display: 'flex', alignItems: 'center', paddingLeft: '6px'
+                      } },
+                        h('span', { style: { fontSize: '9px', color: 'white', fontWeight: '700' } }, String(data.engagement))
+                      )
+                    ),
+                    h('span', { style: { fontSize: '10px', color: 'var(--gray-400)', width: '60px', textAlign: 'right' } },
+                      `${data.engagement_rate}% ER`
+                    )
+                  );
+                })
+            )
+          ),
+          // Top performers
+          analytics.top_posts && analytics.top_posts.length > 0
+            ? h('div', { style: { background: 'var(--white)', borderRadius: 'var(--radius)', border: '1px solid var(--gray-200)', padding: '20px' } },
+                h('h4', { style: { fontSize: '14px', fontFamily: "'Fraunces', serif", marginBottom: '12px' } }, 'Top Performing Posts'),
+                h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
+                  ...analytics.top_posts.slice(0, 5).map((post, i) =>
+                    h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 0', borderBottom: '1px solid var(--gray-100)' } },
+                      h('span', { style: {
+                        fontSize: '12px', fontWeight: '700', color: 'var(--white)',
+                        background: i === 0 ? 'var(--green)' : i === 1 ? 'var(--blue)' : 'var(--gray-400)',
+                        width: '20px', height: '20px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center'
+                      } }, String(i + 1)),
+                      h('div', { style: { flex: '1' } },
+                        h('div', { style: { fontSize: '12px', fontWeight: '500' } }, (post.title || '').slice(0, 40)),
+                        h('div', { style: { fontSize: '10px', color: 'var(--gray-400)' } },
+                          `${formatName(post.format)} | ${post.impressions} imp, ${post.engagement} eng, ${post.leads} leads`
+                        )
+                      )
+                    )
+                  )
+                )
+              )
+            : null
+        )
+      : null,
+
+    // Log performance form
+    h('div', { className: 'perf-form' },
+      h('h4', { style: { fontSize: '14px', fontFamily: "'Fraunces', serif", marginBottom: '16px' } }, 'Log Performance Metrics'),
+      h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' } },
+        h('div', {},
+          h('label', {}, 'Content Piece'),
+          h('select', {
+            value: pf.content_id,
+            onchange: (e) => { state.perfForm.content_id = e.target.value; state.perfForm.format = ''; render(); }
+          },
+            h('option', { value: '' }, '-- Select content --'),
+            ...eligibleContent.map(c =>
+              h('option', { value: c.id }, (c.trigger_title || '').slice(0, 50))
+            )
+          )
+        ),
+        h('div', {},
+          h('label', {}, 'Format'),
+          h('select', {
+            value: pf.format,
+            onchange: (e) => { state.perfForm.format = e.target.value; render(); }
+          },
+            h('option', { value: '' }, '-- Select format --'),
+            ...availableFormats.map(f =>
+              h('option', { value: f }, formatName(f))
+            )
+          )
+        )
+      ),
+      h('div', { className: 'perf-inputs-grid' },
+        h('div', {},
+          h('label', {}, 'Impressions'),
+          h('input', {
+            type: 'number', placeholder: '0', value: pf.impressions,
+            oninput: (e) => { state.perfForm.impressions = e.target.value; }
+          })
+        ),
+        h('div', {},
+          h('label', {}, 'Engagement'),
+          h('input', {
+            type: 'number', placeholder: '0', value: pf.engagement,
+            oninput: (e) => { state.perfForm.engagement = e.target.value; }
+          })
+        ),
+        h('div', {},
+          h('label', {}, 'Clicks'),
+          h('input', {
+            type: 'number', placeholder: '0', value: pf.clicks,
+            oninput: (e) => { state.perfForm.clicks = e.target.value; }
+          })
+        ),
+        h('div', {},
+          h('label', {}, 'Leads'),
+          h('input', {
+            type: 'number', placeholder: '0', value: pf.leads,
+            oninput: (e) => { state.perfForm.leads = e.target.value; }
+          })
+        )
+      ),
+      h('div', { style: { display: 'flex', justifyContent: 'flex-end', marginTop: '4px' } },
+        h('button', {
+          className: 'btn btn-primary btn-sm',
+          disabled: !pf.content_id || !pf.format,
+          onclick: async () => {
+            await api(`/api/content/${pf.content_id}/performance`, {
+              method: 'POST',
+              body: {
+                format: pf.format,
+                impressions: pf.impressions || 0,
+                engagement: pf.engagement || 0,
+                clicks: pf.clicks || 0,
+                leads: pf.leads || 0,
+                notes: pf.notes || ''
+              }
+            });
+            toast('Performance logged!', 'success');
+            state.perfForm = { content_id: '', format: '', impressions: '', engagement: '', clicks: '', leads: '', notes: '' };
+            await loadData();
+          }
+        }, 'Log Metrics')
+      )
+    ),
+
+    // Performance log table
+    perf.length > 0
+      ? h('div', { style: { marginTop: '24px', background: 'var(--white)', borderRadius: 'var(--radius)', border: '1px solid var(--gray-200)', overflow: 'hidden' } },
+          h('table', { className: 'perf-table' },
+            h('thead', {},
+              h('tr', {},
+                h('th', {}, 'Content'),
+                h('th', {}, 'Format'),
+                h('th', {}, 'Impressions'),
+                h('th', {}, 'Engagement'),
+                h('th', {}, 'Clicks'),
+                h('th', {}, 'Leads'),
+                h('th', {}, 'Logged')
+              )
+            ),
+            h('tbody', {},
+              ...perf.slice().reverse().slice(0, 30).map(entry => {
+                const item = content.find(c => c.id === entry.content_id);
+                return h('tr', {},
+                  h('td', { style: { maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } },
+                    (item?.trigger_title || entry.content_id).slice(0, 40)
+                  ),
+                  h('td', {}, h('span', { className: `badge ${formatBadgeClass(entry.format)}` }, formatName(entry.format))),
+                  h('td', {}, String(entry.impressions?.toLocaleString() || 0)),
+                  h('td', {}, String(entry.engagement?.toLocaleString() || 0)),
+                  h('td', {}, String(entry.clicks?.toLocaleString() || 0)),
+                  h('td', { style: { fontWeight: entry.leads > 0 ? '700' : '400', color: entry.leads > 0 ? 'var(--green)' : '' } },
+                    String(entry.leads || 0)
+                  ),
+                  h('td', { style: { fontSize: '11px', color: 'var(--gray-400)' } }, timeAgo(entry.logged_at))
+                );
+              })
+            )
+          )
+        )
+      : h('div', { style: { textAlign: 'center', padding: '40px', color: 'var(--gray-400)' } },
+          h('div', { style: { fontSize: '14px', marginBottom: '4px' } }, 'No performance data yet'),
+          h('div', { style: { fontSize: '12px' } }, 'Log metrics above after publishing content')
+        )
   );
 }
 
@@ -3372,6 +4048,7 @@ function render() {
         : state.page === 'triggers' ? renderTriggersPage()
         : state.page === 'calendar' ? renderCalendarPage()
         : state.page === 'analytics' ? renderAnalyticsPage()
+        : state.page === 'performance' ? renderPerformancePage()
         : state.page === 'settings' ? renderSettingsPage()
         : state.page === 'memory' ? renderMemoryPage()
         : state.page === 'save-url' ? renderSaveUrlPage()

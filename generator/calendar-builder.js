@@ -15,10 +15,255 @@ const CATEGORY_TO_PILLAR = {
   CONTENT_PIECE: 'HOT_TAKE'
 };
 
+const TIME_SLOTS = ['morning', 'midday', 'evening'];
+const PLATFORMS = ['linkedin', 'x', 'video', 'blog', 'email', 'youtube'];
+
+const PILLAR_ROTATION = [
+  'INDUSTRY_INSIGHT',  // Mon
+  'TACTICAL_HOWTO',    // Tue
+  'SOCIAL_PROOF',      // Wed
+  'INDUSTRY_INSIGHT',  // Thu
+  'HOT_TAKE',          // Fri
+  'BEHIND_SCENES',     // Sat
+  'TACTICAL_HOWTO'     // Sun
+];
+
 function getPillar(category) {
   return CATEGORY_TO_PILLAR[category] || 'INDUSTRY_INSIGHT';
 }
 
+// Build calendar for a full month (or current week as fallback)
+function buildMonthlyCalendar(contentItems, yearMonth, calendarData) {
+  // yearMonth format: "2026-02"
+  const now = new Date();
+  let year, month;
+
+  if (yearMonth) {
+    const parts = yearMonth.split('-');
+    year = parseInt(parts[0]);
+    month = parseInt(parts[1]) - 1; // 0-indexed
+  } else {
+    year = now.getFullYear();
+    month = now.getMonth();
+  }
+
+  const firstDay = new Date(year, month, 1);
+  const lastDay = new Date(year, month + 1, 0);
+  const daysInMonth = lastDay.getDate();
+
+  // Saved calendar assignments (from calendarData)
+  const saved = calendarData || {};
+
+  const days = [];
+  const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const date = new Date(year, month, d);
+    const key = date.toISOString().split('T')[0];
+    const dayOfWeek = date.getDay(); // 0=Sun
+    const pillarIdx = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Mon=0, Sun=6
+
+    // Build slots from saved data
+    const slots = {};
+    for (const platform of PLATFORMS) {
+      for (const time of TIME_SLOTS) {
+        const slotKey = `${platform}_${time}`;
+        slots[slotKey] = saved[key]?.[slotKey] || null;
+      }
+    }
+
+    const isToday = key === now.toISOString().split('T')[0];
+    const isPast = date < new Date(now.toISOString().split('T')[0]);
+
+    days.push({
+      date: key,
+      day: dayNames[dayOfWeek],
+      dayOfWeek,
+      dayNum: d,
+      isToday,
+      isPast,
+      pillar: PILLAR_ROTATION[pillarIdx],
+      pillar_label: CONTENT_PILLARS[PILLAR_ROTATION[pillarIdx]]?.label || 'General',
+      pillar_color: CONTENT_PILLARS[PILLAR_ROTATION[pillarIdx]]?.color || '#666',
+      slots
+    });
+  }
+
+  // Calculate coverage stats
+  let filledSlots = 0;
+  let totalSlots = 0;
+  for (const day of days) {
+    if (day.isPast) continue; // Don't count past days
+    for (const key of Object.keys(day.slots)) {
+      totalSlots++;
+      if (day.slots[key]) filledSlots++;
+    }
+  }
+
+  // Platform coverage per week
+  const weeks = [];
+  let weekStart = null;
+  let weekDays = [];
+  for (const day of days) {
+    if (day.dayOfWeek === 1 || weekDays.length === 0) {
+      if (weekDays.length > 0) {
+        weeks.push({ start: weekStart, days: weekDays });
+      }
+      weekStart = day.date;
+      weekDays = [day];
+    } else {
+      weekDays.push(day);
+    }
+  }
+  if (weekDays.length > 0) {
+    weeks.push({ start: weekStart, days: weekDays });
+  }
+
+  // Weekly platform coverage
+  const weeklyStats = weeks.map(week => {
+    const platformCoverage = {};
+    for (const platform of PLATFORMS) {
+      let filled = 0;
+      let total = 0;
+      for (const day of week.days) {
+        for (const time of TIME_SLOTS) {
+          total++;
+          if (day.slots[`${platform}_${time}`]) filled++;
+        }
+      }
+      platformCoverage[platform] = { filled, total, pct: total > 0 ? Math.round((filled / total) * 100) : 0 };
+    }
+    return { start: week.start, end: week.days[week.days.length - 1].date, platformCoverage };
+  });
+
+  return {
+    year,
+    month: month + 1,
+    month_name: firstDay.toLocaleString('en-US', { month: 'long' }),
+    days,
+    weeks,
+    weeklyStats,
+    stats: {
+      filled_slots: filledSlots,
+      total_slots: totalSlots,
+      coverage: totalSlots > 0 ? Math.round((filledSlots / totalSlots) * 100) : 0,
+      days_in_month: daysInMonth
+    },
+    platforms: PLATFORMS,
+    time_slots: TIME_SLOTS
+  };
+}
+
+// Auto-fill a week with approved content
+function autoFillWeek(contentItems, weekStartDate, calendarData) {
+  const saved = calendarData || {};
+  const weekStart = new Date(weekStartDate);
+
+  // Get 7 days from start
+  const weekDates = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(weekStart);
+    d.setDate(weekStart.getDate() + i);
+    weekDates.push(d.toISOString().split('T')[0]);
+  }
+
+  // Get eligible content: approved first, then review
+  const eligible = contentItems
+    .filter(c => c.status === 'approved' || c.status === 'review')
+    .sort((a, b) => {
+      // Approved first, then by quality score, then by date
+      if (a.status !== b.status) return a.status === 'approved' ? -1 : 1;
+      const aScore = a.quality_scores ? Math.max(...Object.values(a.quality_scores).map(q => q.score || 0)) : 0;
+      const bScore = b.quality_scores ? Math.max(...Object.values(b.quality_scores).map(q => q.score || 0)) : 0;
+      if (aScore !== bScore) return bScore - aScore;
+      return new Date(b.generated_at) - new Date(a.generated_at);
+    });
+
+  // Already-scheduled content IDs (to avoid double-booking)
+  const scheduledIds = new Set();
+  for (const dateKey of Object.keys(saved)) {
+    for (const slot of Object.values(saved[dateKey] || {})) {
+      if (slot?.content_id) scheduledIds.add(slot.content_id);
+    }
+  }
+
+  // Format-to-platform mapping
+  const formatToPlatform = {
+    linkedin: 'linkedin', carousel: 'linkedin', poll: 'linkedin',
+    quote_cards: 'linkedin', listicle: 'linkedin', hot_take: 'linkedin',
+    before_after: 'linkedin', stat_graphic: 'linkedin',
+    x_single: 'x', x_thread: 'x',
+    short_video: 'video',
+    blog: 'blog', case_study: 'blog',
+    newsletter: 'email', lead_magnet: 'email',
+    youtube_script: 'youtube'
+  };
+
+  // Preferred time slots per platform
+  const platformTimePrefs = {
+    linkedin: ['morning', 'midday'],
+    x: ['morning', 'midday', 'evening'],
+    video: ['midday'],
+    blog: ['morning'],
+    email: ['morning'],
+    youtube: ['midday']
+  };
+
+  const assignments = {};
+  let assigned = 0;
+
+  for (const item of eligible) {
+    if (scheduledIds.has(item.id)) continue;
+
+    // Find available formats with content
+    const availableFormats = Object.entries(item.formats || {})
+      .filter(([, fmt]) => fmt.content && fmt.status !== 'rejected')
+      .map(([key]) => key);
+
+    if (availableFormats.length === 0) continue;
+
+    for (const format of availableFormats) {
+      const platform = formatToPlatform[format];
+      if (!platform) continue;
+
+      const preferredTimes = platformTimePrefs[platform] || ['morning'];
+
+      // Try to place in an empty slot for the week
+      let placed = false;
+      for (const dateKey of weekDates) {
+        if (placed) break;
+        for (const time of preferredTimes) {
+          const slotKey = `${platform}_${time}`;
+          const existing = saved[dateKey]?.[slotKey] || assignments[dateKey]?.[slotKey];
+          if (!existing) {
+            if (!assignments[dateKey]) assignments[dateKey] = {};
+            assignments[dateKey][slotKey] = {
+              content_id: item.id,
+              format,
+              title: (item.trigger_title || '').slice(0, 60),
+              status: item.formats[format].status,
+              preview: typeof item.formats[format].content === 'string'
+                ? item.formats[format].content.slice(0, 80) + '...'
+                : format
+            };
+            placed = true;
+            assigned++;
+            break;
+          }
+        }
+      }
+
+      if (placed) {
+        scheduledIds.add(item.id);
+        break; // One placement per content item
+      }
+    }
+  }
+
+  return { assignments, assigned };
+}
+
+// Legacy: build weekly calendar (backwards compat for existing API)
 function buildWeeklyCalendar(contentItems) {
   const now = new Date();
   const dayOfWeek = now.getDay(); // 0=Sun
@@ -47,25 +292,13 @@ function buildWeeklyCalendar(contentItems) {
     };
   }
 
-  // Assign pillar targets for each day
-  const pillarRotation = [
-    'INDUSTRY_INSIGHT',  // Mon
-    'TACTICAL_HOWTO',    // Tue
-    'SOCIAL_PROOF',      // Wed
-    'INDUSTRY_INSIGHT',  // Thu
-    'HOT_TAKE',          // Fri
-    'BEHIND_SCENES',     // Sat
-    'TACTICAL_HOWTO'     // Sun
-  ];
-
   const dates = Object.keys(calendar).sort();
   dates.forEach((date, i) => {
-    calendar[date].pillar = pillarRotation[i];
-    calendar[date].pillar_label = CONTENT_PILLARS[pillarRotation[i]]?.label || 'General';
-    calendar[date].pillar_color = CONTENT_PILLARS[pillarRotation[i]]?.color || '#666';
+    calendar[date].pillar = PILLAR_ROTATION[i];
+    calendar[date].pillar_label = CONTENT_PILLARS[PILLAR_ROTATION[i]]?.label || 'General';
+    calendar[date].pillar_color = CONTENT_PILLARS[PILLAR_ROTATION[i]]?.color || '#666';
   });
 
-  // Fill approved/review content into calendar slots
   const eligible = contentItems
     .filter(c => c.status === 'approved' || c.status === 'review')
     .sort((a, b) => new Date(b.generated_at) - new Date(a.generated_at));
@@ -73,7 +306,6 @@ function buildWeeklyCalendar(contentItems) {
   let contentIndex = 0;
   for (const date of dates) {
     if (contentIndex >= eligible.length) break;
-
     const item = eligible[contentIndex];
     const cal = calendar[date];
 
@@ -137,4 +369,4 @@ function buildWeeklyCalendar(contentItems) {
   };
 }
 
-module.exports = { buildWeeklyCalendar, CONTENT_PILLARS, getPillar };
+module.exports = { buildWeeklyCalendar, buildMonthlyCalendar, autoFillWeek, CONTENT_PILLARS, getPillar, TIME_SLOTS, PLATFORMS };

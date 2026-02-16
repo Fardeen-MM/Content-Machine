@@ -298,12 +298,160 @@ async function handleRequest(req, res) {
       return json(res, { ok: true });
     }
 
-    // GET /api/calendar
+    // GET /api/calendar — monthly or weekly calendar
     if (pathname === '/api/calendar' && method === 'GET') {
       const content = readJSON('content.json');
+      const month = url.searchParams.get('month'); // e.g. "2026-02"
+      if (month) {
+        const { buildMonthlyCalendar } = require('./generator/calendar-builder');
+        const calendarData = readJSON('calendar.json');
+        const calendar = buildMonthlyCalendar(content, month, calendarData);
+        return json(res, calendar);
+      }
+      // Legacy weekly fallback
       const { buildWeeklyCalendar } = require('./generator/calendar-builder');
       const calendar = buildWeeklyCalendar(content);
       return json(res, calendar);
+    }
+
+    // PUT /api/calendar/:date — assign content to a calendar slot
+    const calDateMatch = pathname.match(/^\/api\/calendar\/(\d{4}-\d{2}-\d{2})$/);
+    if (calDateMatch && method === 'PUT') {
+      const dateKey = calDateMatch[1];
+      const body = await parseBody(req);
+      const { slot, content_id, format, title, preview } = body;
+      if (!slot) return json(res, { error: 'slot required (e.g. linkedin_morning)' }, 400);
+
+      const calendarData = readJSON('calendar.json');
+      if (!calendarData[dateKey]) calendarData[dateKey] = {};
+
+      if (body.clear) {
+        delete calendarData[dateKey][slot];
+      } else {
+        calendarData[dateKey][slot] = {
+          content_id: content_id || null,
+          format: format || null,
+          title: (title || '').slice(0, 80),
+          preview: (preview || '').slice(0, 100),
+          status: body.status || 'review',
+          assigned_at: now()
+        };
+      }
+
+      writeJSON('calendar.json', calendarData);
+      return json(res, { ok: true, date: dateKey, slot });
+    }
+
+    // POST /api/calendar/auto-fill — auto-fill a week
+    if (pathname === '/api/calendar/auto-fill' && method === 'POST') {
+      const body = await parseBody(req);
+      const weekStart = body.week_start;
+      if (!weekStart) return json(res, { error: 'week_start required (YYYY-MM-DD)' }, 400);
+
+      const content = readJSON('content.json');
+      const calendarData = readJSON('calendar.json');
+      const { autoFillWeek } = require('./generator/calendar-builder');
+      const { assignments, assigned } = autoFillWeek(content, weekStart, calendarData);
+
+      // Merge assignments into calendar data
+      for (const [dateKey, slots] of Object.entries(assignments)) {
+        if (!calendarData[dateKey]) calendarData[dateKey] = {};
+        Object.assign(calendarData[dateKey], slots);
+      }
+
+      writeJSON('calendar.json', calendarData);
+      return json(res, { ok: true, assigned, assignments });
+    }
+
+    // POST /api/content/:id/performance — log performance metrics
+    const perfMatch = pathname.match(/^\/api\/content\/([a-zA-Z0-9_-]+)\/performance$/);
+    if (perfMatch && method === 'POST') {
+      const contentId = perfMatch[1];
+      const body = await parseBody(req);
+      const { format, impressions, engagement, clicks, leads, notes } = body;
+      if (!format) return json(res, { error: 'format required' }, 400);
+
+      const perfData = readJSON('performance.json');
+      const entry = {
+        content_id: contentId,
+        format,
+        impressions: parseInt(impressions) || 0,
+        engagement: parseInt(engagement) || 0,
+        clicks: parseInt(clicks) || 0,
+        leads: parseInt(leads) || 0,
+        notes: notes || '',
+        logged_at: now()
+      };
+
+      perfData.push(entry);
+      writeJSON('performance.json', perfData);
+      return json(res, { ok: true, entry });
+    }
+
+    // GET /api/performance — get all performance data
+    if (pathname === '/api/performance' && method === 'GET') {
+      const perfData = readJSON('performance.json');
+      return json(res, perfData);
+    }
+
+    // GET /api/analytics/performance — aggregated performance analytics
+    if (pathname === '/api/analytics/performance' && method === 'GET') {
+      const perfData = readJSON('performance.json');
+      const content = readJSON('content.json');
+
+      // Aggregate by format
+      const byFormat = {};
+      for (const entry of perfData) {
+        if (!byFormat[entry.format]) byFormat[entry.format] = { impressions: 0, engagement: 0, clicks: 0, leads: 0, count: 0 };
+        byFormat[entry.format].impressions += entry.impressions;
+        byFormat[entry.format].engagement += entry.engagement;
+        byFormat[entry.format].clicks += entry.clicks;
+        byFormat[entry.format].leads += entry.leads;
+        byFormat[entry.format].count++;
+      }
+
+      // Calculate engagement rates
+      for (const [, data] of Object.entries(byFormat)) {
+        data.engagement_rate = data.impressions > 0 ? Math.round((data.engagement / data.impressions) * 10000) / 100 : 0;
+        data.click_rate = data.impressions > 0 ? Math.round((data.clicks / data.impressions) * 10000) / 100 : 0;
+        data.avg_impressions = data.count > 0 ? Math.round(data.impressions / data.count) : 0;
+        data.avg_leads = data.count > 0 ? Math.round(data.leads / data.count * 100) / 100 : 0;
+      }
+
+      // Top performers (by total engagement)
+      const topPosts = perfData
+        .sort((a, b) => (b.engagement + b.clicks * 2 + b.leads * 10) - (a.engagement + a.clicks * 2 + a.leads * 10))
+        .slice(0, 10)
+        .map(p => {
+          const item = content.find(c => c.id === p.content_id);
+          return { ...p, title: item?.trigger_title || 'Unknown' };
+        });
+
+      // Aggregate by pillar
+      const byPillar = {};
+      for (const entry of perfData) {
+        const item = content.find(c => c.id === entry.content_id);
+        const pillar = item?.trigger_category || 'UNKNOWN';
+        if (!byPillar[pillar]) byPillar[pillar] = { impressions: 0, engagement: 0, clicks: 0, leads: 0, count: 0 };
+        byPillar[pillar].impressions += entry.impressions;
+        byPillar[pillar].engagement += entry.engagement;
+        byPillar[pillar].clicks += entry.clicks;
+        byPillar[pillar].leads += entry.leads;
+        byPillar[pillar].count++;
+      }
+
+      return json(res, {
+        total_entries: perfData.length,
+        by_format: byFormat,
+        by_pillar: byPillar,
+        top_posts: topPosts,
+        totals: {
+          impressions: perfData.reduce((s, p) => s + p.impressions, 0),
+          engagement: perfData.reduce((s, p) => s + p.engagement, 0),
+          clicks: perfData.reduce((s, p) => s + p.clicks, 0),
+          leads: perfData.reduce((s, p) => s + p.leads, 0)
+        }
+      });
     }
 
     // POST /api/triggers/generate — generate content for a trigger

@@ -1,4 +1,4 @@
-const { generateSocialContent, generateBlogPost, generateYouTubeScript } = require('../lib/claude');
+const { generateSocialContent, generateBlogPost, generateYouTubeScript, generateLeadMagnet, generateNewsletter, generateCaseStudy } = require('../lib/claude');
 const { generateId, now, readJSON } = require('../lib/utils');
 
 const BRAND_SYSTEM_PROMPT = `You are the content strategist for Mortar Metrics, a legal marketing agency that helps law firms get more signed cases through digital marketing.
@@ -126,12 +126,48 @@ async function generateAllContent(trigger) {
         content: social?.short_video_script || null,
         status: 'review',
         edited: false
+      },
+      carousel: {
+        content: social?.linkedin_carousel || null,
+        status: 'review',
+        edited: false
+      },
+      poll: {
+        content: social?.linkedin_poll || null,
+        status: 'review',
+        edited: false
+      },
+      quote_cards: {
+        content: social?.quote_cards || null,
+        status: 'review',
+        edited: false
+      },
+      stat_graphic: {
+        content: social?.stat_graphic || null,
+        status: 'review',
+        edited: false
+      },
+      hot_take: {
+        content: social?.hot_take || null,
+        status: 'review',
+        edited: false
+      },
+      before_after: {
+        content: social?.before_after || null,
+        status: 'review',
+        edited: false
+      },
+      listicle: {
+        content: social?.listicle_post || null,
+        status: 'review',
+        edited: false
       }
     },
     image_prompt: social?.image_prompt || null,
     image_url: null,
     blog_keyword: social?.blog_keyword || null,
     youtube_topic: social?.youtube_topic || null,
+    lead_magnet_topic: social?.lead_magnet_topic || null,
     blog_post: null,
     youtube_script: null,
     notes: ''
@@ -186,4 +222,68 @@ async function generateYouTube(content, trigger) {
   return content;
 }
 
-module.exports = { generateAllContent, generateBlog, generateYouTube, buildSystemPromptWithMemory, BRAND_SYSTEM_PROMPT };
+async function generateLeadMagnetContent(content, trigger) {
+  if (!content.lead_magnet_topic) {
+    console.log('[writer] No lead magnet topic, skipping generation');
+    return content;
+  }
+
+  console.log(`[writer] Generating lead magnet for: ${content.lead_magnet_topic}`);
+
+  try {
+    const { renderLeadMagnetHTML } = require('./lead-magnet-renderer');
+    const triggerWithTopic = { ...trigger, lead_magnet_topic: content.lead_magnet_topic };
+    const parsed = await generateLeadMagnet(triggerWithTopic, buildSystemPromptWithMemory());
+    const html = renderLeadMagnetHTML(parsed);
+    content.formats.lead_magnet = { content: html, status: 'review', edited: false };
+    content.lead_magnet_meta = { title: parsed.title, type: parsed.type, subtitle: parsed.subtitle };
+  } catch (err) {
+    console.error(`[writer] Lead magnet generation failed: ${err.message}`);
+  }
+
+  return content;
+}
+
+async function generateNewsletterContent(content, trigger) {
+  console.log(`[writer] Generating newsletter for: ${trigger.title}`);
+
+  try {
+    const parsed = await generateNewsletter(trigger, buildSystemPromptWithMemory());
+    content.formats.newsletter = {
+      content: parsed.body || parsed,
+      status: 'review',
+      edited: false
+    };
+    content.newsletter_meta = {
+      subject_line: parsed.subject_line || '',
+      preview_text: parsed.preview_text || ''
+    };
+  } catch (err) {
+    console.error(`[writer] Newsletter generation failed: ${err.message}`);
+  }
+
+  return content;
+}
+
+async function generateCaseStudyContent(content, trigger) {
+  console.log(`[writer] Generating case study for: ${trigger.title}`);
+
+  try {
+    const caseStudy = await generateCaseStudy(trigger, buildSystemPromptWithMemory());
+    content.formats.case_study = {
+      content: caseStudy,
+      status: 'review',
+      edited: false
+    };
+  } catch (err) {
+    console.error(`[writer] Case study generation failed: ${err.message}`);
+  }
+
+  return content;
+}
+
+module.exports = {
+  generateAllContent, generateBlog, generateYouTube,
+  generateLeadMagnetContent, generateNewsletterContent, generateCaseStudyContent,
+  buildSystemPromptWithMemory, BRAND_SYSTEM_PROMPT
+};

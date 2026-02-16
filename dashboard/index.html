@@ -313,6 +313,27 @@ h1, h2, h3, h4 { font-family: 'Fraunces', serif; }
 .badge-x { background: var(--gray-800); color: white; }
 .badge-video { background: var(--purple); color: white; }
 .badge-blog { background: var(--green); color: white; }
+.badge-magnet { background: linear-gradient(135deg, #059669, #10b981); color: white; }
+.badge-carousel { background: #6366f1; color: white; }
+.badge-poll { background: #0891b2; color: white; }
+.badge-quote { background: #a855f7; color: white; }
+.badge-stat { background: #ec4899; color: white; }
+.badge-hottake { background: #f97316; color: white; }
+.badge-ba { background: #14b8a6; color: white; }
+.badge-listicle { background: #8b5cf6; color: white; }
+.badge-newsletter { background: #0284c7; color: white; }
+.badge-casestudy { background: #059669; color: white; }
+.lm-type-pill { display: inline-block; font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 100px; text-transform: uppercase; letter-spacing: 0.5px; }
+.lm-type-scorecard { background: #dbeafe; color: #2563eb; }
+.lm-type-calculator { background: #d1fae5; color: #059669; }
+.lm-type-checklist { background: #fef3c7; color: #d97706; }
+.lm-type-audit { background: #fee2e2; color: #dc2626; }
+.lm-type-benchmark { background: #ede9fe; color: #7c3aed; }
+.lm-type-swipe_file { background: #cffafe; color: #0891b2; }
+.lm-type-blueprint { background: #e0e7ff; color: #4f46e5; }
+.lm-type-cheat_sheet { background: #fce7f3; color: #db2777; }
+.lm-type-toolkit { background: #f3e8ff; color: #9333ea; }
+.lm-type-worksheet { background: #ecfdf5; color: #047857; }
 
 /* Content List */
 .content-list { display: flex; flex-direction: column; gap: 16px; }
@@ -1327,7 +1348,17 @@ function formatName(key) {
     x_thread: 'Thread',
     short_video: 'Video Script',
     blog: 'Blog Post',
-    youtube_script: 'YouTube Script'
+    youtube_script: 'YouTube Script',
+    lead_magnet: 'Lead Magnet',
+    carousel: 'Carousel',
+    poll: 'Poll',
+    quote_cards: 'Quote Cards',
+    stat_graphic: 'Stat Graphic',
+    hot_take: 'Hot Take',
+    before_after: 'Before/After',
+    listicle: 'Listicle',
+    newsletter: 'Newsletter',
+    case_study: 'Case Study'
   };
   return names[key] || key;
 }
@@ -1339,7 +1370,17 @@ function formatBadgeClass(key) {
     x_thread: 'badge-x',
     short_video: 'badge-video',
     blog: 'badge-blog',
-    youtube_script: 'badge-video'
+    youtube_script: 'badge-video',
+    lead_magnet: 'badge-magnet',
+    carousel: 'badge-carousel',
+    poll: 'badge-poll',
+    quote_cards: 'badge-quote',
+    stat_graphic: 'badge-stat',
+    hot_take: 'badge-hottake',
+    before_after: 'badge-ba',
+    listicle: 'badge-listicle',
+    newsletter: 'badge-newsletter',
+    case_study: 'badge-casestudy'
   };
   return classes[key] || '';
 }
@@ -1874,6 +1915,27 @@ function renderContentCard(content) {
               title: `Generate script for: ${content.youtube_topic}`
             }, '+ YouTube')
           : null,
+        !content.formats?.lead_magnet?.content
+          ? h('button', {
+              className: 'btn btn-outline btn-sm',
+              onclick: () => regenerateFormat(content.id, 'lead_magnet'),
+              title: content.lead_magnet_topic ? `Generate lead magnet: ${content.lead_magnet_topic}` : 'Generate lead magnet'
+            }, '+ Lead Magnet')
+          : null,
+        !content.formats?.newsletter?.content
+          ? h('button', {
+              className: 'btn btn-outline btn-sm',
+              onclick: () => regenerateFormat(content.id, 'newsletter'),
+              title: 'Generate newsletter deep dive'
+            }, '+ Newsletter')
+          : null,
+        !content.formats?.case_study?.content
+          ? h('button', {
+              className: 'btn btn-outline btn-sm',
+              onclick: () => regenerateFormat(content.id, 'case_study'),
+              title: 'Generate mini case study'
+            }, '+ Case Study')
+          : null,
         content.trigger_url
           ? h('a', {
               href: content.trigger_url,
@@ -1949,7 +2011,14 @@ function renderContentCard(content) {
 function renderFormatContent(content, formatKey, fmt) {
   const isEditing = state.editingFormat === `${content.id}:${formatKey}`;
   const isThread = formatKey === 'x_thread' && Array.isArray(fmt.content);
-  const isLong = formatKey === 'blog' || formatKey === 'youtube_script';
+  const isLong = formatKey === 'blog' || formatKey === 'youtube_script' || formatKey === 'lead_magnet' || formatKey === 'newsletter' || formatKey === 'case_study';
+  const isLeadMagnet = formatKey === 'lead_magnet';
+  const isCarousel = formatKey === 'carousel' && Array.isArray(fmt.content);
+  const isPoll = formatKey === 'poll' && fmt.content && typeof fmt.content === 'object' && fmt.content.question;
+  const isQuoteCards = formatKey === 'quote_cards' && Array.isArray(fmt.content);
+  const isStatGraphic = formatKey === 'stat_graphic' && fmt.content && typeof fmt.content === 'object' && fmt.content.number;
+  const isBeforeAfter = formatKey === 'before_after' && fmt.content && typeof fmt.content === 'object' && fmt.content.before;
+  const isNewsletter = formatKey === 'newsletter';
   const text = isThread ? fmt.content : (fmt.content || '');
 
   if (isEditing) {
@@ -1991,6 +2060,23 @@ function renderFormatContent(content, formatKey, fmt) {
   const canPreview = formatKey === 'linkedin' || formatKey === 'x_single';
 
   return h('div', {},
+    // Lead magnet meta + preview
+    isLeadMagnet && content.lead_magnet_meta
+      ? h('div', { style: { padding: '12px 20px', background: 'var(--gray-50)', borderBottom: '1px solid var(--gray-100)', display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' } },
+          h('span', { className: `lm-type-pill lm-type-${content.lead_magnet_meta.type || ''}` }, content.lead_magnet_meta.type?.replace(/_/g, ' ') || 'resource'),
+          h('strong', { style: { fontSize: '14px' } }, content.lead_magnet_meta.title || ''),
+          content.lead_magnet_meta.subtitle ? h('span', { style: { fontSize: '12px', color: 'var(--gray-500)' } }, content.lead_magnet_meta.subtitle) : null,
+          h('button', {
+            className: 'btn btn-primary btn-sm',
+            style: { marginLeft: 'auto', padding: '6px 16px', fontSize: '12px' },
+            onclick: () => {
+              const blob = new Blob([fmt.content], { type: 'text/html' });
+              const url = URL.createObjectURL(blob);
+              window.open(url, '_blank');
+            }
+          }, 'Open Preview')
+        )
+      : null,
     // Preview toggle for LinkedIn and Tweet
     canPreview
       ? h('div', { style: { padding: '8px 20px', display: 'flex', justifyContent: 'flex-end' } },
@@ -2003,6 +2089,17 @@ function renderFormatContent(content, formatKey, fmt) {
               className: `preview-toggle-btn ${showPreview ? 'active' : ''}`,
               onclick: () => { state.previewMode[previewKey] = 'preview'; render(); }
             }, h('span', { innerHTML: icons.eye, style: { width: '12px', height: '12px', marginRight: '4px', display: 'inline-flex' } }), 'Preview')
+          )
+        )
+      : null,
+    // Newsletter meta
+    isNewsletter && content.newsletter_meta
+      ? h('div', { style: { padding: '12px 20px', background: 'var(--gray-50)', borderBottom: '1px solid var(--gray-100)' } },
+          h('div', { style: { fontSize: '13px', marginBottom: '4px' } },
+            h('strong', {}, 'Subject: '), content.newsletter_meta.subject_line || '(none)'
+          ),
+          h('div', { style: { fontSize: '12px', color: 'var(--gray-500)' } },
+            h('strong', {}, 'Preview: '), content.newsletter_meta.preview_text || ''
           )
         )
       : null,
@@ -2020,17 +2117,64 @@ function renderFormatContent(content, formatKey, fmt) {
             )
           )
         )
+      : isCarousel
+        ? h('div', { className: 'format-content', style: { maxHeight: '500px' } },
+            ...fmt.content.map((slide, i) =>
+              h('div', { style: { padding: '16px', margin: '8px 0', background: i === 0 ? 'var(--navy)' : 'var(--gray-50)', color: i === 0 ? 'white' : 'var(--gray-800)', borderRadius: '12px', border: i === 0 ? 'none' : '1px solid var(--gray-200)' } },
+                h('div', { style: { fontSize: '11px', fontWeight: '600', opacity: '0.6', marginBottom: '4px' } }, `SLIDE ${i + 1} of ${fmt.content.length}`),
+                h('div', { style: { fontSize: i === 0 ? '18px' : '15px', fontWeight: i === 0 ? '700' : '500' } }, slide)
+              )
+            )
+          )
+        : isPoll
+          ? h('div', { className: 'format-content', style: { maxHeight: '400px' } },
+              h('div', { style: { marginBottom: '12px', fontSize: '14px', color: 'var(--gray-600)' } }, fmt.content.post_text || ''),
+              h('div', { style: { fontWeight: '700', fontSize: '16px', marginBottom: '12px' } }, fmt.content.question),
+              ...(fmt.content.options || []).map(opt =>
+                h('div', { style: { padding: '10px 16px', margin: '6px 0', background: 'var(--gray-50)', borderRadius: '8px', border: '1px solid var(--gray-200)', fontSize: '14px' } }, opt)
+              )
+            )
+          : isQuoteCards
+            ? h('div', { className: 'format-content', style: { maxHeight: '400px' } },
+                ...fmt.content.map(q =>
+                  h('div', { style: { padding: '20px 24px', margin: '8px 0', background: 'linear-gradient(135deg, var(--navy), var(--navy-light))', color: 'white', borderRadius: '12px', fontSize: '18px', fontFamily: "'Fraunces', serif", fontWeight: '600', lineHeight: '1.4', textAlign: 'center' } },
+                    h('span', { style: { fontSize: '32px', opacity: '0.4', display: 'block', marginBottom: '4px' } }, '\u201C'),
+                    q
+                  )
+                )
+              )
+            : isStatGraphic
+              ? h('div', { className: 'format-content', style: { maxHeight: '300px' } },
+                  h('div', { style: { textAlign: 'center', padding: '24px', background: 'linear-gradient(135deg, #4f46e5, #6366f1)', borderRadius: '12px', margin: '8px', color: 'white' } },
+                    h('div', { style: { fontSize: '48px', fontWeight: '800', fontFamily: "'Fraunces', serif" } }, fmt.content.number),
+                    h('div', { style: { fontSize: '18px', fontWeight: '600', marginTop: '4px' } }, fmt.content.label),
+                    h('div', { style: { fontSize: '14px', opacity: '0.8', marginTop: '8px' } }, fmt.content.context)
+                  )
+                )
+              : isBeforeAfter
+                ? h('div', { className: 'format-content', style: { maxHeight: '400px' } },
+                    h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', margin: '8px' } },
+                      h('div', { style: { padding: '20px', background: 'var(--red-light)', borderRadius: '12px', borderLeft: '4px solid var(--red)' } },
+                        h('div', { style: { fontSize: '12px', fontWeight: '700', color: 'var(--red)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' } }, 'BEFORE'),
+                        h('div', { style: { fontSize: '14px', color: 'var(--gray-700)' } }, fmt.content.before)
+                      ),
+                      h('div', { style: { padding: '20px', background: 'var(--green-light)', borderRadius: '12px', borderLeft: '4px solid var(--green)' } },
+                        h('div', { style: { fontSize: '12px', fontWeight: '700', color: 'var(--green)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' } }, 'AFTER'),
+                        h('div', { style: { fontSize: '14px', color: 'var(--gray-700)' } }, fmt.content.after)
+                      )
+                    )
+                  )
       : h('div', {
           className: `format-content ${shouldCollapse ? 'collapsed' : ''}`,
           style: shouldCollapse ? { maxHeight: '200px' } : { maxHeight: '600px' }
-        }, text),
+        }, typeof text === 'string' ? text : JSON.stringify(text, null, 2)),
     // Expand/collapse for long content
     isLong
       ? h('div', { style: { textAlign: 'center', padding: '4px', background: 'var(--gray-50)', borderBottom: '1px solid var(--gray-100)' } },
           h('button', {
             className: 'btn btn-ghost btn-sm',
             onclick: () => { state.expandedFormats[expandKey] = !isExpanded; render(); }
-          }, isExpanded ? 'Show Less' : `Expand Full ${formatKey === 'blog' ? 'Blog Post' : 'Script'}`,
+          }, isExpanded ? 'Show Less' : `Expand Full ${formatName(formatKey)}`,
             h('span', { innerHTML: icons.expand, style: { width: '14px', height: '14px', transform: isExpanded ? 'rotate(180deg)' : '', transition: 'transform 0.2s' } })
           )
         )
@@ -2063,7 +2207,7 @@ function renderFormatContent(content, formatKey, fmt) {
         className: 'btn btn-outline btn-sm',
         onclick: () => {
           state.editingFormat = `${content.id}:${formatKey}`;
-          state.editText = isThread ? fmt.content.join('\n\n---\n\n') : text;
+          state.editText = isThread ? fmt.content.join('\n\n---\n\n') : (typeof text === 'string' ? text : JSON.stringify(text, null, 2));
           render();
           setTimeout(() => {
             const ta = document.querySelector('.edit-textarea');
@@ -2074,7 +2218,7 @@ function renderFormatContent(content, formatKey, fmt) {
       }, h('span', { innerHTML: icons.edit, style: { width: '14px', height: '14px' } }), ' Edit'),
       h('button', {
         className: 'btn btn-primary btn-sm',
-        onclick: () => copyToClipboard(text),
+        onclick: () => copyToClipboard(typeof text === 'string' ? text : JSON.stringify(text, null, 2)),
         title: 'Copy to clipboard'
       }, h('span', { innerHTML: icons.copy, style: { width: '14px', height: '14px' } }), ' Copy'),
       h('button', {

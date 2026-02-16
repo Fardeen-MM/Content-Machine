@@ -456,13 +456,34 @@ async function handleRequest(req, res) {
           const scriptContent = await generateYouTubeScript(trigger, topic, systemPrompt);
           content[idx].formats.youtube_script = { content: scriptContent, status: 'review', edited: false };
           content[idx].youtube_script = scriptContent;
+        } else if (format === 'lead_magnet') {
+          const { generateLeadMagnet } = require('./lib/claude');
+          const { renderLeadMagnetHTML } = require('./generator/lead-magnet-renderer');
+          const triggerWithTopic = { ...trigger, lead_magnet_topic: item.lead_magnet_topic || trigger.title };
+          const parsed = await generateLeadMagnet(triggerWithTopic, systemPrompt);
+          const html = renderLeadMagnetHTML(parsed);
+          content[idx].formats.lead_magnet = { content: html, status: 'review', edited: false };
+          content[idx].lead_magnet_meta = { title: parsed.title, type: parsed.type, subtitle: parsed.subtitle };
+        } else if (format === 'newsletter') {
+          const { generateNewsletter } = require('./lib/claude');
+          const parsed = await generateNewsletter(trigger, systemPrompt);
+          content[idx].formats.newsletter = { content: parsed.body || parsed, status: 'review', edited: false };
+          content[idx].newsletter_meta = { subject_line: parsed.subject_line || '', preview_text: parsed.preview_text || '' };
+        } else if (format === 'case_study') {
+          const { generateCaseStudy } = require('./lib/claude');
+          const caseStudy = await generateCaseStudy(trigger, systemPrompt);
+          content[idx].formats.case_study = { content: caseStudy, status: 'review', edited: false };
         } else {
           // Social format — regenerate all social, extract the one we need
           const { generateSocialContent } = require('./lib/claude');
           const social = await generateSocialContent(trigger, systemPrompt);
           const formatMap = {
             linkedin: 'linkedin_post', x_single: 'x_single',
-            x_thread: 'x_thread', short_video: 'short_video_script'
+            x_thread: 'x_thread', short_video: 'short_video_script',
+            carousel: 'linkedin_carousel', poll: 'linkedin_poll',
+            quote_cards: 'quote_cards', stat_graphic: 'stat_graphic',
+            hot_take: 'hot_take', before_after: 'before_after',
+            listicle: 'listicle_post'
           };
           const newContent = social?.[formatMap[format]] || null;
           if (newContent) {

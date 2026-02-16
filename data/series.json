@@ -1,0 +1,65 @@
+[
+  {
+    "id": "marketing-myth-monday",
+    "name": "Marketing Myth Monday",
+    "day": "monday",
+    "template_prompt": "Write a post debunking a common law firm marketing myth. Format: Myth: {myth}\n\nReality: {reality}\n\nThe data: {data}\n\nWhat to do instead: {action}\n\nKeep it punchy and direct. Use a confident, slightly provocative tone that challenges conventional wisdom. Back claims with specific numbers or examples where possible.",
+    "formats": ["linkedin", "x_single", "carousel"],
+    "pillar": "hot_take",
+    "active": true
+  },
+  {
+    "id": "tactical-tuesday",
+    "name": "Tactical Tuesday",
+    "day": "tuesday",
+    "template_prompt": "Write a post sharing one specific, implementable marketing tactic for law firms. Format: The tactic: {tactic_name}\n\nWhy it works: {reasoning}\n\nHow to implement it (step by step):\n1. {step}\n2. {step}\n3. {step}\n\nExpected result: {outcome}\n\nKeep it actionable and concrete. The reader should be able to implement this today with no additional resources. Include time estimates and difficulty level.",
+    "formats": ["linkedin", "x_thread", "carousel", "newsletter"],
+    "pillar": "tactical",
+    "active": true
+  },
+  {
+    "id": "case-study-wednesday",
+    "name": "Case Study Wednesday",
+    "day": "wednesday",
+    "template_prompt": "Write a post presenting a before/after client success story for a law firm marketing engagement. Format: The firm: {firm_type} ({size}, {location})\n\nThe problem: {problem}\n\nWhat we did: {solution}\n\nThe results: {metrics_before} → {metrics_after}\n\nKey takeaway: {lesson}\n\nUse specific numbers and timeframes. Paint a vivid picture of the transformation. Keep the firm anonymous but make the scenario realistic and relatable to other firms facing similar challenges.",
+    "formats": ["linkedin", "carousel", "newsletter", "blog"],
+    "pillar": "social_proof",
+    "active": true
+  },
+  {
+    "id": "data-drop-thursday",
+    "name": "Data Drop Thursday",
+    "day": "thursday",
+    "template_prompt": "Write a post presenting one surprising stat or benchmark about legal marketing with analysis. Format: The stat: {statistic}\n\nWhy this matters: {analysis}\n\nWhat most firms get wrong about this: {misconception}\n\nHow top firms use this data: {application}\n\nSource: {source}\n\nLead with the number to stop the scroll. Provide context that makes the stat meaningful. Connect it to a specific action the reader can take. Challenge assumptions where the data contradicts common practice.",
+    "formats": ["linkedin", "x_single", "carousel"],
+    "pillar": "industry_insight",
+    "active": true
+  },
+  {
+    "id": "friday-hot-take",
+    "name": "Friday Hot Take",
+    "day": "friday",
+    "template_prompt": "Write a post sharing a contrarian opinion about law firm marketing that sparks debate. Format: Hot take: {opinion}\n\nThe mainstream belief: {conventional_wisdom}\n\nWhy I disagree: {argument}\n\nThe evidence: {supporting_points}\n\nFight me on this: {call_to_debate}\n\nBe bold and unapologetic but not reckless. Ground the take in real experience and observations. End with an invitation for disagreement to drive engagement. This should make people stop scrolling and feel compelled to comment.",
+    "formats": ["linkedin", "x_single", "x_thread"],
+    "pillar": "hot_take",
+    "active": true
+  },
+  {
+    "id": "saturday-behind-the-scenes",
+    "name": "Saturday Behind the Scenes",
+    "day": "saturday",
+    "template_prompt": "Write a post revealing a behind-the-scenes look at agency life, team wins, or internal processes. Format: What you see: {external_view}\n\nWhat actually happens: {behind_scenes_reality}\n\nWhy we do it this way: {reasoning}\n\nWhat we learned: {lesson}\n\nKeep the tone human, authentic, and slightly informal. Show the messy middle of building and running a legal marketing agency. Celebrate team wins without being braggy. Reveal process details that make the audience feel like insiders.",
+    "formats": ["linkedin", "x_single", "instagram"],
+    "pillar": "behind_scenes",
+    "active": true
+  },
+  {
+    "id": "sunday-strategy",
+    "name": "Sunday Strategy",
+    "day": "sunday",
+    "template_prompt": "Write a post presenting one big-picture marketing framework or system for law firms. Format: The framework: {framework_name}\n\nThe problem it solves: {problem}\n\nHow it works:\n- Step 1: {step}\n- Step 2: {step}\n- Step 3: {step}\n\nWhen to use it: {use_case}\n\nWhen NOT to use it: {anti_pattern}\n\nKeep it strategic and high-level but still practical. The reader should walk away with a mental model they can apply to their firm. Use analogies to make abstract concepts concrete. This is weekend reading — make it thoughtful and worth saving.",
+    "formats": ["linkedin", "carousel", "newsletter", "blog"],
+    "pillar": "tactical",
+    "active": true
+  }
+]

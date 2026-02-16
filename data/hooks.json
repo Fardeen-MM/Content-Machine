@@ -1,0 +1,80 @@
+{
+  "contrarian": [
+    "Everyone says {common_belief}. They're wrong.",
+    "Stop {common_action}. Here's why:",
+    "The worst advice I see law firms follow: {bad_advice}",
+    "{common_belief} is a myth. Here's the data:",
+    "Unpopular opinion: {unpopular_take}",
+    "I'm going to say something that pisses off most marketing agencies: {take}"
+  ],
+  "specific_result": [
+    "We took a {practice_area} firm from {before_metric} to {after_metric} in {timeframe}.",
+    "One Google Ads change added {dollar_amount}/mo in signed cases.",
+    "This single LSA tweak generated {number} calls in {timeframe}.",
+    "{number} signed cases in {timeframe} — here's the exact playbook.",
+    "We cut cost-per-lead from {before_cost} to {after_cost} for a {practice_area} firm.",
+    "A {practice_area} firm went from page 3 to the Map Pack in {timeframe}. Here's how."
+  ],
+  "story_open": [
+    "A {practice_area} attorney called us last {month}. He was ready to quit.",
+    "I just audited a firm spending {dollar_amount}/mo on ads. They had zero call tracking.",
+    "Last week I watched a law firm lose a {dollar_amount} case to a competitor with worse reviews.",
+    "True story: a solo attorney fired their agency and {unexpected_outcome}.",
+    "I got a call from a managing partner in tears. {situation}.",
+    "We inherited a Google Ads account burning {dollar_amount}/mo. What we found was criminal."
+  ],
+  "framework": [
+    "The 3-part intake script that converts {percentage} of leads:",
+    "Our {number}-step system for turning Google reviews into signed cases:",
+    "The {name} Framework: how top firms dominate their market.",
+    "Steal this {number}-step process for ranking in the Map Pack:",
+    "The exact {number}-point audit we run on every firm's Google Ads account:",
+    "Here's our {number}-step client reactivation playbook for slow months:"
+  ],
+  "data_drop": [
+    "{percentage} of law firm leads never get a callback. Let that sink in.",
+    "We analyzed {number} law firm websites. Only {percentage} had call tracking.",
+    "The average PI firm wastes {dollar_amount}/mo on clicks that never convert.",
+    "Firms that respond in under 5 minutes sign {multiplier}x more cases.",
+    "{percentage} of legal searches happen on mobile. Your site loads in {seconds}s.",
+    "Law firms using CallRail close {percentage} more leads than those guessing."
+  ],
+  "cost_of_inaction": [
+    "Every day without call tracking is costing you {dollar_amount} in lost cases.",
+    "Your competitors are running LSAs. You're not. Here's what that's costing you.",
+    "That unresponded lead from yesterday? Worth {dollar_amount} in lifetime value.",
+    "You're losing {number} cases/mo to firms with worse attorneys but better marketing.",
+    "No CRM? You're bleeding {dollar_amount}/yr in cases your intake team forgot.",
+    "Every month you delay SEO, your competitor's lead widens."
+  ],
+  "question": [
+    "What's your cost per signed case? (Most firms have no idea.)",
+    "Would you spend {dollar_amount} to make {dollar_amount}? Then why aren't you?",
+    "Can you name your top 3 lead sources right now?",
+    "How many leads did your firm get last month? From where?",
+    "What happens when someone calls your firm at 5:01 PM?",
+    "When's the last time you Googled your own firm? Try it."
+  ],
+  "myth_buster": [
+    "\"SEO is dead for law firms.\" Wrong. Here's what actually changed.",
+    "\"Google Ads doesn't work for {practice_area}.\" It does. You're doing it wrong.",
+    "\"We get all our cases from referrals.\" That's not a strategy. That's luck.",
+    "\"More website traffic = more cases.\" Not even close.",
+    "\"We tried PPC once and it didn't work.\" No — your agency didn't work.",
+    "\"Social media doesn't get cases.\" It does. Just not the way you think."
+  ],
+  "hot_take": [
+    "Most law firm websites are expensive billboards that no one reads.",
+    "Your Clio data is more valuable than your next marketing campaign.",
+    "Avvo is dead. Stop paying for a premium profile.",
+    "The best marketing hire a law firm can make isn't a marketer — it's an intake specialist.",
+    "Half of legal marketing agencies have never signed a case in their life.",
+    "If your agency can't show you cost-per-signed-case, fire them today."
+  ],
+  "behind_the_scenes": [
+    "Here's the exact Google Ads dashboard we review every Monday for our PI firms:",
+    "Inside look: how we rebuilt a {practice_area} firm's entire intake process.",
+    "The CallRail report that made a managing partner rethink everything:",
+    "Raw screenshots from a real LSA campaign doing {dollar_amount}/mo in signed cases:"
+  ]
+}

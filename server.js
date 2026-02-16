@@ -678,6 +678,194 @@ async function handleRequest(req, res) {
       }
     }
 
+    // POST /api/capture — quick capture an idea as a trigger
+    if (pathname === '/api/capture' && method === 'POST') {
+      const body = await parseBody(req);
+      if (!body.title && !body.text) return json(res, { error: 'title or text required' }, 400);
+
+      const trigger = {
+        id: `capture-${generateId()}`,
+        source: body.source || 'capture',
+        source_detail: 'Quick Capture',
+        title: (body.title || body.text).slice(0, 200),
+        raw_content: body.text || body.title,
+        url: body.url || null,
+        category: body.category || 'CONTENT_PIECE',
+        captured_at: now(),
+        status: 'pending',
+        score: 0
+      };
+
+      const triggers = readJSON('trigger-queue.json');
+      triggers.push(trigger);
+      writeJSON('trigger-queue.json', triggers);
+      return json(res, { ok: true, trigger });
+    }
+
+    // POST /api/atomize — break text or URL into content atoms
+    if (pathname === '/api/atomize' && method === 'POST') {
+      const body = await parseBody(req);
+      const { atomizeContent, atomizeUrl } = require('./generator/atomizer');
+
+      if (body.url) {
+        const atoms = await atomizeUrl(body.url);
+        return json(res, atoms);
+      } else if (body.text) {
+        const atoms = await atomizeContent(body.text, body.source || 'manual');
+        return json(res, atoms);
+      }
+      return json(res, { error: 'url or text required' }, 400);
+    }
+
+    // POST /api/content/:id/pillar-spoke — generate via pillar cascade
+    const pillarMatch = pathname.match(/^\/api\/content-pillar\/([a-zA-Z0-9_-]+)$/);
+    if (pillarMatch && method === 'POST') {
+      if (!process.env.ANTHROPIC_API_KEY) {
+        return json(res, { error: 'ANTHROPIC_API_KEY not configured' }, 500);
+      }
+
+      const triggerId = pillarMatch[1];
+      const body = await parseBody(req);
+      const pillarType = body.pillar_type || 'blog';
+
+      const triggers = readJSON('trigger-queue.json');
+      const trigger = triggers.find(t => t.id === triggerId);
+      if (!trigger) return json(res, { error: 'Trigger not found' }, 404);
+
+      try {
+        const { generatePillarWithSpokes } = require('./generator/content-writer');
+        const content = await generatePillarWithSpokes(trigger, pillarType);
+
+        // Run quality gate on all formats
+        const { qualityCheck } = require('./generator/quality-gate');
+        const qualityScores = {};
+        for (const [key, fmt] of Object.entries(content.formats)) {
+          if (fmt.content) {
+            qualityScores[key] = qualityCheck(fmt.content, key, trigger);
+          }
+        }
+        content.quality_scores = qualityScores;
+
+        const contentArr = readJSON('content.json');
+        contentArr.push(content);
+        writeJSON('content.json', contentArr);
+
+        // Mark trigger as used
+        const tIdx = triggers.findIndex(t => t.id === triggerId);
+        if (tIdx !== -1) { triggers[tIdx].status = 'used'; writeJSON('trigger-queue.json', triggers); }
+
+        return json(res, { ok: true, content });
+      } catch (err) {
+        return json(res, { error: err.message }, 500);
+      }
+    }
+
+    // POST /api/remix — competitor content remixer
+    if (pathname === '/api/remix' && method === 'POST') {
+      if (!process.env.ANTHROPIC_API_KEY) {
+        return json(res, { error: 'ANTHROPIC_API_KEY not configured' }, 500);
+      }
+
+      const body = await parseBody(req);
+      if (!body.url && !body.text) return json(res, { error: 'url or text required' }, 400);
+
+      try {
+        let text = body.text || '';
+        if (body.url && !text) {
+          const fetchRes = await fetch(body.url, {
+            headers: { 'User-Agent': 'ContentMachine/1.0' },
+            signal: AbortSignal.timeout(15000)
+          });
+          if (fetchRes.ok) {
+            let html = await fetchRes.text();
+            const { stripHtml } = require('./lib/utils');
+            text = stripHtml(html).slice(0, 6000);
+          }
+        }
+
+        const { remixContent } = require('./generator/remixer');
+        const { buildSystemPromptWithMemory } = require('./generator/content-writer');
+        const remixed = await remixContent(text, body.url || 'manual', buildSystemPromptWithMemory());
+
+        // Create trigger + content from remix
+        const trigger = {
+          id: `remix-${generateId()}`,
+          source: 'remix',
+          source_detail: body.url || 'Competitor remix',
+          title: remixed.title || 'Remixed Content',
+          raw_content: text.slice(0, 2000),
+          url: body.url || null,
+          category: 'COMPETITOR_REMIX',
+          captured_at: now(),
+          status: 'used',
+          score: 0
+        };
+
+        const triggers = readJSON('trigger-queue.json');
+        triggers.push(trigger);
+        writeJSON('trigger-queue.json', triggers);
+
+        // Build content object
+        const contentId = generateId();
+        const content = {
+          id: contentId,
+          trigger_id: trigger.id,
+          trigger_title: remixed.title || trigger.title,
+          trigger_source: 'remix',
+          trigger_category: 'COMPETITOR_REMIX',
+          trigger_url: body.url || null,
+          generated_at: now(),
+          status: 'review',
+          generation_mode: 'remix',
+          remix_angle: remixed.angle || '',
+          formats: {
+            linkedin: { content: remixed.linkedin_post || null, status: 'review', edited: false },
+            x_single: { content: remixed.x_single || null, status: 'review', edited: false },
+            carousel: { content: remixed.carousel || null, status: 'review', edited: false },
+            blog: { content: remixed.blog_post || null, status: 'review', edited: false }
+          },
+          atoms: remixed.atoms || null,
+          image_prompt: null,
+          image_url: null,
+          blog_keyword: null,
+          youtube_topic: null,
+          lead_magnet_topic: null,
+          blog_post: remixed.blog_post || null,
+          notes: `Remixed from: ${body.url || 'manual input'}\nAngle: ${remixed.angle || 'N/A'}`
+        };
+
+        const contentArr = readJSON('content.json');
+        contentArr.push(content);
+        writeJSON('content.json', contentArr);
+
+        return json(res, { ok: true, content, atoms: remixed.atoms });
+      } catch (err) {
+        return json(res, { error: err.message }, 500);
+      }
+    }
+
+    // GET /api/series — get content series config
+    if (pathname === '/api/series' && method === 'GET') {
+      const series = readJSON('series.json');
+      return json(res, series);
+    }
+
+    // GET /api/hooks — get hook library
+    if (pathname === '/api/hooks' && method === 'GET') {
+      const hooks = readJSON('hooks.json');
+      return json(res, hooks);
+    }
+
+    // POST /api/quality-check — quality check content
+    if (pathname === '/api/quality-check' && method === 'POST') {
+      const body = await parseBody(req);
+      if (!body.content || !body.format) return json(res, { error: 'content and format required' }, 400);
+
+      const { qualityCheck } = require('./generator/quality-gate');
+      const result = qualityCheck(body.content, body.format, body.trigger || {});
+      return json(res, result);
+    }
+
     // --- Static file serving ---
 
     // Serve dashboard

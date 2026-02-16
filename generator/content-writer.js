@@ -1,4 +1,4 @@
-const { generateSocialContent, generateBlogPost, generateYouTubeScript, generateLeadMagnet, generateNewsletter, generateCaseStudy } = require('../lib/claude');
+const { generateSocialContent, generateBlogPost, generateYouTubeScript, generateLeadMagnet, generateNewsletter, generateCaseStudy, extractSpokes } = require('../lib/claude');
 const { generateId, now, readJSON } = require('../lib/utils');
 
 const BRAND_SYSTEM_PROMPT = `You are the content strategist for Mortar Metrics, a legal marketing agency that helps law firms get more signed cases through digital marketing.
@@ -282,8 +282,108 @@ async function generateCaseStudyContent(content, trigger) {
   return content;
 }
 
+async function generatePillarWithSpokes(trigger, pillarType = 'blog') {
+  const contentId = generateId();
+  const systemPrompt = buildSystemPromptWithMemory();
+
+  console.log(`[writer] Generating pillar-to-spoke cascade (${pillarType}) for: ${trigger.title}`);
+
+  // Step 1: Generate the pillar piece first
+  let pillarContent = null;
+  let pillarMeta = {};
+
+  try {
+    if (pillarType === 'blog') {
+      const keyword = trigger.title.split(/[:\-|]/).shift().trim().slice(0, 60);
+      pillarContent = await generateBlogPost(trigger, keyword, systemPrompt);
+      pillarMeta = { blog_keyword: keyword };
+    } else if (pillarType === 'youtube') {
+      pillarContent = await generateYouTubeScript(trigger, trigger.title, systemPrompt);
+      pillarMeta = { youtube_topic: trigger.title };
+    } else if (pillarType === 'newsletter') {
+      const nlResult = await generateNewsletter(trigger, systemPrompt);
+      pillarContent = nlResult.body || nlResult;
+      pillarMeta = { newsletter_meta: { subject_line: nlResult.subject_line || '', preview_text: nlResult.preview_text || '' } };
+    }
+  } catch (err) {
+    console.error(`[writer] Pillar generation failed: ${err.message}`);
+  }
+
+  if (!pillarContent) {
+    console.log('[writer] Pillar failed, falling back to standard generation');
+    return generateAllContent(trigger);
+  }
+
+  console.log(`[writer] Pillar generated (${typeof pillarContent === 'string' ? pillarContent.length : 0} chars). Extracting spokes...`);
+
+  // Step 2: Extract social spokes FROM the pillar
+  let spokes = null;
+  try {
+    spokes = await extractSpokes(pillarContent, pillarType, trigger, systemPrompt);
+  } catch (err) {
+    console.error(`[writer] Spoke extraction failed: ${err.message}, falling back to standard social`);
+    try {
+      spokes = await generateSocialContent(trigger, systemPrompt);
+    } catch (err2) {
+      console.error(`[writer] Fallback social also failed: ${err2.message}`);
+    }
+  }
+
+  // Step 3: Build content object with pillar + spokes
+  const content = {
+    id: contentId,
+    trigger_id: trigger.id,
+    trigger_title: trigger.title,
+    trigger_source: trigger.source,
+    trigger_category: trigger.category,
+    trigger_url: trigger.url,
+    generated_at: now(),
+    status: 'review',
+    generation_mode: 'pillar_spoke',
+    pillar_type: pillarType,
+    formats: {
+      linkedin: { content: spokes?.linkedin_post || null, status: 'review', edited: false },
+      x_single: { content: spokes?.x_single || null, status: 'review', edited: false },
+      x_thread: { content: spokes?.x_thread || null, status: 'review', edited: false },
+      short_video: { content: spokes?.short_video_script || null, status: 'review', edited: false },
+      carousel: { content: spokes?.linkedin_carousel || null, status: 'review', edited: false },
+      poll: { content: spokes?.linkedin_poll || null, status: 'review', edited: false },
+      quote_cards: { content: spokes?.quote_cards || null, status: 'review', edited: false },
+      stat_graphic: { content: spokes?.stat_graphic || null, status: 'review', edited: false },
+      hot_take: { content: spokes?.hot_take || null, status: 'review', edited: false },
+      before_after: { content: spokes?.before_after || null, status: 'review', edited: false },
+      listicle: { content: spokes?.listicle_post || null, status: 'review', edited: false },
+    },
+    image_prompt: spokes?.image_prompt || null,
+    image_url: null,
+    blog_keyword: pillarMeta.blog_keyword || spokes?.blog_keyword || null,
+    youtube_topic: pillarMeta.youtube_topic || spokes?.youtube_topic || null,
+    lead_magnet_topic: spokes?.lead_magnet_topic || null,
+    email_snippet: spokes?.email_snippet || null,
+    blog_post: null,
+    youtube_script: null,
+    notes: ''
+  };
+
+  // Add pillar content to the appropriate format slot
+  if (pillarType === 'blog') {
+    content.formats.blog = { content: pillarContent, status: 'review', edited: false };
+    content.blog_post = pillarContent;
+    content.blog_keyword = pillarMeta.blog_keyword;
+  } else if (pillarType === 'youtube') {
+    content.formats.youtube_script = { content: pillarContent, status: 'review', edited: false };
+    content.youtube_script = pillarContent;
+    content.youtube_topic = pillarMeta.youtube_topic;
+  } else if (pillarType === 'newsletter') {
+    content.formats.newsletter = { content: pillarContent, status: 'review', edited: false };
+    if (pillarMeta.newsletter_meta) content.newsletter_meta = pillarMeta.newsletter_meta;
+  }
+
+  return content;
+}
+
 module.exports = {
   generateAllContent, generateBlog, generateYouTube,
   generateLeadMagnetContent, generateNewsletterContent, generateCaseStudyContent,
-  buildSystemPromptWithMemory, BRAND_SYSTEM_PROMPT
+  generatePillarWithSpokes, buildSystemPromptWithMemory, BRAND_SYSTEM_PROMPT
 };

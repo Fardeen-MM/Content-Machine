@@ -323,6 +323,78 @@ h1, h2, h3, h4 { font-family: 'Fraunces', serif; }
 .badge-listicle { background: #8b5cf6; color: white; }
 .badge-newsletter { background: #0284c7; color: white; }
 .badge-casestudy { background: #059669; color: white; }
+
+/* Quick Capture FAB */
+.capture-fab {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--blue);
+  color: white;
+  border: none;
+  font-size: 28px;
+  font-weight: 300;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(37, 99, 235, 0.4);
+  z-index: 100;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.capture-fab:hover { transform: scale(1.1); box-shadow: 0 6px 24px rgba(37, 99, 235, 0.5); }
+
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.capture-modal {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  width: 100%;
+  max-width: 500px;
+  box-shadow: var(--shadow-xl);
+}
+
+[data-theme="dark"] .capture-modal { background: var(--gray-800); }
+
+/* Quality score badge */
+.quality-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 100px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.quality-high { background: var(--green-light); color: var(--green); }
+.quality-pass { background: var(--amber-light); color: var(--amber); }
+.quality-fail { background: var(--red-light); color: var(--red); }
+
+/* Generation mode badge */
+.mode-badge {
+  font-size: 9px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.mode-pillar { background: #ede9fe; color: #7c3aed; }
+.mode-remix { background: #fce7f3; color: #db2777; }
+.mode-standard { background: var(--gray-100); color: var(--gray-500); }
 .lm-type-pill { display: inline-block; font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 100px; text-transform: uppercase; letter-spacing: 0.5px; }
 .lm-type-scorecard { background: #dbeafe; color: #2563eb; }
 .lm-type-calculator { background: #d1fae5; color: #059669; }
@@ -1887,6 +1959,11 @@ function renderContentCard(content) {
             style: { background: pillar.color + '18', color: pillar.color, border: `1px solid ${pillar.color}33` }
           }, pillar.label),
           h('span', { style: { fontSize: '12px', color: 'var(--gray-400)' } }, timeAgo(content.generated_at)),
+          content.generation_mode === 'pillar_spoke'
+            ? h('span', { className: 'mode-badge mode-pillar' }, `pillar: ${content.pillar_type || 'blog'}`)
+            : content.generation_mode === 'remix'
+              ? h('span', { className: 'mode-badge mode-remix' }, 'remixed')
+              : null,
           h('span', {
             style: { fontSize: '10px', color: qLabel.color, fontWeight: '600', border: `1px solid ${qLabel.color}44`, borderRadius: '4px', padding: '1px 6px' },
             title: `Quality: ${qScore}/100`
@@ -2743,6 +2820,25 @@ function renderTriggersPage() {
                   trigger.status === 'pending'
                     ? h('button', {
                         className: 'btn btn-sm',
+                        style: { background: 'var(--purple)', color: 'white', padding: '4px 8px', fontSize: '11px', borderRadius: '6px' },
+                        title: 'Generate with Pillar-to-Spoke cascade (blog first, then extract social posts from it)',
+                        onclick: async (e) => {
+                          e.stopPropagation();
+                          toast('Generating pillar + spokes...', 'info');
+                          state.generating = true; render();
+                          try {
+                            await api('/api/content-pillar/' + trigger.id, { method: 'POST', body: { pillar_type: 'blog' } });
+                            toast('Pillar + spokes generated!', 'success');
+                          } catch (err) { toast('Error: ' + err.message, 'error'); }
+                          state.generating = false;
+                          await loadData();
+                        },
+                        disabled: state.generating
+                      }, 'Pillar')
+                    : null,
+                  trigger.status === 'pending'
+                    ? h('button', {
+                        className: 'btn btn-sm',
                         style: { color: 'var(--gray-400)', padding: '4px 6px', fontSize: '11px' },
                         title: 'Reject trigger',
                         onclick: async () => {
@@ -3281,6 +3377,56 @@ function render() {
         : state.page === 'save-url' ? renderSaveUrlPage()
         : renderDashboardPage()
     ),
+    // Quick Capture floating button
+    h('button', {
+      className: 'capture-fab',
+      onclick: () => { state.showCapture = !state.showCapture; render(); },
+      title: 'Quick Capture — save an idea'
+    }, '+'),
+    // Quick Capture modal
+    state.showCapture
+      ? h('div', { className: 'modal-overlay', onclick: (e) => { if (e.target.classList.contains('modal-overlay')) { state.showCapture = false; render(); } } },
+          h('div', { className: 'capture-modal' },
+            h('h3', { style: { fontFamily: "'Fraunces', serif", marginBottom: '12px' } }, 'Quick Capture'),
+            h('textarea', {
+              placeholder: 'Capture an idea, observation, or content topic...',
+              value: state.captureText || '',
+              oninput: (e) => { state.captureText = e.target.value; },
+              style: { width: '100%', padding: '12px', border: '1px solid var(--gray-200)', borderRadius: '8px', fontSize: '14px', fontFamily: "'Outfit', sans-serif", minHeight: '120px', resize: 'vertical' },
+              autofocus: true
+            }),
+            h('div', { style: { display: 'flex', gap: '8px', marginTop: '12px', justifyContent: 'flex-end' } },
+              h('button', {
+                className: 'btn btn-ghost btn-sm',
+                onclick: () => { state.showCapture = false; state.captureText = ''; render(); }
+              }, 'Cancel'),
+              h('button', {
+                className: 'btn btn-primary btn-sm',
+                disabled: !(state.captureText || '').trim(),
+                onclick: async () => {
+                  await api('/api/capture', { method: 'POST', body: { text: state.captureText.trim() } });
+                  toast('Idea captured!', 'success');
+                  state.showCapture = false;
+                  state.captureText = '';
+                  await loadData();
+                }
+              }, 'Save'),
+              h('button', {
+                className: 'btn btn-success btn-sm',
+                disabled: !(state.captureText || '').trim(),
+                onclick: async () => {
+                  toast('Capturing and generating...', 'info');
+                  const res = await api('/api/capture', { method: 'POST', body: { text: state.captureText.trim() } });
+                  state.showCapture = false;
+                  state.captureText = '';
+                  if (res.trigger) await generateForTrigger(res.trigger.id);
+                  await loadData();
+                }
+              }, 'Save & Generate')
+            )
+          )
+        )
+      : null,
     renderToasts()
   );
 

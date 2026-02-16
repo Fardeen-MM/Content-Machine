@@ -1,5 +1,5 @@
 const { generateSocialContent, generateBlogPost, generateYouTubeScript } = require('../lib/claude');
-const { generateId, now } = require('../lib/utils');
+const { generateId, now, readJSON } = require('../lib/utils');
 
 const BRAND_SYSTEM_PROMPT = `You are the content strategist for Mortar Metrics, a legal marketing agency that helps law firms get more signed cases through digital marketing.
 
@@ -50,14 +50,48 @@ CONTENT RULES:
 - YouTube scripts: Hook → Problem → Content → Proof → CTA, 8-15 minutes
 - Threads: 5-7 tweets, each can stand alone, build narrative arc`;
 
+function buildSystemPromptWithMemory() {
+  let prompt = BRAND_SYSTEM_PROMPT;
+  try {
+    const memory = readJSON('memory.json');
+    // Add style notes
+    if (memory.style_notes?.length > 0) {
+      prompt += '\n\nSTYLE PREFERENCES (from human feedback):\n';
+      for (const note of memory.style_notes.slice(-10)) {
+        prompt += `- ${note.note}\n`;
+      }
+    }
+    // Add approved examples as reference (last 3 per format)
+    const examples = memory.approved_examples || [];
+    if (examples.length > 0) {
+      prompt += '\n\nAPPROVED CONTENT EXAMPLES (match this style and quality):\n';
+      const byFormat = {};
+      for (const ex of examples) {
+        if (!byFormat[ex.format]) byFormat[ex.format] = [];
+        byFormat[ex.format].push(ex);
+      }
+      for (const [fmt, exs] of Object.entries(byFormat)) {
+        const recent = exs.slice(-3);
+        for (const ex of recent) {
+          prompt += `\n[${fmt.toUpperCase()} EXAMPLE — "${ex.trigger_title}"]:\n${ex.content.slice(0, 500)}\n`;
+        }
+      }
+    }
+  } catch (err) {
+    console.log('[writer] No memory loaded:', err.message);
+  }
+  return prompt;
+}
+
 async function generateAllContent(trigger) {
   const contentId = generateId();
+  const systemPrompt = buildSystemPromptWithMemory();
 
   console.log(`[writer] Generating social content for: ${trigger.title}`);
 
   let social = null;
   try {
-    social = await generateSocialContent(trigger, BRAND_SYSTEM_PROMPT);
+    social = await generateSocialContent(trigger, systemPrompt);
   } catch (err) {
     console.error(`[writer] Social generation failed: ${err.message}`);
     social = null;
@@ -115,7 +149,7 @@ async function generateBlog(content, trigger) {
   console.log(`[writer] Generating blog post for keyword: ${content.blog_keyword}`);
 
   try {
-    const blogContent = await generateBlogPost(trigger, content.blog_keyword, BRAND_SYSTEM_PROMPT);
+    const blogContent = await generateBlogPost(trigger, content.blog_keyword, buildSystemPromptWithMemory());
     content.formats.blog = {
       content: blogContent,
       status: 'review',
@@ -138,7 +172,7 @@ async function generateYouTube(content, trigger) {
   console.log(`[writer] Generating YouTube script for: ${content.youtube_topic}`);
 
   try {
-    const scriptContent = await generateYouTubeScript(trigger, content.youtube_topic, BRAND_SYSTEM_PROMPT);
+    const scriptContent = await generateYouTubeScript(trigger, content.youtube_topic, buildSystemPromptWithMemory());
     content.formats.youtube_script = {
       content: scriptContent,
       status: 'review',
@@ -152,4 +186,4 @@ async function generateYouTube(content, trigger) {
   return content;
 }
 
-module.exports = { generateAllContent, generateBlog, generateYouTube, BRAND_SYSTEM_PROMPT };
+module.exports = { generateAllContent, generateBlog, generateYouTube, buildSystemPromptWithMemory, BRAND_SYSTEM_PROMPT };

@@ -213,6 +213,37 @@ async function handleRequest(req, res) {
       if (allApproved) content[idx].status = 'approved';
 
       writeJSON('content.json', content);
+
+      // Auto-save approved formats to memory
+      const memory = readJSON('memory.json');
+      const item = content[idx];
+      const approvedFormats = Object.entries(item.formats)
+        .filter(([, f]) => f.status === 'approved' && f.content);
+      for (const [fmtKey, fmt] of approvedFormats) {
+        const exists = memory.approved_examples?.some(
+          e => e.content_id === item.id && e.format === fmtKey
+        );
+        if (!exists) {
+          if (!memory.approved_examples) memory.approved_examples = [];
+          memory.approved_examples.push({
+            content_id: item.id,
+            format: fmtKey,
+            content: typeof fmt.content === 'string' ? fmt.content.slice(0, 2000) : JSON.stringify(fmt.content).slice(0, 2000),
+            trigger_title: item.trigger_title,
+            trigger_source: item.trigger_source,
+            trigger_category: item.trigger_category,
+            approved_at: now()
+          });
+          // Keep only last 50 examples per format
+          const byFormat = memory.approved_examples.filter(e => e.format === fmtKey);
+          if (byFormat.length > 50) {
+            const oldest = byFormat[0];
+            memory.approved_examples = memory.approved_examples.filter(e => e !== oldest);
+          }
+          writeJSON('memory.json', memory);
+        }
+      }
+
       return json(res, content[idx]);
     }
 
@@ -318,6 +349,8 @@ async function handleRequest(req, res) {
     if (pathname === '/api/save-url' && method === 'POST') {
       const body = await parseBody(req);
       const targetUrl = body.url;
+      const selectedFormats = body.formats || []; // empty = all formats
+      const queueOnly = body.queue_only || false;
 
       if (!targetUrl) return json(res, { error: 'url required' }, 400);
 
@@ -350,18 +383,24 @@ async function handleRequest(req, res) {
           category: 'CONTENT_PIECE',
           captured_at: now(),
           status: 'pending',
-          score: 0
+          score: 0,
+          requested_formats: selectedFormats.length > 0 ? selectedFormats : null
         };
 
         const triggers = readJSON('trigger-queue.json');
         triggers.push(trigger);
         writeJSON('trigger-queue.json', triggers);
 
+        // If queue_only, just save the trigger
+        if (queueOnly) {
+          return json(res, { ok: true, trigger, queued: true });
+        }
+
         // If API key available, generate content immediately
         if (process.env.ANTHROPIC_API_KEY) {
           try {
             const { runDaily } = require('./generator/run-daily');
-            await runDaily({ triggerId: trigger.id });
+            await runDaily({ triggerId: trigger.id, formats: selectedFormats });
           } catch (err) {
             console.error('[save-url] Generation failed:', err.message);
           }
@@ -450,6 +489,41 @@ async function handleRequest(req, res) {
       triggers[idx].status = 'rejected';
       writeJSON('trigger-queue.json', triggers);
       return json(res, { ok: true });
+    }
+
+    // GET /api/memory
+    if (pathname === '/api/memory' && method === 'GET') {
+      const memory = readJSON('memory.json');
+      return json(res, memory);
+    }
+
+    // POST /api/memory — add a style note or preference
+    if (pathname === '/api/memory' && method === 'POST') {
+      const body = await parseBody(req);
+      const memory = readJSON('memory.json');
+
+      if (body.type === 'style_note') {
+        if (!memory.style_notes) memory.style_notes = [];
+        memory.style_notes.push({
+          note: body.note,
+          added_at: now()
+        });
+      }
+
+      if (body.type === 'remove_example') {
+        memory.approved_examples = (memory.approved_examples || []).filter(
+          (e, i) => i !== body.index
+        );
+      }
+
+      if (body.type === 'remove_note') {
+        memory.style_notes = (memory.style_notes || []).filter(
+          (n, i) => i !== body.index
+        );
+      }
+
+      writeJSON('memory.json', memory);
+      return json(res, memory);
     }
 
     // GET /api/settings

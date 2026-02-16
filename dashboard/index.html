@@ -1011,7 +1011,11 @@ const state = {
   filter: { status: 'all', source: 'all' },
   toasts: [],
   urlInput: '',
+  urlFormats: { linkedin: true, x_single: true, x_thread: true, short_video: true, blog: false, youtube_script: false },
+  urlQueueOnly: false,
   savingUrl: false,
+  memory: { approved_examples: [], style_notes: [] },
+  memoryNote: '',
   generating: false,
   expandedFormats: {}, // track which long formats are expanded
   darkMode: localStorage.getItem('darkMode') === 'true',
@@ -1036,18 +1040,20 @@ async function loadData() {
   state.loading = true;
   render();
   try {
-    const [content, triggers, stats, calendar, settings] = await Promise.all([
+    const [content, triggers, stats, calendar, settings, memory] = await Promise.all([
       api('/api/content'),
       api('/api/triggers'),
       api('/api/stats'),
       api('/api/calendar'),
-      api('/api/settings').catch(() => ({}))
+      api('/api/settings').catch(() => ({})),
+      api('/api/memory').catch(() => ({ approved_examples: [], style_notes: [] }))
     ]);
     state.content = content;
     state.triggers = triggers;
     state.stats = stats;
     state.calendar = calendar;
     state.settings = settings;
+    state.memory = memory;
   } catch (err) {
     console.error('Failed to load data:', err);
     toast('Failed to load data', 'error');
@@ -1093,9 +1099,18 @@ async function saveUrl() {
   state.savingUrl = true;
   render();
   try {
-    await api('/api/save-url', { method: 'POST', body: { url: state.urlInput.trim() } });
+    const selectedFormats = Object.entries(state.urlFormats)
+      .filter(([, v]) => v).map(([k]) => k);
+    await api('/api/save-url', {
+      method: 'POST',
+      body: {
+        url: state.urlInput.trim(),
+        formats: selectedFormats,
+        queue_only: state.urlQueueOnly
+      }
+    });
     state.urlInput = '';
-    toast('URL saved! Trigger created.', 'success');
+    toast(state.urlQueueOnly ? 'Added to queue!' : 'URL saved! Content generating...', 'success');
     await loadData();
   } catch (err) {
     toast('Failed to save URL', 'error');
@@ -1395,6 +1410,7 @@ document.addEventListener('keydown', (e) => {
   if (e.key === '4' && !e.ctrlKey && !e.metaKey && !isEditing()) { state.page = 'calendar'; render(); }
   if (e.key === '5' && !e.ctrlKey && !e.metaKey && !isEditing()) { state.page = 'analytics'; render(); }
   if (e.key === '6' && !e.ctrlKey && !e.metaKey && !isEditing()) { state.page = 'settings'; render(); }
+  if (e.key === '7' && !e.ctrlKey && !e.metaKey && !isEditing()) { state.page = 'memory'; render(); }
   if ((e.key === 'd' || e.key === 'D') && !e.ctrlKey && !e.metaKey && !isEditing()) { toggleDarkMode(); }
   if (e.key === 'Escape') { state.editingFormat = null; state.sidebarOpen = false; render(); }
 });
@@ -1424,7 +1440,8 @@ const icons = {
   eye: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>',
   settings: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>',
   trash: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>',
-  ban: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>'
+  ban: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>',
+  brain: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9.5 2A5.5 5.5 0 005 7.5c0 .98.27 1.9.73 2.7A5.5 5.5 0 003 15.5 5.5 5.5 0 008.5 21h.5"/><path d="M14.5 2A5.5 5.5 0 0120 7.5c0 .98-.27 1.9-.73 2.7A5.5 5.5 0 0122 15.5a5.5 5.5 0 01-5.5 5.5H16"/><path d="M12 2v20"/></svg>'
 };
 
 // --- Render Functions ---
@@ -1462,7 +1479,8 @@ function renderSidebar() {
     { id: 'triggers', icon: icons.triggers, label: 'Triggers', key: '3' },
     { id: 'calendar', icon: icons.calendar, label: 'Calendar', key: '4' },
     { id: 'analytics', icon: icons.analytics, label: 'Analytics', key: '5' },
-    { id: 'settings', icon: icons.settings, label: 'Settings', key: '6' }
+    { id: 'settings', icon: icons.settings, label: 'Settings', key: '6' },
+    { id: 'memory', icon: icons.brain, label: 'Memory', key: '7' }
   ];
 
   return h('nav', { className: `sidebar ${state.sidebarOpen ? 'open' : ''}` },
@@ -1484,6 +1502,12 @@ function renderSidebar() {
               fontSize: '10px', padding: '1px 6px', marginLeft: '4px', fontWeight: '700'
             }}, String(state.content.filter(c => c.status === 'review').length))
           : null,
+        item.id === 'memory' && (state.memory?.approved_examples?.length || 0) > 0
+          ? h('span', { style: {
+              background: 'var(--purple)', color: 'white', borderRadius: '10px',
+              fontSize: '10px', padding: '1px 6px', marginLeft: '4px', fontWeight: '700'
+            }}, String(state.memory.approved_examples.length))
+          : null,
         h('span', { className: 'kbd', style: { marginLeft: 'auto' } }, item.key)
       )
     ),
@@ -1498,7 +1522,7 @@ function renderSidebar() {
         onclick: () => { toggleDarkMode(); }
       }, state.darkMode ? 'Light Mode' : 'Dark Mode'),
       h('div', { style: { fontSize: '11px', color: 'rgba(255,255,255,0.4)', marginTop: '10px' } },
-        'Keyboard: 1-4 navigate',
+        'Keyboard: 1-7 navigate',
         h('br'),
         'Esc to close modals',
         h('br'),
@@ -1516,6 +1540,7 @@ function renderTopbar() {
     calendar: 'Content Calendar',
     analytics: 'Analytics',
     settings: 'Settings',
+    memory: 'Brand Memory',
     'save-url': 'Save URL'
   };
 
@@ -2560,6 +2585,195 @@ function renderCalendarSlot(slot, label, className) {
   );
 }
 
+function renderMemoryPage() {
+  const memory = state.memory || { approved_examples: [], style_notes: [] };
+  const examples = memory.approved_examples || [];
+  const notes = memory.style_notes || [];
+
+  // Group examples by format
+  const byFormat = {};
+  for (const ex of examples) {
+    if (!byFormat[ex.format]) byFormat[ex.format] = [];
+    byFormat[ex.format].push(ex);
+  }
+
+  const formatLabel = {
+    linkedin: 'LinkedIn Post', x_single: 'Tweet', x_thread: 'Thread',
+    short_video: 'Video Script', blog: 'Blog Post', youtube_script: 'YouTube Script'
+  };
+
+  return h('div', { className: 'page-content' },
+    // Header stats
+    h('div', { className: 'stats-grid', style: { maxWidth: '900px' } },
+      h('div', { className: 'stat-card accent' },
+        h('div', { className: 'label' }, 'Approved Examples'),
+        h('div', { className: 'value' }, String(examples.length)),
+        h('div', { className: 'sub' }, 'Used to train AI voice')
+      ),
+      h('div', { className: 'stat-card green' },
+        h('div', { className: 'label' }, 'Style Notes'),
+        h('div', { className: 'value' }, String(notes.length)),
+        h('div', { className: 'sub' }, 'Custom preferences')
+      ),
+      h('div', { className: 'stat-card purple' },
+        h('div', { className: 'label' }, 'Format Types'),
+        h('div', { className: 'value' }, String(Object.keys(byFormat).length)),
+        h('div', { className: 'sub' }, 'With saved examples')
+      )
+    ),
+
+    h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', maxWidth: '900px' } },
+      // Style Notes panel
+      h('div', { className: 'card', style: { padding: '24px' } },
+        h('h3', { style: { fontSize: '16px', color: 'var(--navy)', marginBottom: '4px' } }, 'Style Notes'),
+        h('p', { style: { fontSize: '12px', color: 'var(--gray-400)', marginBottom: '16px' } },
+          'Tell the AI what you like — tone, length, style preferences. These get injected into every generation.'
+        ),
+        // Add note form
+        h('div', { style: { display: 'flex', gap: '8px', marginBottom: '16px' } },
+          h('input', {
+            type: 'text',
+            placeholder: 'e.g. "Use more specific numbers" or "Write shorter hooks"',
+            value: state.memoryNote,
+            oninput: (e) => { state.memoryNote = e.target.value; },
+            onkeydown: async (e) => {
+              if (e.key === 'Enter' && state.memoryNote.trim()) {
+                await api('/api/memory', { method: 'POST', body: { type: 'style_note', note: state.memoryNote.trim() } });
+                state.memoryNote = '';
+                toast('Style note added!', 'success');
+                await loadData();
+              }
+            },
+            style: { flex: '1', padding: '8px 12px', border: '1px solid var(--gray-200)', borderRadius: '8px', fontSize: '13px', fontFamily: 'Outfit, sans-serif' }
+          }),
+          h('button', {
+            className: 'btn btn-primary btn-sm',
+            onclick: async () => {
+              if (!state.memoryNote.trim()) return;
+              await api('/api/memory', { method: 'POST', body: { type: 'style_note', note: state.memoryNote.trim() } });
+              state.memoryNote = '';
+              toast('Style note added!', 'success');
+              await loadData();
+            }
+          }, 'Add')
+        ),
+        // Existing notes
+        notes.length === 0
+          ? h('div', { style: { color: 'var(--gray-400)', fontSize: '13px', fontStyle: 'italic', padding: '12px 0' } },
+              'No style notes yet. Add preferences above to customize the AI voice.'
+            )
+          : h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
+              ...notes.map((note, idx) =>
+                h('div', {
+                  style: {
+                    display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 12px',
+                    background: 'var(--gray-50)', borderRadius: '8px', fontSize: '13px'
+                  }
+                },
+                  h('span', { style: { flex: '1' } }, note.note),
+                  h('span', { style: { fontSize: '10px', color: 'var(--gray-400)', whiteSpace: 'nowrap' } }, timeAgo(note.added_at)),
+                  h('button', {
+                    className: 'btn btn-ghost btn-sm btn-icon',
+                    style: { padding: '4px', color: 'var(--red)' },
+                    onclick: async () => {
+                      await api('/api/memory', { method: 'POST', body: { type: 'remove_note', index: idx } });
+                      toast('Note removed', 'info');
+                      await loadData();
+                    }
+                  }, h('span', { innerHTML: icons.x, style: { width: '14px', height: '14px', display: 'block' } }))
+                )
+              )
+            )
+      ),
+
+      // How it works panel
+      h('div', { className: 'card', style: { padding: '24px' } },
+        h('h3', { style: { fontSize: '16px', color: 'var(--navy)', marginBottom: '12px' } }, 'How Brand Memory Works'),
+        h('div', { style: { display: 'flex', flexDirection: 'column', gap: '14px' } },
+          ...[
+            { num: '1', title: 'You approve content', desc: 'When you approve a format, it\'s auto-saved here as an example.' },
+            { num: '2', title: 'AI learns your voice', desc: 'Approved examples are injected into every generation prompt.' },
+            { num: '3', title: 'Style notes guide it', desc: 'Your preferences steer tone, length, and approach.' },
+            { num: '4', title: 'Quality improves over time', desc: 'The more you approve, the better the AI matches your style.' }
+          ].map(step =>
+            h('div', { style: { display: 'flex', gap: '12px', alignItems: 'flex-start' } },
+              h('div', { style: {
+                width: '28px', height: '28px', borderRadius: '50%', background: 'var(--blue)',
+                color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: '13px', fontWeight: '700', flexShrink: '0'
+              }}, step.num),
+              h('div', {},
+                h('div', { style: { fontWeight: '600', fontSize: '14px', marginBottom: '2px' } }, step.title),
+                h('div', { style: { fontSize: '12px', color: 'var(--gray-500)' } }, step.desc)
+              )
+            )
+          )
+        )
+      )
+    ),
+
+    // Approved Examples section
+    h('div', { style: { maxWidth: '900px', marginTop: '24px' } },
+      h('h3', { style: { fontSize: '16px', color: 'var(--navy)', marginBottom: '16px' } },
+        `Approved Examples (${examples.length})`
+      ),
+      examples.length === 0
+        ? h('div', { className: 'card', style: { padding: '40px', textAlign: 'center' } },
+            h('div', { style: { fontSize: '14px', color: 'var(--gray-400)' } },
+              'No approved examples yet. Approve content from the Content page to start building your brand memory.'
+            )
+          )
+        : h('div', { style: { display: 'flex', flexDirection: 'column', gap: '12px' } },
+            ...Object.entries(byFormat).map(([fmt, exs]) =>
+              h('div', { className: 'card', style: { overflow: 'hidden' } },
+                h('div', { style: {
+                  padding: '12px 16px', background: 'var(--gray-50)',
+                  borderBottom: '1px solid var(--gray-100)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between'
+                }},
+                  h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } },
+                    h('span', { style: { fontWeight: '600', fontSize: '14px' } }, formatLabel[fmt] || fmt),
+                    h('span', { className: 'badge badge-approved' }, `${exs.length} examples`)
+                  )
+                ),
+                ...exs.slice(-5).map((ex, exIdx) => {
+                  const globalIdx = examples.indexOf(ex);
+                  return h('div', {
+                    style: {
+                      padding: '12px 16px', borderBottom: '1px solid var(--gray-50)',
+                      display: 'flex', alignItems: 'flex-start', gap: '12px'
+                    }
+                  },
+                    h('div', { style: { flex: '1', minWidth: 0 } },
+                      h('div', { style: { fontSize: '12px', color: 'var(--gray-400)', marginBottom: '4px', display: 'flex', gap: '8px', alignItems: 'center' } },
+                        h('span', {}, ex.trigger_title || 'Untitled'),
+                        h('span', { className: `badge ${sourceBadgeClass(ex.trigger_source)}`, style: { fontSize: '9px' } }, sourceLabel(ex.trigger_source))
+                      ),
+                      h('div', {
+                        style: {
+                          fontSize: '12px', color: 'var(--gray-600)', lineHeight: '1.5',
+                          maxHeight: '60px', overflow: 'hidden', whiteSpace: 'pre-wrap'
+                        }
+                      }, typeof ex.content === 'string' ? ex.content.slice(0, 200) + (ex.content.length > 200 ? '...' : '') : 'Complex content')
+                    ),
+                    h('button', {
+                      className: 'btn btn-ghost btn-sm btn-icon',
+                      style: { padding: '4px', color: 'var(--red)', flexShrink: '0' },
+                      onclick: async () => {
+                        await api('/api/memory', { method: 'POST', body: { type: 'remove_example', index: globalIdx } });
+                        toast('Example removed', 'info');
+                        await loadData();
+                      }
+                    }, h('span', { innerHTML: icons.trash, style: { width: '14px', height: '14px', display: 'block' } }))
+                  );
+                })
+              )
+            )
+          )
+    )
+  );
+}
+
 function renderSettingsPage() {
   const settings = state.settings || {};
 
@@ -2625,7 +2839,7 @@ function renderSettingsPage() {
         h('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px' } },
           ...[
             ['1', 'Dashboard'], ['2', 'Content'], ['3', 'Triggers'], ['4', 'Calendar'],
-            ['5', 'Analytics'], ['6', 'Settings'], ['D', 'Toggle Dark Mode'], ['Esc', 'Close Modal']
+            ['5', 'Analytics'], ['6', 'Settings'], ['7', 'Memory'], ['D', 'Toggle Dark Mode'], ['Esc', 'Close Modal']
           ].map(([key, label]) =>
             h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
               h('span', { style: { color: 'var(--gray-500)', fontSize: '13px' } }, label),
@@ -2656,50 +2870,105 @@ function settingRow(name, isConfigured, description) {
 
 function renderSaveUrlPage() {
   const urlTriggers = state.triggers.filter(t => t.source === 'url');
+  const allFormats = [
+    { key: 'linkedin', label: 'LinkedIn Post' },
+    { key: 'x_single', label: 'Tweet' },
+    { key: 'x_thread', label: 'Thread (5-7 tweets)' },
+    { key: 'short_video', label: 'Video Script' },
+    { key: 'blog', label: 'Blog Post (long-form)' },
+    { key: 'youtube_script', label: 'YouTube Script (long-form)' }
+  ];
 
   return h('div', { className: 'page-content' },
     h('div', { className: 'card', style: { padding: '32px', maxWidth: '700px' } },
-      h('h3', { style: { fontSize: '20px', color: 'var(--navy)', marginBottom: '8px' } }, 'Save a URL'),
-      h('p', { style: { color: 'var(--gray-500)', marginBottom: '24px', fontSize: '14px' } },
-        'Paste any URL — article, Reddit post, YouTube video, competitor blog — and the system will scrape it, create a trigger, and generate all content formats. ',
-        process.env?.ANTHROPIC_API_KEY
-          ? 'Content will be generated automatically.'
-          : h('span', { style: { color: 'var(--amber)' } }, 'Note: Set ANTHROPIC_API_KEY in .env to enable auto-generation.')
+      h('h3', { style: { fontSize: '20px', color: 'var(--navy)', marginBottom: '8px' } }, 'Recreate from URL'),
+      h('p', { style: { color: 'var(--gray-500)', marginBottom: '20px', fontSize: '14px' } },
+        'Paste any link — article, social post, competitor blog, YouTube video — choose which formats to create, and the system will recreate it in your brand voice.'
       ),
-      h('div', { className: 'url-input-group' },
+      // URL input
+      h('div', { style: { marginBottom: '20px' } },
+        h('label', { style: { fontSize: '13px', fontWeight: '600', color: 'var(--gray-600)', display: 'block', marginBottom: '6px' } }, 'URL'),
         h('input', {
           className: 'url-input',
           type: 'url',
           placeholder: 'https://example.com/article...',
           value: state.urlInput,
           oninput: (e) => { state.urlInput = e.target.value; },
-          onkeydown: (e) => { if (e.key === 'Enter') saveUrl(); }
-        }),
+          onkeydown: (e) => { if (e.key === 'Enter') saveUrl(); },
+          style: { width: '100%' }
+        })
+      ),
+      // Format selection
+      h('div', { style: { marginBottom: '20px' } },
+        h('label', { style: { fontSize: '13px', fontWeight: '600', color: 'var(--gray-600)', display: 'block', marginBottom: '8px' } }, 'Content Formats'),
+        h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' } },
+          ...allFormats.map(f =>
+            h('label', {
+              style: {
+                display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 12px',
+                background: state.urlFormats[f.key] ? 'var(--blue)08' : 'var(--gray-50)',
+                border: `1px solid ${state.urlFormats[f.key] ? 'var(--blue)' : 'var(--gray-200)'}`,
+                borderRadius: '8px', cursor: 'pointer', fontSize: '13px', transition: 'all 0.15s ease'
+              }
+            },
+              h('input', {
+                type: 'checkbox',
+                checked: state.urlFormats[f.key],
+                onchange: () => { state.urlFormats[f.key] = !state.urlFormats[f.key]; render(); },
+                style: { accentColor: 'var(--blue)' }
+              }),
+              f.label
+            )
+          )
+        ),
+        h('div', { style: { display: 'flex', gap: '8px', marginTop: '8px' } },
+          h('button', {
+            className: 'btn btn-outline btn-sm',
+            onclick: () => { for (const k in state.urlFormats) state.urlFormats[k] = true; render(); }
+          }, 'Select All'),
+          h('button', {
+            className: 'btn btn-outline btn-sm',
+            onclick: () => { for (const k in state.urlFormats) state.urlFormats[k] = false; render(); }
+          }, 'Clear All')
+        )
+      ),
+      // Actions
+      h('div', { style: { display: 'flex', gap: '12px', alignItems: 'center' } },
         h('button', {
           className: 'btn btn-primary',
-          onclick: saveUrl,
-          disabled: state.savingUrl || !state.urlInput.trim()
-        }, state.savingUrl
+          onclick: () => { state.urlQueueOnly = false; saveUrl(); },
+          disabled: state.savingUrl || !state.urlInput.trim() || !Object.values(state.urlFormats).some(v => v)
+        }, state.savingUrl && !state.urlQueueOnly
           ? h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } },
-              h('span', { className: 'spinner' }),
-              'Saving...'
-            )
-          : 'Save & Generate')
-      ),
-      // Example URLs
-      h('div', { style: { fontSize: '12px', color: 'var(--gray-400)', marginTop: '-12px' } },
-        'Try: Reddit posts, industry blog articles, competitor content, YouTube links'
+              h('span', { className: 'spinner' }), 'Generating...')
+          : 'Generate Now'),
+        h('button', {
+          className: 'btn btn-outline',
+          onclick: () => { state.urlQueueOnly = true; saveUrl(); },
+          disabled: state.savingUrl || !state.urlInput.trim()
+        }, state.savingUrl && state.urlQueueOnly
+          ? h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } },
+              h('span', { className: 'spinner' }), 'Adding...')
+          : 'Add to Queue'),
+        h('span', { style: { fontSize: '12px', color: 'var(--gray-400)' } },
+          Object.values(state.urlFormats).filter(v => v).length + ' formats selected'
+        )
       )
     ),
     // Previously saved URLs
     urlTriggers.length > 0
       ? h('div', { style: { maxWidth: '700px', marginTop: '24px' } },
-          h('h4', { style: { fontSize: '14px', color: 'var(--gray-500)', marginBottom: '12px' } }, 'Previously Saved URLs'),
+          h('h4', { style: { fontSize: '14px', color: 'var(--gray-500)', marginBottom: '12px' } },
+            `Previously Saved (${urlTriggers.length})`
+          ),
           h('div', { className: 'card' },
-            ...urlTriggers.map(t =>
+            ...urlTriggers.slice(0, 10).map(t =>
               h('div', { style: { padding: '12px 16px', borderBottom: '1px solid var(--gray-100)', display: 'flex', alignItems: 'center', gap: '12px' } },
                 h('span', { className: 'badge badge-url' }, 'url'),
                 h('span', { style: { flex: '1', fontSize: '14px' } }, t.title),
+                t.requested_formats
+                  ? h('span', { style: { fontSize: '10px', color: 'var(--gray-400)' } }, t.requested_formats.join(', '))
+                  : null,
                 h('span', { style: { fontSize: '11px', color: 'var(--gray-400)' } }, timeAgo(t.captured_at))
               )
             )
@@ -2733,6 +3002,7 @@ function render() {
         : state.page === 'calendar' ? renderCalendarPage()
         : state.page === 'analytics' ? renderAnalyticsPage()
         : state.page === 'settings' ? renderSettingsPage()
+        : state.page === 'memory' ? renderMemoryPage()
         : state.page === 'save-url' ? renderSaveUrlPage()
         : renderDashboardPage()
     ),

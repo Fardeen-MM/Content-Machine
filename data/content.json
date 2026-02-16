@@ -5,7 +5,7 @@
     "trigger_title": "Spent $5K/month on Google Ads for my PI firm and got 2 cases",
     "trigger_source": "reddit",
     "trigger_category": "PAIN_POINT",
-    "trigger_url": "https://example.com/r/LawFirm/comments/abc1234/spent_5k_month_google_ads_pi_firm",
+    "trigger_url": null,
     "generated_at": "2026-02-15T15:13:28.681Z",
     "status": "approved",
     "formats": {
@@ -52,7 +52,7 @@
     "trigger_title": "My web designer charges $300/mo and my site looks like it's from 2005",
     "trigger_source": "reddit",
     "trigger_category": "PAIN_POINT",
-    "trigger_url": "https://example.com/r/LawFirm/comments/def5678/web_designer_charges_300_month",
+    "trigger_url": null,
     "generated_at": "2026-02-15T08:13:28.681Z",
     "status": "review",
     "formats": {
@@ -98,7 +98,7 @@
     "trigger_title": "Fired my 3rd marketing agency this year — what am I doing wrong?",
     "trigger_source": "reddit",
     "trigger_category": "PAIN_POINT",
-    "trigger_url": "https://example.com/r/LawFirm/comments/ghi9012/fired_3rd_marketing_agency_this_year",
+    "trigger_url": null,
     "generated_at": "2026-02-14T18:13:28.681Z",
     "status": "review",
     "formats": {
@@ -145,7 +145,7 @@
     "trigger_title": "Speed to lead is killing us — callers hang up after 30 seconds",
     "trigger_source": "reddit",
     "trigger_category": "PAIN_POINT",
-    "trigger_url": "https://example.com/r/PersonalInjuryLawyer/comments/jkl3456/speed_to_lead_killing_us",
+    "trigger_url": null,
     "generated_at": "2026-02-13T18:13:28.681Z",
     "status": "review",
     "formats": {
@@ -192,7 +192,7 @@
     "trigger_title": "Just found out my marketing agency was running ads to the wrong zip codes for 6 months",
     "trigger_source": "reddit",
     "trigger_category": "PAIN_POINT",
-    "trigger_url": "https://example.com/r/LawFirm/comments/mno7890/marketing_agency_wrong_zip_codes",
+    "trigger_url": null,
     "generated_at": "2026-02-15T12:13:28.681Z",
     "status": "approved",
     "formats": {
@@ -239,7 +239,7 @@
     "trigger_title": "Clio Legal Trends Report: 67% of firms don't track marketing ROI",
     "trigger_source": "rss",
     "trigger_category": "DATA_POINT",
-    "trigger_url": "https://example.com/clio-blog/legal-trends-report-2025-marketing-roi",
+    "trigger_url": null,
     "generated_at": "2026-02-15T04:13:28.681Z",
     "status": "review",
     "formats": {
@@ -285,7 +285,7 @@
     "trigger_title": "ABA: Average PI firm spends $124K on marketing annually",
     "trigger_source": "rss",
     "trigger_category": "DATA_POINT",
-    "trigger_url": "https://example.com/aba-journal/pi-firm-marketing-spend-2025",
+    "trigger_url": null,
     "generated_at": "2026-02-14T10:13:28.681Z",
     "status": "review",
     "formats": {
@@ -331,7 +331,7 @@
     "trigger_title": "National Law Review: AI is transforming how law firms acquire clients",
     "trigger_source": "rss",
     "trigger_category": "NEWS",
-    "trigger_url": "https://example.com/national-law-review/ai-transforming-client-acquisition-law-firms",
+    "trigger_url": null,
     "generated_at": "2026-02-14T04:13:28.681Z",
     "status": "review",
     "formats": {

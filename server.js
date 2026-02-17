@@ -1209,6 +1209,17 @@ async function handleRequest(req, res) {
 
     // --- Actions API ---
 
+    // GET /api/actions — list all actions with filters
+    if (pathname === '/api/actions' && method === 'GET') {
+      const status = url.searchParams.get('status') || undefined;
+      const owner = url.searchParams.get('owner') || undefined;
+      const meeting_id = url.searchParams.get('meeting_id') || undefined;
+      const actions = db.getActions({ status, meeting_id: meeting_id ? parseInt(meeting_id) : undefined });
+      // Filter by owner in JS since db.getActions doesn't support it
+      const filtered = owner ? actions.filter(a => a.owner === owner) : actions;
+      return json(res, filtered);
+    }
+
     // PUT /api/actions/:id — update action status
     const actionUpdateMatch = pathname.match(/^\/api\/actions\/(\d+)$/);
     if (actionUpdateMatch && method === 'PUT') {
@@ -1216,6 +1227,24 @@ async function handleRequest(req, res) {
       const action = db.updateAction(parseInt(actionUpdateMatch[1]), body);
       if (!action) return json(res, { error: 'Not found' }, 404);
       return json(res, { ok: true, ...action });
+    }
+
+    // --- Feedback API ---
+
+    // POST /api/feedback
+    if (pathname === '/api/feedback' && method === 'POST') {
+      const body = await parseBody(req);
+      if (!body.output_id || !body.output_type || !body.rating) {
+        return json(res, { error: 'output_id, output_type, and rating required' }, 400);
+      }
+      const fb = db.insertFeedback(body);
+      return json(res, { ok: true, ...fb });
+    }
+
+    // GET /api/feedback
+    if (pathname === '/api/feedback' && method === 'GET') {
+      const output_type = url.searchParams.get('type') || undefined;
+      return json(res, db.getFeedback({ output_type }));
     }
 
     // --- Webhook Endpoints ---

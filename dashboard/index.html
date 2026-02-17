@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Content Machine — Mortar Metrics</title>
+<title>Command Centre — Mortar Metrics</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231e3a5f'/%3E%3Cpath d='M8 10h16M8 16h12M8 22h8' stroke='%232563eb' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -1382,7 +1382,13 @@ const state = {
   meetingFilter: { type: '', client: '' },
   meetingStats: {},
   syncingMeetings: false,
+  // Clients
   clients: [],
+  clientDetail: null,
+  clientSearch: '',
+  // Actions
+  allActions: [],
+  actionsFilter: { status: '', owner: '' },
 };
 
 // --- API Calls ---
@@ -1403,7 +1409,7 @@ async function loadData() {
   state.loading = true;
   render();
   try {
-    const [content, triggers, stats, calendar, monthCal, settings, memory, performance, perfAnalytics, meetings, meetingStats, clients] = await Promise.all([
+    const [content, triggers, stats, calendar, monthCal, settings, memory, performance, perfAnalytics, meetings, meetingStats, clients, allActions] = await Promise.all([
       api('/api/content'),
       api('/api/triggers'),
       api('/api/stats'),
@@ -1415,7 +1421,8 @@ async function loadData() {
       api('/api/analytics/performance').catch(() => null),
       api('/api/meetings').catch(() => []),
       api('/api/meetings/stats').catch(() => ({})),
-      api('/api/clients').catch(() => [])
+      api('/api/clients').catch(() => []),
+      api('/api/actions').catch(() => [])
     ]);
     state.content = content;
     state.triggers = triggers;
@@ -1429,6 +1436,7 @@ async function loadData() {
     state.meetings = meetings;
     state.meetingStats = meetingStats;
     state.clients = clients;
+    state.allActions = allActions;
   } catch (err) {
     console.error('Failed to load data:', err);
     toast('Failed to load data', 'error');
@@ -1844,14 +1852,14 @@ function setActiveFormat(contentId, format) {
 document.addEventListener('keydown', (e) => {
   // Global shortcuts
   if (e.key === '1' && !e.ctrlKey && !e.metaKey && !isEditing()) { state.page = 'dashboard'; render(); }
-  if (e.key === '2' && !e.ctrlKey && !e.metaKey && !isEditing()) { state.page = 'content'; render(); }
-  if (e.key === '3' && !e.ctrlKey && !e.metaKey && !isEditing()) { state.page = 'triggers'; render(); }
-  if (e.key === '4' && !e.ctrlKey && !e.metaKey && !isEditing()) { state.page = 'calendar'; render(); }
-  if (e.key === '5' && !e.ctrlKey && !e.metaKey && !isEditing()) { state.page = 'analytics'; render(); }
-  if (e.key === '6' && !e.ctrlKey && !e.metaKey && !isEditing()) { state.page = 'performance'; render(); }
-  if (e.key === '7' && !e.ctrlKey && !e.metaKey && !isEditing()) { state.page = 'settings'; render(); }
-  if (e.key === '8' && !e.ctrlKey && !e.metaKey && !isEditing()) { state.page = 'memory'; render(); }
-  if (e.key === '9' && !e.ctrlKey && !e.metaKey && !isEditing()) { state.page = 'meetings'; render(); }
+  if (e.key === '2' && !e.ctrlKey && !e.metaKey && !isEditing()) { state.page = 'meetings'; render(); }
+  if (e.key === '3' && !e.ctrlKey && !e.metaKey && !isEditing()) { state.page = 'clients'; render(); }
+  if (e.key === '4' && !e.ctrlKey && !e.metaKey && !isEditing()) { state.page = 'actions'; render(); }
+  if (e.key === '5' && !e.ctrlKey && !e.metaKey && !isEditing()) { state.page = 'content'; render(); }
+  if (e.key === '6' && !e.ctrlKey && !e.metaKey && !isEditing()) { state.page = 'triggers'; render(); }
+  if (e.key === '7' && !e.ctrlKey && !e.metaKey && !isEditing()) { state.page = 'calendar'; render(); }
+  if (e.key === '8' && !e.ctrlKey && !e.metaKey && !isEditing()) { state.page = 'analytics'; render(); }
+  if (e.key === '9' && !e.ctrlKey && !e.metaKey && !isEditing()) { state.page = 'settings'; render(); }
   if ((e.key === 'd' || e.key === 'D') && !e.ctrlKey && !e.metaKey && !isEditing()) { toggleDarkMode(); }
   if (e.key === 'Escape') { state.editingFormat = null; state.sidebarOpen = false; render(); }
 });
@@ -1884,7 +1892,10 @@ const icons = {
   ban: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>',
   brain: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9.5 2A5.5 5.5 0 005 7.5c0 .98.27 1.9.73 2.7A5.5 5.5 0 003 15.5 5.5 5.5 0 008.5 21h.5"/><path d="M14.5 2A5.5 5.5 0 0120 7.5c0 .98-.27 1.9-.73 2.7A5.5 5.5 0 0122 15.5a5.5 5.5 0 01-5.5 5.5H16"/><path d="M12 2v20"/></svg>',
   performance: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>',
-  meetings: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>'
+  meetings: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>',
+  clients: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>',
+  actions: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>',
+  chat: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>'
 };
 
 // --- Render Functions ---
@@ -1918,19 +1929,19 @@ function h(tag, attrs = {}, ...children) {
 function renderSidebar() {
   const navItems = [
     { id: 'dashboard', icon: icons.dashboard, label: 'Dashboard', key: '1' },
-    { id: 'content', icon: icons.content, label: 'Content', key: '2' },
-    { id: 'triggers', icon: icons.triggers, label: 'Triggers', key: '3' },
-    { id: 'calendar', icon: icons.calendar, label: 'Calendar', key: '4' },
-    { id: 'analytics', icon: icons.analytics, label: 'Analytics', key: '5' },
-    { id: 'performance', icon: icons.performance, label: 'Performance', key: '6' },
-    { id: 'settings', icon: icons.settings, label: 'Settings', key: '7' },
-    { id: 'memory', icon: icons.brain, label: 'Memory', key: '8' },
-    { id: 'meetings', icon: icons.meetings, label: 'Meetings', key: '9' }
+    { id: 'meetings', icon: icons.meetings, label: 'Meetings', key: '2' },
+    { id: 'clients', icon: icons.clients, label: 'Clients', key: '3' },
+    { id: 'actions', icon: icons.actions, label: 'Actions', key: '4' },
+    { id: 'content', icon: icons.content, label: 'Content', key: '5' },
+    { id: 'triggers', icon: icons.triggers, label: 'Triggers', key: '6' },
+    { id: 'calendar', icon: icons.calendar, label: 'Calendar', key: '7' },
+    { id: 'analytics', icon: icons.analytics, label: 'Analytics', key: '8' },
+    { id: 'settings', icon: icons.settings, label: 'Settings', key: '9' },
   ];
 
   return h('nav', { className: `sidebar ${state.sidebarOpen ? 'open' : ''}` },
     h('div', { className: 'sidebar-header' },
-      h('h1', {}, 'Content Machine'),
+      h('h1', {}, 'Command Centre'),
       h('p', {}, 'Mortar Metrics')
     ),
     h('div', { className: 'nav-section' }, 'Menu'),
@@ -1947,19 +1958,27 @@ function renderSidebar() {
               fontSize: '10px', padding: '1px 6px', marginLeft: '4px', fontWeight: '700'
             }}, String(state.content.filter(c => c.status === 'review').length))
           : null,
-        item.id === 'memory' && (state.memory?.approved_examples?.length || 0) > 0
+        item.id === 'actions' && (state.allActions || []).filter(a => a.status === 'open').length > 0
           ? h('span', { style: {
-              background: 'var(--purple)', color: 'white', borderRadius: '10px',
+              background: 'var(--amber)', color: 'white', borderRadius: '10px',
               fontSize: '10px', padding: '1px 6px', marginLeft: '4px', fontWeight: '700'
-            }}, String(state.memory.approved_examples.length))
+            }}, String((state.allActions || []).filter(a => a.status === 'open').length))
           : null,
         h('span', { className: 'kbd', style: { marginLeft: 'auto' } }, item.key)
       )
     ),
-    h('div', { className: 'nav-section', style: { marginTop: '16px' } }, 'Actions'),
-    h('div', { className: 'nav-item', onclick: () => { state.page = 'save-url'; render(); } },
+    h('div', { className: 'nav-section', style: { marginTop: '16px' } }, 'Tools'),
+    h('div', { className: `nav-item ${state.page === 'save-url' ? 'active' : ''}`, onclick: () => { state.page = 'save-url'; render(); } },
       h('span', { innerHTML: icons.link }),
       h('span', {}, 'Save URL')
+    ),
+    h('div', { className: `nav-item ${state.page === 'memory' ? 'active' : ''}`, onclick: () => { state.page = 'memory'; render(); } },
+      h('span', { innerHTML: icons.brain }),
+      h('span', {}, 'Memory')
+    ),
+    h('div', { className: `nav-item ${state.page === 'performance' ? 'active' : ''}`, onclick: () => { state.page = 'performance'; render(); } },
+      h('span', { innerHTML: icons.performance }),
+      h('span', {}, 'Performance')
     ),
     h('div', { className: 'sidebar-footer' },
       h('button', {
@@ -1967,7 +1986,7 @@ function renderSidebar() {
         onclick: () => { toggleDarkMode(); }
       }, state.darkMode ? 'Light Mode' : 'Dark Mode'),
       h('div', { style: { fontSize: '11px', color: 'rgba(255,255,255,0.4)', marginTop: '10px' } },
-        'Keyboard: 1-8 navigate',
+        'Keyboard: 1-9 navigate',
         h('br'),
         'Esc to close modals',
         h('br'),
@@ -1979,7 +1998,10 @@ function renderSidebar() {
 
 function renderTopbar() {
   const titles = {
-    dashboard: 'Dashboard',
+    dashboard: 'Command Centre',
+    meetings: 'Meetings',
+    clients: 'Clients',
+    actions: 'Action Items',
     content: 'Content Review',
     triggers: 'Trigger Queue',
     calendar: 'Content Calendar',
@@ -1988,7 +2010,6 @@ function renderTopbar() {
     settings: 'Settings',
     memory: 'Brand Memory',
     'save-url': 'Save URL',
-    meetings: 'Meetings'
   };
 
   return h('header', { className: 'topbar' },
@@ -4274,6 +4295,259 @@ function meetingStatCard(label, value) {
   );
 }
 
+function renderClientsPage() {
+  const clients = state.clients || [];
+  const detail = state.clientDetail;
+  const q = (state.clientSearch || '').toLowerCase();
+  const filtered = q ? clients.filter(c =>
+    (c.name || '').toLowerCase().includes(q) ||
+    (c.email || '').toLowerCase().includes(q) ||
+    (c.firm_name || '').toLowerCase().includes(q)
+  ) : clients;
+
+  const statusBadge = (status) => {
+    const colors = { prospect: 'var(--blue)', active: 'var(--green)', churned: 'var(--red)', lost: 'var(--gray-500)' };
+    return h('span', { style: {
+      background: colors[status] || 'var(--gray-400)', color: 'white',
+      padding: '2px 8px', borderRadius: '12px', fontSize: '11px', fontWeight: '600'
+    } }, status || 'prospect');
+  };
+
+  // Detail view
+  if (detail) {
+    const meetings = detail.meetings || [];
+    return h('div', { className: 'page-content' },
+      h('div', { style: { display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' } },
+        h('button', { className: 'btn btn-ghost btn-sm', onclick: () => { state.clientDetail = null; render(); } }, 'Back'),
+        h('h3', { style: { fontFamily: "'Fraunces', serif" } }, detail.name),
+        statusBadge(detail.status)
+      ),
+      h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px', marginBottom: '20px' } },
+        h('div', { className: 'card', style: { padding: '16px' } },
+          h('div', { style: { fontSize: '12px', color: 'var(--gray-500)', marginBottom: '4px' } }, 'Email'),
+          h('div', { style: { fontSize: '14px', fontWeight: '500' } }, detail.email || 'Not available')
+        ),
+        h('div', { className: 'card', style: { padding: '16px' } },
+          h('div', { style: { fontSize: '12px', color: 'var(--gray-500)', marginBottom: '4px' } }, 'Firm'),
+          h('div', { style: { fontSize: '14px', fontWeight: '500' } }, detail.firm_name || 'Not available')
+        ),
+        h('div', { className: 'card', style: { padding: '16px' } },
+          h('div', { style: { fontSize: '12px', color: 'var(--gray-500)', marginBottom: '4px' } }, 'Practice Areas'),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '4px' } },
+            ...(detail.practice_areas || []).map(pa =>
+              h('span', { style: { background: 'var(--purple-light)', color: 'var(--purple)', padding: '2px 8px', borderRadius: '8px', fontSize: '11px' } }, pa)
+            )
+          )
+        )
+      ),
+      h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '20px', fontSize: '13px', color: 'var(--gray-500)' } },
+        h('div', {}, `First seen: ${detail.first_seen ? new Date(detail.first_seen).toLocaleDateString() : 'N/A'}`),
+        h('div', {}, `Last seen: ${detail.last_seen ? new Date(detail.last_seen).toLocaleDateString() : 'N/A'}`)
+      ),
+      // Meeting history
+      meetings.length > 0 ? h('div', { className: 'card', style: { marginBottom: '16px' } },
+        h('h4', { style: { marginBottom: '12px', fontFamily: "'Fraunces', serif" } }, `Meeting History (${meetings.length})`),
+        ...meetings.map(m =>
+          h('div', { style: {
+            display: 'flex', alignItems: 'center', gap: '12px', padding: '8px 0',
+            borderBottom: '1px solid var(--gray-100)', cursor: 'pointer'
+          }, onclick: async () => {
+            try {
+              const [meeting, actions, atoms] = await Promise.all([
+                api(`/api/meetings/${m.id}`), api(`/api/meetings/${m.id}/actions`), api(`/api/meetings/${m.id}/atoms`)
+              ]);
+              state.meetingDetail = { ...meeting, _actions: actions, _atoms: atoms };
+              state.clientDetail = null;
+              state.page = 'meetings';
+              render();
+            } catch (err) { toast('Failed to load meeting', 'error'); }
+          } },
+            h('span', { style: { fontSize: '13px', flex: 1 } }, m.title || 'Untitled'),
+            h('span', { style: {
+              background: m.meeting_type === 'discovery' ? 'var(--blue)' : m.meeting_type === 'onboarding' ? 'var(--green)' : 'var(--gray-400)',
+              color: 'white', padding: '2px 6px', borderRadius: '8px', fontSize: '10px'
+            } }, m.meeting_type || 'unknown'),
+            h('span', { style: { fontSize: '12px', color: 'var(--gray-400)' } }, m.date ? new Date(m.date).toLocaleDateString() : '')
+          )
+        )
+      ) : h('div', { className: 'card', style: { padding: '20px', color: 'var(--gray-400)', textAlign: 'center' } }, 'No meetings recorded')
+    );
+  }
+
+  // List view
+  return h('div', { className: 'page-content' },
+    // Stats
+    h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', marginBottom: '20px' } },
+      meetingStatCard('Total Clients', clients.length),
+      meetingStatCard('Prospects', clients.filter(c => c.status === 'prospect').length),
+      meetingStatCard('Active', clients.filter(c => c.status === 'active').length)
+    ),
+    // Search
+    h('div', { style: { marginBottom: '20px' } },
+      h('input', {
+        type: 'text', placeholder: 'Search by name, email, or firm...',
+        style: { padding: '8px 12px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '13px', width: '100%', maxWidth: '400px' },
+        value: state.clientSearch || '',
+        oninput: (e) => { state.clientSearch = e.target.value; render(); }
+      })
+    ),
+    // Client list
+    filtered.length === 0
+      ? h('div', { className: 'card', style: { textAlign: 'center', padding: '40px', color: 'var(--gray-400)' } },
+          h('div', { innerHTML: icons.clients, style: { width: '48px', height: '48px', margin: '0 auto 12px', opacity: '0.3' } }),
+          h('p', {}, 'No clients yet'),
+          h('p', { style: { fontSize: '13px', marginTop: '8px' } }, 'Clients are auto-created from meeting transcripts')
+        )
+      : h('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px' } },
+          ...filtered.map(c =>
+            h('div', {
+              className: 'card', style: { cursor: 'pointer', padding: '12px 16px', transition: 'var(--transition)' },
+              onclick: async () => {
+                try {
+                  const detail = await api(`/api/clients/${c.id}`);
+                  state.clientDetail = detail;
+                  render();
+                } catch (err) { toast('Failed to load client', 'error'); }
+              }
+            },
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: '12px' } },
+                h('div', { style: {
+                  width: '36px', height: '36px', borderRadius: '50%', background: 'var(--navy)',
+                  color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontWeight: '700', fontSize: '14px', flexShrink: 0
+                } }, (c.name || '?')[0].toUpperCase()),
+                h('div', { style: { flex: 1 } },
+                  h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '2px' } },
+                    h('span', { style: { fontWeight: '600', fontSize: '14px' } }, c.name),
+                    statusBadge(c.status),
+                    c.firm_name ? h('span', { style: { fontSize: '12px', color: 'var(--gray-500)' } }, c.firm_name) : null
+                  ),
+                  h('div', { style: { display: 'flex', gap: '16px', fontSize: '12px', color: 'var(--gray-400)' } },
+                    c.email && c.email !== 'null' ? h('span', {}, c.email) : null,
+                    (c.practice_areas || []).length > 0 ? h('span', {}, (c.practice_areas || []).slice(0, 3).join(', ')) : null,
+                    c.last_seen ? h('span', {}, `Last: ${new Date(c.last_seen).toLocaleDateString()}`) : null
+                  )
+                )
+              )
+            )
+          )
+        )
+  );
+}
+
+function renderActionsPage() {
+  const actions = state.allActions || [];
+  const filter = state.actionsFilter || {};
+
+  let filtered = [...actions];
+  if (filter.status) filtered = filtered.filter(a => a.status === filter.status);
+  if (filter.owner) filtered = filtered.filter(a => a.owner === filter.owner);
+
+  const owners = [...new Set(actions.map(a => a.owner).filter(Boolean))];
+  const openCount = actions.filter(a => a.status === 'open').length;
+  const doneCount = actions.filter(a => a.status === 'done').length;
+  const usActions = actions.filter(a => a.owner === 'us' && a.status === 'open').length;
+  const clientActions = actions.filter(a => a.owner === 'client' && a.status === 'open').length;
+
+  const ownerColor = (owner) => {
+    const map = { us: 'var(--blue)', client: 'var(--amber)', Fardeen: 'var(--purple)', Yaseer: 'var(--green)', Monty: 'var(--red)', Juhi: '#ec4899' };
+    return map[owner] || 'var(--gray-500)';
+  };
+
+  return h('div', { className: 'page-content' },
+    // Stats
+    h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', marginBottom: '20px' } },
+      meetingStatCard('Total', actions.length),
+      meetingStatCard('Open', openCount),
+      meetingStatCard('Our Actions', usActions),
+      meetingStatCard('Client Actions', clientActions)
+    ),
+    // Filters
+    h('div', { style: { display: 'flex', gap: '12px', marginBottom: '20px', alignItems: 'center' } },
+      h('select', {
+        style: { padding: '6px 10px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '13px' },
+        value: filter.status || '',
+        onchange: (e) => { state.actionsFilter.status = e.target.value; render(); }
+      },
+        h('option', { value: '' }, 'All Status'),
+        h('option', { value: 'open' }, `Open (${openCount})`),
+        h('option', { value: 'done' }, `Done (${doneCount})`)
+      ),
+      h('select', {
+        style: { padding: '6px 10px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '13px' },
+        value: filter.owner || '',
+        onchange: (e) => { state.actionsFilter.owner = e.target.value; render(); }
+      },
+        h('option', { value: '' }, 'All Owners'),
+        ...owners.map(o => h('option', { value: o }, o))
+      ),
+      h('span', { style: { marginLeft: 'auto', fontSize: '12px', color: 'var(--gray-400)' } },
+        `${filtered.length} action${filtered.length !== 1 ? 's' : ''}`)
+    ),
+    // Actions list
+    filtered.length === 0
+      ? h('div', { className: 'card', style: { textAlign: 'center', padding: '40px', color: 'var(--gray-400)' } },
+          h('div', { innerHTML: icons.actions, style: { width: '48px', height: '48px', margin: '0 auto 12px', opacity: '0.3' } }),
+          h('p', {}, 'No action items'),
+          h('p', { style: { fontSize: '13px', marginTop: '8px' } }, 'Actions are extracted from meeting transcripts')
+        )
+      : h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
+          ...filtered.map(a =>
+            h('div', {
+              className: 'card',
+              style: { padding: '10px 16px', display: 'flex', alignItems: 'center', gap: '12px',
+                opacity: a.status === 'done' ? '0.6' : '1' }
+            },
+              h('input', {
+                type: 'checkbox',
+                checked: a.status === 'done',
+                style: { width: '18px', height: '18px', cursor: 'pointer', accentColor: 'var(--green)' },
+                onchange: async () => {
+                  try {
+                    await api(`/api/actions/${a.id}`, {
+                      method: 'PUT',
+                      body: { status: a.status === 'done' ? 'open' : 'done' }
+                    });
+                    await loadData();
+                  } catch (err) { toast('Update failed: ' + err.message, 'error'); }
+                }
+              }),
+              h('div', { style: { flex: 1 } },
+                h('div', { style: {
+                  fontSize: '13px', fontWeight: '500',
+                  textDecoration: a.status === 'done' ? 'line-through' : 'none',
+                  color: a.status === 'done' ? 'var(--gray-400)' : 'inherit'
+                } }, a.description),
+                h('div', { style: { display: 'flex', gap: '12px', fontSize: '11px', color: 'var(--gray-400)', marginTop: '2px' } },
+                  a.meeting_id ? h('span', {
+                    style: { cursor: 'pointer', textDecoration: 'underline' },
+                    onclick: async (e) => {
+                      e.stopPropagation();
+                      try {
+                        const [meeting, mActions, atoms] = await Promise.all([
+                          api(`/api/meetings/${a.meeting_id}`), api(`/api/meetings/${a.meeting_id}/actions`), api(`/api/meetings/${a.meeting_id}/atoms`)
+                        ]);
+                        state.meetingDetail = { ...meeting, _actions: mActions, _atoms: atoms };
+                        state.page = 'meetings';
+                        render();
+                      } catch (err) { toast('Failed to load meeting', 'error'); }
+                    }
+                  }, `Meeting #${a.meeting_id}`) : null,
+                  a.due_date ? h('span', {}, `Due: ${a.due_date}`) : null,
+                  a.created_at ? h('span', {}, new Date(a.created_at).toLocaleDateString()) : null
+                )
+              ),
+              a.owner ? h('span', { style: {
+                background: ownerColor(a.owner) + '18', color: ownerColor(a.owner),
+                padding: '2px 10px', borderRadius: '12px', fontSize: '11px', fontWeight: '600',
+                whiteSpace: 'nowrap'
+              } }, a.owner) : null
+            )
+          )
+        )
+  );
+}
+
 function renderSaveUrlPage() {
   const urlTriggers = state.triggers.filter(t => t.source === 'url');
   const allFormats = [
@@ -4403,6 +4677,9 @@ function render() {
             h('div', { className: 'spinner', style: { width: '32px', height: '32px' } })
           )
         : state.page === 'dashboard' ? renderDashboardPage()
+        : state.page === 'meetings' ? renderMeetingsPage()
+        : state.page === 'clients' ? renderClientsPage()
+        : state.page === 'actions' ? renderActionsPage()
         : state.page === 'content' ? renderContentPage()
         : state.page === 'triggers' ? renderTriggersPage()
         : state.page === 'calendar' ? renderCalendarPage()
@@ -4411,7 +4688,6 @@ function render() {
         : state.page === 'settings' ? renderSettingsPage()
         : state.page === 'memory' ? renderMemoryPage()
         : state.page === 'save-url' ? renderSaveUrlPage()
-        : state.page === 'meetings' ? renderMeetingsPage()
         : renderDashboardPage()
     ),
     // Quick Capture floating button

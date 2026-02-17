@@ -960,10 +960,17 @@ h1, h2, h3, h4 { font-family: 'Fraunces', serif; }
 .url-input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
 
 /* Toast */
-.toast {
+.toast-container {
   position: fixed;
   bottom: 24px;
   right: 24px;
+  z-index: 200;
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 8px;
+}
+
+.toast {
   padding: 12px 20px;
   border-radius: var(--radius-sm);
   background: var(--gray-800);
@@ -971,8 +978,7 @@ h1, h2, h3, h4 { font-family: 'Fraunces', serif; }
   font-size: 13px;
   font-weight: 500;
   box-shadow: var(--shadow-xl);
-  z-index: 200;
-  animation: slideUp 0.3s ease, fadeOut 0.3s ease 2.5s forwards;
+  animation: slideUp 0.3s ease;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -980,6 +986,7 @@ h1, h2, h3, h4 { font-family: 'Fraunces', serif; }
 
 .toast-success { background: var(--green); }
 .toast-error { background: var(--red); }
+.toast-info { background: var(--navy); }
 
 /* Filter bar */
 .filter-bar {
@@ -1118,8 +1125,6 @@ h1, h2, h3, h4 { font-family: 'Fraunces', serif; }
 /* Rejected format overlay */
 .badge-rejected { background: var(--red-light); color: var(--red); }
 
-/* Better toast stacking */
-.toast + .toast { margin-bottom: 60px; }
 
 /* Stats grid on smaller screens */
 @media (max-width: 900px) {
@@ -1338,7 +1343,6 @@ const state = {
   stats: null,
   calendar: null,
   loading: true,
-  activeContentId: null,
   activeFormat: {},
   editingFormat: null,
   editText: '',
@@ -1352,6 +1356,7 @@ const state = {
   memory: { approved_examples: [], style_notes: [] },
   memoryNote: '',
   generating: false,
+  actionPending: false,
   showAddTrigger: false,
   newTriggerTitle: '',
   newTriggerContent: '',
@@ -1380,6 +1385,10 @@ async function api(path, options = {}) {
     headers: { 'Content-Type': 'application/json', ...options.headers },
     body: options.body ? JSON.stringify(options.body) : undefined
   });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: res.statusText }));
+    throw new Error(err.error || `HTTP ${res.status}`);
+  }
   return res.json();
 }
 
@@ -1417,33 +1426,45 @@ async function loadData() {
 }
 
 async function approveFormat(contentId, format) {
-  const res = await api(`/api/content/${contentId}/approve`, {
-    method: 'POST',
-    body: { format }
-  });
-  updateContentInState(res);
-  toast('Approved!', 'success');
+  state.actionPending = true; render();
+  try {
+    const res = await api(`/api/content/${contentId}/approve`, {
+      method: 'POST',
+      body: { format }
+    });
+    updateContentInState(res);
+    toast('Approved!', 'success');
+  } catch (err) { toast('Approve failed: ' + err.message, 'error'); }
+  state.actionPending = false;
   render();
 }
 
 async function rejectFormat(contentId, format) {
-  const res = await api(`/api/content/${contentId}/reject`, {
-    method: 'POST',
-    body: { format }
-  });
-  updateContentInState(res);
-  toast('Rejected', 'error');
+  state.actionPending = true; render();
+  try {
+    const res = await api(`/api/content/${contentId}/reject`, {
+      method: 'POST',
+      body: { format }
+    });
+    updateContentInState(res);
+    toast('Rejected', 'info');
+  } catch (err) { toast('Reject failed: ' + err.message, 'error'); }
+  state.actionPending = false;
   render();
 }
 
 async function saveEdit(contentId, format, content) {
-  const res = await api(`/api/content/${contentId}`, {
-    method: 'PUT',
-    body: { format, content }
-  });
-  updateContentInState(res);
-  state.editingFormat = null;
-  toast('Saved!', 'success');
+  state.actionPending = true; render();
+  try {
+    const res = await api(`/api/content/${contentId}`, {
+      method: 'PUT',
+      body: { format, content }
+    });
+    updateContentInState(res);
+    state.editingFormat = null;
+    toast('Saved!', 'success');
+  } catch (err) { toast('Save failed: ' + err.message, 'error'); }
+  state.actionPending = false;
   render();
 }
 
@@ -1500,21 +1521,31 @@ async function generateForTrigger(triggerId) {
 }
 
 async function bulkApprove() {
-  const ids = [...state.selectedContent];
-  const count = ids.length;
-  await api('/api/content/bulk-approve', { method: 'POST', body: { ids } });
-  state.selectedContent = new Set();
-  toast(`Approved ${count} pieces`, 'success');
-  await loadData();
+  state.actionPending = true; render();
+  try {
+    const ids = [...state.selectedContent];
+    const count = ids.length;
+    await api('/api/content/bulk-approve', { method: 'POST', body: { ids } });
+    state.selectedContent = new Set();
+    toast(`Approved ${count} pieces`, 'success');
+    await loadData();
+  } catch (err) { toast('Bulk approve failed: ' + err.message, 'error'); }
+  state.actionPending = false;
+  render();
 }
 
 async function bulkReject() {
-  const ids = [...state.selectedContent];
-  const count = ids.length;
-  await api('/api/content/bulk-reject', { method: 'POST', body: { ids } });
-  state.selectedContent = new Set();
-  toast(`Rejected ${count} pieces`, 'error');
-  await loadData();
+  state.actionPending = true; render();
+  try {
+    const ids = [...state.selectedContent];
+    const count = ids.length;
+    await api('/api/content/bulk-reject', { method: 'POST', body: { ids } });
+    state.selectedContent = new Set();
+    toast(`Rejected ${count} pieces`, 'info');
+    await loadData();
+  } catch (err) { toast('Bulk reject failed: ' + err.message, 'error'); }
+  state.actionPending = false;
+  render();
 }
 
 function exportApprovedContent() {
@@ -1657,13 +1688,12 @@ if (state.darkMode) {
 }
 
 // --- Toast ---
-let toastTimeout;
 function toast(msg, type = 'success') {
-  state.toasts.push({ msg, type, id: Date.now() });
+  const id = Date.now() + Math.random();
+  state.toasts.push({ msg, type, id });
   render();
-  clearTimeout(toastTimeout);
-  toastTimeout = setTimeout(() => {
-    state.toasts.shift();
+  setTimeout(() => {
+    state.toasts = state.toasts.filter(t => t.id !== id);
     render();
   }, 3000);
 }
@@ -2990,41 +3020,45 @@ function renderTriggersPage() {
                 className: 'btn btn-primary btn-sm',
                 disabled: !state.newTriggerTitle.trim(),
                 onclick: async () => {
-                  const res = await api('/api/triggers/add', {
-                    method: 'POST',
-                    body: {
-                      title: state.newTriggerTitle.trim(),
-                      raw_content: state.newTriggerContent.trim() || state.newTriggerTitle.trim(),
-                      category: state.newTriggerCategory
-                    }
-                  });
-                  state.newTriggerTitle = '';
-                  state.newTriggerContent = '';
-                  state.showAddTrigger = false;
-                  toast('Trigger added!', 'success');
-                  await loadData();
+                  try {
+                    await api('/api/triggers/add', {
+                      method: 'POST',
+                      body: {
+                        title: state.newTriggerTitle.trim(),
+                        raw_content: state.newTriggerContent.trim() || state.newTriggerTitle.trim(),
+                        category: state.newTriggerCategory
+                      }
+                    });
+                    state.newTriggerTitle = '';
+                    state.newTriggerContent = '';
+                    state.showAddTrigger = false;
+                    toast('Trigger added!', 'success');
+                    await loadData();
+                  } catch (err) { toast('Failed to add trigger: ' + err.message, 'error'); }
                 }
               }, 'Add Trigger'),
               h('button', {
                 className: 'btn btn-success btn-sm',
                 disabled: !state.newTriggerTitle.trim(),
                 onclick: async () => {
-                  toast('Adding trigger and generating...', 'info');
-                  const res = await api('/api/triggers/add', {
-                    method: 'POST',
-                    body: {
-                      title: state.newTriggerTitle.trim(),
-                      raw_content: state.newTriggerContent.trim() || state.newTriggerTitle.trim(),
-                      category: state.newTriggerCategory
+                  try {
+                    toast('Adding trigger and generating...', 'info');
+                    const res = await api('/api/triggers/add', {
+                      method: 'POST',
+                      body: {
+                        title: state.newTriggerTitle.trim(),
+                        raw_content: state.newTriggerContent.trim() || state.newTriggerTitle.trim(),
+                        category: state.newTriggerCategory
+                      }
+                    });
+                    state.newTriggerTitle = '';
+                    state.newTriggerContent = '';
+                    state.showAddTrigger = false;
+                    await loadData();
+                    if (res.trigger) {
+                      await generateForTrigger(res.trigger.id);
                     }
-                  });
-                  state.newTriggerTitle = '';
-                  state.newTriggerContent = '';
-                  state.showAddTrigger = false;
-                  await loadData();
-                  if (res.trigger) {
-                    await generateForTrigger(res.trigger.id);
-                  }
+                  } catch (err) { toast('Failed: ' + err.message, 'error'); }
                 }
               }, 'Add & Generate')
             )
@@ -3102,9 +3136,11 @@ function renderTriggersPage() {
                         style: { color: 'var(--gray-400)', padding: '4px 6px', fontSize: '11px' },
                         title: 'Reject trigger',
                         onclick: async () => {
-                          await api(`/api/triggers/${trigger.id}/reject`, { method: 'POST', body: {} });
-                          toast('Trigger rejected', 'info');
-                          await loadData();
+                          try {
+                            await api(`/api/triggers/${trigger.id}/reject`, { method: 'POST', body: {} });
+                            toast('Trigger rejected', 'info');
+                            await loadData();
+                          } catch (err) { toast('Reject failed: ' + err.message, 'error'); }
                         }
                       }, h('span', { innerHTML: icons.ban, style: { width: '12px', height: '12px' } }))
                     : null,
@@ -3114,9 +3150,11 @@ function renderTriggersPage() {
                     title: 'Delete trigger',
                     onclick: async () => {
                       if (!confirm('Delete this trigger?')) return;
-                      await api(`/api/triggers/${trigger.id}`, { method: 'DELETE' });
-                      toast('Trigger deleted', 'info');
-                      await loadData();
+                      try {
+                        await api(`/api/triggers/${trigger.id}`, { method: 'DELETE' });
+                        toast('Trigger deleted', 'info');
+                        await loadData();
+                      } catch (err) { toast('Delete failed: ' + err.message, 'error'); }
                     }
                   }, h('span', { innerHTML: icons.trash, style: { width: '12px', height: '12px' } }))
                 )
@@ -3218,11 +3256,13 @@ function renderCalendarPage() {
         h('button', {
           className: 'btn btn-primary btn-sm',
           onclick: async () => {
-            const weekStart = getCurrentWeekStart();
-            toast('Auto-filling week...', 'info');
-            const res = await api('/api/calendar/auto-fill', { method: 'POST', body: { week_start: weekStart } });
-            toast(`Assigned ${res.assigned} content pieces!`, 'success');
-            await loadCalendarMonth();
+            try {
+              const weekStart = getCurrentWeekStart();
+              toast('Auto-filling week...', 'info');
+              const res = await api('/api/calendar/auto-fill', { method: 'POST', body: { week_start: weekStart } });
+              toast(`Assigned ${res.assigned} content pieces!`, 'success');
+              await loadCalendarMonth();
+            } catch (err) { toast('Auto-fill failed: ' + err.message, 'error'); }
           }
         }, 'Fill Week'),
         h('button', {
@@ -3270,7 +3310,6 @@ function renderCalendarPage() {
                   e.stopPropagation();
                   if (slot.content_id) {
                     state.page = 'content';
-                    state.activeContentId = slot.content_id;
                     render();
                   }
                 }
@@ -3355,7 +3394,6 @@ function renderCalendarDayDetail(cal) {
               onclick: async () => {
                 if (slot?.content_id) {
                   state.page = 'content';
-                  state.activeContentId = slot.content_id;
                   render();
                 }
               }
@@ -3372,9 +3410,11 @@ function renderCalendarDayDetail(cal) {
                       style: { fontSize: '10px', padding: '1px 4px', marginLeft: '4px', color: 'var(--red)' },
                       onclick: async (e) => {
                         e.stopPropagation();
-                        await api(`/api/calendar/${day.date}`, { method: 'PUT', body: { slot: slotKey, clear: true } });
-                        toast('Slot cleared', 'success');
-                        await loadCalendarMonth();
+                        try {
+                          await api(`/api/calendar/${day.date}`, { method: 'PUT', body: { slot: slotKey, clear: true } });
+                          toast('Slot cleared', 'success');
+                          await loadCalendarMonth();
+                        } catch (err) { toast('Failed: ' + err.message, 'error'); }
                       }
                     }, 'x')
                   )
@@ -3388,31 +3428,11 @@ function renderCalendarDayDetail(cal) {
 }
 
 async function loadCalendarMonth() {
-  const monthCal = await api(`/api/calendar?month=${state.calendarMonth}`);
-  state.monthCalendar = monthCal;
-  render();
-}
-
-function renderCalendarSlot(slot, label, className) {
-  if (!slot) {
-    return h('div', { className: 'calendar-slot slot-empty' }, label);
-  }
-  return h('div', {
-    className: `calendar-slot ${className}`,
-    title: slot.title || '',
-    onclick: () => {
-      if (slot.content_id) {
-        state.page = 'content';
-        state.activeContentId = slot.content_id;
-        render();
-      }
-    }
-  },
-    h('div', { style: { fontWeight: '600' } }, label),
-    slot.status === 'approved'
-      ? h('span', { style: { fontSize: '10px' } }, ' ✓')
-      : null
-  );
+  try {
+    const monthCal = await api(`/api/calendar?month=${state.calendarMonth}`);
+    state.monthCalendar = monthCal;
+    render();
+  } catch (err) { toast('Failed to load calendar: ' + err.message, 'error'); }
 }
 
 function renderPerformancePage() {
@@ -3571,20 +3591,22 @@ function renderPerformancePage() {
           className: 'btn btn-primary btn-sm',
           disabled: !pf.content_id || !pf.format,
           onclick: async () => {
-            await api(`/api/content/${pf.content_id}/performance`, {
-              method: 'POST',
-              body: {
-                format: pf.format,
-                impressions: pf.impressions || 0,
-                engagement: pf.engagement || 0,
-                clicks: pf.clicks || 0,
-                leads: pf.leads || 0,
-                notes: pf.notes || ''
-              }
-            });
-            toast('Performance logged!', 'success');
-            state.perfForm = { content_id: '', format: '', impressions: '', engagement: '', clicks: '', leads: '', notes: '' };
-            await loadData();
+            try {
+              await api(`/api/content/${pf.content_id}/performance`, {
+                method: 'POST',
+                body: {
+                  format: pf.format,
+                  impressions: pf.impressions || 0,
+                  engagement: pf.engagement || 0,
+                  clicks: pf.clicks || 0,
+                  leads: pf.leads || 0,
+                  notes: pf.notes || ''
+                }
+              });
+              toast('Performance logged!', 'success');
+              state.perfForm = { content_id: '', format: '', impressions: '', engagement: '', clicks: '', leads: '', notes: '' };
+              await loadData();
+            } catch (err) { toast('Failed to log: ' + err.message, 'error'); }
           }
         }, 'Log Metrics')
       )
@@ -3685,10 +3707,12 @@ function renderMemoryPage() {
             oninput: (e) => { state.memoryNote = e.target.value; },
             onkeydown: async (e) => {
               if (e.key === 'Enter' && state.memoryNote.trim()) {
-                await api('/api/memory', { method: 'POST', body: { type: 'style_note', note: state.memoryNote.trim() } });
-                state.memoryNote = '';
-                toast('Style note added!', 'success');
-                await loadData();
+                try {
+                  await api('/api/memory', { method: 'POST', body: { type: 'style_note', note: state.memoryNote.trim() } });
+                  state.memoryNote = '';
+                  toast('Style note added!', 'success');
+                  await loadData();
+                } catch (err) { toast('Failed: ' + err.message, 'error'); }
               }
             },
             style: { flex: '1', padding: '8px 12px', border: '1px solid var(--gray-200)', borderRadius: '8px', fontSize: '13px', fontFamily: 'Outfit, sans-serif' }
@@ -3697,10 +3721,12 @@ function renderMemoryPage() {
             className: 'btn btn-primary btn-sm',
             onclick: async () => {
               if (!state.memoryNote.trim()) return;
-              await api('/api/memory', { method: 'POST', body: { type: 'style_note', note: state.memoryNote.trim() } });
-              state.memoryNote = '';
-              toast('Style note added!', 'success');
-              await loadData();
+              try {
+                await api('/api/memory', { method: 'POST', body: { type: 'style_note', note: state.memoryNote.trim() } });
+                state.memoryNote = '';
+                toast('Style note added!', 'success');
+                await loadData();
+              } catch (err) { toast('Failed: ' + err.message, 'error'); }
             }
           }, 'Add')
         ),
@@ -3723,9 +3749,11 @@ function renderMemoryPage() {
                     className: 'btn btn-ghost btn-sm btn-icon',
                     style: { padding: '4px', color: 'var(--red)' },
                     onclick: async () => {
-                      await api('/api/memory', { method: 'POST', body: { type: 'remove_note', index: idx } });
-                      toast('Note removed', 'info');
-                      await loadData();
+                      try {
+                        await api('/api/memory', { method: 'POST', body: { type: 'remove_note', index: idx } });
+                        toast('Note removed', 'info');
+                        await loadData();
+                      } catch (err) { toast('Failed: ' + err.message, 'error'); }
                     }
                   }, h('span', { innerHTML: icons.x, style: { width: '14px', height: '14px', display: 'block' } }))
                 )
@@ -3807,9 +3835,11 @@ function renderMemoryPage() {
                       className: 'btn btn-ghost btn-sm btn-icon',
                       style: { padding: '4px', color: 'var(--red)', flexShrink: '0' },
                       onclick: async () => {
-                        await api('/api/memory', { method: 'POST', body: { type: 'remove_example', index: globalIdx } });
-                        toast('Example removed', 'info');
-                        await loadData();
+                        try {
+                          await api('/api/memory', { method: 'POST', body: { type: 'remove_example', index: globalIdx } });
+                          toast('Example removed', 'info');
+                          await loadData();
+                        } catch (err) { toast('Failed: ' + err.message, 'error'); }
                       }
                     }, h('span', { innerHTML: icons.trash, style: { width: '14px', height: '14px', display: 'block' } }))
                   );
@@ -4026,7 +4056,7 @@ function renderSaveUrlPage() {
 }
 
 function renderToasts() {
-  return h('div', {},
+  return h('div', { className: 'toast-container' },
     ...state.toasts.map(t =>
       h('div', { className: `toast toast-${t.type}`, key: t.id }, t.msg)
     )
@@ -4081,23 +4111,27 @@ function render() {
                 className: 'btn btn-primary btn-sm',
                 disabled: !(state.captureText || '').trim(),
                 onclick: async () => {
-                  await api('/api/capture', { method: 'POST', body: { text: state.captureText.trim() } });
-                  toast('Idea captured!', 'success');
-                  state.showCapture = false;
-                  state.captureText = '';
-                  await loadData();
+                  try {
+                    await api('/api/capture', { method: 'POST', body: { text: state.captureText.trim() } });
+                    toast('Idea captured!', 'success');
+                    state.showCapture = false;
+                    state.captureText = '';
+                    await loadData();
+                  } catch (err) { toast('Capture failed: ' + err.message, 'error'); }
                 }
               }, 'Save'),
               h('button', {
                 className: 'btn btn-success btn-sm',
                 disabled: !(state.captureText || '').trim(),
                 onclick: async () => {
-                  toast('Capturing and generating...', 'info');
-                  const res = await api('/api/capture', { method: 'POST', body: { text: state.captureText.trim() } });
-                  state.showCapture = false;
-                  state.captureText = '';
-                  if (res.trigger) await generateForTrigger(res.trigger.id);
-                  await loadData();
+                  try {
+                    toast('Capturing and generating...', 'info');
+                    const res = await api('/api/capture', { method: 'POST', body: { text: state.captureText.trim() } });
+                    state.showCapture = false;
+                    state.captureText = '';
+                    if (res.trigger) await generateForTrigger(res.trigger.id);
+                    await loadData();
+                  } catch (err) { toast('Capture failed: ' + err.message, 'error'); }
                 }
               }, 'Save & Generate')
             )

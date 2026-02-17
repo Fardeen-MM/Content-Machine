@@ -35,7 +35,6 @@ const BANNED_PHRASES = ["leverage", "synergy", "paradigm", "utilize", "facilitat
 const JARGON = ["holistic approach", "cutting-edge", "world-class", "best-in-class"];
 const PROOF_POINTS = ["mandall", "metro pi", "davis family", "peak defense", "$12m", "2.8x", "97%"];
 const LONG_FORM = new Set(['blog', 'newsletter', 'youtube_script']);
-const SOCIAL_FORMATS = new Set(['linkedin', 'x_single', 'x_thread', 'hot_take', 'listicle', 'short_video', 'carousel']);
 
 function textOf(content) {
   if (typeof content === 'string') return content;
@@ -56,7 +55,7 @@ function wordSet(text) {
   return text.toLowerCase().replace(/[^a-z0-9\s]/g, '').split(/\s+/).filter(w => w.length > 2);
 }
 
-function qualityCheck(content, formatKey, trigger) {
+function qualityCheck(content, formatKey, trigger, existingContent) {
   let score = 100;
   const issues = [];
   const suggestions = [];
@@ -139,9 +138,14 @@ function qualityCheck(content, formatKey, trigger) {
 
   // ---------- 5. Duplicate check ----------
   try {
-    const contentPath = path.join(__dirname, '..', 'data', 'content.json');
-    if (fs.existsSync(contentPath)) {
-      const existing = JSON.parse(fs.readFileSync(contentPath, 'utf8'));
+    let existing = existingContent;
+    if (!existing) {
+      const contentPath = path.join(__dirname, '..', 'data', 'content.json');
+      if (fs.existsSync(contentPath)) {
+        existing = JSON.parse(fs.readFileSync(contentPath, 'utf8'));
+      }
+    }
+    if (existing) {
       const recent = (Array.isArray(existing) ? existing : [])
         .filter(c => c.format === formatKey)
         .slice(-20);

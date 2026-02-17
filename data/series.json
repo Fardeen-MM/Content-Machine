@@ -49,7 +49,7 @@
     "name": "Saturday Behind the Scenes",
     "day": "saturday",
     "template_prompt": "Write a post revealing a behind-the-scenes look at agency life, team wins, or internal processes. Format: What you see: {external_view}\n\nWhat actually happens: {behind_scenes_reality}\n\nWhy we do it this way: {reasoning}\n\nWhat we learned: {lesson}\n\nKeep the tone human, authentic, and slightly informal. Show the messy middle of building and running a legal marketing agency. Celebrate team wins without being braggy. Reveal process details that make the audience feel like insiders.",
-    "formats": ["linkedin", "x_single", "instagram"],
+    "formats": ["linkedin", "x_single", "carousel"],
     "pillar": "behind_scenes",
     "active": true
   },

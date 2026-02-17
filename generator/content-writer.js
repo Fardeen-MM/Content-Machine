@@ -1,6 +1,10 @@
 const { generateSocialContent, generateBlogPost, generateYouTubeScript, generateLeadMagnet, generateNewsletter, generateCaseStudy, extractSpokes } = require('../lib/claude');
 const { generateId, now, readJSON } = require('../lib/utils');
 
+function makeSlot(content) {
+  return { content, status: 'review', edited: false };
+}
+
 const BRAND_SYSTEM_PROMPT = `You are the content strategist for Mortar Metrics, a legal marketing agency that helps law firms get more signed cases through digital marketing.
 
 VOICE & TONE:
@@ -50,7 +54,14 @@ CONTENT RULES:
 - YouTube scripts: Hook → Problem → Content → Proof → CTA, 8-15 minutes
 - Threads: 5-7 tweets, each can stand alone, build narrative arc`;
 
+let _cachedPrompt = null;
+let _cachedPromptAt = 0;
+const PROMPT_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
 function buildSystemPromptWithMemory() {
+  if (_cachedPrompt && Date.now() - _cachedPromptAt < PROMPT_CACHE_TTL) {
+    return _cachedPrompt;
+  }
   let prompt = BRAND_SYSTEM_PROMPT;
   try {
     const memory = readJSON('memory.json');
@@ -80,6 +91,8 @@ function buildSystemPromptWithMemory() {
   } catch (err) {
     console.log('[writer] No memory loaded:', err.message);
   }
+  _cachedPrompt = prompt;
+  _cachedPromptAt = Date.now();
   return prompt;
 }
 
@@ -107,61 +120,17 @@ async function generateAllContent(trigger) {
     generated_at: now(),
     status: 'review',
     formats: {
-      linkedin: {
-        content: social?.linkedin_post || null,
-        status: 'review',
-        edited: false
-      },
-      x_single: {
-        content: social?.x_single || null,
-        status: 'review',
-        edited: false
-      },
-      x_thread: {
-        content: social?.x_thread || null,
-        status: 'review',
-        edited: false
-      },
-      short_video: {
-        content: social?.short_video_script || null,
-        status: 'review',
-        edited: false
-      },
-      carousel: {
-        content: social?.linkedin_carousel || null,
-        status: 'review',
-        edited: false
-      },
-      poll: {
-        content: social?.linkedin_poll || null,
-        status: 'review',
-        edited: false
-      },
-      quote_cards: {
-        content: social?.quote_cards || null,
-        status: 'review',
-        edited: false
-      },
-      stat_graphic: {
-        content: social?.stat_graphic || null,
-        status: 'review',
-        edited: false
-      },
-      hot_take: {
-        content: social?.hot_take || null,
-        status: 'review',
-        edited: false
-      },
-      before_after: {
-        content: social?.before_after || null,
-        status: 'review',
-        edited: false
-      },
-      listicle: {
-        content: social?.listicle_post || null,
-        status: 'review',
-        edited: false
-      }
+      linkedin: makeSlot(social?.linkedin_post || null),
+      x_single: makeSlot(social?.x_single || null),
+      x_thread: makeSlot(social?.x_thread || null),
+      short_video: makeSlot(social?.short_video_script || null),
+      carousel: makeSlot(social?.linkedin_carousel || null),
+      poll: makeSlot(social?.linkedin_poll || null),
+      quote_cards: makeSlot(social?.quote_cards || null),
+      stat_graphic: makeSlot(social?.stat_graphic || null),
+      hot_take: makeSlot(social?.hot_take || null),
+      before_after: makeSlot(social?.before_after || null),
+      listicle: makeSlot(social?.listicle_post || null),
     },
     image_prompt: social?.image_prompt || null,
     image_url: null,
@@ -186,11 +155,7 @@ async function generateBlog(content, trigger) {
 
   try {
     const blogContent = await generateBlogPost(trigger, content.blog_keyword, buildSystemPromptWithMemory());
-    content.formats.blog = {
-      content: blogContent,
-      status: 'review',
-      edited: false
-    };
+    content.formats.blog = makeSlot(blogContent);
     content.blog_post = blogContent;
   } catch (err) {
     console.error(`[writer] Blog generation failed: ${err.message}`);
@@ -209,11 +174,7 @@ async function generateYouTube(content, trigger) {
 
   try {
     const scriptContent = await generateYouTubeScript(trigger, content.youtube_topic, buildSystemPromptWithMemory());
-    content.formats.youtube_script = {
-      content: scriptContent,
-      status: 'review',
-      edited: false
-    };
+    content.formats.youtube_script = makeSlot(scriptContent);
     content.youtube_script = scriptContent;
   } catch (err) {
     console.error(`[writer] YouTube script generation failed: ${err.message}`);
@@ -235,7 +196,7 @@ async function generateLeadMagnetContent(content, trigger) {
     const triggerWithTopic = { ...trigger, lead_magnet_topic: content.lead_magnet_topic };
     const parsed = await generateLeadMagnet(triggerWithTopic, buildSystemPromptWithMemory());
     const html = renderLeadMagnetHTML(parsed);
-    content.formats.lead_magnet = { content: html, status: 'review', edited: false };
+    content.formats.lead_magnet = makeSlot(html);
     content.lead_magnet_meta = { title: parsed.title, type: parsed.type, subtitle: parsed.subtitle };
   } catch (err) {
     console.error(`[writer] Lead magnet generation failed: ${err.message}`);
@@ -249,11 +210,7 @@ async function generateNewsletterContent(content, trigger) {
 
   try {
     const parsed = await generateNewsletter(trigger, buildSystemPromptWithMemory());
-    content.formats.newsletter = {
-      content: parsed.body || parsed,
-      status: 'review',
-      edited: false
-    };
+    content.formats.newsletter = makeSlot(parsed.body || parsed);
     content.newsletter_meta = {
       subject_line: parsed.subject_line || '',
       preview_text: parsed.preview_text || ''
@@ -270,11 +227,7 @@ async function generateCaseStudyContent(content, trigger) {
 
   try {
     const caseStudy = await generateCaseStudy(trigger, buildSystemPromptWithMemory());
-    content.formats.case_study = {
-      content: caseStudy,
-      status: 'review',
-      edited: false
-    };
+    content.formats.case_study = makeSlot(caseStudy);
   } catch (err) {
     console.error(`[writer] Case study generation failed: ${err.message}`);
   }
@@ -342,17 +295,17 @@ async function generatePillarWithSpokes(trigger, pillarType = 'blog') {
     generation_mode: 'pillar_spoke',
     pillar_type: pillarType,
     formats: {
-      linkedin: { content: spokes?.linkedin_post || null, status: 'review', edited: false },
-      x_single: { content: spokes?.x_single || null, status: 'review', edited: false },
-      x_thread: { content: spokes?.x_thread || null, status: 'review', edited: false },
-      short_video: { content: spokes?.short_video_script || null, status: 'review', edited: false },
-      carousel: { content: spokes?.linkedin_carousel || null, status: 'review', edited: false },
-      poll: { content: spokes?.linkedin_poll || null, status: 'review', edited: false },
-      quote_cards: { content: spokes?.quote_cards || null, status: 'review', edited: false },
-      stat_graphic: { content: spokes?.stat_graphic || null, status: 'review', edited: false },
-      hot_take: { content: spokes?.hot_take || null, status: 'review', edited: false },
-      before_after: { content: spokes?.before_after || null, status: 'review', edited: false },
-      listicle: { content: spokes?.listicle_post || null, status: 'review', edited: false },
+      linkedin: makeSlot(spokes?.linkedin_post || null),
+      x_single: makeSlot(spokes?.x_single || null),
+      x_thread: makeSlot(spokes?.x_thread || null),
+      short_video: makeSlot(spokes?.short_video_script || null),
+      carousel: makeSlot(spokes?.linkedin_carousel || null),
+      poll: makeSlot(spokes?.linkedin_poll || null),
+      quote_cards: makeSlot(spokes?.quote_cards || null),
+      stat_graphic: makeSlot(spokes?.stat_graphic || null),
+      hot_take: makeSlot(spokes?.hot_take || null),
+      before_after: makeSlot(spokes?.before_after || null),
+      listicle: makeSlot(spokes?.listicle_post || null),
     },
     image_prompt: spokes?.image_prompt || null,
     image_url: null,
@@ -367,15 +320,15 @@ async function generatePillarWithSpokes(trigger, pillarType = 'blog') {
 
   // Add pillar content to the appropriate format slot
   if (pillarType === 'blog') {
-    content.formats.blog = { content: pillarContent, status: 'review', edited: false };
+    content.formats.blog = makeSlot(pillarContent);
     content.blog_post = pillarContent;
     content.blog_keyword = pillarMeta.blog_keyword;
   } else if (pillarType === 'youtube') {
-    content.formats.youtube_script = { content: pillarContent, status: 'review', edited: false };
+    content.formats.youtube_script = makeSlot(pillarContent);
     content.youtube_script = pillarContent;
     content.youtube_topic = pillarMeta.youtube_topic;
   } else if (pillarType === 'newsletter') {
-    content.formats.newsletter = { content: pillarContent, status: 'review', edited: false };
+    content.formats.newsletter = makeSlot(pillarContent);
     if (pillarMeta.newsletter_meta) content.newsletter_meta = pillarMeta.newsletter_meta;
   }
 

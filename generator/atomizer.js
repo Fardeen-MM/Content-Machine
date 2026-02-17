@@ -1,4 +1,5 @@
 const { callClaude, parseJsonResponse, HAIKU } = require('../lib/claude');
+const { stripHtml } = require('../lib/utils');
 
 const SYSTEM = `You are a content strategist for a legal marketing agency called Mortar Metrics.
 Your job is to break down long-form content into reusable "atoms" — small pieces that can be
@@ -92,22 +93,16 @@ For ctas: calls to action or next steps mentioned.`;
 async function atomizeUrl(url) {
   try {
     const res = await fetch(url, {
-      headers: { 'User-Agent': 'MortarMetrics-ContentMachine/1.0' }
+      headers: { 'User-Agent': 'MortarMetrics-ContentMachine/1.0' },
+      signal: AbortSignal.timeout(15000)
     });
 
     if (!res.ok) {
       return { ...EMPTY_ATOMS, _source: url, _error: `Fetch failed: ${res.status}` };
     }
 
-    let html = await res.text();
-
-    // Strip scripts, styles, then all tags
-    html = html.replace(/<script[\s\S]*?<\/script>/gi, ' ');
-    html = html.replace(/<style[\s\S]*?<\/style>/gi, ' ');
-    html = html.replace(/<[^>]+>/g, ' ');
-
-    // Collapse whitespace
-    const text = html.replace(/\s+/g, ' ').trim();
+    const html = await res.text();
+    const text = stripHtml(html);
 
     return atomizeContent(text, url);
   } catch (err) {

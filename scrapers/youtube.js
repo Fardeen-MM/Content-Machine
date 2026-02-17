@@ -107,7 +107,7 @@ async function scrapeAll(existingTriggers = []) {
 
         const fullText = `${video.title} ${video.description}`;
         // For competitor channels, we want most content even without keyword match
-        const isRelevant = matchesKeywords(fullText) || true; // Take all from monitored channels
+        const isRelevant = matchesKeywords(fullText);
 
         if (!isRelevant) continue;
 

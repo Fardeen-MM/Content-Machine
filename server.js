@@ -2,11 +2,11 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const { loadEnv, readJSON, writeJSON, generateId, now } = require('./lib/utils');
+const jsonStore = require('./lib/json-store');
 
 loadEnv();
 
 const PORT = process.env.PORT || 3000;
-const DATA_DIR = path.join(__dirname, 'data');
 
 // --- Helpers ---
 
@@ -21,7 +21,10 @@ function json(res, data, status = 200) {
 function parseBody(req) {
   return new Promise((resolve, reject) => {
     let body = '';
-    req.on('data', chunk => { body += chunk; });
+    req.on('data', chunk => {
+      body += chunk;
+      if (body.length > 1_000_000) { req.destroy(); reject(new Error('Body too large')); }
+    });
     req.on('end', () => {
       try {
         resolve(body ? JSON.parse(body) : {});
@@ -184,7 +187,7 @@ async function handleRequest(req, res) {
       }
 
       writeJSON('content.json', content);
-      return json(res, content[idx]);
+      return json(res, { ok: true, ...content[idx] });
     }
 
     // POST /api/content/:id/approve
@@ -216,7 +219,7 @@ async function handleRequest(req, res) {
       writeJSON('content.json', content);
 
       // Auto-save approved formats to memory
-      const memory = readJSON('memory.json');
+      const memory = readJSON('memory.json', {});
       const item = content[idx];
       const approvedFormats = Object.entries(item.formats)
         .filter(([, f]) => f.status === 'approved' && f.content);
@@ -245,7 +248,7 @@ async function handleRequest(req, res) {
         }
       }
 
-      return json(res, content[idx]);
+      return json(res, { ok: true, ...content[idx] });
     }
 
     // POST /api/content/:id/reject
@@ -272,7 +275,7 @@ async function handleRequest(req, res) {
       }
 
       writeJSON('content.json', content);
-      return json(res, content[idx]);
+      return json(res, { ok: true, ...content[idx] });
     }
 
     // POST /api/content/:id/publish
@@ -304,7 +307,7 @@ async function handleRequest(req, res) {
       const month = url.searchParams.get('month'); // e.g. "2026-02"
       if (month) {
         const { buildMonthlyCalendar } = require('./generator/calendar-builder');
-        const calendarData = readJSON('calendar.json');
+        const calendarData = readJSON('calendar.json', {});
         const calendar = buildMonthlyCalendar(content, month, calendarData);
         return json(res, calendar);
       }
@@ -322,7 +325,7 @@ async function handleRequest(req, res) {
       const { slot, content_id, format, title, preview } = body;
       if (!slot) return json(res, { error: 'slot required (e.g. linkedin_morning)' }, 400);
 
-      const calendarData = readJSON('calendar.json');
+      const calendarData = readJSON('calendar.json', {});
       if (!calendarData[dateKey]) calendarData[dateKey] = {};
 
       if (body.clear) {
@@ -349,7 +352,7 @@ async function handleRequest(req, res) {
       if (!weekStart) return json(res, { error: 'week_start required (YYYY-MM-DD)' }, 400);
 
       const content = readJSON('content.json');
-      const calendarData = readJSON('calendar.json');
+      const calendarData = readJSON('calendar.json', {});
       const { autoFillWeek } = require('./generator/calendar-builder');
       const { assignments, assigned } = autoFillWeek(content, weekStart, calendarData);
 
@@ -371,7 +374,6 @@ async function handleRequest(req, res) {
       const { format, impressions, engagement, clicks, leads, notes } = body;
       if (!format) return json(res, { error: 'format required' }, 400);
 
-      const perfData = readJSON('performance.json');
       const entry = {
         content_id: contentId,
         format,
@@ -383,8 +385,10 @@ async function handleRequest(req, res) {
         logged_at: now()
       };
 
-      perfData.push(entry);
-      writeJSON('performance.json', perfData);
+      await jsonStore.update('performance.json', [], perfData => {
+        perfData.push(entry);
+        return perfData;
+      });
       return json(res, { ok: true, entry });
     }
 
@@ -639,7 +643,7 @@ async function handleRequest(req, res) {
           }
         }
         writeJSON('content.json', content);
-        return json(res, content[idx]);
+        return json(res, { ok: true, ...content[idx] });
       } catch (err) {
         return json(res, { error: err.message }, 500);
       }
@@ -651,20 +655,21 @@ async function handleRequest(req, res) {
       const ids = body.ids || [];
       if (!ids.length) return json(res, { error: 'ids required' }, 400);
 
-      const content = readJSON('content.json');
       let updated = 0;
-      for (const id of ids) {
-        const idx = content.findIndex(c => c.id === id);
-        if (idx === -1) continue;
-        for (const key of Object.keys(content[idx].formats)) {
-          if (content[idx].formats[key].status !== 'rejected') {
-            content[idx].formats[key].status = 'approved';
+      await jsonStore.update('content.json', [], content => {
+        for (const id of ids) {
+          const idx = content.findIndex(c => c.id === id);
+          if (idx === -1) continue;
+          for (const key of Object.keys(content[idx].formats)) {
+            if (content[idx].formats[key].status !== 'rejected') {
+              content[idx].formats[key].status = 'approved';
+            }
           }
+          content[idx].status = 'approved';
+          updated++;
         }
-        content[idx].status = 'approved';
-        updated++;
-      }
-      writeJSON('content.json', content);
+        return content;
+      });
       return json(res, { ok: true, updated });
     }
 
@@ -674,18 +679,19 @@ async function handleRequest(req, res) {
       const ids = body.ids || [];
       if (!ids.length) return json(res, { error: 'ids required' }, 400);
 
-      const content = readJSON('content.json');
       let updated = 0;
-      for (const id of ids) {
-        const idx = content.findIndex(c => c.id === id);
-        if (idx === -1) continue;
-        for (const key of Object.keys(content[idx].formats)) {
-          content[idx].formats[key].status = 'rejected';
+      await jsonStore.update('content.json', [], content => {
+        for (const id of ids) {
+          const idx = content.findIndex(c => c.id === id);
+          if (idx === -1) continue;
+          for (const key of Object.keys(content[idx].formats)) {
+            content[idx].formats[key].status = 'rejected';
+          }
+          content[idx].status = 'rejected';
+          updated++;
         }
-        content[idx].status = 'rejected';
-        updated++;
-      }
-      writeJSON('content.json', content);
+        return content;
+      });
       return json(res, { ok: true, updated });
     }
 
@@ -700,33 +706,38 @@ async function handleRequest(req, res) {
       content[idx].scheduled_date = body.date || null;
       content[idx].scheduled_platforms = body.platforms || [];
       writeJSON('content.json', content);
-      return json(res, content[idx]);
+      return json(res, { ok: true, ...content[idx] });
     }
 
     // DELETE /api/triggers/:id
     const triggerDeleteMatch = pathname.match(/^\/api\/triggers\/([a-zA-Z0-9_-]+)$/);
     if (triggerDeleteMatch && method === 'DELETE') {
-      const triggers = readJSON('trigger-queue.json');
-      const filtered = triggers.filter(t => t.id !== triggerDeleteMatch[1]);
-      if (filtered.length === triggers.length) return json(res, { error: 'Not found' }, 404);
-      writeJSON('trigger-queue.json', filtered);
+      let found = false;
+      await jsonStore.update('trigger-queue.json', [], triggers => {
+        const filtered = triggers.filter(t => t.id !== triggerDeleteMatch[1]);
+        found = filtered.length < triggers.length;
+        return filtered;
+      });
+      if (!found) return json(res, { error: 'Not found' }, 404);
       return json(res, { ok: true });
     }
 
     // POST /api/triggers/:id/reject
     const triggerRejectMatch = pathname.match(/^\/api\/triggers\/([a-zA-Z0-9_-]+)\/reject$/);
     if (triggerRejectMatch && method === 'POST') {
-      const triggers = readJSON('trigger-queue.json');
-      const idx = triggers.findIndex(t => t.id === triggerRejectMatch[1]);
-      if (idx === -1) return json(res, { error: 'Not found' }, 404);
-      triggers[idx].status = 'rejected';
-      writeJSON('trigger-queue.json', triggers);
+      let found = false;
+      await jsonStore.update('trigger-queue.json', [], triggers => {
+        const idx = triggers.findIndex(t => t.id === triggerRejectMatch[1]);
+        if (idx !== -1) { triggers[idx].status = 'rejected'; found = true; }
+        return triggers;
+      });
+      if (!found) return json(res, { error: 'Not found' }, 404);
       return json(res, { ok: true });
     }
 
     // GET /api/memory
     if (pathname === '/api/memory' && method === 'GET') {
-      const memory = readJSON('memory.json');
+      const memory = readJSON('memory.json', {});
       return json(res, memory);
     }
 
@@ -738,39 +749,27 @@ async function handleRequest(req, res) {
         return json(res, { error: `type required, must be one of: ${validTypes.join(', ')}` }, 400);
       }
 
-      const memory = readJSON('memory.json');
-
-      if (body.type === 'style_note') {
-        if (!body.note || !body.note.trim()) {
-          return json(res, { error: 'note required for style_note type' }, 400);
-        }
-        if (!memory.style_notes) memory.style_notes = [];
-        memory.style_notes.push({
-          note: body.note.trim(),
-          added_at: now()
-        });
+      if (body.type === 'style_note' && (!body.note || !body.note.trim())) {
+        return json(res, { error: 'note required for style_note type' }, 400);
+      }
+      if ((body.type === 'remove_example' || body.type === 'remove_note') && typeof body.index !== 'number') {
+        return json(res, { error: 'index required for ' + body.type + ' type' }, 400);
       }
 
-      if (body.type === 'remove_example') {
-        if (typeof body.index !== 'number') {
-          return json(res, { error: 'index required for remove_example type' }, 400);
+      const memory = await jsonStore.update('memory.json', {}, mem => {
+        if (body.type === 'style_note') {
+          if (!mem.style_notes) mem.style_notes = [];
+          mem.style_notes.push({ note: body.note.trim(), added_at: now() });
         }
-        memory.approved_examples = (memory.approved_examples || []).filter(
-          (e, i) => i !== body.index
-        );
-      }
-
-      if (body.type === 'remove_note') {
-        if (typeof body.index !== 'number') {
-          return json(res, { error: 'index required for remove_note type' }, 400);
+        if (body.type === 'remove_example') {
+          mem.approved_examples = (mem.approved_examples || []).filter((e, i) => i !== body.index);
         }
-        memory.style_notes = (memory.style_notes || []).filter(
-          (n, i) => i !== body.index
-        );
-      }
-
-      writeJSON('memory.json', memory);
-      return json(res, memory);
+        if (body.type === 'remove_note') {
+          mem.style_notes = (mem.style_notes || []).filter((n, i) => i !== body.index);
+        }
+        return mem;
+      });
+      return json(res, { ok: true, ...memory });
     }
 
     // GET /api/settings
@@ -857,10 +856,10 @@ async function handleRequest(req, res) {
 
       if (body.url) {
         const atoms = await atomizeUrl(body.url);
-        return json(res, atoms);
+        return json(res, { ok: true, ...atoms });
       } else if (body.text) {
         const atoms = await atomizeContent(body.text, body.source || 'manual');
-        return json(res, atoms);
+        return json(res, { ok: true, ...atoms });
       }
       return json(res, { error: 'url or text required' }, 400);
     }
@@ -1025,6 +1024,11 @@ async function handleRequest(req, res) {
     const ext = path.extname(pathname);
     if (ext && MIME[ext]) {
       const filePath = path.join(__dirname, 'dashboard', pathname);
+      const resolved = path.resolve(filePath);
+      const dashboardDir = path.resolve(path.join(__dirname, 'dashboard'));
+      if (!resolved.startsWith(dashboardDir + path.sep) && resolved !== dashboardDir) {
+        return json(res, { error: 'Forbidden' }, 403);
+      }
       if (fs.existsSync(filePath)) {
         return serveStatic(res, filePath, MIME[ext]);
       }

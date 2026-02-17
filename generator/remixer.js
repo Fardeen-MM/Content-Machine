@@ -46,6 +46,7 @@ Blog post must be 1500-2500 words in markdown. Carousel must be exactly 7 slides
   });
 
   const parsed = parseJsonResponse(raw);
+  if (!parsed) return { _error: 'Failed to parse response', _sourceUrl: sourceUrl };
 
   return { ...parsed, atoms, _sourceUrl: sourceUrl };
 }

@@ -1,13 +1,5 @@
 {
   "2026-02-17": {
-    "linkedin_morning": {
-      "content_id": "test123",
-      "format": "linkedin",
-      "title": "Test Post",
-      "preview": "",
-      "status": "review",
-      "assigned_at": "2026-02-16T22:00:00.522Z"
-    },
     "linkedin_midday": {
       "content_id": "4c20a864324032bb",
       "format": "linkedin",

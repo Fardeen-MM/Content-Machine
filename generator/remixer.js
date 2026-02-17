@@ -6,11 +6,8 @@ A competitor published content. Your job: take the same TOPIC and create Mortar 
 
 RULES:
 - Do NOT copy or paraphrase. Take the topic and give OUR angle with OUR data.
-- Use OUR proof points:
-  • Mandall Law: 30+ signed cases/month through our system
-  • Metro PI Group: 3.2x ROI in 90 days from Google Ads + landing pages
-  • Davis Family Law: 47% cost-per-lead cut via SEO + content strategy
-  • Peak Defense Attorneys: 200% increase in consultation bookings via speed-to-lead
+- Use OUR proof points (ONLY real case studies):
+  • Mandall Law (immigration): $4K/month ad budget → $92K/month revenue, 30+ signed cases/month through our full-stack system
 - Be direct, confident, zero fluff. Specific numbers always.
 - Short sentences. Punchy. Write like you talk.
 

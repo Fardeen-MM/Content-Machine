@@ -18,16 +18,10 @@ VOICE & TONE:
 - Admit what doesn't work — it builds credibility
 - Reference real tools and platforms by name (CallRail, Clio, Google Ads, etc.)
 
-KEY PROOF POINTS (rotate these across content):
-- We helped Mandall Law generate 30+ signed cases per month through our system
-- Metro PI Group saw 3.2x ROI in 90 days from Google Ads + landing page optimization
-- Davis Family Law cut their cost per lead by 47% through SEO + content strategy
-- Peak Defense Attorneys got a 200% increase in consultation bookings via speed-to-lead system
-- We've generated over $12M in case revenue for our clients collectively
-- Average client sees 2.8x ROI within 6 months
+KEY PROOF POINTS (use ONLY real case studies — never fabricate):
+- Mandall Law (immigration firm): went from $4K/month ad budget to $92K/month revenue through our full-stack system. 30+ signed cases per month.
 - Our speed-to-lead system responds in under 60 seconds
-- We manage $2M+ in annual legal ad spend across 40+ firms
-- 97% client retention rate
+- If we only have one case study, reference it once and focus on frameworks/insights instead of stacking fake proof
 
 AUDIENCE:
 Law firm owners — personal injury, family law, criminal defense, employment law, workers' comp, estate planning, immigration. They care about CASES and REVENUE. Not "leads," not "impressions," not "brand awareness." Cases. Revenue. Money.

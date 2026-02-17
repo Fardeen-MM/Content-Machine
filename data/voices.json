@@ -14,31 +14,15 @@
     "case_studies": [
       {
         "client": "Mandall Law",
-        "result": "30+ signed cases per month",
-        "context": "Through our full-stack legal marketing system"
-      },
-      {
-        "client": "Metro PI Group",
-        "result": "3.2x ROI in 90 days",
-        "context": "Google Ads + landing page optimization"
-      },
-      {
-        "client": "Davis Family Law",
-        "result": "Cut cost per lead by 47%",
-        "context": "SEO + content strategy overhaul"
-      },
-      {
-        "client": "Peak Defense Attorneys",
-        "result": "200% increase in consultation bookings",
-        "context": "Speed-to-lead system + after-hours intake"
+        "practice_area": "Immigration",
+        "result": "$4K/month ad budget → $92K/month revenue, 30+ signed cases per month",
+        "context": "Full-stack legal marketing system"
       }
     ],
     "proof_points": [
-      "We've generated over $12M in case revenue for our clients",
-      "Average client sees 2.8x ROI within 6 months",
+      "Mandall Law (immigration): $4K/month ad budget to $92K/month revenue through our system",
       "Our speed-to-lead system responds in under 60 seconds",
-      "We manage $2M+ in annual legal ad spend",
-      "97% client retention rate across 40+ law firms"
+      "30+ signed cases per month for our top client"
     ]
   },
   "content_pillars": {

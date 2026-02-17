@@ -1154,6 +1154,39 @@ async function handleRequest(req, res) {
       }
     }
 
+    // POST /api/meetings/reprocess — clear derived data and re-process all meetings
+    if (pathname === '/api/meetings/reprocess' && method === 'POST') {
+      if (!process.env.ANTHROPIC_API_KEY) {
+        return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      }
+
+      // Clear corrupted derived data
+      db.clearDerivedData();
+      console.log('[reprocess] Cleared all derived data (clients, actions, atoms, patterns)');
+
+      // Get all meetings that now need reprocessing
+      const meetings = db.getUnprocessedMeetings();
+      console.log(`[reprocess] Reprocessing ${meetings.length} meetings...`);
+
+      // Process in background, return immediately
+      json(res, { ok: true, queued: meetings.length, message: 'Reprocessing started in background' });
+
+      setImmediate(async () => {
+        let processed = 0;
+        for (const meeting of meetings) {
+          try {
+            await processMeeting(meeting);
+            processed++;
+            console.log(`[reprocess] ${processed}/${meetings.length} done: ${meeting.title}`);
+          } catch (err) {
+            console.error(`[reprocess] Failed meeting #${meeting.id}:`, err.message);
+          }
+        }
+        console.log(`[reprocess] Complete: ${processed}/${meetings.length} processed`);
+      });
+      return;
+    }
+
     // --- Clients API ---
 
     // GET /api/clients

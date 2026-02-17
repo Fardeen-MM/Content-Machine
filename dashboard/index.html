@@ -1382,6 +1382,10 @@ const state = {
   meetingFilter: { type: '', client: '' },
   meetingStats: {},
   syncingMeetings: false,
+  // Chat
+  chatMessages: [],
+  chatInput: '',
+  chatLoading: false,
   // Clients
   clients: [],
   clientDetail: null,
@@ -1409,7 +1413,7 @@ async function loadData() {
   state.loading = true;
   render();
   try {
-    const [content, triggers, stats, calendar, monthCal, settings, memory, performance, perfAnalytics, meetings, meetingStats, clients, allActions] = await Promise.all([
+    const [content, triggers, stats, calendar, monthCal, settings, memory, performance, perfAnalytics, meetings, meetingStats, clients, allActions, chatMessages] = await Promise.all([
       api('/api/content'),
       api('/api/triggers'),
       api('/api/stats'),
@@ -1422,7 +1426,8 @@ async function loadData() {
       api('/api/meetings').catch(() => []),
       api('/api/meetings/stats').catch(() => ({})),
       api('/api/clients').catch(() => []),
-      api('/api/actions').catch(() => [])
+      api('/api/actions').catch(() => []),
+      api('/api/chat/messages').catch(() => [])
     ]);
     state.content = content;
     state.triggers = triggers;
@@ -1437,6 +1442,7 @@ async function loadData() {
     state.meetingStats = meetingStats;
     state.clients = clients;
     state.allActions = allActions;
+    state.chatMessages = chatMessages;
   } catch (err) {
     console.error('Failed to load data:', err);
     toast('Failed to load data', 'error');
@@ -1944,6 +1950,20 @@ function renderSidebar() {
       h('h1', {}, 'Command Centre'),
       h('p', {}, 'Mortar Metrics')
     ),
+    h('div', { style: { padding: '0 16px 12px' } },
+      h('button', {
+        style: {
+          width: '100%', padding: '10px 16px', borderRadius: '10px', border: 'none', cursor: 'pointer',
+          background: state.page === 'chat' ? 'var(--blue)' : 'rgba(37,99,235,0.2)',
+          color: 'white', fontSize: '13px', fontWeight: '600', fontFamily: "'Outfit', sans-serif",
+          display: 'flex', alignItems: 'center', gap: '8px', transition: 'var(--transition)'
+        },
+        onclick: () => { state.page = 'chat'; state.sidebarOpen = false; render(); }
+      },
+        h('span', { innerHTML: icons.chat, style: { width: '18px', height: '18px' } }),
+        'Ask the Brain'
+      )
+    ),
     h('div', { className: 'nav-section' }, 'Menu'),
     ...navItems.map(item =>
       h('div', {
@@ -1998,6 +2018,7 @@ function renderSidebar() {
 
 function renderTopbar() {
   const titles = {
+    chat: 'Ask the Brain',
     dashboard: 'Command Centre',
     meetings: 'Meetings',
     clients: 'Clients',
@@ -4295,6 +4316,102 @@ function meetingStatCard(label, value) {
   );
 }
 
+function renderChatPage() {
+  const messages = state.chatMessages || [];
+
+  async function sendMessage() {
+    const text = (state.chatInput || '').trim();
+    if (!text || state.chatLoading) return;
+
+    state.chatMessages.push({ role: 'user', content: text, created_at: new Date().toISOString() });
+    state.chatInput = '';
+    state.chatLoading = true;
+    render();
+
+    // Scroll to bottom
+    setTimeout(() => {
+      const container = document.querySelector('.chat-messages');
+      if (container) container.scrollTop = container.scrollHeight;
+    }, 50);
+
+    try {
+      const res = await api('/api/chat', { method: 'POST', body: { message: text } });
+      state.chatMessages.push({ role: 'assistant', content: res.response, created_at: new Date().toISOString() });
+    } catch (err) {
+      state.chatMessages.push({ role: 'assistant', content: `Error: ${err.message}`, created_at: new Date().toISOString() });
+    }
+    state.chatLoading = false;
+    render();
+
+    setTimeout(() => {
+      const container = document.querySelector('.chat-messages');
+      if (container) container.scrollTop = container.scrollHeight;
+    }, 50);
+  }
+
+  return h('div', { className: 'page-content', style: { display: 'flex', flexDirection: 'column', height: 'calc(100vh - 72px)', padding: '0' } },
+    // Messages area
+    h('div', { className: 'chat-messages', style: {
+      flex: 1, overflowY: 'auto', padding: '24px',
+      display: 'flex', flexDirection: 'column', gap: '16px'
+    } },
+      messages.length === 0
+        ? h('div', { style: { textAlign: 'center', marginTop: '80px', color: 'var(--gray-400)' } },
+            h('div', { innerHTML: icons.chat, style: { width: '64px', height: '64px', margin: '0 auto 16px', opacity: '0.3' } }),
+            h('h3', { style: { fontFamily: "'Fraunces', serif", marginBottom: '8px', color: 'var(--gray-500)' } }, 'Ask the Brain anything'),
+            h('p', { style: { fontSize: '14px', maxWidth: '400px', margin: '0 auto', lineHeight: '1.6' } },
+              'Try: "What should Yaseer do today?" or "What happened on the call with Zain?" or "What patterns are we seeing?"')
+          )
+        : messages.map(m =>
+            h('div', { style: {
+              display: 'flex', justifyContent: m.role === 'user' ? 'flex-end' : 'flex-start',
+              maxWidth: '100%'
+            } },
+              h('div', { style: {
+                maxWidth: '75%', padding: '12px 16px', borderRadius: '12px',
+                background: m.role === 'user' ? 'var(--blue)' : 'var(--gray-100)',
+                color: m.role === 'user' ? 'white' : 'var(--gray-800)',
+                fontSize: '14px', lineHeight: '1.6', whiteSpace: 'pre-wrap'
+              } }, m.content)
+            )
+          ),
+      state.chatLoading
+        ? h('div', { style: { display: 'flex', justifyContent: 'flex-start' } },
+            h('div', { style: {
+              padding: '12px 16px', borderRadius: '12px', background: 'var(--gray-100)',
+              fontSize: '14px', color: 'var(--gray-400)'
+            } }, 'Thinking...')
+          )
+        : null
+    ),
+    // Input area
+    h('div', { style: {
+      padding: '16px 24px', borderTop: '1px solid var(--gray-200)',
+      display: 'flex', gap: '12px', background: 'white'
+    } },
+      h('input', {
+        type: 'text',
+        placeholder: 'Ask the brain...',
+        value: state.chatInput || '',
+        oninput: (e) => { state.chatInput = e.target.value; },
+        onkeydown: (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } },
+        style: {
+          flex: 1, padding: '12px 16px', borderRadius: '12px',
+          border: '1px solid var(--gray-200)', fontSize: '14px',
+          fontFamily: "'Outfit', sans-serif", outline: 'none'
+        },
+        autofocus: true
+      }),
+      h('button', {
+        className: 'btn btn-primary',
+        disabled: state.chatLoading || !(state.chatInput || '').trim(),
+        onclick: sendMessage,
+        style: { borderRadius: '12px', padding: '12px 24px' }
+      }, state.chatLoading ? 'Thinking...' : 'Send')
+    )
+  );
+}
+
 function renderClientsPage() {
   const clients = state.clients || [];
   const detail = state.clientDetail;
@@ -4676,6 +4793,7 @@ function render() {
         ? h('div', { style: { display: 'flex', justifyContent: 'center', padding: '60px' } },
             h('div', { className: 'spinner', style: { width: '32px', height: '32px' } })
           )
+        : state.page === 'chat' ? renderChatPage()
         : state.page === 'dashboard' ? renderDashboardPage()
         : state.page === 'meetings' ? renderMeetingsPage()
         : state.page === 'clients' ? renderClientsPage()

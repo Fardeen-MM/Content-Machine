@@ -61,6 +61,111 @@ function verifyHmac(rawBody, signature, secret) {
   return crypto.timingSafeEqual(Buffer.from(computed), Buffer.from(signature));
 }
 
+function buildChatContext(question) {
+  const q = question.toLowerCase();
+  const parts = [];
+
+  // Always include high-level stats
+  const stats = db.getStats();
+  parts.push(`STATS: ${stats.meetings.total} meetings, ${stats.clients.total} clients, ${stats.actions.open} open actions, ${stats.atoms} content atoms`);
+
+  // Meeting questions
+  if (q.includes('meeting') || q.includes('call') || q.includes('transcript') || q.includes('coaching') || q.includes('score')) {
+    const meetings = db.getMeetings({ limit: 15 });
+    parts.push('RECENT MEETINGS:');
+    for (const m of meetings) {
+      const score = m.coaching_notes ? ` | Score: ${m.coaching_notes.score}/100` : '';
+      parts.push(`- ${m.date?.slice(0, 10)} | ${m.title} | Type: ${m.meeting_type} | Client: ${m.client_name || 'N/A'}${score}`);
+    }
+  }
+
+  // Client questions
+  if (q.includes('client') || q.includes('prospect') || q.includes('pipeline') || q.includes('deal') || q.includes('stale') || q.includes('ghost') || q.includes('follow up')) {
+    const clients = db.getClients({ limit: 30 });
+    const now = new Date();
+    parts.push('CLIENTS:');
+    for (const c of clients) {
+      const daysSince = c.last_seen ? Math.floor((now - new Date(c.last_seen)) / 86400000) : '?';
+      const health = daysSince >= 10 ? 'RED' : daysSince >= 5 ? 'YELLOW' : 'GREEN';
+      parts.push(`- ${c.name} | ${c.firm_name || 'no firm'} | ${c.status} | ${(c.practice_areas || []).join(', ')} | Last seen: ${daysSince} days ago [${health}]`);
+    }
+  }
+
+  // Action questions
+  if (q.includes('action') || q.includes('task') || q.includes('todo') || q.includes('do today') || q.includes('do next') || q.includes('should') || q.includes('yaseer') || q.includes('fardeen') || q.includes('monty') || q.includes('juhi')) {
+    const actions = db.getActions({ status: 'open' });
+    parts.push(`OPEN ACTIONS (${actions.length} total):`);
+    for (const a of actions.slice(0, 20)) {
+      parts.push(`- [${a.owner || 'unassigned'}] ${a.description}${a.due_date ? ' (due: ' + a.due_date + ')' : ''}`);
+    }
+  }
+
+  // Specific client/person lookup
+  const nameMatch = q.match(/(?:about|with|for|from)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)/);
+  if (nameMatch) {
+    const name = nameMatch[1];
+    const meetings = db.searchMeetings(name);
+    if (meetings.length > 0) {
+      parts.push(`MEETINGS MENTIONING "${name}":`);
+      for (const m of meetings.slice(0, 5)) {
+        const ed = m.extracted_data || {};
+        parts.push(`- ${m.date?.slice(0, 10)} | ${m.title} | Summary: ${(m.summary || '').slice(0, 200)}`);
+        if (ed.pain_points?.length) parts.push(`  Pain points: ${ed.pain_points.join('; ')}`);
+        if (ed.action_items?.length) parts.push(`  Actions: ${ed.action_items.map(a => a.description).join('; ')}`);
+      }
+    }
+  }
+
+  // Content questions
+  if (q.includes('content') || q.includes('post') || q.includes('linkedin') || q.includes('trigger') || q.includes('generate')) {
+    try {
+      const triggers = readJSON('trigger-queue.json');
+      const content = readJSON('content.json');
+      const pending = triggers.filter(t => t.status === 'pending').length;
+      const review = content.filter(c => c.status === 'review').length;
+      const approved = content.filter(c => c.status === 'approved').length;
+      parts.push(`CONTENT: ${triggers.length} triggers (${pending} pending), ${content.length} pieces (${review} in review, ${approved} approved)`);
+    } catch {}
+  }
+
+  // Pattern questions
+  if (q.includes('pattern') || q.includes('objection') || q.includes('pain') || q.includes('trend') || q.includes('recurring') || q.includes('bottleneck')) {
+    const patterns = db.getPatterns({ limit: 15 });
+    if (patterns.length > 0) {
+      parts.push('PATTERNS:');
+      for (const p of patterns.slice(0, 10)) {
+        parts.push(`- [${p.type}] ${p.description} (seen ${p.frequency}x)`);
+      }
+    }
+  }
+
+  // "What should I/we do" or general overview — include everything relevant
+  if (q.includes('what should') || q.includes('priority') || q.includes('urgent') || q.includes('overview') || q.includes('status') || q.includes('how are') || q.includes('morning')) {
+    const clients = db.getClients({ limit: 30 });
+    const now = new Date();
+    const stale = clients.filter(c => {
+      if (!c.last_seen) return false;
+      return Math.floor((now - new Date(c.last_seen)) / 86400000) >= 5 && c.status === 'prospect';
+    });
+    if (stale.length > 0) {
+      parts.push('STALE DEALS (5+ days no contact):');
+      for (const c of stale) {
+        const days = Math.floor((now - new Date(c.last_seen)) / 86400000);
+        parts.push(`- ${c.name}${c.firm_name ? ' (' + c.firm_name + ')' : ''}: ${days} days silent`);
+      }
+    }
+    const actions = db.getActions({ status: 'open' });
+    if (actions.length > 0 && !parts.some(p => p.includes('OPEN ACTIONS'))) {
+      parts.push(`OPEN ACTIONS: ${actions.length} total`);
+      for (const a of actions.slice(0, 10)) {
+        parts.push(`- [${a.owner || '?'}] ${a.description}`);
+      }
+    }
+  }
+
+  return parts.join('\n');
+}
+
 function serveStatic(res, filePath, contentType) {
   try {
     const content = fs.readFileSync(filePath);
@@ -524,6 +629,18 @@ async function handleRequest(req, res) {
         const body = await parseBody(req);
         const result = await runDaily({ count: body.count || 5 });
         return json(res, { ok: true, content: result });
+      } catch (err) {
+        return json(res, { error: err.message }, 500);
+      }
+    }
+
+    // POST /api/daily-brief — send daily brief to Telegram
+    if (pathname === '/api/daily-brief' && method === 'POST') {
+      try {
+        const { generateBrief, sendTelegram } = require('./generator/daily-brief');
+        const brief = await generateBrief();
+        await sendTelegram(brief);
+        return json(res, { ok: true, brief });
       } catch (err) {
         return json(res, { error: err.message }, 500);
       }
@@ -1245,6 +1362,64 @@ async function handleRequest(req, res) {
     if (pathname === '/api/feedback' && method === 'GET') {
       const output_type = url.searchParams.get('type') || undefined;
       return json(res, db.getFeedback({ output_type }));
+    }
+
+    // --- Chat API ---
+
+    // GET /api/chat/messages — get chat history
+    if (pathname === '/api/chat/messages' && method === 'GET') {
+      return json(res, db.getChatMessages({ limit: 50 }));
+    }
+
+    // POST /api/chat — send message to the brain
+    if (pathname === '/api/chat' && method === 'POST') {
+      if (!process.env.ANTHROPIC_API_KEY) {
+        return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      }
+
+      const body = await parseBody(req);
+      const message = (body.message || '').trim();
+      if (!message) return json(res, { error: 'message required' }, 400);
+
+      // Save user message
+      db.insertChatMessage({ role: 'user', content: message });
+
+      try {
+        // Build context based on the question
+        const context = buildChatContext(message);
+        const { callClaude, SONNET } = require('./lib/claude');
+
+        const systemPrompt = `You are the Mortar Metrics Command Centre — the operating brain of a legal marketing agency.
+
+You know everything about the business:
+- Every meeting transcript, coaching score, and action item
+- Every client profile, their practice area, and their status
+- Every content piece generated, approved, or published
+- Every pattern spotted across calls (recurring objections, pain points, questions)
+- The team: Fardeen (founder/systems), Yaseer (closer), Juhi (design/content), Muntasir/Monty (client comms)
+
+Your job is to give DIRECTIVES, not data. When someone asks "how's the pipeline?" don't list stats — say "Tyler hasn't heard from you in 8 days, call him before he goes cold. The Cassisi proposal is ready, review and send today."
+
+Think like a $10M agency consultant who can see all the numbers. Be direct. Be specific. Name names. Give action items with deadlines.
+
+Context from the database:
+${context}`;
+
+        const response = await callClaude({
+          model: SONNET,
+          system: systemPrompt,
+          prompt: message,
+          maxTokens: 2000
+        });
+
+        // Save assistant response
+        db.insertChatMessage({ role: 'assistant', content: response, context_used: context.slice(0, 500) });
+
+        return json(res, { ok: true, response, context_length: context.length });
+      } catch (err) {
+        console.error('[chat] Error:', err.message);
+        return json(res, { error: err.message }, 500);
+      }
     }
 
     // --- Webhook Endpoints ---

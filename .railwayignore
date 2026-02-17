@@ -1,0 +1,6 @@
+node_modules
+.env
+.DS_Store
+data/knowledge.db
+data/knowledge.db-wal
+data/knowledge.db-shm

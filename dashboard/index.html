@@ -4671,7 +4671,51 @@ function renderClientsPage() {
             h('span', { style: { fontSize: '12px', color: 'var(--gray-400)' } }, m.date ? new Date(m.date).toLocaleDateString() : '')
           )
         )
-      ) : h('div', { className: 'card', style: { padding: '20px', color: 'var(--gray-400)', textAlign: 'center' } }, 'No meetings recorded')
+      ) : h('div', { className: 'card', style: { padding: '20px', color: 'var(--gray-400)', textAlign: 'center' } }, 'No meetings recorded'),
+      // External events (Instantly, GHL, etc.)
+      (detail.events || []).length > 0 ? h('div', { className: 'card', style: { marginBottom: '16px' } },
+        h('h4', { style: { marginBottom: '12px', fontFamily: "'Fraunces', serif" } }, `Activity Feed (${detail.events.length})`),
+        ...detail.events.slice(0, 15).map(ev => {
+          const eventIcons = {
+            reply_received: { icon: '\u{1F4E9}', color: 'var(--blue)' },
+            lead_meeting_booked: { icon: '\u{1F4C5}', color: 'var(--green)' },
+            lead_interested: { icon: '\u{2B50}', color: 'var(--amber)' },
+            lead_closed: { icon: '\u{1F389}', color: 'var(--green)' },
+            email_sent: { icon: '\u{1F4E4}', color: 'var(--gray-400)' },
+            email_opened: { icon: '\u{1F441}', color: 'var(--blue-light)' },
+            link_clicked: { icon: '\u{1F517}', color: 'var(--purple)' },
+            report_approved: { icon: '\u{1F4CA}', color: 'var(--green)' },
+            ghl_event: { icon: '\u{1F50C}', color: 'var(--gray-500)' }
+          };
+          const ei = eventIcons[ev.event_type] || { icon: '\u{25CF}', color: 'var(--gray-400)' };
+          return h('div', { style: {
+            display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 0',
+            borderBottom: '1px solid var(--gray-100)', fontSize: '13px'
+          } },
+            h('span', { style: { fontSize: '16px' } }, ei.icon),
+            h('span', { style: { fontWeight: '500', color: ei.color } }, (ev.event_type || 'event').replace(/_/g, ' ')),
+            h('span', { style: { color: 'var(--gray-500)', fontSize: '12px' } }, ev.source),
+            h('span', { style: { marginLeft: 'auto', fontSize: '11px', color: 'var(--gray-400)' } },
+              ev.created_at ? new Date(ev.created_at).toLocaleDateString() : '')
+          );
+        })
+      ) : null,
+      // Proposals
+      (detail.proposals || []).length > 0 ? h('div', { className: 'card', style: { marginBottom: '16px' } },
+        h('h4', { style: { marginBottom: '12px', fontFamily: "'Fraunces', serif" } }, `Proposals (${detail.proposals.length})`),
+        ...detail.proposals.map(p =>
+          h('div', { style: { display: 'flex', alignItems: 'center', gap: '12px', padding: '8px 0', borderBottom: '1px solid var(--gray-100)' } },
+            h('span', { style: { fontSize: '13px', flex: 1, fontWeight: '500' } }, p.title),
+            h('span', { style: {
+              background: p.status === 'accepted' ? 'var(--green-light)' : p.status === 'sent' ? 'var(--amber-light)' : 'var(--gray-100)',
+              color: p.status === 'accepted' ? 'var(--green)' : p.status === 'sent' ? 'var(--amber)' : 'var(--gray-500)',
+              padding: '2px 8px', borderRadius: '12px', fontSize: '11px', fontWeight: '600'
+            } }, p.status),
+            p.monthly_value ? h('span', { style: { fontSize: '12px', color: 'var(--green)', fontWeight: '600' } },
+              `$${p.monthly_value.toLocaleString()}/mo`) : null
+          )
+        )
+      ) : null
     );
   }
 

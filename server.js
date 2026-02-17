@@ -425,15 +425,38 @@ async function handleRequest(req, res) {
       const format = body.format;
       if (!format) return json(res, { error: 'format required' }, 400);
 
-      published.push({
+      const publishEntry = {
         content_id: content[idx].id,
         format,
         published_at: now(),
-        platform: body.platform || format
-      });
-
+        platform: body.platform || format,
+        url: body.url || null,
+        title: content[idx].trigger_title || 'Untitled',
+        category: content[idx].trigger_category || null,
+        source: content[idx].trigger_source || null
+      };
+      published.push(publishEntry);
       writeJSON('published.json', published);
-      return json(res, { ok: true });
+
+      // Update content status
+      if (content[idx].formats[format]) {
+        content[idx].formats[format].status = 'published';
+        content[idx].formats[format].published_at = now();
+        content[idx].formats[format].publish_url = body.url || null;
+      }
+      writeJSON('content.json', content);
+
+      return json(res, { ok: true, entry: publishEntry });
+    }
+
+    // GET /api/published — published content feed with enriched data
+    if (pathname === '/api/published' && method === 'GET') {
+      const published = readJSON('published.json');
+      const platform = url.searchParams.get('platform');
+      let filtered = platform ? published.filter(p => p.platform === platform) : published;
+      // Sort newest first
+      filtered.sort((a, b) => new Date(b.published_at || 0) - new Date(a.published_at || 0));
+      return json(res, filtered);
     }
 
     // GET /api/calendar — monthly or weekly calendar
@@ -1321,9 +1344,19 @@ async function handleRequest(req, res) {
     if (clientIdMatch && method === 'GET') {
       const client = db.getClient(parseInt(clientIdMatch[1]));
       if (!client) return json(res, { error: 'Not found' }, 404);
-      // Include meeting history
+      // Include meeting history, events, proposals
       const meetings = db.getMeetings({ client: client.email || client.name, limit: 20 });
-      return json(res, { ...client, meetings });
+      const events = client.email
+        ? db.getEvents({ limit: 50 }).filter(e => e.client_email === client.email)
+        : [];
+      const proposals = db.getProposals({ client_id: client.id });
+      return json(res, { ...client, meetings, events, proposals });
+    }
+
+    // GET /api/events — list external events
+    if (pathname === '/api/events' && method === 'GET') {
+      const source = url.searchParams.get('source') || undefined;
+      return json(res, db.getEvents({ source }));
     }
 
     // --- Actions API ---
@@ -1694,7 +1727,7 @@ ${context}`;
       return;
     }
 
-    // POST /api/webhooks/instantly
+    // POST /api/webhooks/instantly — deep integration for all 17 event types
     if (pathname === '/api/webhooks/instantly' && method === 'POST') {
       const secret = process.env.INSTANTLY_WEBHOOK_SECRET;
       if (secret) {
@@ -1705,32 +1738,70 @@ ${context}`;
       }
 
       const body = await parseBody(req);
+      const eventType = body.event_type || 'unknown';
+      const name = [body.firstName, body.lastName].filter(Boolean).join(' ') || null;
+      const email = body.lead_email || null;
 
       db.insertEvent({
         source: 'instantly',
-        event_type: body.event_type || null,
-        client_name: [body.firstName, body.lastName].filter(Boolean).join(' ') || null,
-        client_email: body.lead_email || null,
+        event_type: eventType,
+        client_name: name,
+        client_email: email,
         data: body
       });
 
-      // Auto-create client for key events
-      if (['lead_meeting_booked', 'lead_interested', 'reply_received'].includes(body.event_type)) {
-        const name = [body.firstName, body.lastName].filter(Boolean).join(' ');
-        if (body.lead_email) {
-          db.upsertClient(body.lead_email, {
+      // Map event types to client status updates
+      const statusMap = {
+        lead_meeting_booked: 'prospect',
+        lead_interested: 'prospect',
+        lead_closed: 'active',
+        reply_received: 'prospect'
+      };
+
+      // High-value events: create/update client
+      if (['lead_meeting_booked', 'lead_interested', 'reply_received', 'lead_closed',
+           'email_opened', 'link_clicked'].includes(eventType)) {
+        if (email) {
+          db.upsertClient(email, {
             name: name || 'Unknown',
             firm_name: body.companyName || null,
             source: 'instantly',
-            status: body.event_type === 'lead_meeting_booked' ? 'prospect' : 'prospect'
+            status: statusMap[eventType] || 'prospect'
           });
         }
       }
 
+      // Meeting booked: auto-create action item
+      if (eventType === 'lead_meeting_booked' && email) {
+        const client = db.getDb().prepare('SELECT id FROM clients WHERE email = ?').get(email);
+        if (client) {
+          db.insertAction({
+            client_id: client.id,
+            description: `Meeting booked via Instantly with ${name || email}${body.campaign_name ? ' (campaign: ' + body.campaign_name + ')' : ''}`,
+            owner: 'us',
+            status: 'open'
+          });
+        }
+      }
+
+      // Reply received: auto-create action item for follow-up
+      if (eventType === 'reply_received' && email) {
+        const client = db.getDb().prepare('SELECT id FROM clients WHERE email = ?').get(email);
+        if (client) {
+          db.insertAction({
+            client_id: client.id,
+            description: `Reply from ${name || email} — review and respond${body.reply_text ? ': "' + (body.reply_text || '').slice(0, 100) + '"' : ''}`,
+            owner: 'us',
+            status: 'open'
+          });
+        }
+      }
+
+      console.log(`[webhook/instantly] ${eventType}: ${name || email || 'unknown'}`);
       return json(res, { ok: true });
     }
 
-    // POST /api/webhooks/reports — mortar-reports webhook
+    // POST /api/webhooks/reports — mortar-reports webhook (deep integration)
     if (pathname === '/api/webhooks/reports' && method === 'POST') {
       const secret = process.env.MORTAR_REPORTS_WEBHOOK_SECRET;
       if (secret) {
@@ -1741,15 +1812,67 @@ ${context}`;
       }
 
       const body = await parseBody(req);
+      const lead = body.lead || {};
+      const report = body.report || {};
+      const opportunity = body.opportunity || {};
 
       db.insertEvent({
         source: 'mortar-reports',
         event_type: body.event || 'report_event',
-        client_name: body.lead?.name || null,
-        client_email: body.lead?.email || null,
+        client_name: lead.name || null,
+        client_email: lead.email || null,
         data: body
       });
 
+      // Auto-create/update client from report lead
+      let clientId = null;
+      if (lead.email || lead.name) {
+        const client = db.upsertClient(lead.email || null, {
+          name: lead.name || 'Unknown',
+          firm_name: report.firm_name || null,
+          practice_areas: report.practice_label ? [report.practice_label] : [],
+          source: 'mortar-reports',
+          status: 'prospect'
+        });
+        clientId = client?.id || null;
+      }
+
+      // Auto-create action item
+      if (clientId && body.event === 'report_approved') {
+        db.insertAction({
+          client_id: clientId,
+          description: `Report approved for ${report.firm_name || lead.name} (${report.practice_label || 'general'}, ${report.location || 'unknown location'})${opportunity.total_range ? ' — opportunity: ' + opportunity.total_range : ''}`,
+          owner: 'us',
+          status: 'open'
+        });
+      }
+
+      // Auto-create content trigger from report insights
+      if (body.event === 'report_approved' && opportunity.gaps?.length > 0) {
+        try {
+          const gapsText = opportunity.gaps.map(g => typeof g === 'string' ? g : g.gap || g.description || JSON.stringify(g)).join('\n');
+          const trigger = {
+            id: `report-${generateId()}`,
+            source: 'mortar-reports',
+            source_detail: report.firm_name || lead.name || 'report',
+            title: `Marketing gaps: ${(report.practice_label || 'law firm')} in ${report.location || 'unknown'}`.slice(0, 200),
+            raw_content: `Report for ${report.firm_name || lead.name}\nPractice: ${report.practice_label || 'N/A'}\nLocation: ${report.location || 'N/A'}\nOpportunity: ${opportunity.total_range || 'N/A'}\n\nGaps found:\n${gapsText}`,
+            category: 'CONTENT_PIECE',
+            captured_at: now(),
+            status: 'pending',
+            score: 0,
+            tags: ['from-report', report.practice_label || 'legal'].filter(Boolean)
+          };
+          const triggers = readJSON('trigger-queue.json');
+          triggers.push(trigger);
+          writeJSON('trigger-queue.json', triggers);
+          console.log(`[webhook/reports] Created content trigger from report for ${report.firm_name || lead.name}`);
+        } catch (err) {
+          console.error('[webhook/reports] Trigger creation failed:', err.message);
+        }
+      }
+
+      console.log(`[webhook/reports] ${body.event}: ${lead.name || lead.email || 'unknown'}`);
       return json(res, { ok: true });
     }
 
@@ -1787,6 +1910,58 @@ ${context}`;
       }
 
       return json(res, { ok: true });
+    }
+
+    // POST /api/webhooks/leads — mortar-lead-scraper webhook
+    if (pathname === '/api/webhooks/leads' && method === 'POST') {
+      const secret = process.env.LEAD_SCRAPER_WEBHOOK_SECRET;
+      if (secret) {
+        const headerSecret = req.headers['x-webhook-secret'];
+        if (headerSecret !== secret) {
+          return json(res, { error: 'Invalid secret' }, 401);
+        }
+      }
+
+      const body = await parseBody(req);
+      const leads = Array.isArray(body.leads) ? body.leads : (body.lead ? [body.lead] : [body]);
+
+      let created = 0;
+      let updated = 0;
+      for (const lead of leads) {
+        if (!lead.name && !lead.email) continue;
+
+        db.insertEvent({
+          source: 'lead-scraper',
+          event_type: 'lead_scraped',
+          client_name: lead.name || null,
+          client_email: lead.email || null,
+          data: lead
+        });
+
+        const client = db.upsertClient(lead.email || null, {
+          name: lead.name || 'Unknown',
+          firm_name: lead.firm || lead.company || null,
+          phone: lead.phone || null,
+          practice_areas: lead.practiceAreas || lead.practice_areas || [],
+          source: 'lead-scraper',
+          status: 'prospect',
+          notes: [
+            lead.state ? `State: ${lead.state}` : null,
+            lead.title ? `Title: ${lead.title}` : null,
+            lead.website ? `Website: ${lead.website}` : null,
+            lead.linkedin ? `LinkedIn: ${lead.linkedin}` : null
+          ].filter(Boolean).join('\n') || null
+        });
+
+        if (client) {
+          // Check if this was a new insert or update
+          const isNew = new Date(client.first_seen).getTime() === new Date(client.last_seen).getTime();
+          if (isNew) created++; else updated++;
+        }
+      }
+
+      console.log(`[webhook/leads] Processed ${leads.length} leads: ${created} new, ${updated} updated`);
+      return json(res, { ok: true, processed: leads.length, created, updated });
     }
 
     // POST /api/webhooks/manual — manual data entry

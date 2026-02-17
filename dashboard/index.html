@@ -3983,7 +3983,7 @@ function renderMeetingsPage() {
 
   const typeBadge = (type) => {
     const colors = {
-      discovery: 'var(--blue)', onboarding: 'var(--green)', review: 'var(--amber)',
+      discovery: 'var(--blue)', demo: 'var(--blue-light)', onboarding: 'var(--green)', review: 'var(--amber)',
       strategy: 'var(--purple)', internal: 'var(--gray-500)', unknown: 'var(--gray-400)'
     };
     return h('span', { style: {
@@ -4203,7 +4203,7 @@ function renderMeetingsPage() {
         onchange: (e) => { state.meetingFilter.type = e.target.value; render(); }
       },
         h('option', { value: '' }, 'All Types'),
-        ...['discovery', 'onboarding', 'review', 'strategy', 'internal', 'unknown'].map(t =>
+        ...['discovery', 'demo', 'onboarding', 'review', 'strategy', 'internal', 'unknown'].map(t =>
           h('option', { value: t }, t.charAt(0).toUpperCase() + t.slice(1))
         )
       ),

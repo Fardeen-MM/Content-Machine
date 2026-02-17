@@ -1128,7 +1128,7 @@ async function handleRequest(req, res) {
             date: full.dateString || new Date().toISOString(),
             duration_minutes: full.duration || null,
             client_name: null,
-            client_email: full.organizer_email || null,
+            client_email: null,  // Don't use organizer_email — AI will extract client email from transcript
             transcript: transcriptText,
             summary: full.summary?.overview || null,
             raw_response: full
@@ -1225,7 +1225,7 @@ async function handleRequest(req, res) {
             title: full.title || 'Untitled Meeting',
             date: full.dateString || new Date().toISOString(),
             duration_minutes: full.duration || null,
-            client_email: full.organizer_email || null,
+            client_email: null,  // Don't use organizer_email — AI will extract client email from transcript
             transcript: transcriptText,
             summary: full.summary?.overview || null,
             raw_response: full

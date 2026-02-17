@@ -1393,6 +1393,15 @@ const state = {
   // Actions
   allActions: [],
   actionsFilter: { status: '', owner: '' },
+  // Health
+  healthData: { summary: {}, clients: [] },
+  // Proposals & Briefs
+  generatingProposal: false,
+  generatingBrief: false,
+  clientBrief: null,
+  // Inspirations
+  inspirations: [],
+  newInspiration: '',
 };
 
 // --- API Calls ---
@@ -1413,7 +1422,7 @@ async function loadData() {
   state.loading = true;
   render();
   try {
-    const [content, triggers, stats, calendar, monthCal, settings, memory, performance, perfAnalytics, meetings, meetingStats, clients, allActions, chatMessages] = await Promise.all([
+    const [content, triggers, stats, calendar, monthCal, settings, memory, performance, perfAnalytics, meetings, meetingStats, clients, allActions, chatMessages, healthData, inspirations] = await Promise.all([
       api('/api/content'),
       api('/api/triggers'),
       api('/api/stats'),
@@ -1427,7 +1436,9 @@ async function loadData() {
       api('/api/meetings/stats').catch(() => ({})),
       api('/api/clients').catch(() => []),
       api('/api/actions').catch(() => []),
-      api('/api/chat/messages').catch(() => [])
+      api('/api/chat/messages').catch(() => []),
+      api('/api/health').catch(() => ({ summary: {}, clients: [] })),
+      api('/api/inspirations').catch(() => [])
     ]);
     state.content = content;
     state.triggers = triggers;
@@ -1443,6 +1454,8 @@ async function loadData() {
     state.clients = clients;
     state.allActions = allActions;
     state.chatMessages = chatMessages;
+    state.healthData = healthData;
+    state.inspirations = inspirations;
   } catch (err) {
     console.error('Failed to load data:', err);
     toast('Failed to load data', 'error');
@@ -1996,6 +2009,10 @@ function renderSidebar() {
       h('span', { innerHTML: icons.brain }),
       h('span', {}, 'Memory')
     ),
+    h('div', { className: `nav-item ${state.page === 'inspirations' ? 'active' : ''}`, onclick: () => { state.page = 'inspirations'; render(); } },
+      h('span', { innerHTML: icons.triggers }),
+      h('span', {}, 'Inspirations')
+    ),
     h('div', { className: `nav-item ${state.page === 'performance' ? 'active' : ''}`, onclick: () => { state.page = 'performance'; render(); } },
       h('span', { innerHTML: icons.performance }),
       h('span', {}, 'Performance')
@@ -2031,6 +2048,7 @@ function renderTopbar() {
     settings: 'Settings',
     memory: 'Brand Memory',
     'save-url': 'Save URL',
+    inspirations: 'Inspiration Feed',
   };
 
   return h('header', { className: 'topbar' },
@@ -4071,7 +4089,10 @@ function renderMeetingsPage() {
 
       // Coaching
       cn ? h('div', { className: 'card', style: { marginBottom: '16px' } },
-        h('h4', { style: { marginBottom: '8px', fontFamily: "'Fraunces', serif" } }, 'Call Coaching'),
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' } },
+          h('h4', { style: { fontFamily: "'Fraunces', serif" } }, 'Call Coaching'),
+          feedbackWidget(detail.id, 'coaching')
+        ),
         h('div', { style: { display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' } },
           h('div', { style: {
             width: '48px', height: '48px', borderRadius: '50%',
@@ -4200,6 +4221,63 @@ function renderMeetingsPage() {
         )
       ) : null,
 
+      // Proposal section
+      ['discovery', 'demo', 'review'].includes(detail.meeting_type) ? h('div', { className: 'card', style: { marginBottom: '16px' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' } },
+          h('h4', { style: { fontFamily: "'Fraunces', serif" } }, 'Proposal'),
+          !detail._proposal ? h('button', {
+            className: 'btn btn-primary btn-sm',
+            disabled: state.generatingProposal,
+            onclick: async () => {
+              state.generatingProposal = true; render();
+              try {
+                const res = await api(`/api/proposals/generate/${detail.id}`, { method: 'POST' });
+                toast('Proposal generated!', 'success');
+                state.meetingDetail._proposal = res.proposal;
+              } catch (err) { toast('Proposal failed: ' + err.message, 'error'); }
+              state.generatingProposal = false; render();
+            }
+          }, state.generatingProposal ? 'Generating...' : 'Generate Proposal') : null
+        ),
+        detail._proposal ? h('div', {},
+          h('div', { style: { display: 'flex', gap: '12px', marginBottom: '12px', fontSize: '13px', alignItems: 'center' } },
+            h('span', { style: { fontWeight: '600' } }, detail._proposal.title),
+            feedbackWidget(detail._proposal.id, 'proposal'),
+            h('span', { style: {
+              background: detail._proposal.status === 'sent' ? 'var(--green-light)' : 'var(--amber-light)',
+              color: detail._proposal.status === 'sent' ? 'var(--green)' : 'var(--amber)',
+              padding: '2px 8px', borderRadius: '12px', fontSize: '11px', fontWeight: '600'
+            } }, detail._proposal.status),
+            detail._proposal.monthly_value ? h('span', { style: { color: 'var(--green)', fontWeight: '600' } },
+              `$${detail._proposal.monthly_value.toLocaleString()}/mo`) : null
+          ),
+          h('div', { style: {
+            maxHeight: '300px', overflow: 'auto', fontSize: '13px', lineHeight: '1.6',
+            background: 'var(--gray-50)', padding: '12px', borderRadius: '8px', whiteSpace: 'pre-wrap'
+          } }, detail._proposal.content),
+          h('div', { style: { display: 'flex', gap: '8px', marginTop: '12px' } },
+            h('button', { className: 'btn btn-success btn-sm', onclick: async () => {
+              try {
+                await api(`/api/proposals/${detail._proposal.id}`, { method: 'PUT', body: { status: 'sent' } });
+                detail._proposal.status = 'sent'; toast('Marked as sent', 'success'); render();
+              } catch (err) { toast(err.message, 'error'); }
+            } }, 'Mark as Sent'),
+            h('button', { className: 'btn btn-outline btn-sm', onclick: async () => {
+              try {
+                await api(`/api/proposals/${detail._proposal.id}`, { method: 'PUT', body: { status: 'accepted' } });
+                detail._proposal.status = 'accepted'; toast('Proposal accepted!', 'success'); render();
+              } catch (err) { toast(err.message, 'error'); }
+            } }, 'Accepted'),
+            h('button', { className: 'btn btn-ghost btn-sm', onclick: async () => {
+              try {
+                await api(`/api/proposals/${detail._proposal.id}`, { method: 'PUT', body: { status: 'rejected' } });
+                detail._proposal.status = 'rejected'; toast('Proposal rejected', 'info'); render();
+              } catch (err) { toast(err.message, 'error'); }
+            } }, 'Rejected')
+          )
+        ) : h('p', { style: { fontSize: '13px', color: 'var(--gray-400)' } }, 'No proposal generated yet. Click to create one based on this call.')
+      ) : null,
+
       // Transcript (collapsible)
       detail.transcript ? h('details', { className: 'card', style: { marginBottom: '16px' } },
         h('summary', { style: { cursor: 'pointer', fontFamily: "'Fraunces', serif", fontWeight: '600' } }, 'Transcript'),
@@ -4276,12 +4354,13 @@ function renderMeetingsPage() {
               style: { cursor: 'pointer', transition: 'var(--transition)', padding: '12px 16px' },
               onclick: async () => {
                 try {
-                  const [meeting, actions, atoms] = await Promise.all([
+                  const [meeting, actions, atoms, proposals] = await Promise.all([
                     api(`/api/meetings/${m.id}`),
                     api(`/api/meetings/${m.id}/actions`),
-                    api(`/api/meetings/${m.id}/atoms`)
+                    api(`/api/meetings/${m.id}/atoms`),
+                    api(`/api/proposals?meeting_id=${m.id}`).catch(() => [])
                   ]);
-                  state.meetingDetail = { ...meeting, _actions: actions, _atoms: atoms };
+                  state.meetingDetail = { ...meeting, _actions: actions, _atoms: atoms, _proposal: proposals[0] || null };
                   render();
                 } catch (err) { toast('Failed to load meeting: ' + err.message, 'error'); }
               }
@@ -4306,6 +4385,38 @@ function renderMeetingsPage() {
             )
           )
         )
+  );
+}
+
+function feedbackWidget(outputId, outputType) {
+  const existing = (state._feedbackCache || {})[`${outputType}:${outputId}`];
+  return h('div', { style: { display: 'inline-flex', gap: '4px', alignItems: 'center' } },
+    h('button', {
+      className: 'btn btn-ghost btn-sm',
+      style: { padding: '4px 8px', fontSize: '16px', color: existing === 5 ? 'var(--green)' : 'var(--gray-400)' },
+      onclick: async (e) => {
+        e.stopPropagation();
+        try {
+          await api('/api/feedback', { method: 'POST', body: { output_id: String(outputId), output_type: outputType, rating: 5, comment: 'Helpful' } });
+          if (!state._feedbackCache) state._feedbackCache = {};
+          state._feedbackCache[`${outputType}:${outputId}`] = 5;
+          toast('Thanks for the feedback!', 'success'); render();
+        } catch (err) { toast(err.message, 'error'); }
+      }
+    }, '\u{1F44D}'),
+    h('button', {
+      className: 'btn btn-ghost btn-sm',
+      style: { padding: '4px 8px', fontSize: '16px', color: existing === 1 ? 'var(--red)' : 'var(--gray-400)' },
+      onclick: async (e) => {
+        e.stopPropagation();
+        try {
+          await api('/api/feedback', { method: 'POST', body: { output_id: String(outputId), output_type: outputType, rating: 1, comment: 'Not helpful' } });
+          if (!state._feedbackCache) state._feedbackCache = {};
+          state._feedbackCache[`${outputType}:${outputId}`] = 1;
+          toast('Feedback recorded', 'info'); render();
+        } catch (err) { toast(err.message, 'error'); }
+      }
+    }, '\u{1F44E}')
   );
 }
 
@@ -4422,6 +4533,10 @@ function renderClientsPage() {
     (c.firm_name || '').toLowerCase().includes(q)
   ) : clients;
 
+  const health = state.healthData || { summary: {}, clients: [] };
+  const healthMap = {};
+  for (const h of (health.clients || [])) { healthMap[h.client_id] = h; }
+
   const statusBadge = (status) => {
     const colors = { prospect: 'var(--blue)', active: 'var(--green)', churned: 'var(--red)', lost: 'var(--gray-500)' };
     return h('span', { style: {
@@ -4430,15 +4545,54 @@ function renderClientsPage() {
     } }, status || 'prospect');
   };
 
+  const healthDot = (clientId) => {
+    const ch = healthMap[clientId];
+    if (!ch) return null;
+    const colors = { red: 'var(--red)', yellow: 'var(--amber)', green: 'var(--green)' };
+    return h('span', { style: {
+      width: '10px', height: '10px', borderRadius: '50%', display: 'inline-block',
+      background: colors[ch.health_status] || 'var(--gray-300)', flexShrink: 0
+    }, title: `Health: ${ch.score}/100 — ${ch.notes}` });
+  };
+
+  const healthBadge = (clientId) => {
+    const ch = healthMap[clientId];
+    if (!ch) return null;
+    const colors = { red: { bg: 'var(--red-light)', fg: 'var(--red)' }, yellow: { bg: 'var(--amber-light)', fg: 'var(--amber)' }, green: { bg: 'var(--green-light)', fg: 'var(--green)' } };
+    const c = colors[ch.health_status] || { bg: 'var(--gray-100)', fg: 'var(--gray-500)' };
+    return h('span', { style: {
+      background: c.bg, color: c.fg, padding: '2px 8px', borderRadius: '12px', fontSize: '11px', fontWeight: '600'
+    } }, `${ch.score}/100`);
+  };
+
   // Detail view
   if (detail) {
     const meetings = detail.meetings || [];
+    const ch = healthMap[detail.id];
     return h('div', { className: 'page-content' },
       h('div', { style: { display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' } },
         h('button', { className: 'btn btn-ghost btn-sm', onclick: () => { state.clientDetail = null; render(); } }, 'Back'),
         h('h3', { style: { fontFamily: "'Fraunces', serif" } }, detail.name),
-        statusBadge(detail.status)
+        statusBadge(detail.status),
+        ch ? healthBadge(detail.id) : null
       ),
+      // Health card (if available)
+      ch ? h('div', { className: 'card', style: {
+        padding: '16px', marginBottom: '20px',
+        borderLeft: `4px solid ${ch.health_status === 'red' ? 'var(--red)' : ch.health_status === 'yellow' ? 'var(--amber)' : 'var(--green)'}`
+      } },
+        h('div', { style: { display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' } },
+          h('span', { style: { fontWeight: '600', fontSize: '14px' } }, 'Prospect Health'),
+          healthBadge(detail.id)
+        ),
+        h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', fontSize: '13px' } },
+          h('div', {}, h('span', { style: { color: 'var(--gray-500)' } }, 'Days Silent'), h('div', { style: { fontWeight: '600' } }, String(ch.days_since_contact))),
+          h('div', {}, h('span', { style: { color: 'var(--gray-500)' } }, 'Open Actions'), h('div', { style: { fontWeight: '600' } }, String(ch.open_actions))),
+          h('div', {}, h('span', { style: { color: 'var(--gray-500)' } }, 'Meetings'), h('div', { style: { fontWeight: '600' } }, String(ch.meeting_count))),
+          h('div', {}, h('span', { style: { color: 'var(--gray-500)' } }, 'Sentiment'), h('div', { style: { fontWeight: '600' } }, ch.sentiment || 'N/A'))
+        ),
+        ch.notes && ch.notes !== 'Healthy' ? h('div', { style: { marginTop: '8px', fontSize: '12px', color: 'var(--gray-500)' } }, ch.notes) : null
+      ) : null,
       h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px', marginBottom: '20px' } },
         h('div', { className: 'card', style: { padding: '16px' } },
           h('div', { style: { fontSize: '12px', color: 'var(--gray-500)', marginBottom: '4px' } }, 'Email'),
@@ -4457,10 +4611,40 @@ function renderClientsPage() {
           )
         )
       ),
-      h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '20px', fontSize: '13px', color: 'var(--gray-500)' } },
+      h('div', { style: { display: 'flex', gap: '16px', marginBottom: '20px', fontSize: '13px', color: 'var(--gray-500)', alignItems: 'center' } },
         h('div', {}, `First seen: ${detail.first_seen ? new Date(detail.first_seen).toLocaleDateString() : 'N/A'}`),
-        h('div', {}, `Last seen: ${detail.last_seen ? new Date(detail.last_seen).toLocaleDateString() : 'N/A'}`)
+        h('div', {}, `Last seen: ${detail.last_seen ? new Date(detail.last_seen).toLocaleDateString() : 'N/A'}`),
+        h('button', {
+          className: 'btn btn-primary btn-sm', style: { marginLeft: 'auto' },
+          disabled: state.generatingBrief,
+          onclick: async () => {
+            state.generatingBrief = true; render();
+            try {
+              const res = await api(`/api/briefs/generate/${detail.id}`, { method: 'POST' });
+              toast('Pre-call brief generated!', 'success');
+              state.clientBrief = res.brief;
+            } catch (err) { toast('Brief failed: ' + err.message, 'error'); }
+            state.generatingBrief = false; render();
+          }
+        }, state.generatingBrief ? 'Generating...' : 'Generate Pre-Call Brief')
       ),
+      // Pre-call brief
+      state.clientBrief && state.clientBrief.client_id === detail.id ? h('div', { className: 'card', style: {
+        marginBottom: '16px', borderLeft: '4px solid var(--blue)'
+      } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' } },
+          h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } },
+            h('h4', { style: { fontFamily: "'Fraunces', serif" } }, 'Pre-Call Brief'),
+            feedbackWidget(state.clientBrief.id, 'brief')
+          ),
+          h('span', { style: { fontSize: '11px', color: 'var(--gray-400)' } },
+            state.clientBrief.created_at ? new Date(state.clientBrief.created_at).toLocaleString() : '')
+        ),
+        h('div', { style: {
+          fontSize: '13px', lineHeight: '1.7', whiteSpace: 'pre-wrap',
+          maxHeight: '400px', overflow: 'auto'
+        } }, state.clientBrief.brief_text)
+      ) : null,
       // Meeting history
       meetings.length > 0 ? h('div', { className: 'card', style: { marginBottom: '16px' } },
         h('h4', { style: { marginBottom: '12px', fontFamily: "'Fraunces', serif" } }, `Meeting History (${meetings.length})`),
@@ -4492,12 +4676,28 @@ function renderClientsPage() {
   }
 
   // List view
+  const hs = health.summary || {};
   return h('div', { className: 'page-content' },
-    // Stats
-    h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', marginBottom: '20px' } },
+    // Health summary bar
+    h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '16px', marginBottom: '20px' } },
       meetingStatCard('Total Clients', clients.length),
-      meetingStatCard('Prospects', clients.filter(c => c.status === 'prospect').length),
-      meetingStatCard('Active', clients.filter(c => c.status === 'active').length)
+      h('div', { className: 'stat-card green', style: { padding: '20px' } },
+        h('div', { className: 'label' }, 'Healthy'),
+        h('div', { className: 'value' }, String(hs.green || 0))
+      ),
+      h('div', { className: 'stat-card amber', style: { padding: '20px' } },
+        h('div', { className: 'label' }, 'At Risk'),
+        h('div', { className: 'value' }, String(hs.yellow || 0))
+      ),
+      h('div', { className: 'stat-card', style: { padding: '20px', borderLeft: '4px solid var(--red)' } },
+        h('div', { className: 'label' }, 'Critical'),
+        h('div', { className: 'value' }, String(hs.red || 0))
+      ),
+      h('div', { className: 'stat-card accent', style: { padding: '20px' } },
+        h('div', { className: 'label' }, 'Avg Score'),
+        h('div', { className: 'value' }, String(hs.avg_score || 0)),
+        h('div', { className: 'sub' }, '/100')
+      )
     ),
     // Search
     h('div', { style: { marginBottom: '20px' } },
@@ -4528,6 +4728,7 @@ function renderClientsPage() {
               }
             },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: '12px' } },
+                healthDot(c.id),
                 h('div', { style: {
                   width: '36px', height: '36px', borderRadius: '50%', background: 'var(--navy)',
                   color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -4537,12 +4738,16 @@ function renderClientsPage() {
                   h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '2px' } },
                     h('span', { style: { fontWeight: '600', fontSize: '14px' } }, c.name),
                     statusBadge(c.status),
+                    healthBadge(c.id),
                     c.firm_name ? h('span', { style: { fontSize: '12px', color: 'var(--gray-500)' } }, c.firm_name) : null
                   ),
                   h('div', { style: { display: 'flex', gap: '16px', fontSize: '12px', color: 'var(--gray-400)' } },
                     c.email && c.email !== 'null' ? h('span', {}, c.email) : null,
                     (c.practice_areas || []).length > 0 ? h('span', {}, (c.practice_areas || []).slice(0, 3).join(', ')) : null,
-                    c.last_seen ? h('span', {}, `Last: ${new Date(c.last_seen).toLocaleDateString()}`) : null
+                    c.last_seen ? h('span', {}, `Last: ${new Date(c.last_seen).toLocaleDateString()}`) : null,
+                    healthMap[c.id]?.notes && healthMap[c.id].notes !== 'Healthy'
+                      ? h('span', { style: { color: healthMap[c.id].health_status === 'red' ? 'var(--red)' : 'var(--amber)' } }, healthMap[c.id].notes)
+                      : null
                   )
                 )
               )
@@ -4775,6 +4980,87 @@ function renderSaveUrlPage() {
   );
 }
 
+function renderInspirationsPage() {
+  const items = state.inspirations || [];
+  const unused = items.filter(i => !i.used);
+  const used = items.filter(i => i.used);
+
+  return h('div', { className: 'page-content' },
+    // Stats
+    h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', marginBottom: '20px' } },
+      meetingStatCard('Total', items.length),
+      meetingStatCard('Available', unused.length),
+      meetingStatCard('Used', used.length)
+    ),
+    // Actions bar
+    h('div', { style: { display: 'flex', gap: '12px', marginBottom: '20px', alignItems: 'center' } },
+      h('button', { className: 'btn btn-primary btn-sm', onclick: async () => {
+        try {
+          const res = await api('/api/inspirations/sync', { method: 'POST' });
+          toast(`Synced ${res.added} inspirations from meeting insights`, 'success');
+          await loadData();
+        } catch (err) { toast(err.message, 'error'); }
+      } }, 'Sync from Meetings'),
+      h('div', { style: { flex: 1 } }),
+      h('input', {
+        type: 'text', placeholder: 'Add inspiration...',
+        style: { padding: '6px 10px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '13px', width: '300px' },
+        value: state.newInspiration || '',
+        oninput: (e) => { state.newInspiration = e.target.value; }
+      }),
+      h('button', {
+        className: 'btn btn-outline btn-sm',
+        disabled: !(state.newInspiration || '').trim(),
+        onclick: async () => {
+          try {
+            await api('/api/inspirations', { method: 'POST', body: { content: state.newInspiration.trim(), source: 'manual' } });
+            state.newInspiration = ''; toast('Added!', 'success'); await loadData();
+          } catch (err) { toast(err.message, 'error'); }
+        }
+      }, 'Add')
+    ),
+    // Inspiration cards
+    unused.length === 0
+      ? h('div', { className: 'card', style: { textAlign: 'center', padding: '40px', color: 'var(--gray-400)' } },
+          h('p', {}, 'No inspirations yet'),
+          h('p', { style: { fontSize: '13px', marginTop: '8px' } }, 'Click "Sync from Meetings" to populate from call insights')
+        )
+      : h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' } },
+          ...unused.map(insp =>
+            h('div', { className: 'card', style: { padding: '16px' } },
+              h('div', { style: { display: 'flex', gap: '6px', marginBottom: '8px', flexWrap: 'wrap' } },
+                h('span', { style: {
+                  background: 'var(--purple-light)', color: 'var(--purple)',
+                  padding: '1px 6px', borderRadius: '8px', fontSize: '10px', fontWeight: '600'
+                } }, insp.source),
+                ...(insp.tags || []).map(t =>
+                  h('span', { style: {
+                    background: 'var(--gray-100)', color: 'var(--gray-600)',
+                    padding: '1px 6px', borderRadius: '8px', fontSize: '10px'
+                  } }, t)
+                )
+              ),
+              h('p', { style: { fontSize: '13px', lineHeight: '1.6', marginBottom: '12px' } }, insp.content),
+              h('div', { style: { display: 'flex', gap: '8px' } },
+                h('button', { className: 'btn btn-success btn-sm', onclick: async () => {
+                  try {
+                    const res = await api(`/api/inspirations/${insp.id}/use`, { method: 'POST' });
+                    toast('Trigger created from inspiration!', 'success'); await loadData();
+                  } catch (err) { toast(err.message, 'error'); }
+                } }, 'Use as Trigger'),
+                h('button', { className: 'btn btn-ghost btn-sm', onclick: async () => {
+                  try {
+                    await api(`/api/inspirations/${insp.id}`, { method: 'DELETE' });
+                    toast('Removed', 'info'); await loadData();
+                  } catch (err) { toast(err.message, 'error'); }
+                } }, 'Remove')
+              )
+            )
+          )
+        )
+  );
+}
+
 function renderToasts() {
   return h('div', { className: 'toast-container' },
     ...state.toasts.map(t =>
@@ -4802,6 +5088,7 @@ function render() {
         : state.page === 'triggers' ? renderTriggersPage()
         : state.page === 'calendar' ? renderCalendarPage()
         : state.page === 'analytics' ? renderAnalyticsPage()
+        : state.page === 'inspirations' ? renderInspirationsPage()
         : state.page === 'performance' ? renderPerformancePage()
         : state.page === 'settings' ? renderSettingsPage()
         : state.page === 'memory' ? renderMemoryPage()

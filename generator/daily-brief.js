@@ -55,17 +55,14 @@ async function generateBrief() {
   const clients = db.getClients({});
   const meetings = db.getMeetings({ limit: 10 });
   const patterns = db.getPatterns({ limit: 10 });
+  const healthOverview = db.getHealthOverview();
 
-  // Find stale deals (no meeting in 5+ days)
+  // Use health system for stale deals
   const now = new Date();
-  const staleClients = clients.filter(c => {
-    if (!c.last_seen) return false;
-    const daysSince = Math.floor((now - new Date(c.last_seen)) / (1000 * 60 * 60 * 24));
-    return daysSince >= 5 && c.status === 'prospect';
-  }).map(c => {
-    const daysSince = Math.floor((now - new Date(c.last_seen)) / (1000 * 60 * 60 * 24));
-    return { ...c, daysSince };
-  }).sort((a, b) => b.daysSince - a.daysSince);
+  const staleClients = (healthOverview.clients || [])
+    .filter(h => h.health_status === 'red' || (h.health_status === 'yellow' && h.days_since_contact >= 5))
+    .map(h => ({ ...h, daysSince: h.days_since_contact }))
+    .sort((a, b) => b.daysSince - a.daysSince);
 
   // Group actions by owner
   const actionsByOwner = {};
@@ -98,12 +95,19 @@ async function generateBrief() {
 
   let brief = `<b>MORTAR METRICS — DAILY BRIEF</b>\n${dayName}\n\n`;
 
-  // Stale deals (URGENT)
+  // Health summary
+  const hs = healthOverview.summary || {};
+  if (hs.total > 0) {
+    brief += `<b>PIPELINE HEALTH</b>\n`;
+    brief += `🟢 ${hs.green || 0} healthy | 🟡 ${hs.yellow || 0} at risk | 🔴 ${hs.red || 0} critical | Avg: ${hs.avg_score || 0}/100\n\n`;
+  }
+
+  // Critical deals (URGENT)
   if (staleClients.length > 0) {
-    brief += `<b>STALE DEALS</b>\n`;
+    brief += `<b>NEEDS ATTENTION</b>\n`;
     for (const c of staleClients.slice(0, 5)) {
-      const urgency = c.daysSince >= 10 ? '🚨' : '⚠️';
-      brief += `${urgency} <b>${c.name}</b>${c.firm_name ? ` (${c.firm_name})` : ''} — ${c.daysSince} days silent\n`;
+      const urgency = c.health_status === 'red' ? '🚨' : '⚠️';
+      brief += `${urgency} <b>${c.client_name}</b>${c.firm_name ? ` (${c.firm_name})` : ''} — ${c.daysSince} days silent (${c.score}/100)\n`;
     }
     brief += '\n';
   }

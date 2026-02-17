@@ -929,6 +929,8 @@ async function handleRequest(req, res) {
         ideogram_key: !!process.env.IDEOGRAM_API_KEY,
         youtube_key: !!process.env.YOUTUBE_API_KEY,
         fireflies_key: !!process.env.FIREFLIES_API_KEY,
+        ghl_webhook: !!process.env.GHL_WEBHOOK_SECRET,
+        telegram_bot: !!process.env.TELEGRAM_BOT_TOKEN,
         scrapers: ['reddit', 'rss', 'youtube', 'google-news', 'hackernews', 'competitors'],
         data: {
           triggers: triggers.length,
@@ -1364,6 +1366,58 @@ async function handleRequest(req, res) {
       return json(res, db.getFeedback({ output_type }));
     }
 
+    // GET /api/feedback/summary
+    if (pathname === '/api/feedback/summary' && method === 'GET') {
+      return json(res, db.getFeedbackSummary());
+    }
+
+    // GET /api/style-guides
+    if (pathname === '/api/style-guides' && method === 'GET') {
+      return json(res, db.getStyleGuides());
+    }
+
+    // POST /api/style-guides/learn — analyze feedback and generate style guides
+    if (pathname === '/api/style-guides/learn' && method === 'POST') {
+      if (!process.env.ANTHROPIC_API_KEY) {
+        return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      }
+      try {
+        const { callClaude, HAIKU } = require('./lib/claude');
+        const feedback = db.getFeedback({ limit: 200 });
+        if (feedback.length < 5) {
+          return json(res, { error: 'Need at least 5 feedback entries to learn patterns' }, 400);
+        }
+
+        const positive = feedback.filter(f => f.rating >= 4);
+        const negative = feedback.filter(f => f.rating <= 2);
+        const byType = {};
+        for (const f of feedback) {
+          if (!byType[f.output_type]) byType[f.output_type] = { pos: [], neg: [] };
+          if (f.rating >= 4) byType[f.output_type].pos.push(f);
+          else if (f.rating <= 2) byType[f.output_type].neg.push(f);
+        }
+
+        const guides = [];
+        for (const [type, data] of Object.entries(byType)) {
+          if (data.pos.length + data.neg.length < 3) continue;
+          const prompt = `Based on this feedback data, generate a style guide for "${type}" outputs.
+
+Positive feedback (${data.pos.length} items): ${data.pos.map(f => f.comment || 'liked').join('; ')}
+Negative feedback (${data.neg.length} items): ${data.neg.map(f => f.comment || 'disliked').join('; ')}
+
+Write 3-5 bullet points of dos and don'ts for this output type. Be specific and actionable.`;
+
+          const text = await callClaude({ model: HAIKU, system: 'You analyze feedback to create style guides. Be concise.', prompt, maxTokens: 500 });
+          const guide = db.upsertStyleGuide(type, text, data.pos.length + data.neg.length);
+          guides.push(guide);
+        }
+
+        return json(res, { ok: true, guides });
+      } catch (err) {
+        return json(res, { error: err.message }, 500);
+      }
+    }
+
     // --- Chat API ---
 
     // GET /api/chat/messages — get chat history
@@ -1420,6 +1474,166 @@ ${context}`;
         console.error('[chat] Error:', err.message);
         return json(res, { error: err.message }, 500);
       }
+    }
+
+    // --- Proposals API ---
+
+    // GET /api/proposals
+    if (pathname === '/api/proposals' && method === 'GET') {
+      const status = url.searchParams.get('status') || undefined;
+      const client_id = url.searchParams.get('client_id') || undefined;
+      const meeting_id = url.searchParams.get('meeting_id') || undefined;
+      let proposals = db.getProposals({ status, client_id: client_id ? parseInt(client_id) : undefined });
+      if (meeting_id) proposals = proposals.filter(p => p.meeting_id === parseInt(meeting_id));
+      return json(res, proposals);
+    }
+
+    // GET /api/proposals/:id
+    const proposalIdMatch = pathname.match(/^\/api\/proposals\/(\d+)$/);
+    if (proposalIdMatch && method === 'GET') {
+      const proposal = db.getProposal(parseInt(proposalIdMatch[1]));
+      if (!proposal) return json(res, { error: 'Not found' }, 404);
+      return json(res, proposal);
+    }
+
+    // POST /api/proposals/generate/:meetingId
+    const proposalGenMatch = pathname.match(/^\/api\/proposals\/generate\/(\d+)$/);
+    if (proposalGenMatch && method === 'POST') {
+      if (!process.env.ANTHROPIC_API_KEY) {
+        return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      }
+      try {
+        const { generateProposal } = require('./lib/proposal-generator');
+        const proposal = await generateProposal(parseInt(proposalGenMatch[1]));
+        return json(res, { ok: true, proposal });
+      } catch (err) {
+        return json(res, { error: err.message }, 500);
+      }
+    }
+
+    // PUT /api/proposals/:id
+    const proposalUpdateMatch = pathname.match(/^\/api\/proposals\/(\d+)$/);
+    if (proposalUpdateMatch && method === 'PUT') {
+      const body = await parseBody(req);
+      const proposal = db.updateProposal(parseInt(proposalUpdateMatch[1]), body);
+      if (!proposal) return json(res, { error: 'Not found' }, 404);
+      return json(res, { ok: true, ...proposal });
+    }
+
+    // --- Inspirations API ---
+
+    // GET /api/inspirations
+    if (pathname === '/api/inspirations' && method === 'GET') {
+      const used = url.searchParams.get('used');
+      const inspirations = db.getInspirations({ used: used !== null ? used === 'true' : undefined });
+      return json(res, inspirations);
+    }
+
+    // POST /api/inspirations
+    if (pathname === '/api/inspirations' && method === 'POST') {
+      const body = await parseBody(req);
+      if (!body.content) return json(res, { error: 'content required' }, 400);
+      const insp = db.insertInspiration({
+        source: body.source || 'manual',
+        content: body.content,
+        tags: body.tags || []
+      });
+      return json(res, { ok: true, inspiration: insp });
+    }
+
+    // POST /api/inspirations/sync — sync meeting atoms to inspirations
+    if (pathname === '/api/inspirations/sync' && method === 'POST') {
+      const added = db.syncAtomsToInspirations();
+      return json(res, { ok: true, added });
+    }
+
+    // POST /api/inspirations/:id/use — mark as used and create a trigger
+    const inspUseMatch = pathname.match(/^\/api\/inspirations\/(\d+)\/use$/);
+    if (inspUseMatch && method === 'POST') {
+      const id = parseInt(inspUseMatch[1]);
+      const insp = db.markInspirationUsed(id);
+      if (!insp) return json(res, { error: 'Not found' }, 404);
+
+      // Create a trigger from this inspiration
+      const trigger = {
+        id: `insp-${generateId()}`,
+        source: 'inspiration',
+        source_detail: insp.source,
+        title: (insp.content || '').slice(0, 200),
+        raw_content: insp.content,
+        category: 'CONTENT_PIECE',
+        captured_at: now(),
+        status: 'pending',
+        score: 0,
+        tags: insp.tags || []
+      };
+      const triggers = readJSON('trigger-queue.json');
+      triggers.push(trigger);
+      writeJSON('trigger-queue.json', triggers);
+
+      return json(res, { ok: true, trigger });
+    }
+
+    // DELETE /api/inspirations/:id
+    const inspDeleteMatch = pathname.match(/^\/api\/inspirations\/(\d+)$/);
+    if (inspDeleteMatch && method === 'DELETE') {
+      db.deleteInspiration(parseInt(inspDeleteMatch[1]));
+      return json(res, { ok: true });
+    }
+
+    // --- Briefs API ---
+
+    // GET /api/briefs
+    if (pathname === '/api/briefs' && method === 'GET') {
+      const client_id = url.searchParams.get('client_id') || undefined;
+      const { getBriefs } = require('./lib/brief-generator');
+      const briefs = getBriefs({ client_id: client_id ? parseInt(client_id) : undefined });
+      return json(res, briefs);
+    }
+
+    // POST /api/briefs/generate/:clientId
+    const briefGenMatch = pathname.match(/^\/api\/briefs\/generate\/(\d+)$/);
+    if (briefGenMatch && method === 'POST') {
+      if (!process.env.ANTHROPIC_API_KEY) {
+        return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      }
+      try {
+        const { generateBrief } = require('./lib/brief-generator');
+        const brief = await generateBrief(parseInt(briefGenMatch[1]));
+        return json(res, { ok: true, brief });
+      } catch (err) {
+        return json(res, { error: err.message }, 500);
+      }
+    }
+
+    // --- Health API ---
+
+    // GET /api/health — get health overview for all clients
+    if (pathname === '/api/health' && method === 'GET') {
+      const overview = db.getHealthOverview();
+      return json(res, overview);
+    }
+
+    // POST /api/health/check — run health check and snapshot
+    if (pathname === '/api/health/check' && method === 'POST') {
+      const results = db.runHealthCheck();
+      return json(res, {
+        ok: true,
+        checked: results.length,
+        red: results.filter(r => r.health_status === 'red').length,
+        yellow: results.filter(r => r.health_status === 'yellow').length,
+        green: results.filter(r => r.health_status === 'green').length,
+        results
+      });
+    }
+
+    // GET /api/health/:clientId — get health for a specific client
+    const healthClientMatch = pathname.match(/^\/api\/health\/(\d+)$/);
+    if (healthClientMatch && method === 'GET') {
+      const health = db.computeClientHealth(parseInt(healthClientMatch[1]));
+      if (!health) return json(res, { error: 'Client not found' }, 404);
+      const history = db.getHealthHistory(parseInt(healthClientMatch[1]));
+      return json(res, { ...health, history });
     }
 
     // --- Webhook Endpoints ---
@@ -1535,6 +1749,42 @@ ${context}`;
         client_email: body.lead?.email || null,
         data: body
       });
+
+      return json(res, { ok: true });
+    }
+
+    // POST /api/webhooks/ghl — GoHighLevel webhook
+    if (pathname === '/api/webhooks/ghl' && method === 'POST') {
+      const secret = process.env.GHL_WEBHOOK_SECRET;
+      if (secret) {
+        const headerSecret = req.headers['x-webhook-secret'];
+        if (headerSecret !== secret) {
+          return json(res, { error: 'Invalid secret' }, 401);
+        }
+      }
+
+      const body = await parseBody(req);
+
+      db.insertEvent({
+        source: 'ghl',
+        event_type: body.event || body.type || 'ghl_event',
+        client_name: body.contact?.name || body.contact?.firstName ? [body.contact.firstName, body.contact.lastName].filter(Boolean).join(' ') : body.contactName || null,
+        client_email: body.contact?.email || body.contactEmail || null,
+        data: body
+      });
+
+      // Auto-create/update client for key events
+      const contactEmail = body.contact?.email || body.contactEmail;
+      const contactName = body.contact?.name || (body.contact?.firstName ? [body.contact.firstName, body.contact.lastName].filter(Boolean).join(' ') : null) || body.contactName;
+      if (contactEmail && contactName) {
+        db.upsertClient(contactEmail, {
+          name: contactName,
+          firm_name: body.contact?.companyName || body.companyName || null,
+          phone: body.contact?.phone || null,
+          source: 'ghl',
+          status: 'prospect'
+        });
+      }
 
       return json(res, { ok: true });
     }

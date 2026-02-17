@@ -1376,6 +1376,13 @@ const state = {
   performance: [],
   perfAnalytics: null,
   perfForm: { content_id: '', format: '', impressions: '', engagement: '', clicks: '', leads: '', notes: '' },
+  // Meetings
+  meetings: [],
+  meetingDetail: null,
+  meetingFilter: { type: '', client: '' },
+  meetingStats: {},
+  syncingMeetings: false,
+  clients: [],
 };
 
 // --- API Calls ---
@@ -1396,7 +1403,7 @@ async function loadData() {
   state.loading = true;
   render();
   try {
-    const [content, triggers, stats, calendar, monthCal, settings, memory, performance, perfAnalytics] = await Promise.all([
+    const [content, triggers, stats, calendar, monthCal, settings, memory, performance, perfAnalytics, meetings, meetingStats, clients] = await Promise.all([
       api('/api/content'),
       api('/api/triggers'),
       api('/api/stats'),
@@ -1405,7 +1412,10 @@ async function loadData() {
       api('/api/settings').catch(() => ({})),
       api('/api/memory').catch(() => ({ approved_examples: [], style_notes: [] })),
       api('/api/performance').catch(() => []),
-      api('/api/analytics/performance').catch(() => null)
+      api('/api/analytics/performance').catch(() => null),
+      api('/api/meetings').catch(() => []),
+      api('/api/meetings/stats').catch(() => ({})),
+      api('/api/clients').catch(() => [])
     ]);
     state.content = content;
     state.triggers = triggers;
@@ -1416,6 +1426,9 @@ async function loadData() {
     state.memory = memory;
     state.performance = performance;
     state.perfAnalytics = perfAnalytics;
+    state.meetings = meetings;
+    state.meetingStats = meetingStats;
+    state.clients = clients;
   } catch (err) {
     console.error('Failed to load data:', err);
     toast('Failed to load data', 'error');
@@ -1838,6 +1851,7 @@ document.addEventListener('keydown', (e) => {
   if (e.key === '6' && !e.ctrlKey && !e.metaKey && !isEditing()) { state.page = 'performance'; render(); }
   if (e.key === '7' && !e.ctrlKey && !e.metaKey && !isEditing()) { state.page = 'settings'; render(); }
   if (e.key === '8' && !e.ctrlKey && !e.metaKey && !isEditing()) { state.page = 'memory'; render(); }
+  if (e.key === '9' && !e.ctrlKey && !e.metaKey && !isEditing()) { state.page = 'meetings'; render(); }
   if ((e.key === 'd' || e.key === 'D') && !e.ctrlKey && !e.metaKey && !isEditing()) { toggleDarkMode(); }
   if (e.key === 'Escape') { state.editingFormat = null; state.sidebarOpen = false; render(); }
 });
@@ -1869,7 +1883,8 @@ const icons = {
   trash: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>',
   ban: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>',
   brain: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9.5 2A5.5 5.5 0 005 7.5c0 .98.27 1.9.73 2.7A5.5 5.5 0 003 15.5 5.5 5.5 0 008.5 21h.5"/><path d="M14.5 2A5.5 5.5 0 0120 7.5c0 .98-.27 1.9-.73 2.7A5.5 5.5 0 0122 15.5a5.5 5.5 0 01-5.5 5.5H16"/><path d="M12 2v20"/></svg>',
-  performance: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>'
+  performance: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>',
+  meetings: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>'
 };
 
 // --- Render Functions ---
@@ -1909,7 +1924,8 @@ function renderSidebar() {
     { id: 'analytics', icon: icons.analytics, label: 'Analytics', key: '5' },
     { id: 'performance', icon: icons.performance, label: 'Performance', key: '6' },
     { id: 'settings', icon: icons.settings, label: 'Settings', key: '7' },
-    { id: 'memory', icon: icons.brain, label: 'Memory', key: '8' }
+    { id: 'memory', icon: icons.brain, label: 'Memory', key: '8' },
+    { id: 'meetings', icon: icons.meetings, label: 'Meetings', key: '9' }
   ];
 
   return h('nav', { className: `sidebar ${state.sidebarOpen ? 'open' : ''}` },
@@ -1971,7 +1987,8 @@ function renderTopbar() {
     performance: 'Performance Tracking',
     settings: 'Settings',
     memory: 'Brand Memory',
-    'save-url': 'Save URL'
+    'save-url': 'Save URL',
+    meetings: 'Meetings'
   };
 
   return h('header', { className: 'topbar' },
@@ -3945,6 +3962,318 @@ function settingRow(name, isConfigured, description) {
   );
 }
 
+function renderMeetingsPage() {
+  const ms = state.meetingStats || {};
+  const meetings = state.meetings || [];
+  const detail = state.meetingDetail;
+
+  // Filter meetings
+  let filtered = [...meetings];
+  if (state.meetingFilter.type) {
+    filtered = filtered.filter(m => m.meeting_type === state.meetingFilter.type);
+  }
+  if (state.meetingFilter.client) {
+    const q = state.meetingFilter.client.toLowerCase();
+    filtered = filtered.filter(m =>
+      (m.client_name || '').toLowerCase().includes(q) ||
+      (m.client_email || '').toLowerCase().includes(q) ||
+      (m.title || '').toLowerCase().includes(q)
+    );
+  }
+
+  const typeBadge = (type) => {
+    const colors = {
+      discovery: 'var(--blue)', onboarding: 'var(--green)', review: 'var(--amber)',
+      strategy: 'var(--purple)', internal: 'var(--gray-500)', unknown: 'var(--gray-400)'
+    };
+    return h('span', { style: {
+      background: colors[type] || 'var(--gray-400)', color: 'white',
+      padding: '2px 8px', borderRadius: '12px', fontSize: '11px', fontWeight: '600'
+    } }, type || 'unknown');
+  };
+
+  const sentimentIcon = (s) => {
+    const map = { positive: '+', negative: '-', mixed: '~', neutral: '=' };
+    const colors = { positive: 'var(--green)', negative: 'var(--red)', mixed: 'var(--amber)', neutral: 'var(--gray-400)' };
+    return h('span', { style: { color: colors[s] || 'var(--gray-400)', fontWeight: '700', fontSize: '14px' } }, map[s] || '?');
+  };
+
+  // Detail view
+  if (detail) {
+    const ed = detail.extracted_data || {};
+    const cn = detail.coaching_notes;
+    return h('div', { className: 'page-content' },
+      h('div', { style: { display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' } },
+        h('button', {
+          className: 'btn btn-ghost btn-sm',
+          onclick: () => { state.meetingDetail = null; render(); }
+        }, 'Back'),
+        h('h3', { style: { fontFamily: "'Fraunces', serif" } }, detail.title),
+        typeBadge(detail.meeting_type),
+        sentimentIcon(detail.sentiment)
+      ),
+
+      // Meta row
+      h('div', { style: { display: 'flex', gap: '24px', marginBottom: '20px', fontSize: '13px', color: 'var(--gray-500)' } },
+        h('span', {}, `Date: ${detail.date ? new Date(detail.date).toLocaleDateString() : 'N/A'}`),
+        detail.duration_minutes ? h('span', {}, `Duration: ${detail.duration_minutes} min`) : null,
+        detail.client_name ? h('span', {}, `Client: ${detail.client_name}`) : null,
+        detail.client_email ? h('span', {}, `Email: ${detail.client_email}`) : null
+      ),
+
+      // Summary
+      detail.summary ? h('div', { className: 'card', style: { marginBottom: '16px' } },
+        h('h4', { style: { marginBottom: '8px', fontFamily: "'Fraunces', serif" } }, 'Summary'),
+        h('p', { style: { fontSize: '14px', lineHeight: '1.6' } }, detail.summary)
+      ) : null,
+
+      // Coaching
+      cn ? h('div', { className: 'card', style: { marginBottom: '16px' } },
+        h('h4', { style: { marginBottom: '8px', fontFamily: "'Fraunces', serif" } }, 'Call Coaching'),
+        h('div', { style: { display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' } },
+          h('div', { style: {
+            width: '48px', height: '48px', borderRadius: '50%',
+            background: cn.score >= 70 ? 'var(--green-light)' : cn.score >= 50 ? 'var(--amber-light)' : 'var(--red-light)',
+            color: cn.score >= 70 ? 'var(--green)' : cn.score >= 50 ? 'var(--amber)' : 'var(--red)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontWeight: '700', fontSize: '16px'
+          } }, String(cn.score)),
+          h('span', { style: { fontSize: '13px', color: 'var(--gray-500)' } },
+            cn.score >= 70 ? 'Good call' : cn.score >= 50 ? 'Average call' : 'Needs improvement')
+        ),
+        cn.strengths?.length > 0 ? h('div', { style: { marginBottom: '8px' } },
+          h('strong', { style: { fontSize: '12px', color: 'var(--green)' } }, 'Strengths'),
+          h('ul', { style: { margin: '4px 0 0 16px', fontSize: '13px' } },
+            ...cn.strengths.map(s => h('li', {}, s))
+          )
+        ) : null,
+        cn.improvements?.length > 0 ? h('div', { style: { marginBottom: '8px' } },
+          h('strong', { style: { fontSize: '12px', color: 'var(--amber)' } }, 'Improvements'),
+          h('ul', { style: { margin: '4px 0 0 16px', fontSize: '13px' } },
+            ...cn.improvements.map(s => h('li', {}, s))
+          )
+        ) : null,
+        cn.missed_opportunities?.length > 0 ? h('div', {},
+          h('strong', { style: { fontSize: '12px', color: 'var(--red)' } }, 'Missed Opportunities'),
+          h('ul', { style: { margin: '4px 0 0 16px', fontSize: '13px' } },
+            ...cn.missed_opportunities.map(s => h('li', {}, s))
+          )
+        ) : null
+      ) : null,
+
+      // Extracted data grid
+      h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' } },
+        // Pain points
+        ed.pain_points?.length > 0 ? h('div', { className: 'card' },
+          h('h4', { style: { marginBottom: '8px', fontFamily: "'Fraunces', serif", fontSize: '14px' } }, 'Pain Points'),
+          h('ul', { style: { margin: '0 0 0 16px', fontSize: '13px' } },
+            ...ed.pain_points.map(p => h('li', { style: { marginBottom: '4px' } }, p))
+          )
+        ) : null,
+
+        // Goals
+        ed.goals?.length > 0 ? h('div', { className: 'card' },
+          h('h4', { style: { marginBottom: '8px', fontFamily: "'Fraunces', serif", fontSize: '14px' } }, 'Goals'),
+          h('ul', { style: { margin: '0 0 0 16px', fontSize: '13px' } },
+            ...ed.goals.map(g => h('li', { style: { marginBottom: '4px' } }, g))
+          )
+        ) : null,
+
+        // Objections
+        ed.objections?.length > 0 ? h('div', { className: 'card' },
+          h('h4', { style: { marginBottom: '8px', fontFamily: "'Fraunces', serif", fontSize: '14px' } }, 'Objections'),
+          h('ul', { style: { margin: '0 0 0 16px', fontSize: '13px' } },
+            ...ed.objections.map(o => h('li', { style: { marginBottom: '4px' } }, o))
+          )
+        ) : null,
+
+        // Services discussed
+        ed.services_discussed?.length > 0 ? h('div', { className: 'card' },
+          h('h4', { style: { marginBottom: '8px', fontFamily: "'Fraunces', serif", fontSize: '14px' } }, 'Services Discussed'),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '6px' } },
+            ...ed.services_discussed.map(s =>
+              h('span', { style: {
+                background: 'var(--blue)', color: 'white', padding: '2px 8px',
+                borderRadius: '12px', fontSize: '11px', fontWeight: '600'
+              } }, s)
+            )
+          )
+        ) : null
+      ),
+
+      // Action items
+      detail._actions?.length > 0 ? h('div', { className: 'card', style: { marginBottom: '16px' } },
+        h('h4', { style: { marginBottom: '8px', fontFamily: "'Fraunces', serif" } }, 'Action Items'),
+        ...detail._actions.map(a =>
+          h('div', { style: {
+            display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 0',
+            borderBottom: '1px solid var(--gray-100)'
+          } },
+            h('input', {
+              type: 'checkbox',
+              checked: a.status === 'done',
+              onchange: async () => {
+                try {
+                  await api(`/api/actions/${a.id}`, {
+                    method: 'PUT',
+                    body: { status: a.status === 'done' ? 'open' : 'done' }
+                  });
+                  // Reload detail
+                  const [m, actions, atoms] = await Promise.all([
+                    api(`/api/meetings/${detail.id}`),
+                    api(`/api/meetings/${detail.id}/actions`),
+                    api(`/api/meetings/${detail.id}/atoms`)
+                  ]);
+                  state.meetingDetail = { ...m, _actions: actions, _atoms: atoms };
+                  render();
+                } catch (err) { toast('Update failed: ' + err.message, 'error'); }
+              }
+            }),
+            h('span', { style: {
+              fontSize: '13px', flex: 1,
+              textDecoration: a.status === 'done' ? 'line-through' : 'none',
+              color: a.status === 'done' ? 'var(--gray-400)' : 'inherit'
+            } }, a.description),
+            a.owner ? h('span', { style: {
+              fontSize: '11px', color: a.owner === 'us' ? 'var(--blue)' : 'var(--amber)',
+              fontWeight: '600'
+            } }, a.owner) : null
+          )
+        )
+      ) : null,
+
+      // Content Atoms
+      detail._atoms?.length > 0 ? h('div', { className: 'card', style: { marginBottom: '16px' } },
+        h('h4', { style: { marginBottom: '8px', fontFamily: "'Fraunces', serif" } }, 'Content Atoms'),
+        ...detail._atoms.map(a =>
+          h('div', { style: { padding: '8px 0', borderBottom: '1px solid var(--gray-100)' } },
+            h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' } },
+              h('span', { style: {
+                background: 'var(--purple-light)', color: 'var(--purple)',
+                padding: '1px 6px', borderRadius: '8px', fontSize: '10px', fontWeight: '600'
+              } }, a.type || 'atom')
+            ),
+            h('p', { style: { fontSize: '13px', lineHeight: '1.5' } }, a.content)
+          )
+        )
+      ) : null,
+
+      // Transcript (collapsible)
+      detail.transcript ? h('details', { className: 'card', style: { marginBottom: '16px' } },
+        h('summary', { style: { cursor: 'pointer', fontFamily: "'Fraunces', serif", fontWeight: '600' } }, 'Transcript'),
+        h('pre', { style: {
+          marginTop: '12px', fontSize: '12px', lineHeight: '1.6',
+          whiteSpace: 'pre-wrap', maxHeight: '400px', overflow: 'auto',
+          background: 'var(--gray-50)', padding: '12px', borderRadius: '8px'
+        } }, detail.transcript)
+      ) : null
+    );
+  }
+
+  // List view
+  return h('div', { className: 'page-content' },
+    // Stats bar
+    h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', marginBottom: '20px' } },
+      meetingStatCard('Total Meetings', ms.meetings?.total || 0),
+      meetingStatCard('Clients', ms.clients?.total || 0),
+      meetingStatCard('Open Actions', ms.actions?.open || 0),
+      meetingStatCard('Content Atoms', ms.atoms || 0)
+    ),
+
+    // Action bar
+    h('div', { style: { display: 'flex', gap: '12px', marginBottom: '20px', alignItems: 'center' } },
+      h('button', {
+        className: `btn btn-primary btn-sm ${state.syncingMeetings ? 'loading' : ''}`,
+        disabled: state.syncingMeetings,
+        onclick: async () => {
+          state.syncingMeetings = true; render();
+          try {
+            const res = await api('/api/meetings/sync', { method: 'POST' });
+            toast(`Synced ${res.synced} meetings, processed ${res.processed}`, 'success');
+            await loadData();
+          } catch (err) { toast('Sync failed: ' + err.message, 'error'); }
+          state.syncingMeetings = false; render();
+        }
+      }, state.syncingMeetings ? 'Syncing...' : 'Sync from Fireflies'),
+
+      // Type filter
+      h('select', {
+        style: { padding: '6px 10px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '13px' },
+        value: state.meetingFilter.type,
+        onchange: (e) => { state.meetingFilter.type = e.target.value; render(); }
+      },
+        h('option', { value: '' }, 'All Types'),
+        ...['discovery', 'onboarding', 'review', 'strategy', 'internal', 'unknown'].map(t =>
+          h('option', { value: t }, t.charAt(0).toUpperCase() + t.slice(1))
+        )
+      ),
+
+      // Client search
+      h('input', {
+        type: 'text', placeholder: 'Search client...',
+        style: { padding: '6px 10px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '13px', width: '200px' },
+        value: state.meetingFilter.client,
+        oninput: (e) => { state.meetingFilter.client = e.target.value; render(); }
+      }),
+
+      h('span', { style: { marginLeft: 'auto', fontSize: '12px', color: 'var(--gray-400)' } },
+        `${filtered.length} meeting${filtered.length !== 1 ? 's' : ''}`)
+    ),
+
+    // Meetings list
+    filtered.length === 0
+      ? h('div', { className: 'card', style: { textAlign: 'center', padding: '40px', color: 'var(--gray-400)' } },
+          h('div', { innerHTML: icons.meetings, style: { width: '48px', height: '48px', margin: '0 auto 12px', opacity: '0.3' } }),
+          h('p', {}, 'No meetings yet'),
+          h('p', { style: { fontSize: '13px', marginTop: '8px' } }, 'Click "Sync from Fireflies" to import your meeting transcripts')
+        )
+      : h('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px' } },
+          ...filtered.map(m =>
+            h('div', {
+              className: 'card',
+              style: { cursor: 'pointer', transition: 'var(--transition)', padding: '12px 16px' },
+              onclick: async () => {
+                try {
+                  const [meeting, actions, atoms] = await Promise.all([
+                    api(`/api/meetings/${m.id}`),
+                    api(`/api/meetings/${m.id}/actions`),
+                    api(`/api/meetings/${m.id}/atoms`)
+                  ]);
+                  state.meetingDetail = { ...meeting, _actions: actions, _atoms: atoms };
+                  render();
+                } catch (err) { toast('Failed to load meeting: ' + err.message, 'error'); }
+              }
+            },
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: '12px' } },
+                h('div', { style: { flex: 1 } },
+                  h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' } },
+                    h('span', { style: { fontWeight: '600', fontSize: '14px' } }, m.title || 'Untitled'),
+                    typeBadge(m.meeting_type),
+                    sentimentIcon(m.sentiment)
+                  ),
+                  h('div', { style: { display: 'flex', gap: '16px', fontSize: '12px', color: 'var(--gray-400)' } },
+                    h('span', {}, m.date ? new Date(m.date).toLocaleDateString() : 'N/A'),
+                    m.duration_minutes ? h('span', {}, `${m.duration_minutes} min`) : null,
+                    m.client_name ? h('span', {}, m.client_name) : null
+                  )
+                ),
+                m.summary
+                  ? h('div', { style: { maxWidth: '300px', fontSize: '12px', color: 'var(--gray-500)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, m.summary)
+                  : h('span', { style: { fontSize: '11px', color: 'var(--gray-300)' } }, 'Unprocessed')
+              )
+            )
+          )
+        )
+  );
+}
+
+function meetingStatCard(label, value) {
+  return h('div', { className: 'card', style: { textAlign: 'center', padding: '16px' } },
+    h('div', { style: { fontSize: '24px', fontWeight: '700', color: 'var(--navy)', fontFamily: "'Fraunces', serif" } }, String(value)),
+    h('div', { style: { fontSize: '12px', color: 'var(--gray-500)', marginTop: '4px' } }, label)
+  );
+}
+
 function renderSaveUrlPage() {
   const urlTriggers = state.triggers.filter(t => t.source === 'url');
   const allFormats = [
@@ -4082,6 +4411,7 @@ function render() {
         : state.page === 'settings' ? renderSettingsPage()
         : state.page === 'memory' ? renderMemoryPage()
         : state.page === 'save-url' ? renderSaveUrlPage()
+        : state.page === 'meetings' ? renderMeetingsPage()
         : renderDashboardPage()
     ),
     // Quick Capture floating button

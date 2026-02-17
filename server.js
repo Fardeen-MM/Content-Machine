@@ -1,10 +1,17 @@
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 const { loadEnv, readJSON, writeJSON, generateId, now } = require('./lib/utils');
 const jsonStore = require('./lib/json-store');
+const db = require('./lib/db');
+const fireflies = require('./lib/fireflies');
+const { processMeeting } = require('./lib/meeting-processor');
 
 loadEnv();
+
+// Initialize SQLite database
+db.initDb();
 
 const PORT = process.env.PORT || 3000;
 
@@ -34,6 +41,24 @@ function parseBody(req) {
     });
     req.on('error', reject);
   });
+}
+
+function parseRawBody(req) {
+  return new Promise((resolve, reject) => {
+    let body = '';
+    req.on('data', chunk => {
+      body += chunk;
+      if (body.length > 1_000_000) { req.destroy(); reject(new Error('Body too large')); }
+    });
+    req.on('end', () => resolve(body));
+    req.on('error', reject);
+  });
+}
+
+function verifyHmac(rawBody, signature, secret) {
+  if (!signature || !secret) return false;
+  const computed = crypto.createHmac('sha256', secret).update(rawBody).digest('hex');
+  return crypto.timingSafeEqual(Buffer.from(computed), Buffer.from(signature));
 }
 
 function serveStatic(res, filePath, contentType) {
@@ -102,6 +127,10 @@ async function handleRequest(req, res) {
         }
       }
 
+      // Include knowledge base stats
+      let kbStats = {};
+      try { kbStats = db.getStats(); } catch {}
+
       return json(res, {
         triggers: {
           total: triggers.length,
@@ -118,7 +147,8 @@ async function handleRequest(req, res) {
           rejected: content.filter(c => c.status === 'rejected').length
         },
         formats: { approved: approvedFormats, review: reviewFormats, rejected: rejectedFormats },
-        published: published.length
+        published: published.length,
+        knowledge: kbStats
       });
     }
 
@@ -781,6 +811,7 @@ async function handleRequest(req, res) {
         api_key: !!process.env.ANTHROPIC_API_KEY,
         ideogram_key: !!process.env.IDEOGRAM_API_KEY,
         youtube_key: !!process.env.YOUTUBE_API_KEY,
+        fireflies_key: !!process.env.FIREFLIES_API_KEY,
         scrapers: ['reddit', 'rss', 'youtube', 'google-news', 'hackernews', 'competitors'],
         data: {
           triggers: triggers.length,
@@ -1013,6 +1044,264 @@ async function handleRequest(req, res) {
       return json(res, result);
     }
 
+    // --- Meetings API ---
+
+    // GET /api/meetings
+    if (pathname === '/api/meetings' && method === 'GET') {
+      const type = url.searchParams.get('type') || undefined;
+      const client = url.searchParams.get('client') || undefined;
+      const from = url.searchParams.get('from') || undefined;
+      const to = url.searchParams.get('to') || undefined;
+      const limit = parseInt(url.searchParams.get('limit')) || 50;
+      const offset = parseInt(url.searchParams.get('offset')) || 0;
+      const meetings = db.getMeetings({ limit, offset, type, client, from, to });
+      return json(res, meetings);
+    }
+
+    // GET /api/meetings/stats
+    if (pathname === '/api/meetings/stats' && method === 'GET') {
+      const stats = db.getStats();
+      return json(res, stats);
+    }
+
+    // GET /api/meetings/:id
+    const meetingIdMatch = pathname.match(/^\/api\/meetings\/(\d+)$/);
+    if (meetingIdMatch && method === 'GET') {
+      const meeting = db.getMeeting(parseInt(meetingIdMatch[1]));
+      if (!meeting) return json(res, { error: 'Not found' }, 404);
+      return json(res, meeting);
+    }
+
+    // GET /api/meetings/:id/actions
+    const meetingActionsMatch = pathname.match(/^\/api\/meetings\/(\d+)\/actions$/);
+    if (meetingActionsMatch && method === 'GET') {
+      const actions = db.getActions({ meeting_id: parseInt(meetingActionsMatch[1]) });
+      return json(res, actions);
+    }
+
+    // GET /api/meetings/:id/atoms
+    const meetingAtomsMatch = pathname.match(/^\/api\/meetings\/(\d+)\/atoms$/);
+    if (meetingAtomsMatch && method === 'GET') {
+      const atoms = db.getAtoms({ meeting_id: parseInt(meetingAtomsMatch[1]) });
+      return json(res, atoms);
+    }
+
+    // POST /api/meetings/sync — trigger Fireflies sync
+    if (pathname === '/api/meetings/sync' && method === 'POST') {
+      if (!process.env.FIREFLIES_API_KEY) {
+        return json(res, { error: 'FIREFLIES_API_KEY not configured' }, 500);
+      }
+
+      try {
+        const transcripts = await fireflies.listTranscripts({ limit: 50 });
+        let synced = 0;
+        let processed = 0;
+
+        for (const t of transcripts) {
+          // Skip if already in DB
+          const existing = db.getDb().prepare('SELECT id FROM meetings WHERE fireflies_id = ?').get(t.id);
+          if (existing) continue;
+
+          // Fetch full transcript
+          const full = await fireflies.fetchTranscript(t.id);
+          if (!full) continue;
+
+          const transcriptText = fireflies.sentencesToTranscript(full.sentences || []);
+
+          const meeting = db.insertMeeting({
+            fireflies_id: full.id,
+            title: full.title || 'Untitled Meeting',
+            date: full.dateString || new Date().toISOString(),
+            duration_minutes: full.duration || null,
+            client_name: null,
+            client_email: full.organizer_email || null,
+            transcript: transcriptText,
+            summary: full.summary?.overview || null,
+            raw_response: full
+          });
+
+          synced++;
+
+          // Process with AI if API key available
+          if (process.env.ANTHROPIC_API_KEY && transcriptText) {
+            try {
+              await processMeeting(meeting);
+              processed++;
+            } catch (err) {
+              console.error(`[sync] Processing failed for meeting #${meeting.id}:`, err.message);
+            }
+          }
+        }
+
+        return json(res, { ok: true, synced, processed, total: transcripts.length });
+      } catch (err) {
+        return json(res, { error: err.message }, 500);
+      }
+    }
+
+    // --- Clients API ---
+
+    // GET /api/clients
+    if (pathname === '/api/clients' && method === 'GET') {
+      const status = url.searchParams.get('status') || undefined;
+      const search = url.searchParams.get('search') || undefined;
+      const clients = db.getClients({ status, search });
+      return json(res, clients);
+    }
+
+    // GET /api/clients/:id
+    const clientIdMatch = pathname.match(/^\/api\/clients\/(\d+)$/);
+    if (clientIdMatch && method === 'GET') {
+      const client = db.getClient(parseInt(clientIdMatch[1]));
+      if (!client) return json(res, { error: 'Not found' }, 404);
+      // Include meeting history
+      const meetings = db.getMeetings({ client: client.email || client.name, limit: 20 });
+      return json(res, { ...client, meetings });
+    }
+
+    // --- Actions API ---
+
+    // PUT /api/actions/:id — update action status
+    const actionUpdateMatch = pathname.match(/^\/api\/actions\/(\d+)$/);
+    if (actionUpdateMatch && method === 'PUT') {
+      const body = await parseBody(req);
+      const action = db.updateAction(parseInt(actionUpdateMatch[1]), body);
+      if (!action) return json(res, { error: 'Not found' }, 404);
+      return json(res, { ok: true, ...action });
+    }
+
+    // --- Webhook Endpoints ---
+
+    // POST /api/webhooks/fireflies
+    if (pathname === '/api/webhooks/fireflies' && method === 'POST') {
+      const rawBody = await parseRawBody(req);
+      const secret = process.env.FIREFLIES_WEBHOOK_SECRET;
+
+      if (secret) {
+        const signature = req.headers['x-hub-signature'];
+        if (!verifyHmac(rawBody, signature, secret)) {
+          return json(res, { error: 'Invalid signature' }, 401);
+        }
+      }
+
+      let payload;
+      try { payload = JSON.parse(rawBody); } catch { return json(res, { error: 'Invalid JSON' }, 400); }
+
+      // Respond 200 immediately
+      json(res, { ok: true });
+
+      // Process in background
+      setImmediate(async () => {
+        try {
+          const meetingId = payload.meetingId;
+          if (!meetingId) return;
+
+          // Check if already synced
+          const existing = db.getDb().prepare('SELECT id FROM meetings WHERE fireflies_id = ?').get(meetingId);
+          if (existing) return;
+
+          const full = await fireflies.fetchTranscript(meetingId);
+          if (!full) return;
+
+          const transcriptText = fireflies.sentencesToTranscript(full.sentences || []);
+
+          const meeting = db.insertMeeting({
+            fireflies_id: full.id,
+            title: full.title || 'Untitled Meeting',
+            date: full.dateString || new Date().toISOString(),
+            duration_minutes: full.duration || null,
+            client_email: full.organizer_email || null,
+            transcript: transcriptText,
+            summary: full.summary?.overview || null,
+            raw_response: full
+          });
+
+          if (process.env.ANTHROPIC_API_KEY && transcriptText) {
+            await processMeeting(meeting);
+          }
+
+          console.log(`[webhook/fireflies] Processed meeting: ${full.title}`);
+        } catch (err) {
+          console.error('[webhook/fireflies] Error:', err.message);
+        }
+      });
+      return;
+    }
+
+    // POST /api/webhooks/instantly
+    if (pathname === '/api/webhooks/instantly' && method === 'POST') {
+      const secret = process.env.INSTANTLY_WEBHOOK_SECRET;
+      if (secret) {
+        const headerSecret = req.headers['x-webhook-secret'];
+        if (headerSecret !== secret) {
+          return json(res, { error: 'Invalid secret' }, 401);
+        }
+      }
+
+      const body = await parseBody(req);
+
+      db.insertEvent({
+        source: 'instantly',
+        event_type: body.event_type || null,
+        client_name: [body.firstName, body.lastName].filter(Boolean).join(' ') || null,
+        client_email: body.lead_email || null,
+        data: body
+      });
+
+      // Auto-create client for key events
+      if (['lead_meeting_booked', 'lead_interested', 'reply_received'].includes(body.event_type)) {
+        const name = [body.firstName, body.lastName].filter(Boolean).join(' ');
+        if (body.lead_email) {
+          db.upsertClient(body.lead_email, {
+            name: name || 'Unknown',
+            firm_name: body.companyName || null,
+            source: 'instantly',
+            status: body.event_type === 'lead_meeting_booked' ? 'prospect' : 'prospect'
+          });
+        }
+      }
+
+      return json(res, { ok: true });
+    }
+
+    // POST /api/webhooks/reports — mortar-reports webhook
+    if (pathname === '/api/webhooks/reports' && method === 'POST') {
+      const secret = process.env.MORTAR_REPORTS_WEBHOOK_SECRET;
+      if (secret) {
+        const headerSecret = req.headers['x-webhook-secret'];
+        if (headerSecret !== secret) {
+          return json(res, { error: 'Invalid secret' }, 401);
+        }
+      }
+
+      const body = await parseBody(req);
+
+      db.insertEvent({
+        source: 'mortar-reports',
+        event_type: body.event || 'report_event',
+        client_name: body.lead?.name || null,
+        client_email: body.lead?.email || null,
+        data: body
+      });
+
+      return json(res, { ok: true });
+    }
+
+    // POST /api/webhooks/manual — manual data entry
+    if (pathname === '/api/webhooks/manual' && method === 'POST') {
+      const body = await parseBody(req);
+
+      db.insertEvent({
+        source: 'manual',
+        event_type: body.event_type || 'manual_entry',
+        client_name: body.client_name || null,
+        client_email: body.client_email || null,
+        data: body
+      });
+
+      return json(res, { ok: true });
+    }
+
     // --- Static file serving ---
 
     // Serve dashboard
@@ -1056,5 +1345,6 @@ server.listen(PORT, HOST, () => {
   console.log(`  API key: ${process.env.ANTHROPIC_API_KEY ? 'configured' : 'NOT SET (generation disabled)'}`);
   console.log(`  Ideogram: ${process.env.IDEOGRAM_API_KEY ? 'configured' : 'NOT SET (images disabled)'}`);
   console.log(`  YouTube: ${process.env.YOUTUBE_API_KEY ? 'configured' : 'NOT SET (YouTube scraper disabled)'}`);
+  console.log(`  Fireflies: ${process.env.FIREFLIES_API_KEY ? 'configured' : 'NOT SET (meeting sync disabled)'}`);
   console.log('');
 });

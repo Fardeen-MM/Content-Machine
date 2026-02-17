@@ -1093,17 +1093,31 @@ async function handleRequest(req, res) {
       }
 
       try {
-        const transcripts = await fireflies.listTranscripts({ limit: 50 });
+        // Paginate through all transcripts (50 per page, up to 200 total)
+        let allTranscripts = [];
+        for (let skip = 0; skip < 200; skip += 50) {
+          const batch = await fireflies.fetchTranscripts({ limit: 50, skip });
+          if (!batch || batch.length === 0) break;
+          allTranscripts = allTranscripts.concat(batch);
+          if (batch.length < 50) break; // last page
+        }
+
         let synced = 0;
         let processed = 0;
 
-        for (const t of transcripts) {
+        for (const t of allTranscripts) {
           // Skip if already in DB
           const existing = db.getDb().prepare('SELECT id FROM meetings WHERE fireflies_id = ?').get(t.id);
           if (existing) continue;
 
           // Fetch full transcript
-          const full = await fireflies.fetchTranscript(t.id);
+          let full;
+          try {
+            full = await fireflies.fetchTranscript(t.id);
+          } catch (err) {
+            console.error(`[sync] Failed to fetch transcript ${t.id}:`, err.message);
+            continue;
+          }
           if (!full) continue;
 
           const transcriptText = fireflies.sentencesToTranscript(full.sentences || []);
@@ -1121,6 +1135,7 @@ async function handleRequest(req, res) {
           });
 
           synced++;
+          console.log(`[sync] Imported: ${full.title} (${synced}/${allTranscripts.length})`);
 
           // Process with AI if API key available
           if (process.env.ANTHROPIC_API_KEY && transcriptText) {
@@ -1133,7 +1148,7 @@ async function handleRequest(req, res) {
           }
         }
 
-        return json(res, { ok: true, synced, processed, total: transcripts.length });
+        return json(res, { ok: true, synced, processed, total: allTranscripts.length });
       } catch (err) {
         return json(res, { error: err.message }, 500);
       }

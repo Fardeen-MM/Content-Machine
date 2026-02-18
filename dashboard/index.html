@@ -1402,6 +1402,23 @@ const state = {
   // Inspirations
   inspirations: [],
   newInspiration: '',
+  // Pipeline
+  pipeline: [],
+  pipelineFilter: 'all',
+  // Pestering
+  pestering: [],
+  pesteringStages: {},
+  pesteringFilter: 'all',
+  generatingPesterMsg: null,
+  // Insights
+  insights: [],
+  insightsFilter: '',
+  generatingPlaybook: false,
+  playbook: null,
+  // Deals
+  deals: [],
+  showAddDeal: false,
+  newDeal: { client_name: '', outcome: 'won', monthly_value: '', loss_reason: '', notes: '' },
 };
 
 // --- API Calls ---
@@ -1422,7 +1439,7 @@ async function loadData() {
   state.loading = true;
   render();
   try {
-    const [content, triggers, stats, calendar, monthCal, settings, memory, performance, perfAnalytics, meetings, meetingStats, clients, allActions, chatMessages, healthData, inspirations] = await Promise.all([
+    const [content, triggers, stats, calendar, monthCal, settings, memory, performance, perfAnalytics, meetings, meetingStats, clients, allActions, chatMessages, healthData, inspirations, pestering, pesteringStages, insights, deals] = await Promise.all([
       api('/api/content'),
       api('/api/triggers'),
       api('/api/stats'),
@@ -1438,7 +1455,11 @@ async function loadData() {
       api('/api/actions').catch(() => []),
       api('/api/chat/messages').catch(() => []),
       api('/api/health').catch(() => ({ summary: {}, clients: [] })),
-      api('/api/inspirations').catch(() => [])
+      api('/api/inspirations').catch(() => []),
+      api('/api/pestering').catch(() => []),
+      api('/api/pestering/stages').catch(() => ({})),
+      api('/api/insights').catch(() => []),
+      api('/api/deals').catch(() => [])
     ]);
     state.content = content;
     state.triggers = triggers;
@@ -1456,6 +1477,10 @@ async function loadData() {
     state.chatMessages = chatMessages;
     state.healthData = healthData;
     state.inspirations = inspirations;
+    state.pestering = pestering;
+    state.pesteringStages = pesteringStages;
+    state.insights = insights;
+    state.deals = deals;
   } catch (err) {
     console.error('Failed to load data:', err);
     toast('Failed to load data', 'error');
@@ -1914,7 +1939,11 @@ const icons = {
   meetings: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>',
   clients: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>',
   actions: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>',
-  chat: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>'
+  chat: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>',
+  pipeline: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"/></svg>',
+  pestering: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg>',
+  insights: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 00-4 12.7V17h8v-2.3A7 7 0 0012 2z"/></svg>',
+  deals: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>'
 };
 
 // --- Render Functions ---
@@ -1948,13 +1977,17 @@ function h(tag, attrs = {}, ...children) {
 function renderSidebar() {
   const navItems = [
     { id: 'dashboard', icon: icons.dashboard, label: 'Dashboard', key: '1' },
-    { id: 'meetings', icon: icons.meetings, label: 'Meetings', key: '2' },
-    { id: 'clients', icon: icons.clients, label: 'Clients', key: '3' },
-    { id: 'actions', icon: icons.actions, label: 'Actions', key: '4' },
-    { id: 'content', icon: icons.content, label: 'Content', key: '5' },
-    { id: 'triggers', icon: icons.triggers, label: 'Triggers', key: '6' },
-    { id: 'calendar', icon: icons.calendar, label: 'Calendar', key: '7' },
-    { id: 'analytics', icon: icons.analytics, label: 'Analytics', key: '8' },
+    { id: 'pipeline', icon: icons.pipeline, label: 'Pipeline', key: '2' },
+    { id: 'meetings', icon: icons.meetings, label: 'Meetings', key: '3' },
+    { id: 'clients', icon: icons.clients, label: 'Clients', key: '4' },
+    { id: 'actions', icon: icons.actions, label: 'Actions', key: '5' },
+    { id: 'pestering', icon: icons.pestering, label: 'Pestering', key: '6' },
+    { id: 'insights', icon: icons.insights, label: 'Insights', key: '7' },
+    { id: 'deals', icon: icons.deals, label: 'Deals', key: '8' },
+    { id: 'content', icon: icons.content, label: 'Content' },
+    { id: 'triggers', icon: icons.triggers, label: 'Triggers' },
+    { id: 'calendar', icon: icons.calendar, label: 'Calendar' },
+    { id: 'analytics', icon: icons.analytics, label: 'Analytics' },
     { id: 'settings', icon: icons.settings, label: 'Settings', key: '9' },
   ];
 
@@ -4914,6 +4947,488 @@ function renderActionsPage() {
   );
 }
 
+// --- Pipeline Page ---
+function renderPipelinePage() {
+  const health = state.healthData || { summary: {}, clients: [] };
+  const clients = health.clients || [];
+  const filter = state.pipelineFilter;
+  const filtered = filter === 'all' ? clients : clients.filter(c => c.health_status === filter);
+
+  const green = clients.filter(c => c.health_status === 'green').length;
+  const yellow = clients.filter(c => c.health_status === 'yellow').length;
+  const red = clients.filter(c => c.health_status === 'red').length;
+
+  const proposals = (state.meetings || []).filter(m => m.meeting_type === 'discovery').length;
+  const stale = clients.filter(c => c.days_since_contact >= 5).length;
+
+  return h('div', { className: 'page-content' },
+    // Stats
+    h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '16px', marginBottom: '20px' } },
+      meetingStatCard('Total', clients.length),
+      h('div', { className: 'card', style: { textAlign: 'center', padding: '16px', cursor: 'pointer', background: filter === 'green' ? 'var(--green-light)' : '' }, onclick: () => { state.pipelineFilter = filter === 'green' ? 'all' : 'green'; render(); } },
+        h('div', { style: { fontSize: '24px', fontWeight: '700', color: 'var(--green)', fontFamily: "'Fraunces', serif" } }, String(green)),
+        h('div', { style: { fontSize: '12px', color: 'var(--gray-500)', marginTop: '4px' } }, 'Green')
+      ),
+      h('div', { className: 'card', style: { textAlign: 'center', padding: '16px', cursor: 'pointer', background: filter === 'yellow' ? 'var(--amber-light)' : '' }, onclick: () => { state.pipelineFilter = filter === 'yellow' ? 'all' : 'yellow'; render(); } },
+        h('div', { style: { fontSize: '24px', fontWeight: '700', color: 'var(--amber)', fontFamily: "'Fraunces', serif" } }, String(yellow)),
+        h('div', { style: { fontSize: '12px', color: 'var(--gray-500)', marginTop: '4px' } }, 'Yellow')
+      ),
+      h('div', { className: 'card', style: { textAlign: 'center', padding: '16px', cursor: 'pointer', background: filter === 'red' ? 'var(--red-light)' : '' }, onclick: () => { state.pipelineFilter = filter === 'red' ? 'all' : 'red'; render(); } },
+        h('div', { style: { fontSize: '24px', fontWeight: '700', color: 'var(--red)', fontFamily: "'Fraunces', serif" } }, String(red)),
+        h('div', { style: { fontSize: '12px', color: 'var(--gray-500)', marginTop: '4px' } }, 'Red')
+      ),
+      meetingStatCard('Stale (5d+)', stale)
+    ),
+    // Pipeline list
+    filtered.length === 0
+      ? h('div', { className: 'card', style: { textAlign: 'center', padding: '40px', color: 'var(--gray-400)' } },
+          h('div', { innerHTML: icons.pipeline, style: { width: '48px', height: '48px', margin: '0 auto 12px', opacity: '0.3' } }),
+          h('p', {}, 'No prospects in pipeline'),
+          h('p', { style: { fontSize: '13px', marginTop: '8px' } }, 'Sync meetings from Fireflies to populate')
+        )
+      : h('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px' } },
+          ...filtered.sort((a, b) => b.days_since_contact - a.days_since_contact).map(c => {
+            const colors = { red: 'var(--red)', yellow: 'var(--amber)', green: 'var(--green)' };
+            const bgColors = { red: 'var(--red-light)', yellow: 'var(--amber-light)', green: 'var(--green-light)' };
+            return h('div', {
+              className: 'card',
+              style: { padding: '14px 18px', display: 'flex', alignItems: 'center', gap: '14px',
+                borderLeft: `4px solid ${colors[c.health_status] || 'var(--gray-300)'}`, cursor: 'pointer' },
+              onclick: async () => {
+                try {
+                  const detail = await api(`/api/clients/${c.client_id}`);
+                  state.clientDetail = detail;
+                  state.page = 'clients';
+                  render();
+                } catch (err) { toast('Failed to load client', 'error'); }
+              }
+            },
+              h('span', { style: {
+                width: '12px', height: '12px', borderRadius: '50%', flexShrink: 0,
+                background: colors[c.health_status] || 'var(--gray-300)'
+              } }),
+              h('div', { style: { flex: 1, minWidth: 0 } },
+                h('div', { style: { fontWeight: '600', fontSize: '14px' } }, c.client_name || 'Unknown'),
+                h('div', { style: { fontSize: '12px', color: 'var(--gray-500)', display: 'flex', gap: '12px', marginTop: '2px' } },
+                  c.firm_name ? h('span', {}, c.firm_name) : null,
+                  h('span', {}, `${c.days_since_contact}d since contact`),
+                  h('span', {}, `${c.meeting_count || 0} meetings`),
+                  h('span', {}, `${c.open_actions || 0} open actions`)
+                )
+              ),
+              h('span', { style: {
+                background: bgColors[c.health_status], color: colors[c.health_status],
+                padding: '4px 10px', borderRadius: '12px', fontSize: '12px', fontWeight: '600', whiteSpace: 'nowrap'
+              } }, `${c.score}/100`),
+              c.notes && c.notes !== 'Healthy' ? h('span', { style: { fontSize: '11px', color: 'var(--gray-400)', maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, c.notes) : null
+            );
+          })
+        )
+  );
+}
+
+// --- Pestering Page ---
+function renderPesteringPage() {
+  const entries = state.pestering || [];
+  const stages = state.pesteringStages || {};
+  const filter = state.pesteringFilter;
+
+  const pending = entries.filter(e => e.status === 'pending');
+  const sent = entries.filter(e => e.status === 'sent');
+  const skipped = entries.filter(e => e.status === 'skipped');
+  const due = pending.filter(e => new Date(e.scheduled_for) <= new Date());
+
+  let filtered = [...entries];
+  if (filter === 'due') filtered = due;
+  else if (filter === 'pending') filtered = pending;
+  else if (filter === 'sent') filtered = sent;
+  else if (filter === 'skipped') filtered = skipped;
+
+  filtered.sort((a, b) => new Date(a.scheduled_for) - new Date(b.scheduled_for));
+
+  const channelColor = (ch) => {
+    const map = { phone: 'var(--green)', email: 'var(--blue)', whatsapp: '#25D366', linkedin: '#0A66C2', telegram_alert: 'var(--purple)' };
+    return map[ch] || 'var(--gray-500)';
+  };
+
+  return h('div', { className: 'page-content' },
+    // Stats
+    h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', marginBottom: '20px' } },
+      h('div', { className: 'card', style: { textAlign: 'center', padding: '16px', cursor: 'pointer', background: filter === 'due' ? 'var(--red-light)' : '' },
+        onclick: () => { state.pesteringFilter = filter === 'due' ? 'all' : 'due'; render(); }
+      },
+        h('div', { style: { fontSize: '24px', fontWeight: '700', color: 'var(--red)', fontFamily: "'Fraunces', serif" } }, String(due.length)),
+        h('div', { style: { fontSize: '12px', color: 'var(--gray-500)', marginTop: '4px' } }, 'Due Now')
+      ),
+      h('div', { className: 'card', style: { textAlign: 'center', padding: '16px', cursor: 'pointer', background: filter === 'pending' ? 'var(--amber-light)' : '' },
+        onclick: () => { state.pesteringFilter = filter === 'pending' ? 'all' : 'pending'; render(); }
+      },
+        h('div', { style: { fontSize: '24px', fontWeight: '700', color: 'var(--amber)', fontFamily: "'Fraunces', serif" } }, String(pending.length)),
+        h('div', { style: { fontSize: '12px', color: 'var(--gray-500)', marginTop: '4px' } }, 'Pending')
+      ),
+      meetingStatCard('Sent', sent.length),
+      meetingStatCard('Skipped', skipped.length)
+    ),
+    // Stage reference
+    h('div', { className: 'card', style: { padding: '14px 18px', marginBottom: '20px' } },
+      h('div', { style: { fontSize: '12px', fontWeight: '600', color: 'var(--gray-500)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' } }, 'Follow-up stages'),
+      h('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap' } },
+        ...Object.keys(stages).map(s =>
+          h('span', { style: {
+            padding: '4px 10px', borderRadius: '12px', fontSize: '12px', fontWeight: '500',
+            background: 'var(--gray-100)', color: 'var(--gray-600)'
+          } }, s.replace(/_/g, ' '))
+        )
+      )
+    ),
+    // Entries list
+    filtered.length === 0
+      ? h('div', { className: 'card', style: { textAlign: 'center', padding: '40px', color: 'var(--gray-400)' } },
+          h('div', { innerHTML: icons.pestering, style: { width: '48px', height: '48px', margin: '0 auto 12px', opacity: '0.3' } }),
+          h('p', {}, 'No follow-up entries'),
+          h('p', { style: { fontSize: '13px', marginTop: '8px' } }, 'Create pestering schedules from client profiles')
+        )
+      : h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
+          ...filtered.map(e => {
+            const isDue = e.status === 'pending' && new Date(e.scheduled_for) <= new Date();
+            const isPast = e.status !== 'pending';
+            return h('div', {
+              className: 'card',
+              style: { padding: '10px 16px', display: 'flex', alignItems: 'center', gap: '12px',
+                opacity: isPast ? '0.6' : '1',
+                borderLeft: isDue ? '3px solid var(--red)' : 'none' }
+            },
+              // Channel badge
+              h('span', { style: {
+                background: channelColor(e.channel) + '18', color: channelColor(e.channel),
+                padding: '3px 10px', borderRadius: '12px', fontSize: '11px', fontWeight: '600',
+                minWidth: '80px', textAlign: 'center'
+              } }, e.channel),
+              // Content
+              h('div', { style: { flex: 1, minWidth: 0 } },
+                h('div', { style: { fontSize: '13px', fontWeight: '500' } },
+                  h('span', {}, e.client_name || '?'),
+                  h('span', { style: { color: 'var(--gray-400)', marginLeft: '8px' } }, e.message_type?.replace(/_/g, ' '))
+                ),
+                e.content ? h('div', { style: { fontSize: '12px', color: 'var(--gray-500)', marginTop: '2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '400px' } }, e.content) : null,
+                h('div', { style: { fontSize: '11px', color: 'var(--gray-400)', marginTop: '2px' } },
+                  `${e.stage} — ${new Date(e.scheduled_for).toLocaleDateString()} ${new Date(e.scheduled_for).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`)
+              ),
+              // Status badge
+              h('span', { style: {
+                padding: '3px 8px', borderRadius: '12px', fontSize: '11px', fontWeight: '600',
+                background: e.status === 'sent' ? 'var(--green-light)' : e.status === 'skipped' ? 'var(--gray-100)' : isDue ? 'var(--red-light)' : 'var(--amber-light)',
+                color: e.status === 'sent' ? 'var(--green)' : e.status === 'skipped' ? 'var(--gray-500)' : isDue ? 'var(--red)' : 'var(--amber)'
+              } }, e.status),
+              // Actions for pending entries
+              e.status === 'pending' ? h('div', { style: { display: 'flex', gap: '4px' } },
+                // Generate message
+                h('button', {
+                  className: 'btn btn-ghost btn-sm',
+                  style: { fontSize: '11px', padding: '2px 8px' },
+                  disabled: state.generatingPesterMsg === e.id,
+                  onclick: async (ev) => {
+                    ev.stopPropagation();
+                    state.generatingPesterMsg = e.id; render();
+                    try {
+                      const msg = await api(`/api/pestering/${e.id}/generate`, { method: 'POST' });
+                      toast('Message generated', 'success');
+                      await loadData();
+                    } catch (err) { toast('Failed: ' + err.message, 'error'); }
+                    state.generatingPesterMsg = null; render();
+                  }
+                }, state.generatingPesterMsg === e.id ? '...' : 'Draft'),
+                // Mark sent
+                h('button', {
+                  className: 'btn btn-ghost btn-sm',
+                  style: { fontSize: '11px', padding: '2px 8px', color: 'var(--green)' },
+                  onclick: async (ev) => {
+                    ev.stopPropagation();
+                    try {
+                      await api(`/api/pestering/${e.id}`, { method: 'PUT', body: { status: 'sent' } });
+                      toast('Marked sent', 'success');
+                      await loadData();
+                    } catch (err) { toast('Failed: ' + err.message, 'error'); }
+                  }
+                }, 'Sent'),
+                // Skip
+                h('button', {
+                  className: 'btn btn-ghost btn-sm',
+                  style: { fontSize: '11px', padding: '2px 8px', color: 'var(--gray-400)' },
+                  onclick: async (ev) => {
+                    ev.stopPropagation();
+                    try {
+                      await api(`/api/pestering/${e.id}`, { method: 'PUT', body: { status: 'skipped' } });
+                      toast('Skipped', 'info');
+                      await loadData();
+                    } catch (err) { toast('Failed: ' + err.message, 'error'); }
+                  }
+                }, 'Skip')
+              ) : null
+            );
+          })
+        )
+  );
+}
+
+// --- Insights Page ---
+function renderInsightsPage() {
+  const insights = state.insights || [];
+  const filter = state.insightsFilter;
+  const categories = [...new Set(insights.map(i => i.category).filter(Boolean))];
+
+  let filtered = [...insights];
+  if (filter) filtered = filtered.filter(i => i.category === filter);
+
+  const byCategory = {};
+  for (const i of insights) { (byCategory[i.category || 'general'] = byCategory[i.category || 'general'] || []).push(i); }
+
+  const catColor = (cat) => {
+    const map = { objection: 'var(--red)', pricing: 'var(--amber)', technique: 'var(--green)', pain_point: 'var(--blue)', process_gap: 'var(--purple)' };
+    return map[cat] || 'var(--gray-500)';
+  };
+
+  return h('div', { className: 'page-content' },
+    // Stats
+    h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '16px', marginBottom: '20px' } },
+      meetingStatCard('Total', insights.length),
+      ...categories.map(cat =>
+        h('div', { className: 'card', style: { textAlign: 'center', padding: '16px', cursor: 'pointer', background: filter === cat ? catColor(cat) + '12' : '' },
+          onclick: () => { state.insightsFilter = filter === cat ? '' : cat; render(); }
+        },
+          h('div', { style: { fontSize: '24px', fontWeight: '700', color: catColor(cat), fontFamily: "'Fraunces', serif" } }, String(byCategory[cat]?.length || 0)),
+          h('div', { style: { fontSize: '12px', color: 'var(--gray-500)', marginTop: '4px' } }, cat.replace(/_/g, ' '))
+        )
+      )
+    ),
+    // Playbook button
+    h('div', { style: { marginBottom: '20px' } },
+      h('button', {
+        className: 'btn btn-primary btn-sm',
+        disabled: state.generatingPlaybook,
+        onclick: async () => {
+          state.generatingPlaybook = true; render();
+          try {
+            const result = await api('/api/insights/playbook', { method: 'POST' });
+            state.playbook = result;
+            toast('Playbook generated', 'success');
+          } catch (err) { toast('Failed: ' + err.message, 'error'); }
+          state.generatingPlaybook = false; render();
+        }
+      }, state.generatingPlaybook ? 'Generating...' : 'Generate Objection Playbook')
+    ),
+    // Playbook display
+    state.playbook ? h('div', { className: 'card', style: { padding: '18px', marginBottom: '20px' } },
+      h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' } },
+        h('h4', { style: { fontFamily: "'Fraunces', serif" } }, 'Objection Playbook'),
+        h('button', { className: 'btn btn-ghost btn-sm', onclick: () => { state.playbook = null; render(); } }, 'Close')
+      ),
+      ...(state.playbook.playbook || []).map(entry =>
+        h('div', { style: { marginBottom: '16px', padding: '12px', background: 'var(--gray-50)', borderRadius: 'var(--radius-sm)' } },
+          h('div', { style: { fontWeight: '600', fontSize: '14px', color: 'var(--red)', marginBottom: '4px' } }, entry.objection),
+          h('div', { style: { fontSize: '13px', marginBottom: '4px' } },
+            h('span', { style: { fontWeight: '500' } }, 'Response: '),
+            entry.response
+          ),
+          entry.example ? h('div', { style: { fontSize: '12px', color: 'var(--gray-500)', fontStyle: 'italic' } }, `"${entry.example}"`) : null
+        )
+      )
+    ) : null,
+    // Insights list
+    filtered.length === 0
+      ? h('div', { className: 'card', style: { textAlign: 'center', padding: '40px', color: 'var(--gray-400)' } },
+          h('div', { innerHTML: icons.insights, style: { width: '48px', height: '48px', margin: '0 auto 12px', opacity: '0.3' } }),
+          h('p', {}, 'No insights yet'),
+          h('p', { style: { fontSize: '13px', marginTop: '8px' } }, 'Insights are extracted from meeting transcripts automatically')
+        )
+      : h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
+          ...filtered.map(i =>
+            h('div', { className: 'card', style: { padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '12px' } },
+              h('span', { style: {
+                background: catColor(i.category) + '18', color: catColor(i.category),
+                padding: '3px 10px', borderRadius: '12px', fontSize: '11px', fontWeight: '600',
+                minWidth: '80px', textAlign: 'center', whiteSpace: 'nowrap'
+              } }, (i.category || 'general').replace(/_/g, ' ')),
+              h('div', { style: { flex: 1, minWidth: 0 } },
+                h('div', { style: { fontSize: '13px' } }, i.insight),
+                h('div', { style: { fontSize: '11px', color: 'var(--gray-400)', marginTop: '2px', display: 'flex', gap: '12px' } },
+                  h('span', {}, `Seen ${i.frequency || 1}x`),
+                  i.last_seen ? h('span', {}, `Last: ${new Date(i.last_seen).toLocaleDateString()}`) : null,
+                  i.status !== 'active' ? h('span', { style: { color: i.status === 'confirmed' ? 'var(--green)' : 'var(--red)' } }, i.status) : null
+                )
+              ),
+              // Confirm / Reject buttons
+              i.status === 'active' ? h('div', { style: { display: 'flex', gap: '4px' } },
+                h('button', {
+                  className: 'btn btn-ghost btn-sm',
+                  style: { fontSize: '11px', padding: '2px 8px', color: 'var(--green)' },
+                  onclick: async () => {
+                    try {
+                      await api(`/api/insights/${i.id}`, { method: 'PUT', body: { status: 'confirmed' } });
+                      await loadData();
+                    } catch (err) { toast('Failed', 'error'); }
+                  }
+                }, 'Confirm'),
+                h('button', {
+                  className: 'btn btn-ghost btn-sm',
+                  style: { fontSize: '11px', padding: '2px 8px', color: 'var(--red)' },
+                  onclick: async () => {
+                    try {
+                      await api(`/api/insights/${i.id}`, { method: 'PUT', body: { status: 'rejected' } });
+                      await loadData();
+                    } catch (err) { toast('Failed', 'error'); }
+                  }
+                }, 'Reject')
+              ) : null
+            )
+          )
+        )
+  );
+}
+
+// --- Deals Page ---
+function renderDealsPage() {
+  const deals = state.deals || [];
+  const won = deals.filter(d => d.outcome === 'won');
+  const lost = deals.filter(d => d.outcome === 'lost');
+  const totalMRR = won.reduce((s, d) => s + (d.monthly_value || 0), 0);
+
+  const lossReasons = {};
+  for (const d of lost) { const r = d.loss_reason || 'Unknown'; lossReasons[r] = (lossReasons[r] || 0) + 1; }
+
+  return h('div', { className: 'page-content' },
+    // Stats
+    h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', marginBottom: '20px' } },
+      meetingStatCard('Total Deals', deals.length),
+      h('div', { className: 'card', style: { textAlign: 'center', padding: '16px' } },
+        h('div', { style: { fontSize: '24px', fontWeight: '700', color: 'var(--green)', fontFamily: "'Fraunces', serif" } }, String(won.length)),
+        h('div', { style: { fontSize: '12px', color: 'var(--gray-500)', marginTop: '4px' } }, 'Won')
+      ),
+      h('div', { className: 'card', style: { textAlign: 'center', padding: '16px' } },
+        h('div', { style: { fontSize: '24px', fontWeight: '700', color: 'var(--red)', fontFamily: "'Fraunces', serif" } }, String(lost.length)),
+        h('div', { style: { fontSize: '12px', color: 'var(--gray-500)', marginTop: '4px' } }, 'Lost')
+      ),
+      h('div', { className: 'card', style: { textAlign: 'center', padding: '16px' } },
+        h('div', { style: { fontSize: '24px', fontWeight: '700', color: 'var(--navy)', fontFamily: "'Fraunces', serif" } }, `$${totalMRR.toLocaleString()}`),
+        h('div', { style: { fontSize: '12px', color: 'var(--gray-500)', marginTop: '4px' } }, 'MRR Won')
+      )
+    ),
+    // Add deal button + form
+    h('div', { style: { marginBottom: '20px' } },
+      h('button', {
+        className: 'btn btn-primary btn-sm',
+        onclick: () => { state.showAddDeal = !state.showAddDeal; render(); }
+      }, state.showAddDeal ? 'Cancel' : '+ Log Deal')
+    ),
+    state.showAddDeal ? h('div', { className: 'card', style: { padding: '18px', marginBottom: '20px' } },
+      h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' } },
+        h('input', {
+          placeholder: 'Client name',
+          value: state.newDeal.client_name,
+          oninput: (e) => { state.newDeal.client_name = e.target.value; },
+          style: { padding: '8px 12px', border: '1px solid var(--gray-200)', borderRadius: 'var(--radius-sm)', fontSize: '13px' }
+        }),
+        h('select', {
+          value: state.newDeal.outcome,
+          onchange: (e) => { state.newDeal.outcome = e.target.value; render(); },
+          style: { padding: '8px 12px', border: '1px solid var(--gray-200)', borderRadius: 'var(--radius-sm)', fontSize: '13px' }
+        },
+          h('option', { value: 'won' }, 'Won'),
+          h('option', { value: 'lost' }, 'Lost')
+        ),
+        h('input', {
+          placeholder: 'Monthly value ($)',
+          type: 'number',
+          value: state.newDeal.monthly_value,
+          oninput: (e) => { state.newDeal.monthly_value = e.target.value; },
+          style: { padding: '8px 12px', border: '1px solid var(--gray-200)', borderRadius: 'var(--radius-sm)', fontSize: '13px' }
+        }),
+        state.newDeal.outcome === 'lost' ? h('input', {
+          placeholder: 'Loss reason',
+          value: state.newDeal.loss_reason,
+          oninput: (e) => { state.newDeal.loss_reason = e.target.value; },
+          style: { padding: '8px 12px', border: '1px solid var(--gray-200)', borderRadius: 'var(--radius-sm)', fontSize: '13px' }
+        }) : null,
+        h('input', {
+          placeholder: 'Notes',
+          value: state.newDeal.notes,
+          oninput: (e) => { state.newDeal.notes = e.target.value; },
+          style: { padding: '8px 12px', border: '1px solid var(--gray-200)', borderRadius: 'var(--radius-sm)', fontSize: '13px', gridColumn: '1 / -1' }
+        })
+      ),
+      h('div', { style: { marginTop: '12px', textAlign: 'right' } },
+        h('button', {
+          className: 'btn btn-primary btn-sm',
+          disabled: !state.newDeal.client_name,
+          onclick: async () => {
+            try {
+              await api('/api/deals', {
+                method: 'POST',
+                body: {
+                  client_name: state.newDeal.client_name,
+                  outcome: state.newDeal.outcome,
+                  monthly_value: Number(state.newDeal.monthly_value) || 0,
+                  loss_reason: state.newDeal.loss_reason || null,
+                  notes: state.newDeal.notes || null
+                }
+              });
+              state.newDeal = { client_name: '', outcome: 'won', monthly_value: '', loss_reason: '', notes: '' };
+              state.showAddDeal = false;
+              toast('Deal logged', 'success');
+              await loadData();
+            } catch (err) { toast('Failed: ' + err.message, 'error'); }
+          }
+        }, 'Save Deal')
+      )
+    ) : null,
+    // Loss reasons breakdown (if any losses)
+    lost.length > 0 ? h('div', { className: 'card', style: { padding: '18px', marginBottom: '20px' } },
+      h('h4', { style: { fontFamily: "'Fraunces', serif", marginBottom: '12px', fontSize: '14px' } }, 'Loss Reasons'),
+      h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '8px' } },
+        ...Object.entries(lossReasons).sort((a, b) => b[1] - a[1]).map(([reason, count]) =>
+          h('span', { style: {
+            padding: '4px 12px', borderRadius: '12px', fontSize: '12px',
+            background: 'var(--red-light)', color: 'var(--red)', fontWeight: '500'
+          } }, `${reason} (${count})`)
+        )
+      )
+    ) : null,
+    // Deals list
+    deals.length === 0
+      ? h('div', { className: 'card', style: { textAlign: 'center', padding: '40px', color: 'var(--gray-400)' } },
+          h('div', { innerHTML: icons.deals, style: { width: '48px', height: '48px', margin: '0 auto 12px', opacity: '0.3' } }),
+          h('p', {}, 'No deals logged yet'),
+          h('p', { style: { fontSize: '13px', marginTop: '8px' } }, 'Log won/lost deals to track patterns')
+        )
+      : h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
+          ...deals.map(d =>
+            h('div', { className: 'card', style: { padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '12px' } },
+              h('span', { style: {
+                width: '10px', height: '10px', borderRadius: '50%', flexShrink: 0,
+                background: d.outcome === 'won' ? 'var(--green)' : 'var(--red)'
+              } }),
+              h('div', { style: { flex: 1, minWidth: 0 } },
+                h('div', { style: { fontSize: '14px', fontWeight: '500' } }, d.client_name || 'Unknown'),
+                h('div', { style: { fontSize: '12px', color: 'var(--gray-500)', marginTop: '2px' } },
+                  d.loss_reason ? `Lost: ${d.loss_reason}` : d.notes || ''
+                )
+              ),
+              d.monthly_value ? h('span', { style: {
+                fontWeight: '600', fontSize: '14px',
+                color: d.outcome === 'won' ? 'var(--green)' : 'var(--gray-500)'
+              } }, `$${d.monthly_value.toLocaleString()}/mo`) : null,
+              h('span', { style: {
+                padding: '3px 10px', borderRadius: '12px', fontSize: '11px', fontWeight: '600',
+                background: d.outcome === 'won' ? 'var(--green-light)' : 'var(--red-light)',
+                color: d.outcome === 'won' ? 'var(--green)' : 'var(--red)'
+              } }, d.outcome),
+              d.created_at ? h('span', { style: { fontSize: '11px', color: 'var(--gray-400)' } }, new Date(d.created_at).toLocaleDateString()) : null
+            )
+          )
+        )
+  );
+}
+
 function renderSaveUrlPage() {
   const urlTriggers = state.triggers.filter(t => t.source === 'url');
   const allFormats = [
@@ -5125,9 +5640,13 @@ function render() {
           )
         : state.page === 'chat' ? renderChatPage()
         : state.page === 'dashboard' ? renderDashboardPage()
+        : state.page === 'pipeline' ? renderPipelinePage()
         : state.page === 'meetings' ? renderMeetingsPage()
         : state.page === 'clients' ? renderClientsPage()
         : state.page === 'actions' ? renderActionsPage()
+        : state.page === 'pestering' ? renderPesteringPage()
+        : state.page === 'insights' ? renderInsightsPage()
+        : state.page === 'deals' ? renderDealsPage()
         : state.page === 'content' ? renderContentPage()
         : state.page === 'triggers' ? renderTriggersPage()
         : state.page === 'calendar' ? renderCalendarPage()

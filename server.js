@@ -1695,6 +1695,104 @@ ${context}`;
       return json(res, { ...health, history });
     }
 
+    // --- Pestering API ---
+
+    // GET /api/pestering/stages — get stage definitions
+    if (pathname === '/api/pestering/stages' && method === 'GET') {
+      const { getStages } = require('./lib/pestering');
+      return json(res, getStages());
+    }
+
+    // GET /api/pestering — get pestering entries
+    if (pathname === '/api/pestering' && method === 'GET') {
+      const status = url.searchParams.get('status') || undefined;
+      const client_id = url.searchParams.get('client_id');
+      const entries = db.getPesterEntries({
+        status,
+        client_id: client_id ? parseInt(client_id) : undefined,
+        limit: 200
+      });
+      return json(res, entries);
+    }
+
+    // GET /api/pestering/due — get overdue entries
+    if (pathname === '/api/pestering/due' && method === 'GET') {
+      const { getDueEntries } = require('./lib/pestering');
+      return json(res, getDueEntries());
+    }
+
+    // POST /api/pestering/create/:clientId/:stage — create pestering schedule
+    const pesterCreateMatch = pathname.match(/^\/api\/pestering\/create\/(\d+)\/(\w+)$/);
+    if (pesterCreateMatch && method === 'POST') {
+      const { createPesterSchedule } = require('./lib/pestering');
+      const entries = createPesterSchedule(parseInt(pesterCreateMatch[1]), pesterCreateMatch[2]);
+      return json(res, { ok: true, entries });
+    }
+
+    // POST /api/pestering/:id/generate — generate message for an entry
+    const pesterGenMatch = pathname.match(/^\/api\/pestering\/(\d+)\/generate$/);
+    if (pesterGenMatch && method === 'POST') {
+      const { generatePesterMessage } = require('./lib/pestering');
+      const message = await generatePesterMessage(parseInt(pesterGenMatch[1]));
+      return json(res, { ok: true, message });
+    }
+
+    // PUT /api/pestering/:id — update pestering entry (mark sent/skipped)
+    const pesterUpdateMatch = pathname.match(/^\/api\/pestering\/(\d+)$/);
+    if (pesterUpdateMatch && method === 'PUT') {
+      const body = await parseBody(req);
+      const { markSent, markSkipped } = require('./lib/pestering');
+      if (body.status === 'sent') markSent(parseInt(pesterUpdateMatch[1]));
+      else if (body.status === 'skipped') markSkipped(parseInt(pesterUpdateMatch[1]));
+      else db.updatePesterEntry(parseInt(pesterUpdateMatch[1]), body);
+      return json(res, { ok: true });
+    }
+
+    // --- Deal Outcomes API ---
+
+    // GET /api/deals — get deal outcomes
+    if (pathname === '/api/deals' && method === 'GET') {
+      const outcome = url.searchParams.get('outcome') || undefined;
+      return json(res, db.getDealOutcomes({ outcome }));
+    }
+
+    // POST /api/deals — record deal outcome
+    if (pathname === '/api/deals' && method === 'POST') {
+      const body = await parseBody(req);
+      if (!body.outcome) return json(res, { error: 'outcome required' }, 400);
+      const deal = db.insertDealOutcome(body);
+      // Telegram alert on close/loss
+      if (body.outcome === 'closed') {
+        sendTelegramAlert(`💰 <b>DEAL CLOSED</b>: ${body.client_name || 'Unknown'}${body.monthly_value ? ' — $' + body.monthly_value + '/mo' : ''}`);
+      } else if (body.outcome === 'lost') {
+        sendTelegramAlert(`❌ <b>DEAL LOST</b>: ${body.client_name || 'Unknown'}${body.loss_reason ? ' — ' + body.loss_reason : ''}`);
+      }
+      return json(res, { ok: true, deal });
+    }
+
+    // --- Insights API ---
+
+    // GET /api/insights — get learned insights
+    if (pathname === '/api/insights' && method === 'GET') {
+      const category = url.searchParams.get('category') || undefined;
+      return json(res, db.getInsights({ category }));
+    }
+
+    // PUT /api/insights/:id — update insight (reject, confirm)
+    const insightUpdateMatch = pathname.match(/^\/api\/insights\/(\d+)$/);
+    if (insightUpdateMatch && method === 'PUT') {
+      const body = await parseBody(req);
+      db.updateInsight(parseInt(insightUpdateMatch[1]), body);
+      return json(res, { ok: true });
+    }
+
+    // GET /api/team-inputs — get team inputs
+    if (pathname === '/api/team-inputs' && method === 'GET') {
+      const category = url.searchParams.get('category') || undefined;
+      const unanswered = url.searchParams.get('unanswered') === 'true';
+      return json(res, db.getTeamInputs({ category, unanswered }));
+    }
+
     // --- Webhook Endpoints ---
 
     // POST /api/webhooks/fireflies

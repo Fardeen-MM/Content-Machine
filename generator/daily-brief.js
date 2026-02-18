@@ -1,5 +1,8 @@
 const { loadEnv } = require('../lib/utils');
 const db = require('../lib/db');
+const { callClaude, SONNET } = require('../lib/claude');
+const { getKnowledgeBase } = require('../lib/knowledge');
+const { buildIntelligenceContext } = require('../lib/intelligence');
 const https = require('https');
 
 loadEnv();
@@ -49,82 +52,178 @@ async function sendTelegram(text) {
   });
 }
 
-async function generateBrief() {
-  console.log('[brief] Generating daily brief...');
+function gatherBriefData() {
   db.initDb();
   const d = db.getDb();
+  const now = new Date();
+  const weekAgo = new Date(now - 7 * 24 * 60 * 60 * 1000).toISOString();
 
   const healthOverview = db.getHealthOverview();
-  const now = new Date();
-  const dayName = now.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+  const stats = db.getStats();
 
-  // ── Health one-liner ──
-  const hs = healthOverview.summary || {};
-  let brief = `<b>${dayName}</b>  ·  🟢${hs.green || 0} 🟡${hs.yellow || 0} 🔴${hs.red || 0}\n\n`;
+  // Open actions grouped by owner with client names
+  const teamActions = d.prepare(`
+    SELECT a.description, a.due_date, a.owner, c.name as client_name, c.firm_name
+    FROM actions a LEFT JOIN clients c ON a.client_id = c.id
+    WHERE a.status = 'open' ORDER BY a.owner, a.created_at DESC
+  `).all();
 
-  // ── Fires (only red / deep yellow) ──
-  const fires = (healthOverview.clients || [])
-    .filter(h => h.health_status === 'red')
-    .sort((a, b) => a.score - b.score);
+  // Recent meetings
+  const recentMeetings = d.prepare(`
+    SELECT title, date, meeting_type, client_name, sentiment, summary
+    FROM meetings WHERE date >= ? AND meeting_type != 'internal'
+    ORDER BY date DESC LIMIT 10
+  `).all(weekAgo);
 
-  if (fires.length > 0) {
-    for (const c of fires.slice(0, 3)) {
+  // Pending proposals
+  const pendingProposals = d.prepare(`
+    SELECT p.title, p.monthly_value, p.status, p.created_at, c.name as client_name
+    FROM proposals p LEFT JOIN clients c ON p.client_id = c.id
+    WHERE p.status IN ('draft', 'sent') ORDER BY p.created_at DESC
+  `).all();
+
+  // Top patterns
+  const patterns = db.getPatterns({ limit: 5 }).filter(p => p.frequency >= 2);
+
+  // Stale deals
+  const staleClients = (healthOverview.clients || [])
+    .filter(h => h.days_since_contact >= 5)
+    .sort((a, b) => b.days_since_contact - a.days_since_contact);
+
+  // Pestering due today
+  const duePestering = db.getPesterEntries({ status: 'pending', due_before: now.toISOString(), limit: 10 });
+
+  return {
+    date: now.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' }),
+    health: healthOverview.summary || {},
+    stats,
+    teamActions,
+    recentMeetings,
+    pendingProposals,
+    patterns,
+    staleClients,
+    duePestering
+  };
+}
+
+async function generateBrief() {
+  console.log('[brief] Generating daily brief...');
+
+  const data = gatherBriefData();
+  const kb = getKnowledgeBase();
+  const intel = buildIntelligenceContext();
+
+  // Build data context
+  const ctx = [];
+  ctx.push(`DATE: ${data.date}`);
+  ctx.push(`HEALTH: ${data.health.total || 0} prospects — ${data.health.green || 0} green, ${data.health.yellow || 0} yellow, ${data.health.red || 0} red`);
+  ctx.push(`PIPELINE: ${data.stats.meetings?.total || 0} meetings, ${data.stats.clients?.total || 0} clients, ${data.stats.actions?.open || 0} open actions`);
+
+  if (data.staleClients.length > 0) {
+    ctx.push('\nSTALE DEALS:');
+    for (const c of data.staleClients.slice(0, 8)) {
+      ctx.push(`- ${c.client_name}${c.firm_name ? ' (' + c.firm_name + ')' : ''}: ${c.days_since_contact}d silent, score ${c.score}/100`);
+    }
+  }
+
+  if (data.teamActions.length > 0) {
+    const byOwner = {};
+    for (const a of data.teamActions) { (byOwner[a.owner || 'unassigned'] = byOwner[a.owner || 'unassigned'] || []).push(a); }
+    for (const [owner, actions] of Object.entries(byOwner)) {
+      ctx.push(`\n${owner.toUpperCase()} ACTIONS (${actions.length}):`);
+      for (const a of actions.slice(0, 5)) {
+        ctx.push(`- ${a.client_name ? '[' + a.client_name + '] ' : ''}${a.description}${a.due_date ? ' (due: ' + a.due_date + ')' : ''}`);
+      }
+    }
+  }
+
+  if (data.pendingProposals.length > 0) {
+    ctx.push('\nPENDING PROPOSALS:');
+    for (const p of data.pendingProposals) {
+      ctx.push(`- ${p.client_name || 'Unknown'}: ${p.title} ($${p.monthly_value || 0}/mo) [${p.status}]`);
+    }
+  }
+
+  if (data.recentMeetings.length > 0) {
+    ctx.push(`\nTHIS WEEK'S CALLS (${data.recentMeetings.length}):`);
+    for (const m of data.recentMeetings.slice(0, 5)) {
+      ctx.push(`- ${m.client_name || m.title} (${m.meeting_type}) — ${m.sentiment || 'unknown'}`);
+    }
+  }
+
+  if (data.patterns.length > 0) {
+    ctx.push('\nTOP PATTERNS:');
+    for (const p of data.patterns) {
+      ctx.push(`- ${p.description} (${p.frequency}x)`);
+    }
+  }
+
+  if (data.duePestering.length > 0) {
+    ctx.push('\nPESTERING DUE TODAY:');
+    for (const p of data.duePestering) {
+      ctx.push(`- ${p.client_name || '?'}: ${p.channel} — ${p.message_type}`);
+    }
+  }
+
+  const liveData = ctx.join('\n');
+
+  const prompt = `Generate the morning brief for ${data.date}. This replaces the daily whiteboard session.
+
+${liveData}
+
+MAX 3500 chars. Use HTML tags (<b>, <i>, bullet •). NO markdown.
+
+Structure:
+1. THE BOTTLENECK — one line. The #1 constraint right now. A number.
+2. YASEER — 3-5 SPECIFIC actions. Handhold completely. Names, what to say, links. He needs to be told exactly what to do.
+3. MONTY — content/outreach tasks if any.
+4. FARDEEN — the strategic fix or system to build today.
+5. STALE DEALS — if any: name, days silent, suggested action.
+
+Be DIRECTIVE. "$4K deal dies Friday if nobody calls." Not "consider following up."
+Keep it scannable on a phone screen. No fluff.`;
+
+  if (!process.env.ANTHROPIC_API_KEY) {
+    // Fallback: simple template brief if no API key
+    return buildFallbackBrief(data);
+  }
+
+  try {
+    const text = await callClaude({
+      model: SONNET,
+      system: `${kb}\n\n${intel}\n\nYou generate the daily morning brief for Mortar Metrics. Be a senior agency consultant. Direct. Numbers. Name names. Give deadlines. Think in revenue. Output HTML for Telegram (use <b>, <i>, •). No markdown.`,
+      prompt,
+      maxTokens: 1500
+    });
+    return text;
+  } catch (err) {
+    console.error('[brief] AI generation failed, using fallback:', err.message);
+    return buildFallbackBrief(data);
+  }
+}
+
+function buildFallbackBrief(data) {
+  let brief = `<b>Daily Brief</b> — ${data.date}\n`;
+  brief += `${data.health.total || 0} prospects · 🟢${data.health.green || 0} 🟡${data.health.yellow || 0} 🔴${data.health.red || 0}\n\n`;
+
+  if (data.staleClients.length > 0) {
+    for (const c of data.staleClients.slice(0, 3)) {
       brief += `🔴 <b>${c.client_name}</b> — ${c.days_since_contact}d silent\n`;
     }
     brief += '\n';
   }
 
-  // ── Top 3 to-dos ──
-  const todos = d.prepare(`
-    SELECT a.description, c.name as client_name
-    FROM actions a
-    LEFT JOIN clients c ON a.client_id = c.id
-    WHERE a.status = 'open' AND a.owner = 'us'
-    ORDER BY a.created_at DESC
-    LIMIT 3
-  `).all();
-  const totalTodos = d.prepare(`SELECT COUNT(*) as c FROM actions WHERE status = 'open' AND owner = 'us'`).get().c;
-
-  if (todos.length > 0) {
-    brief += `<b>To-do</b> <i>(${totalTodos} total)</i>\n`;
-    for (const a of todos) {
-      const who = a.client_name ? `${a.client_name}: ` : '';
-      brief += `• ${who}${a.description}\n`;
+  const teamTodos = data.teamActions.filter(a => a.owner === 'us').slice(0, 3);
+  if (teamTodos.length > 0) {
+    brief += `<b>To-do</b>\n`;
+    for (const a of teamTodos) {
+      brief += `• ${a.client_name ? a.client_name + ': ' : ''}${a.description}\n`;
     }
     brief += '\n';
   }
 
-  // ── Top 3 waiting on ──
-  const waiting = d.prepare(`
-    SELECT a.description, c.name as client_name
-    FROM actions a
-    LEFT JOIN clients c ON a.client_id = c.id
-    WHERE a.status = 'open' AND a.owner = 'client'
-    ORDER BY a.created_at DESC
-    LIMIT 3
-  `).all();
-  const totalWaiting = d.prepare(`SELECT COUNT(*) as c FROM actions WHERE status = 'open' AND owner = 'client'`).get().c;
-
-  if (waiting.length > 0) {
-    brief += `<b>Waiting on</b> <i>(${totalWaiting} total)</i>\n`;
-    for (const a of waiting) {
-      const who = a.client_name ? `${a.client_name}: ` : '';
-      brief += `• ${who}${a.description}\n`;
-    }
-    brief += '\n';
-  }
-
-  // ── This week summary (count only, not a list) ──
-  const weekAgo = new Date(now - 7 * 24 * 60 * 60 * 1000).toISOString();
-  const weekCalls = d.prepare(`SELECT COUNT(*) as c FROM meetings WHERE date >= ? AND meeting_type != 'internal'`).all(weekAgo)[0].c;
-  if (weekCalls > 0) {
-    brief += `${weekCalls} calls this week\n\n`;
-  }
-
-  // ── Footer ──
   const url = process.env.RAILWAY_PUBLIC_DOMAIN ? 'https://' + process.env.RAILWAY_PUBLIC_DOMAIN : 'localhost:3099';
   brief += `<a href="${url}">Command Centre</a>`;
-
   return brief;
 }
 
@@ -139,7 +238,6 @@ async function run() {
   }
 }
 
-// Run if called directly
 if (require.main === module) {
   run();
 }

@@ -188,6 +188,23 @@ const MIME = {
   '.ico': 'image/x-icon'
 };
 
+// --- Telegram alerts ---
+
+function sendTelegramAlert(text) {
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  const chatId = process.env.TELEGRAM_CHAT_ID;
+  if (!token || !chatId) return;
+
+  const body = JSON.stringify({ chat_id: chatId, text, parse_mode: 'HTML', disable_web_page_preview: true });
+  const req = require('https').request({
+    hostname: 'api.telegram.org', path: `/bot${token}/sendMessage`, method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) }
+  }, (res) => { let d = ''; res.on('data', c => d += c); res.on('end', () => { if (res.statusCode !== 200) console.error('[alert] Telegram:', d); }); });
+  req.on('error', (e) => console.error('[alert] Telegram error:', e.message));
+  req.write(body);
+  req.end();
+}
+
 // --- API Routes ---
 
 async function handleRequest(req, res) {
@@ -1806,6 +1823,17 @@ ${context}`;
         }
       }
 
+      // Instant Telegram alerts for high-value events
+      if (eventType === 'lead_interested' || eventType === 'reply_received') {
+        sendTelegramAlert(`🔥 <b>New interested lead:</b> ${name || email || 'unknown'}${body.companyName ? ' at ' + body.companyName : ''}\nYaseer: call NOW.${body.reply_text ? '\n<i>"' + (body.reply_text || '').slice(0, 200) + '"</i>' : ''}`);
+      }
+      if (eventType === 'lead_meeting_booked') {
+        sendTelegramAlert(`📅 <b>Meeting booked:</b> ${name || email || 'unknown'}${body.companyName ? ' at ' + body.companyName : ''}\nBrief generating...`);
+      }
+      if (eventType === 'lead_closed') {
+        sendTelegramAlert(`💰 <b>CLOSED:</b> ${name || email}${body.companyName ? ' at ' + body.companyName : ''}\nWhat worked? Reply with details.`);
+      }
+
       console.log(`[webhook/instantly] ${eventType}: ${name || email || 'unknown'}`);
       return json(res, { ok: true });
     }
@@ -1988,6 +2016,39 @@ ${context}`;
       return json(res, { ok: true });
     }
 
+    // POST /api/webhooks/telegram — Telegram bot reply handling
+    if (pathname === '/api/webhooks/telegram' && method === 'POST') {
+      const body = await parseBody(req);
+      const msg = body.message;
+      if (!msg || !msg.text) return json(res, { ok: true });
+
+      const text = msg.text.trim();
+      const from = msg.from?.first_name || 'Unknown';
+      console.log(`[telegram] Reply from ${from}: ${text.slice(0, 100)}`);
+
+      // Brief feedback
+      if (text === '👍' || text === '👎') {
+        db.insertFeedback({ output_id: 'daily-brief', output_type: 'brief', rating: text === '👍' ? 1 : -1, comment: null });
+        console.log(`[telegram] Brief feedback: ${text}`);
+        return json(res, { ok: true });
+      }
+
+      // Deal outcome detection
+      const lower = text.toLowerCase();
+      if (lower.includes('closed') || lower.includes('won') || lower.includes('signed')) {
+        db.insertTeamInput({ question: 'Deal closed — details?', answer: text, answered_by: from, category: 'deal_outcome' });
+        sendTelegramAlert(`✅ Noted: deal closed. What's the monthly value? Reply with the number.`);
+      } else if (lower.includes('lost') || lower.includes('dead') || lower.includes('ghosted')) {
+        db.insertTeamInput({ question: 'Deal lost — reason?', answer: text, answered_by: from, category: 'deal_outcome' });
+        sendTelegramAlert(`📝 Noted. What was the main reason? Reply with details.`);
+      } else {
+        // Store as general team input
+        db.insertTeamInput({ question: 'Telegram reply', answer: text, answered_by: from, category: 'general' });
+      }
+
+      return json(res, { ok: true });
+    }
+
     // --- Static file serving ---
 
     // Serve dashboard
@@ -2060,4 +2121,16 @@ server.listen(PORT, HOST, () => {
   console.log(`  Telegram: ${process.env.TELEGRAM_BOT_TOKEN ? 'OK' : 'NOT SET'}`);
   console.log(`  Cron: daily brief at 8 AM EST`);
   console.log('');
+
+  // Register Telegram webhook for reply handling
+  const tgToken = process.env.TELEGRAM_BOT_TOKEN;
+  const publicDomain = process.env.RAILWAY_PUBLIC_DOMAIN;
+  if (tgToken && publicDomain) {
+    const webhookUrl = `https://${publicDomain}/api/webhooks/telegram`;
+    require('https').get(`https://api.telegram.org/bot${tgToken}/setWebhook?url=${encodeURIComponent(webhookUrl)}`, (r) => {
+      let d = '';
+      r.on('data', c => d += c);
+      r.on('end', () => console.log(`  Telegram webhook: ${d.includes('"ok":true') ? 'registered' : 'FAILED'}`));
+    }).on('error', (e) => console.error('  Telegram webhook error:', e.message));
+  }
 });

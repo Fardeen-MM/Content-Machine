@@ -1859,6 +1859,32 @@ Return JSON array (no fences):
       return json(res, db.getTeamInputs({ category, unanswered }));
     }
 
+    // --- Advisory Endpoints ---
+
+    // POST /api/advisory/gaps — detect operational gaps
+    if (pathname === '/api/advisory/gaps' && method === 'POST') {
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'API key not set' }, 500);
+      const { detectGaps } = require('./lib/advisory');
+      const result = await detectGaps();
+      return json(res, result);
+    }
+
+    // POST /api/advisory/roi — calculate ROI projection
+    if (pathname === '/api/advisory/roi' && method === 'POST') {
+      const body = await parseBody(req);
+      const { calculateROI } = require('./lib/advisory');
+      const result = calculateROI(body);
+      return json(res, result);
+    }
+
+    // POST /api/advisory/discovery-framework — extract framework from best calls
+    if (pathname === '/api/advisory/discovery-framework' && method === 'POST') {
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'API key not set' }, 500);
+      const { extractDiscoveryFramework } = require('./lib/advisory');
+      const result = await extractDiscoveryFramework();
+      return json(res, result);
+    }
+
     // --- Webhook Endpoints ---
 
     // POST /api/webhooks/fireflies

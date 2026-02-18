@@ -1528,6 +1528,13 @@ ${context}`;
         // Save assistant response
         db.insertChatMessage({ role: 'assistant', content: response, context_used: context.slice(0, 500) });
 
+        // Correction detection — learn from user corrections
+        const lower = message.toLowerCase();
+        if (lower.includes("that's wrong") || lower.includes('actually we') || lower.includes('stop saying') || lower.includes('remember that') || lower.includes("don't say") || lower.includes('correct:')) {
+          db.insertTeamInput({ question: 'Correction via chat', answer: message, answered_by: 'user', category: 'correction' });
+          console.log('[chat] Correction detected and stored');
+        }
+
         return json(res, { ok: true, response, context_length: context.length });
       } catch (err) {
         console.error('[chat] Error:', err.message);
@@ -1784,6 +1791,65 @@ ${context}`;
       const body = await parseBody(req);
       db.updateInsight(parseInt(insightUpdateMatch[1]), body);
       return json(res, { ok: true });
+    }
+
+    // POST /api/insights/playbook — generate objection playbook from all meetings
+    if (pathname === '/api/insights/playbook' && method === 'POST') {
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'API key not set' }, 500);
+      const { callClaude, parseJsonResponse, SONNET } = require('./lib/claude');
+      const { getKnowledgeBase } = require('./lib/knowledge');
+
+      // Gather all objections from meetings
+      const meetings = db.getMeetings({ limit: 100 });
+      const allObjections = [];
+      for (const m of meetings) {
+        const ed = m.extracted_data || {};
+        if (ed.objections?.length) {
+          for (const obj of ed.objections) {
+            allObjections.push({ objection: obj, meeting: m.title, client: m.client_name, type: m.meeting_type, date: m.date });
+          }
+        }
+      }
+
+      // Get existing insights
+      const objectionInsights = db.getInsights({ category: 'objection' });
+
+      const kb = getKnowledgeBase();
+      const prompt = `Generate an objection playbook from these real objections heard on calls.
+
+ALL OBJECTIONS (${allObjections.length} total):
+${allObjections.map(o => `- "${o.objection}" (${o.client || 'unknown'}, ${o.date?.slice(0, 10)})`).join('\n')}
+
+EXISTING INSIGHTS:
+${objectionInsights.map(i => `- ${i.insight} (${i.frequency}x)`).join('\n') || '(none)'}
+
+Group similar objections. For each group, provide:
+1. The objection theme
+2. Frequency (how many times heard)
+3. Best response framework
+4. Example script for Yaseer
+
+Return JSON array (no fences):
+[{ "theme": "...", "frequency": N, "examples": ["..."], "response_framework": "...", "script": "..." }]`;
+
+      try {
+        const text = await callClaude({
+          model: SONNET,
+          system: `${kb}\n\nYou build sales objection playbooks from real call data. Be specific and actionable.`,
+          prompt,
+          maxTokens: 3000
+        });
+        const playbook = parseJsonResponse(text) || [];
+
+        // Store top objections as insights
+        for (const item of playbook.slice(0, 10)) {
+          db.upsertInsight('objection', `${item.theme}: ${item.response_framework}`, 'playbook', null);
+        }
+
+        return json(res, { ok: true, playbook, total_objections: allObjections.length });
+      } catch (err) {
+        return json(res, { error: err.message }, 500);
+      }
     }
 
     // GET /api/team-inputs — get team inputs

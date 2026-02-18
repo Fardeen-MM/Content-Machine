@@ -7,7 +7,9 @@
     "start": "node server.js",
     "scrape": "node scrapers/run-all.js",
     "generate": "node generator/run-daily.js",
-    "seed": "node scripts/seed-data.js"
+    "seed": "node scripts/seed-data.js",
+    "mcp:pipeline": "node mcp/pipeline-server.js",
+    "mcp:fireflies": "node mcp/fireflies-server.js"
   },
   "author": "Mortar Metrics",
   "license": "PRIVATE",
@@ -15,6 +17,7 @@
     "node": ">=18.0.0"
   },
   "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.26.0",
     "better-sqlite3": "^11.0.0",
     "node-cron": "^4.2.1"
   }

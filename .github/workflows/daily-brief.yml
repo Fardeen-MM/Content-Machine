@@ -1,8 +1,8 @@
 name: Daily Brief
 
 on:
-  schedule:
-    - cron: '0 13 * * *'  # 8 AM EST = 1 PM UTC
+  # Cron now runs inside server.js via node-cron (Railway has the DB)
+  # Keep manual trigger for testing
   workflow_dispatch:
 
 jobs:

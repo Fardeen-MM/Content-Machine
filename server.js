@@ -1475,21 +1475,30 @@ Write 3-5 bullet points of dos and don'ts for this output type. Be specific and 
         // Build context based on the question
         const context = buildChatContext(message);
         const { callClaude, SONNET } = require('./lib/claude');
+        const { getKnowledgeBase } = require('./lib/knowledge');
+        const { buildIntelligenceContext } = require('./lib/intelligence');
 
-        const systemPrompt = `You are the Mortar Metrics Command Centre — the operating brain of a legal marketing agency.
+        const kb = getKnowledgeBase();
+        const intel = buildIntelligenceContext();
 
-You know everything about the business:
-- Every meeting transcript, coaching score, and action item
-- Every client profile, their practice area, and their status
-- Every content piece generated, approved, or published
-- Every pattern spotted across calls (recurring objections, pain points, questions)
-- The team: Fardeen (founder/systems), Yaseer (closer), Juhi (design/content), Muntasir/Monty (client comms)
+        const systemPrompt = `${kb}
 
-Your job is to give DIRECTIVES, not data. When someone asks "how's the pipeline?" don't list stats — say "Tyler hasn't heard from you in 8 days, call him before he goes cold. The Cassisi proposal is ready, review and send today."
+${intel}
 
-Think like a $10M agency consultant who can see all the numbers. Be direct. Be specific. Name names. Give action items with deadlines.
+You are the Mortar Metrics Command Centre — the operating brain of this agency.
 
-Context from the database:
+Give DIRECTIVES not data. Name names. Give deadlines. Reference call data. Think in revenue.
+Connect every recommendation to the four levers: Volume, Conversion, Speed, Retention.
+When you spot a gap, say what to build and how.
+
+"$4K/month deal dying = $48K/year lost. Call them NOW." — that's your energy.
+
+Closing tasks -> Yaseer. Content tasks -> Monty/Juhi. System/strategy -> Fardeen.
+Yaseer needs handholding: "Call Kyle Kinsey at 2 PM. Say: we looked at firms in your area..."
+
+After answering, ask ONE question to learn something: deal outcomes, call results, process updates.
+
+LIVE DATA:
 ${context}`;
 
         const response = await callClaude({
@@ -2009,6 +2018,33 @@ ${context}`;
   }
 }
 
+// --- Error handling ---
+
+process.on('uncaughtException', (err) => {
+  console.error('[FATAL] Uncaught exception:', err);
+});
+
+process.on('unhandledRejection', (err) => {
+  console.error('[FATAL] Unhandled rejection:', err);
+});
+
+// --- Cron jobs ---
+
+const cron = require('node-cron');
+
+// Daily brief at 8 AM EST (13:00 UTC)
+cron.schedule('0 13 * * *', async () => {
+  console.log('[cron] Running daily brief...');
+  try {
+    const { generateBrief, sendTelegram } = require('./generator/daily-brief');
+    const brief = await generateBrief();
+    await sendTelegram(brief);
+    console.log('[cron] Daily brief sent');
+  } catch (err) {
+    console.error('[cron] Daily brief failed:', err.message);
+  }
+});
+
 // --- Start server ---
 
 const server = http.createServer(handleRequest);
@@ -2016,12 +2052,12 @@ const server = http.createServer(handleRequest);
 const HOST = process.env.HOST || '0.0.0.0';
 
 server.listen(PORT, HOST, () => {
-  console.log(`\n  Content Machine Dashboard`);
-  console.log(`  ========================`);
+  console.log(`\n  Mortar Metrics Command Centre`);
+  console.log(`  =============================`);
   console.log(`  Running at: http://localhost:${PORT}`);
-  console.log(`  API key: ${process.env.ANTHROPIC_API_KEY ? 'configured' : 'NOT SET (generation disabled)'}`);
-  console.log(`  Ideogram: ${process.env.IDEOGRAM_API_KEY ? 'configured' : 'NOT SET (images disabled)'}`);
-  console.log(`  YouTube: ${process.env.YOUTUBE_API_KEY ? 'configured' : 'NOT SET (YouTube scraper disabled)'}`);
-  console.log(`  Fireflies: ${process.env.FIREFLIES_API_KEY ? 'configured' : 'NOT SET (meeting sync disabled)'}`);
+  console.log(`  Claude API: ${process.env.ANTHROPIC_API_KEY ? 'OK' : 'NOT SET'}`);
+  console.log(`  Fireflies: ${process.env.FIREFLIES_API_KEY ? 'OK' : 'NOT SET'}`);
+  console.log(`  Telegram: ${process.env.TELEGRAM_BOT_TOKEN ? 'OK' : 'NOT SET'}`);
+  console.log(`  Cron: daily brief at 8 AM EST`);
   console.log('');
 });

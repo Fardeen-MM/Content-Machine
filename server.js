@@ -2296,6 +2296,71 @@ cron.schedule('0 13 * * *', async () => {
   }
 });
 
+// Alert check every 2 hours — pestering due, cold deals, overdue proposals
+cron.schedule('0 */2 * * *', async () => {
+  try {
+    const conn = db.getDb();
+    const now = new Date().toISOString();
+
+    // Pestering due
+    const duePestering = conn.prepare(`
+      SELECT p.*, c.name as client_name, c.firm_name
+      FROM pestering_log p
+      LEFT JOIN clients c ON p.client_id = c.id
+      WHERE p.status = 'pending' AND p.scheduled_for <= ?
+      ORDER BY p.scheduled_for ASC LIMIT 10
+    `).all(now);
+
+    for (const entry of duePestering) {
+      sendTelegramAlert(
+        `\u{1F4CB} Pestering due: ${entry.client_name || entry.firm_name || 'Unknown'} \u2014 ${entry.channel} ${entry.message_type}\n${entry.content ? entry.content.substring(0, 200) : 'Generate message in dashboard'}`
+      );
+    }
+
+    // Deals going cold (7+ days no contact)
+    const coldDeals = conn.prepare(`
+      SELECT c.name, c.firm_name,
+        CAST((julianday('now') - julianday(COALESCE(c.last_seen, c.created_at))) AS INTEGER) as days_silent
+      FROM clients c
+      WHERE c.status NOT IN ('lost', 'churned')
+        AND CAST((julianday('now') - julianday(COALESCE(c.last_seen, c.created_at))) AS INTEGER) >= 7
+      ORDER BY days_silent DESC LIMIT 5
+    `).all();
+
+    for (const deal of coldDeals) {
+      sendTelegramAlert(
+        `\u{1F534} ${deal.name || deal.firm_name} silent ${deal.days_silent} days. Yaseer: call or WhatsApp NOW.`
+      );
+    }
+
+    // Proposals overdue (discovery calls 4+ hours ago without a proposal)
+    const overdueProposals = conn.prepare(`
+      SELECT c.name, c.firm_name, m.date as discovery_date,
+        ROUND((julianday('now') - julianday(m.date)) * 24, 1) as hours_since
+      FROM meetings m
+      LEFT JOIN clients c ON m.client_name = c.name
+      WHERE m.meeting_type = 'discovery'
+        AND m.date >= datetime('now', '-3 days')
+        AND m.id NOT IN (SELECT meeting_id FROM proposals WHERE meeting_id IS NOT NULL)
+        AND ROUND((julianday('now') - julianday(m.date)) * 24) >= 4
+      LIMIT 5
+    `).all();
+
+    for (const p of overdueProposals) {
+      const target = p.hours_since >= 24 ? 'Fardeen' : 'Yaseer';
+      sendTelegramAlert(
+        `\u{26A0}\u{FE0F} Proposal overdue: ${p.name || p.firm_name || 'Unknown'}. Discovery was ${Math.round(p.hours_since)}h ago. ${target}: send it NOW.`
+      );
+    }
+
+    if (duePestering.length || coldDeals.length || overdueProposals.length) {
+      console.log(`[cron] Alerts sent: ${duePestering.length} pestering, ${coldDeals.length} cold, ${overdueProposals.length} proposals`);
+    }
+  } catch (err) {
+    console.error('[cron] Alert check failed:', err.message);
+  }
+});
+
 // --- Start server ---
 
 const server = http.createServer(handleRequest);
@@ -2309,7 +2374,7 @@ server.listen(PORT, HOST, () => {
   console.log(`  Claude API: ${process.env.ANTHROPIC_API_KEY ? 'OK' : 'NOT SET'}`);
   console.log(`  Fireflies: ${process.env.FIREFLIES_API_KEY ? 'OK' : 'NOT SET'}`);
   console.log(`  Telegram: ${process.env.TELEGRAM_BOT_TOKEN ? 'OK' : 'NOT SET'}`);
-  console.log(`  Cron: daily brief at 8 AM EST`);
+  console.log(`  Cron: daily brief 8AM EST, alerts every 2h`);
   console.log('');
 
   // Register Telegram webhook for reply handling

@@ -2186,125 +2186,219 @@ function renderCategoryBreakdown(s) {
 }
 
 function renderDashboardPage() {
-  const reviewContent = state.content.filter(c => c.status === 'review').slice(0, 5);
-  const recentTriggers = state.triggers.slice(0, 5);
+  const health = state.healthData || { summary: {}, clients: [] };
+  const clients = health.clients || [];
+  const stats = state.stats?.knowledge || {};
+  const meetings = state.meetings || [];
+  const actions = state.allActions || [];
+  const pestering = state.pestering || [];
+  const deals = state.deals || [];
+  const insights = state.insights || [];
+
+  const green = clients.filter(c => c.health_status === 'green').length;
+  const yellow = clients.filter(c => c.health_status === 'yellow').length;
+  const red = clients.filter(c => c.health_status === 'red').length;
+  const stale = clients.filter(c => c.days_since_contact >= 5).sort((a, b) => b.days_since_contact - a.days_since_contact);
+  const openActions = actions.filter(a => a.status === 'open');
+  const pesteringDue = pestering.filter(e => e.status === 'pending' && new Date(e.scheduled_for) <= new Date());
+  const wonDeals = deals.filter(d => d.outcome === 'won');
+  const totalMRR = wonDeals.reduce((s, d) => s + (d.monthly_value || 0), 0);
+  const recentMeetings = meetings.filter(m => m.meeting_type !== 'internal' && m.meeting_type !== 'unknown').slice(0, 5);
+
+  // Group actions by owner
+  const yaseerActions = openActions.filter(a => a.owner === 'us' || a.owner === 'yaseer' || a.owner === 'Yaseer').slice(0, 5);
+  const montyActions = openActions.filter(a => a.owner === 'monty' || a.owner === 'Monty').slice(0, 3);
+  const fardeenActions = openActions.filter(a => a.owner === 'fardeen' || a.owner === 'Fardeen').slice(0, 3);
+  const clientWaiting = openActions.filter(a => a.owner === 'client').slice(0, 3);
+
+  // Content stats for quick link
+  const reviewContent = state.content.filter(c => c.status === 'review').length;
 
   return h('div', { className: 'page-content' },
-    renderStats(),
-    // Quick actions row
-    h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px', marginBottom: '24px' } },
-      h('div', {
-        className: 'card',
-        style: { padding: '16px', cursor: 'pointer', textAlign: 'center', transition: 'var(--transition)' },
-        onclick: () => { state.page = 'content'; state.filter.status = 'review'; render(); }
-      },
-        h('div', { innerHTML: icons.content, style: { width: '24px', height: '24px', margin: '0 auto 8px', color: 'var(--blue)' } }),
-        h('div', { style: { fontSize: '13px', fontWeight: '600', color: 'var(--navy)' } }, 'Review Content'),
-        h('div', { style: { fontSize: '11px', color: 'var(--gray-400)' } }, `${state.content.filter(c=>c.status==='review').length} waiting`)
+    // THE BOTTLENECK + THE MATH
+    h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '20px' } },
+      h('div', { className: 'card', style: { padding: '20px', borderLeft: '4px solid var(--red)' } },
+        h('div', { style: { fontSize: '11px', fontWeight: '600', color: 'var(--red)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' } }, 'The Bottleneck'),
+        h('div', { style: { fontSize: '18px', fontWeight: '700', color: 'var(--navy)', fontFamily: "'Fraunces', serif" } },
+          stats.meetings?.total < 10 ? 'Not enough meetings. Volume is the constraint.'
+          : openActions.filter(a => a.status === 'open').length > 20 ? `${openActions.length} open actions piling up. Execution speed.`
+          : stale.length > 3 ? `${stale.length} deals going cold. Follow-up speed.`
+          : pesteringDue.length > 5 ? `${pesteringDue.length} pestering entries overdue. Yaseer needs to act.`
+          : 'Pipeline moving. Keep pushing volume.'
+        )
       ),
-      h('div', {
-        className: 'card',
-        style: { padding: '16px', cursor: 'pointer', textAlign: 'center', transition: 'var(--transition)' },
-        onclick: () => { state.page = 'triggers'; render(); }
-      },
-        h('div', { innerHTML: icons.triggers, style: { width: '24px', height: '24px', margin: '0 auto 8px', color: 'var(--amber)' } }),
-        h('div', { style: { fontSize: '13px', fontWeight: '600', color: 'var(--navy)' } }, 'View Triggers'),
-        h('div', { style: { fontSize: '11px', color: 'var(--gray-400)' } }, `${state.triggers.filter(t=>t.status==='pending').length} pending`)
-      ),
-      h('div', {
-        className: 'card',
-        style: { padding: '16px', cursor: 'pointer', textAlign: 'center', transition: 'var(--transition)' },
-        onclick: () => { state.page = 'save-url'; render(); }
-      },
-        h('div', { innerHTML: icons.link, style: { width: '24px', height: '24px', margin: '0 auto 8px', color: 'var(--green)' } }),
-        h('div', { style: { fontSize: '13px', fontWeight: '600', color: 'var(--navy)' } }, 'Save URL'),
-        h('div', { style: { fontSize: '11px', color: 'var(--gray-400)' } }, 'Paste & generate')
-      ),
-      h('div', {
-        className: 'card',
-        style: { padding: '16px', cursor: 'pointer', textAlign: 'center', transition: 'var(--transition)' },
-        onclick: () => { state.page = 'calendar'; render(); }
-      },
-        h('div', { innerHTML: icons.calendar, style: { width: '24px', height: '24px', margin: '0 auto 8px', color: 'var(--purple)' } }),
-        h('div', { style: { fontSize: '13px', fontWeight: '600', color: 'var(--navy)' } }, 'Calendar'),
-        h('div', { style: { fontSize: '11px', color: 'var(--gray-400)' } }, `${state.calendar?.stats?.coverage || 0}% coverage`)
-      ),
-      h('div', {
-        className: 'card',
-        style: { padding: '16px', cursor: 'pointer', textAlign: 'center', transition: 'var(--transition)' },
-        onclick: async () => {
-          toast('Generating content for top 5 triggers...', 'info');
-          try {
-            await api('/api/generate-daily', { method: 'POST', body: { count: 5 } });
-            toast('Generation complete!', 'success');
-            await loadData();
-          } catch (err) { toast('Generation failed — check API key', 'error'); }
-        }
-      },
-        h('div', { innerHTML: icons.play, style: { width: '24px', height: '24px', margin: '0 auto 8px', color: 'var(--green)' } }),
-        h('div', { style: { fontSize: '13px', fontWeight: '600', color: 'var(--navy)' } }, 'Generate Top 5'),
-        h('div', { style: { fontSize: '11px', color: 'var(--gray-400)' } }, 'AI content batch')
-      ),
-      h('div', {
-        className: 'card',
-        style: { padding: '16px', cursor: 'pointer', textAlign: 'center', transition: 'var(--transition)' },
-        onclick: async () => {
-          toast('Running all scrapers...', 'info');
-          try {
-            await api('/api/scrape-now', { method: 'POST', body: {} });
-            toast('Scrape complete!', 'success');
-            await loadData();
-          } catch (err) { toast('Scrape failed', 'error'); }
-        }
-      },
-        h('div', { innerHTML: icons.refresh, style: { width: '24px', height: '24px', margin: '0 auto 8px', color: 'var(--red)' } }),
-        h('div', { style: { fontSize: '13px', fontWeight: '600', color: 'var(--navy)' } }, 'Scrape Now'),
-        h('div', { style: { fontSize: '11px', color: 'var(--gray-400)' } }, `${(state.settings?.scrapers || []).length} scrapers`)
-      ),
-      h('div', {
-        className: 'card',
-        style: { padding: '16px', cursor: 'pointer', textAlign: 'center', transition: 'var(--transition)' },
-        onclick: () => { state.page = 'memory'; render(); }
-      },
-        h('div', { innerHTML: icons.brain, style: { width: '24px', height: '24px', margin: '0 auto 8px', color: 'var(--purple)' } }),
-        h('div', { style: { fontSize: '13px', fontWeight: '600', color: 'var(--navy)' } }, 'Brand Memory'),
-        h('div', { style: { fontSize: '11px', color: 'var(--gray-400)' } }, `${(state.memory?.approved_examples || []).length} examples`)
+      h('div', { className: 'card', style: { padding: '20px', borderLeft: '4px solid var(--blue)' } },
+        h('div', { style: { fontSize: '11px', fontWeight: '600', color: 'var(--blue)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' } }, 'The Math'),
+        h('div', { style: { fontSize: '18px', fontWeight: '700', color: 'var(--navy)', fontFamily: "'Fraunces', serif" } },
+          `$${(totalMRR / 1000).toFixed(0)}K MRR \u2192 $100K`
+        ),
+        h('div', { style: { fontSize: '13px', color: 'var(--gray-500)', marginTop: '4px' } },
+          `${stats.clients?.total || 0} prospects \u00B7 ${stats.meetings?.total || 0} meetings \u00B7 Need ~3 new clients/month at $5K`
+        )
       )
     ),
-    // Content awaiting review
-    h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' } },
-      h('h3', { style: { fontSize: '18px', color: 'var(--navy)' } }, 'Awaiting Your Review'),
-      h('button', {
-        className: 'btn btn-outline btn-sm',
-        onclick: () => { state.page = 'content'; state.filter.status = 'review'; render(); }
-      }, 'View All')
+    // Pipeline summary
+    h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '12px', marginBottom: '20px' } },
+      h('div', { className: 'card', style: { textAlign: 'center', padding: '14px', cursor: 'pointer' }, onclick: () => { state.page = 'pipeline'; render(); } },
+        h('div', { style: { fontSize: '22px', fontWeight: '700', color: 'var(--navy)', fontFamily: "'Fraunces', serif" } }, String(clients.length)),
+        h('div', { style: { fontSize: '11px', color: 'var(--gray-500)' } }, 'Pipeline')
+      ),
+      h('div', { className: 'card', style: { textAlign: 'center', padding: '14px', background: green ? 'var(--green-light)' : '' } },
+        h('div', { style: { fontSize: '22px', fontWeight: '700', color: 'var(--green)', fontFamily: "'Fraunces', serif" } }, String(green)),
+        h('div', { style: { fontSize: '11px', color: 'var(--gray-500)' } }, 'Green')
+      ),
+      h('div', { className: 'card', style: { textAlign: 'center', padding: '14px', background: yellow ? 'var(--amber-light)' : '' } },
+        h('div', { style: { fontSize: '22px', fontWeight: '700', color: 'var(--amber)', fontFamily: "'Fraunces', serif" } }, String(yellow)),
+        h('div', { style: { fontSize: '11px', color: 'var(--gray-500)' } }, 'Yellow')
+      ),
+      h('div', { className: 'card', style: { textAlign: 'center', padding: '14px', background: red ? 'var(--red-light)' : '' } },
+        h('div', { style: { fontSize: '22px', fontWeight: '700', color: 'var(--red)', fontFamily: "'Fraunces', serif" } }, String(red)),
+        h('div', { style: { fontSize: '11px', color: 'var(--gray-500)' } }, 'Red')
+      ),
+      h('div', { className: 'card', style: { textAlign: 'center', padding: '14px', cursor: 'pointer' }, onclick: () => { state.page = 'pestering'; state.pesteringFilter = 'due'; render(); } },
+        h('div', { style: { fontSize: '22px', fontWeight: '700', color: pesteringDue.length ? 'var(--red)' : 'var(--gray-400)', fontFamily: "'Fraunces', serif" } }, String(pesteringDue.length)),
+        h('div', { style: { fontSize: '11px', color: 'var(--gray-500)' } }, 'Pestering Due')
+      )
     ),
-    reviewContent.length === 0
-      ? h('div', { className: 'empty-state' },
-          h('h3', {}, 'All caught up!'),
-          h('p', {}, 'No content waiting for review. Check the trigger queue for new ideas.')
-        )
-      : h('div', { className: 'content-list' },
-          ...reviewContent.map(renderContentCard)
-        ),
-    // Recent triggers preview
-    h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', marginTop: '32px' } },
-      h('h3', { style: { fontSize: '18px', color: 'var(--navy)' } }, 'Top Triggers'),
-      h('button', {
-        className: 'btn btn-outline btn-sm',
-        onclick: () => { state.page = 'triggers'; render(); }
-      }, 'View All')
+    // Priorities per person
+    h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '20px' } },
+      // Yaseer
+      h('div', { className: 'card', style: { padding: '16px' } },
+        h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--green)', marginBottom: '8px' } }, `YASEER (${yaseerActions.length} actions)`),
+        yaseerActions.length === 0
+          ? h('div', { style: { fontSize: '13px', color: 'var(--gray-400)' } }, 'No open actions')
+          : h('div', { style: { display: 'flex', flexDirection: 'column', gap: '4px' } },
+              ...yaseerActions.map(a =>
+                h('div', { style: { fontSize: '13px', display: 'flex', gap: '6px' } },
+                  h('span', { style: { color: 'var(--gray-400)' } }, '\u2022'),
+                  h('span', {}, `${a.client_name ? a.client_name + ': ' : ''}${a.description}`)
+                )
+              )
+            )
+      ),
+      // Fardeen
+      h('div', { className: 'card', style: { padding: '16px' } },
+        h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--purple)', marginBottom: '8px' } }, `FARDEEN (${fardeenActions.length} actions)`),
+        fardeenActions.length === 0
+          ? h('div', { style: { fontSize: '13px', color: 'var(--gray-400)' } }, 'No open actions')
+          : h('div', { style: { display: 'flex', flexDirection: 'column', gap: '4px' } },
+              ...fardeenActions.map(a =>
+                h('div', { style: { fontSize: '13px', display: 'flex', gap: '6px' } },
+                  h('span', { style: { color: 'var(--gray-400)' } }, '\u2022'),
+                  h('span', {}, `${a.client_name ? a.client_name + ': ' : ''}${a.description}`)
+                )
+              )
+            )
+      ),
+      // Monty
+      h('div', { className: 'card', style: { padding: '16px' } },
+        h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--amber)', marginBottom: '8px' } }, `MONTY (${montyActions.length} actions)`),
+        montyActions.length === 0
+          ? h('div', { style: { fontSize: '13px', color: 'var(--gray-400)' } },
+              reviewContent > 0 ? `${reviewContent} content pieces to review & post` : 'No open actions'
+            )
+          : h('div', { style: { display: 'flex', flexDirection: 'column', gap: '4px' } },
+              ...montyActions.map(a =>
+                h('div', { style: { fontSize: '13px', display: 'flex', gap: '6px' } },
+                  h('span', { style: { color: 'var(--gray-400)' } }, '\u2022'),
+                  h('span', {}, a.description)
+                )
+              )
+            )
+      ),
+      // Waiting on client
+      h('div', { className: 'card', style: { padding: '16px' } },
+        h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--gray-500)', marginBottom: '8px' } }, `WAITING ON CLIENT (${clientWaiting.length})`),
+        clientWaiting.length === 0
+          ? h('div', { style: { fontSize: '13px', color: 'var(--gray-400)' } }, 'Nothing pending')
+          : h('div', { style: { display: 'flex', flexDirection: 'column', gap: '4px' } },
+              ...clientWaiting.map(a =>
+                h('div', { style: { fontSize: '13px', display: 'flex', gap: '6px' } },
+                  h('span', { style: { color: 'var(--gray-400)' } }, '\u2022'),
+                  h('span', {}, `${a.client_name ? a.client_name + ': ' : ''}${a.description}`)
+                )
+              )
+            )
+      )
     ),
-    h('div', { className: 'card', style: { overflow: 'hidden' } },
-      ...recentTriggers.map(t =>
-        h('div', { style: { padding: '12px 16px', borderBottom: '1px solid var(--gray-100)', display: 'flex', alignItems: 'center', gap: '12px' } },
-          h('div', { style: { minWidth: '28px', textAlign: 'center' } },
-            h('span', { style: { fontSize: '14px', fontWeight: '700', color: 'var(--navy)' } }, String(t.score || 0))
-          ),
-          h('span', { className: `badge ${sourceBadgeClass(t.source)}`, style: { fontSize: '10px' } }, sourceLabel(t.source)),
-          h('span', { style: { fontSize: '14px', color: 'var(--gray-700)', flex: '1' } }, t.title.length > 70 ? t.title.slice(0, 70) + '...' : t.title),
-          h('span', { style: { fontSize: '11px', color: 'var(--gray-400)' } }, timeAgo(t.captured_at))
+    // Stale deals alert
+    stale.length > 0 ? h('div', { style: { marginBottom: '20px' } },
+      h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--red)', marginBottom: '8px' } }, `STALE DEALS (${stale.length})`),
+      h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '8px' } },
+        ...stale.slice(0, 6).map(c =>
+          h('div', {
+            className: 'card',
+            style: { padding: '12px 16px', borderLeft: '3px solid var(--red)', cursor: 'pointer' },
+            onclick: async () => {
+              try {
+                const detail = await api(`/api/clients/${c.client_id}`);
+                state.clientDetail = detail; state.page = 'clients'; render();
+              } catch (err) { toast('Failed', 'error'); }
+            }
+          },
+            h('div', { style: { fontWeight: '600', fontSize: '14px' } }, c.client_name || 'Unknown'),
+            h('div', { style: { fontSize: '12px', color: 'var(--gray-500)', display: 'flex', gap: '12px', marginTop: '2px' } },
+              h('span', { style: { color: 'var(--red)', fontWeight: '600' } }, `${c.days_since_contact}d silent`),
+              h('span', {}, `Score: ${c.score}/100`),
+              c.firm_name ? h('span', {}, c.firm_name) : null
+            )
+          )
         )
+      )
+    ) : null,
+    // Recent meetings
+    recentMeetings.length > 0 ? h('div', { style: { marginBottom: '20px' } },
+      h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
+        h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)' } }, `RECENT MEETINGS (${recentMeetings.length})`),
+        h('button', { className: 'btn btn-ghost btn-sm', onclick: () => { state.page = 'meetings'; render(); } }, 'View All')
+      ),
+      h('div', { className: 'card', style: { overflow: 'hidden' } },
+        ...recentMeetings.map(m =>
+          h('div', { style: { padding: '10px 16px', borderBottom: '1px solid var(--gray-100)', display: 'flex', alignItems: 'center', gap: '12px' } },
+            h('span', { style: {
+              padding: '2px 8px', borderRadius: '12px', fontSize: '11px', fontWeight: '600',
+              background: m.meeting_type === 'discovery' ? 'var(--blue)' + '18' : m.meeting_type === 'review' ? 'var(--green)' + '18' : 'var(--gray-100)',
+              color: m.meeting_type === 'discovery' ? 'var(--blue)' : m.meeting_type === 'review' ? 'var(--green)' : 'var(--gray-500)',
+              minWidth: '70px', textAlign: 'center'
+            } }, m.meeting_type || 'unknown'),
+            h('span', { style: { fontSize: '13px', fontWeight: '500', flex: 1 } }, m.client_name || m.title),
+            m.sentiment ? h('span', { style: {
+              fontSize: '11px',
+              color: m.sentiment === 'positive' ? 'var(--green)' : m.sentiment === 'negative' ? 'var(--red)' : 'var(--gray-400)'
+            } }, m.sentiment) : null,
+            m.date ? h('span', { style: { fontSize: '11px', color: 'var(--gray-400)' } }, new Date(m.date).toLocaleDateString()) : null
+          )
+        )
+      )
+    ) : null,
+    // Quick links row
+    h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '12px' } },
+      h('div', { className: 'card', style: { padding: '14px', cursor: 'pointer', textAlign: 'center' }, onclick: () => { state.page = 'content'; render(); } },
+        h('div', { innerHTML: icons.content, style: { width: '20px', height: '20px', margin: '0 auto 6px', color: 'var(--blue)' } }),
+        h('div', { style: { fontSize: '12px', fontWeight: '600' } }, 'Content'),
+        h('div', { style: { fontSize: '11px', color: 'var(--gray-400)' } }, `${reviewContent} to review`)
+      ),
+      h('div', { className: 'card', style: { padding: '14px', cursor: 'pointer', textAlign: 'center' }, onclick: () => { state.page = 'insights'; render(); } },
+        h('div', { innerHTML: icons.insights, style: { width: '20px', height: '20px', margin: '0 auto 6px', color: 'var(--amber)' } }),
+        h('div', { style: { fontSize: '12px', fontWeight: '600' } }, 'Insights'),
+        h('div', { style: { fontSize: '11px', color: 'var(--gray-400)' } }, `${insights.length} learned`)
+      ),
+      h('div', { className: 'card', style: { padding: '14px', cursor: 'pointer', textAlign: 'center' }, onclick: () => { state.page = 'deals'; render(); } },
+        h('div', { innerHTML: icons.deals, style: { width: '20px', height: '20px', margin: '0 auto 6px', color: 'var(--green)' } }),
+        h('div', { style: { fontSize: '12px', fontWeight: '600' } }, 'Deals'),
+        h('div', { style: { fontSize: '11px', color: 'var(--gray-400)' } }, `${wonDeals.length} won`)
+      ),
+      h('div', { className: 'card', style: { padding: '14px', cursor: 'pointer', textAlign: 'center' }, onclick: async () => {
+        state.generatingBrief = true; render();
+        try {
+          await api('/api/brief', { method: 'POST' });
+          toast('Brief sent to Telegram', 'success');
+        } catch (err) { toast('Brief failed', 'error'); }
+        state.generatingBrief = false; render();
+      } },
+        h('div', { innerHTML: icons.chat, style: { width: '20px', height: '20px', margin: '0 auto 6px', color: 'var(--purple)' } }),
+        h('div', { style: { fontSize: '12px', fontWeight: '600' } }, 'Send Brief'),
+        h('div', { style: { fontSize: '11px', color: 'var(--gray-400)' } }, 'Telegram now')
       )
     )
   );

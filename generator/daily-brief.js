@@ -93,6 +93,11 @@ function gatherBriefData() {
   // Pestering due today
   const duePestering = db.getPesterEntries({ status: 'pending', due_before: now.toISOString(), limit: 10 });
 
+  // Pending content for Monty (review status = needs approval)
+  const { readJSON } = require('../lib/utils');
+  const allContent = readJSON('content.json');
+  const pendingContent = allContent.filter(c => c.status === 'review').slice(0, 10);
+
   return {
     date: now.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' }),
     health: healthOverview.summary || {},
@@ -102,7 +107,8 @@ function gatherBriefData() {
     pendingProposals,
     patterns,
     staleClients,
-    duePestering
+    duePestering,
+    pendingContent
   };
 }
 
@@ -165,6 +171,15 @@ async function generateBrief() {
     }
   }
 
+  if (data.pendingContent.length > 0) {
+    ctx.push(`\nPENDING CONTENT FOR MONTY (${data.pendingContent.length} posts awaiting review):`);
+    for (const c of data.pendingContent.slice(0, 5)) {
+      const preview = (c.formats?.linkedin?.content || c.trigger_title || '').slice(0, 100);
+      ctx.push(`- [${c.id}] ${preview}${preview.length >= 100 ? '...' : ''}`);
+    }
+    ctx.push('Approve in dashboard or reply "approve [id]"');
+  }
+
   const liveData = ctx.join('\n');
 
   const prompt = `Generate the morning brief for ${data.date}. This replaces the daily whiteboard session.
@@ -176,7 +191,7 @@ MAX 3500 chars. Use HTML tags (<b>, <i>, bullet •). NO markdown.
 Structure:
 1. THE BOTTLENECK — one line. The #1 constraint right now. A number.
 2. YASEER — 3-5 SPECIFIC actions. Handhold completely. Names, what to say, links. He needs to be told exactly what to do.
-3. MONTY — content/outreach tasks if any.
+3. MONTY — content/outreach tasks. If pending content exists, tell him exactly how many posts to review and approve in the dashboard.
 4. FARDEEN — the strategic fix or system to build today.
 5. STALE DEALS — if any: name, days silent, suggested action.
 

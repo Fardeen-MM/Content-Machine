@@ -6,6 +6,17 @@
  * Run: node scripts/test-connections.js
  */
 
+// Load .env file
+const path = require('path');
+const fs = require('fs');
+const envPath = path.resolve(__dirname, '..', '.env');
+if (fs.existsSync(envPath)) {
+  for (const line of fs.readFileSync(envPath, 'utf8').split('\n')) {
+    const m = line.match(/^([A-Z_]+)=(.+)$/);
+    if (m && !process.env[m[1]]) process.env[m[1]] = m[2].trim();
+  }
+}
+
 const GHL_API_KEY = process.env.GHL_API_KEY || 'pit-0e29b039-484b-442c-98e5-daf7c9973fd1';
 const GHL_LOCATION_ID = process.env.GHL_LOCATION_ID || 'XQ7XQbNXdilxGeKGOkHf';
 const GHL_BASE = 'https://services.leadconnectorhq.com';

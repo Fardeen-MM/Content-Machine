@@ -1382,6 +1382,7 @@ const state = {
   meetingFilter: { type: '', client: '' },
   meetingStats: {},
   syncingMeetings: false,
+  reprocessingMeetings: false,
   // Chat
   chatMessages: [],
   chatInput: '',
@@ -1896,14 +1897,16 @@ function setActiveFormat(contentId, format) {
 document.addEventListener('keydown', (e) => {
   // Global shortcuts
   if (e.key === '1' && !e.ctrlKey && !e.metaKey && !isEditing()) { state.page = 'dashboard'; render(); }
-  if (e.key === '2' && !e.ctrlKey && !e.metaKey && !isEditing()) { state.page = 'meetings'; render(); }
-  if (e.key === '3' && !e.ctrlKey && !e.metaKey && !isEditing()) { state.page = 'clients'; render(); }
-  if (e.key === '4' && !e.ctrlKey && !e.metaKey && !isEditing()) { state.page = 'actions'; render(); }
-  if (e.key === '5' && !e.ctrlKey && !e.metaKey && !isEditing()) { state.page = 'content'; render(); }
-  if (e.key === '6' && !e.ctrlKey && !e.metaKey && !isEditing()) { state.page = 'triggers'; render(); }
-  if (e.key === '7' && !e.ctrlKey && !e.metaKey && !isEditing()) { state.page = 'calendar'; render(); }
-  if (e.key === '8' && !e.ctrlKey && !e.metaKey && !isEditing()) { state.page = 'analytics'; render(); }
+  if (e.key === '2' && !e.ctrlKey && !e.metaKey && !isEditing()) { state.page = 'pipeline'; render(); }
+  if (e.key === '3' && !e.ctrlKey && !e.metaKey && !isEditing()) { state.page = 'meetings'; render(); }
+  if (e.key === '4' && !e.ctrlKey && !e.metaKey && !isEditing()) { state.page = 'clients'; render(); }
+  if (e.key === '5' && !e.ctrlKey && !e.metaKey && !isEditing()) { state.page = 'actions'; render(); }
+  if (e.key === '6' && !e.ctrlKey && !e.metaKey && !isEditing()) { state.page = 'pestering'; render(); }
+  if (e.key === '7' && !e.ctrlKey && !e.metaKey && !isEditing()) { state.page = 'insights'; render(); }
+  if (e.key === '8' && !e.ctrlKey && !e.metaKey && !isEditing()) { state.page = 'deals'; render(); }
   if (e.key === '9' && !e.ctrlKey && !e.metaKey && !isEditing()) { state.page = 'settings'; render(); }
+  if (e.key === 'c' && !e.ctrlKey && !e.metaKey && !isEditing()) { state.page = 'content'; render(); }
+  if (e.key === 't' && !e.ctrlKey && !e.metaKey && !isEditing()) { state.page = 'triggers'; render(); }
   if ((e.key === 'd' || e.key === 'D') && !e.ctrlKey && !e.metaKey && !isEditing()) { toggleDarkMode(); }
   if (e.key === 'Escape') { state.editingFormat = null; state.sidebarOpen = false; render(); }
 });
@@ -1984,8 +1987,8 @@ function renderSidebar() {
     { id: 'pestering', icon: icons.pestering, label: 'Pestering', key: '6' },
     { id: 'insights', icon: icons.insights, label: 'Insights', key: '7' },
     { id: 'deals', icon: icons.deals, label: 'Deals', key: '8' },
-    { id: 'content', icon: icons.content, label: 'Content' },
-    { id: 'triggers', icon: icons.triggers, label: 'Triggers' },
+    { id: 'content', icon: icons.content, label: 'Content', key: 'C' },
+    { id: 'triggers', icon: icons.triggers, label: 'Triggers', key: 'T' },
     { id: 'calendar', icon: icons.calendar, label: 'Calendar' },
     { id: 'analytics', icon: icons.analytics, label: 'Analytics' },
     { id: 'settings', icon: icons.settings, label: 'Settings', key: '9' },
@@ -2056,7 +2059,7 @@ function renderSidebar() {
         onclick: () => { toggleDarkMode(); }
       }, state.darkMode ? 'Light Mode' : 'Dark Mode'),
       h('div', { style: { fontSize: '11px', color: 'rgba(255,255,255,0.4)', marginTop: '10px' } },
-        'Keyboard: 1-9 navigate',
+        'Keys: 1-9 navigate, C/T content',
         h('br'),
         'Esc to close modals',
         h('br'),
@@ -2070,9 +2073,13 @@ function renderTopbar() {
   const titles = {
     chat: 'Ask the Brain',
     dashboard: 'Command Centre',
+    pipeline: 'Pipeline',
     meetings: 'Meetings',
     clients: 'Clients',
     actions: 'Action Items',
+    pestering: 'Follow-Up Queue',
+    insights: 'Sales Insights',
+    deals: 'Deal Tracker',
     content: 'Content Review',
     triggers: 'Trigger Queue',
     calendar: 'Content Calendar',
@@ -2391,7 +2398,7 @@ function renderDashboardPage() {
       h('div', { className: 'card', style: { padding: '14px', cursor: 'pointer', textAlign: 'center' }, onclick: async () => {
         state.generatingBrief = true; render();
         try {
-          await api('/api/brief', { method: 'POST' });
+          await api('/api/daily-brief', { method: 'POST' });
           toast('Brief sent to Telegram', 'success');
         } catch (err) { toast('Brief failed', 'error'); }
         state.generatingBrief = false; render();
@@ -2753,7 +2760,21 @@ function renderFormatContent(content, formatKey, fmt) {
     // Actions bar
     h('div', { className: 'format-actions' },
       fmt.status === 'approved'
-        ? h('span', { className: 'badge badge-approved', style: { padding: '5px 12px' } }, 'Approved')
+        ? h('span', { style: { display: 'flex', gap: '6px', alignItems: 'center' } },
+            h('span', { className: 'badge badge-approved', style: { padding: '5px 12px' } }, 'Approved'),
+            fmt.status === 'approved' && !fmt.published_at ? h('button', {
+              className: 'btn btn-sm',
+              style: { background: 'var(--green)', color: 'white', fontSize: '11px' },
+              onclick: async () => {
+                try {
+                  await api(`/api/content/${content.id}/publish`, { method: 'POST', body: { format: formatKey } });
+                  toast(`${formatKey} marked as published`, 'success');
+                  await loadData();
+                } catch (err) { toast('Publish failed: ' + err.message, 'error'); }
+              }
+            }, 'Mark Published') : null,
+            fmt.published_at ? h('span', { style: { fontSize: '11px', color: 'var(--green)' } }, 'Published') : null
+          )
         : fmt.status === 'rejected'
           ? h('span', { className: 'badge badge-rejected', style: { padding: '5px 12px' } }, 'Rejected')
           : h('button', {
@@ -2946,6 +2967,15 @@ function renderAnalyticsPage() {
   const triggers = state.triggers;
   const s = state.stats;
   if (!s) return h('div', { className: 'page-content' }, h('div', { className: 'spinner' }));
+  if (content.length === 0 && triggers.length === 0) {
+    return h('div', { className: 'page-content' },
+      h('div', { className: 'card', style: { textAlign: 'center', padding: '40px', color: 'var(--gray-400)' } },
+        h('div', { innerHTML: icons.analytics, style: { width: '48px', height: '48px', margin: '0 auto 12px', opacity: '0.3' } }),
+        h('p', {}, 'No analytics data yet'),
+        h('p', { style: { fontSize: '13px', marginTop: '8px' } }, 'Generate content from triggers to see performance analytics')
+      )
+    );
+  }
 
   // Calculate metrics
   const totalFormats = Object.values(content).reduce((sum, c) =>
@@ -3269,7 +3299,13 @@ function renderTriggersPage() {
           )
         )
       : null,
-    h('div', { className: 'card', style: { overflow: 'auto' } },
+    filtered.length === 0
+      ? h('div', { className: 'card', style: { textAlign: 'center', padding: '40px', color: 'var(--gray-400)' } },
+          h('div', { innerHTML: icons.triggers, style: { width: '48px', height: '48px', margin: '0 auto 12px', opacity: '0.3' } }),
+          h('p', {}, state.searchQuery || state.filter.source !== 'all' ? 'No triggers match your filters' : 'No triggers yet'),
+          h('p', { style: { fontSize: '13px', marginTop: '8px' } }, 'Scrape sources or add triggers manually to get started')
+        )
+      : h('div', { className: 'card', style: { overflow: 'auto' } },
       h('table', { className: 'trigger-table' },
         h('thead', {},
           h('tr', {},
@@ -4065,6 +4101,10 @@ function renderSettingsPage() {
         h('h3', { style: { fontSize: '16px', color: 'var(--navy)', marginBottom: '16px' } }, 'System Status'),
         h('div', { style: { display: 'flex', flexDirection: 'column', gap: '12px' } },
           settingRow('Anthropic API', settings.api_key, 'Content generation'),
+          settingRow('Fireflies', settings.fireflies_key, 'Meeting transcripts'),
+          settingRow('GoHighLevel', settings.ghl_key, 'CRM integration'),
+          settingRow('Instantly', settings.instantly_key, 'Cold email outreach'),
+          settingRow('Telegram Bot', settings.telegram_key, 'Daily briefs & alerts'),
           settingRow('Ideogram API', settings.ideogram_key, 'Image generation'),
           settingRow('YouTube API', settings.youtube_key, 'YouTube scraping'),
         )
@@ -4101,16 +4141,24 @@ function renderSettingsPage() {
         h('h3', { style: { fontSize: '16px', color: 'var(--navy)', marginBottom: '16px' } }, 'Data Overview'),
         h('div', { style: { display: 'flex', flexDirection: 'column', gap: '10px' } },
           h('div', { style: { display: 'flex', justifyContent: 'space-between' } },
-            h('span', { style: { color: 'var(--gray-500)' } }, 'Total Triggers'),
+            h('span', { style: { color: 'var(--gray-500)' } }, 'Triggers'),
             h('span', { style: { fontWeight: '600' } }, String(settings.data?.triggers || state.triggers.length))
           ),
           h('div', { style: { display: 'flex', justifyContent: 'space-between' } },
-            h('span', { style: { color: 'var(--gray-500)' } }, 'Content Pieces'),
+            h('span', { style: { color: 'var(--gray-500)' } }, 'Content'),
             h('span', { style: { fontWeight: '600' } }, String(settings.data?.content || state.content.length))
           ),
           h('div', { style: { display: 'flex', justifyContent: 'space-between' } },
             h('span', { style: { color: 'var(--gray-500)' } }, 'Published'),
             h('span', { style: { fontWeight: '600' } }, String(settings.data?.published || 0))
+          ),
+          h('div', { style: { display: 'flex', justifyContent: 'space-between' } },
+            h('span', { style: { color: 'var(--gray-500)' } }, 'Meetings'),
+            h('span', { style: { fontWeight: '600' } }, String(settings.data?.meetings || 0))
+          ),
+          h('div', { style: { display: 'flex', justifyContent: 'space-between' } },
+            h('span', { style: { color: 'var(--gray-500)' } }, 'Clients'),
+            h('span', { style: { fontWeight: '600' } }, String(settings.data?.clients || 0))
           )
         )
       ),
@@ -4119,8 +4167,9 @@ function renderSettingsPage() {
         h('h3', { style: { fontSize: '16px', color: 'var(--navy)', marginBottom: '16px' } }, 'Keyboard Shortcuts'),
         h('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px' } },
           ...[
-            ['1', 'Dashboard'], ['2', 'Content'], ['3', 'Triggers'], ['4', 'Calendar'],
-            ['5', 'Analytics'], ['6', 'Settings'], ['7', 'Memory'], ['D', 'Toggle Dark Mode'], ['Esc', 'Close Modal']
+            ['1', 'Dashboard'], ['2', 'Pipeline'], ['3', 'Meetings'], ['4', 'Clients'],
+            ['5', 'Actions'], ['6', 'Pestering'], ['7', 'Insights'], ['8', 'Deals'],
+            ['9', 'Settings'], ['C', 'Content'], ['T', 'Triggers'], ['D', 'Toggle Dark Mode'], ['Esc', 'Close Modal']
           ].map(([key, label]) =>
             h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
               h('span', { style: { color: 'var(--gray-500)', fontSize: '13px' } }, label),
@@ -4442,6 +4491,20 @@ function renderMeetingsPage() {
           state.syncingMeetings = false; render();
         }
       }, state.syncingMeetings ? 'Syncing...' : 'Sync from Fireflies'),
+      meetings.length > 0 ? h('button', {
+        className: 'btn btn-sm',
+        style: { background: 'var(--amber)', color: 'white' },
+        disabled: state.reprocessingMeetings,
+        onclick: async () => {
+          if (!confirm('Reprocess all meetings? This clears derived data and re-runs the AI pipeline.')) return;
+          state.reprocessingMeetings = true; render();
+          try {
+            const res = await api('/api/meetings/reprocess', { method: 'POST' });
+            toast(`Reprocessing ${res.queued} meetings in background`, 'success');
+          } catch (err) { toast('Reprocess failed: ' + err.message, 'error'); }
+          state.reprocessingMeetings = false; render();
+        }
+      }, state.reprocessingMeetings ? 'Reprocessing...' : 'Reprocess All') : null,
 
       // Type filter
       h('select', {
@@ -4753,7 +4816,34 @@ function renderClientsPage() {
             } catch (err) { toast('Brief failed: ' + err.message, 'error'); }
             state.generatingBrief = false; render();
           }
-        }, state.generatingBrief ? 'Generating...' : 'Generate Pre-Call Brief')
+        }, state.generatingBrief ? 'Generating...' : 'Generate Pre-Call Brief'),
+        h('div', { style: { position: 'relative', display: 'inline-block' } },
+          h('button', {
+            className: 'btn btn-outline btn-sm',
+            onclick: () => { state.showPesterStageMenu = !state.showPesterStageMenu; render(); }
+          }, '+ Follow-Up Schedule'),
+          state.showPesterStageMenu ? h('div', { style: {
+            position: 'absolute', top: '100%', left: 0, marginTop: '4px', zIndex: 100,
+            background: 'white', border: '1px solid var(--gray-200)', borderRadius: 'var(--radius-sm)',
+            boxShadow: 'var(--shadow-lg)', padding: '4px 0', minWidth: '180px'
+          } },
+            ...['interested', 'report_sent', 'call_booked', 'discovery_done', 'proposal_sent'].map(stage =>
+              h('div', {
+                style: { padding: '8px 14px', cursor: 'pointer', fontSize: '13px', transition: 'background 0.1s' },
+                onmouseenter: (e) => { e.target.style.background = 'var(--gray-50)'; },
+                onmouseleave: (e) => { e.target.style.background = ''; },
+                onclick: async () => {
+                  state.showPesterStageMenu = false; render();
+                  try {
+                    await api(`/api/pestering/create/${detail.id}/${stage}`, { method: 'POST' });
+                    toast(`Follow-up schedule created: ${stage.replace(/_/g, ' ')}`, 'success');
+                    await loadData();
+                  } catch (err) { toast('Failed: ' + err.message, 'error'); }
+                }
+              }, stage.replace(/_/g, ' '))
+            )
+          ) : null
+        )
       ),
       // Pre-call brief
       state.clientBrief && state.clientBrief.client_id === detail.id ? h('div', { className: 'card', style: {
@@ -5611,12 +5701,12 @@ function renderSaveUrlPage() {
       )
     ),
     // Previously saved URLs
-    urlTriggers.length > 0
-      ? h('div', { style: { maxWidth: '700px', marginTop: '24px' } },
-          h('h4', { style: { fontSize: '14px', color: 'var(--gray-500)', marginBottom: '12px' } },
-            `Previously Saved (${urlTriggers.length})`
-          ),
-          h('div', { className: 'card' },
+    h('div', { style: { maxWidth: '700px', marginTop: '24px' } },
+      h('h4', { style: { fontSize: '14px', color: 'var(--gray-500)', marginBottom: '12px' } },
+        urlTriggers.length > 0 ? `Previously Saved (${urlTriggers.length})` : 'Previously Saved'
+      ),
+      urlTriggers.length > 0
+        ? h('div', { className: 'card' },
             ...urlTriggers.slice(0, 10).map(t =>
               h('div', { style: { padding: '12px 16px', borderBottom: '1px solid var(--gray-100)', display: 'flex', alignItems: 'center', gap: '12px' } },
                 h('span', { className: 'badge badge-url' }, 'url'),
@@ -5628,8 +5718,8 @@ function renderSaveUrlPage() {
               )
             )
           )
-        )
-      : null
+        : h('p', { style: { fontSize: '13px', color: 'var(--gray-400)' } }, 'No saved URLs yet — paste a URL above to get started')
+    )
   );
 }
 

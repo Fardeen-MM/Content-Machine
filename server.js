@@ -966,16 +966,20 @@ async function handleRequest(req, res) {
       const published = readJSON('published.json');
       return json(res, {
         api_key: !!process.env.ANTHROPIC_API_KEY,
+        fireflies_key: !!process.env.FIREFLIES_API_KEY,
+        ghl_key: !!process.env.GHL_API_KEY,
+        instantly_key: !!process.env.INSTANTLY_API_KEY,
+        telegram_key: !!process.env.TELEGRAM_BOT_TOKEN,
         ideogram_key: !!process.env.IDEOGRAM_API_KEY,
         youtube_key: !!process.env.YOUTUBE_API_KEY,
-        fireflies_key: !!process.env.FIREFLIES_API_KEY,
-        ghl_webhook: !!process.env.GHL_WEBHOOK_SECRET,
-        telegram_bot: !!process.env.TELEGRAM_BOT_TOKEN,
         scrapers: ['reddit', 'rss', 'youtube', 'google-news', 'hackernews', 'competitors'],
+        mcp_servers: ['pipeline', 'fireflies', 'ghl', 'instantly'],
         data: {
           triggers: triggers.length,
           content: content.length,
-          published: published.length
+          published: published.length,
+          meetings: db.getStats().meetings.total,
+          clients: db.getStats().clients.total
         }
       });
     }
@@ -1767,9 +1771,14 @@ ${context}`;
     if (pathname === '/api/deals' && method === 'POST') {
       const body = await parseBody(req);
       if (!body.outcome) return json(res, { error: 'outcome required' }, 400);
+      // Auto-resolve client_id from client_name if not provided
+      if (!body.client_id && body.client_name) {
+        const clients = db.getClients({ search: body.client_name, limit: 1 });
+        if (clients.length) body.client_id = clients[0].id;
+      }
       const deal = db.insertDealOutcome(body);
       // Telegram alert on close/loss
-      if (body.outcome === 'closed') {
+      if (body.outcome === 'won') {
         sendTelegramAlert(`💰 <b>DEAL CLOSED</b>: ${body.client_name || 'Unknown'}${body.monthly_value ? ' — $' + body.monthly_value + '/mo' : ''}`);
       } else if (body.outcome === 'lost') {
         sendTelegramAlert(`❌ <b>DEAL LOST</b>: ${body.client_name || 'Unknown'}${body.loss_reason ? ' — ' + body.loss_reason : ''}`);

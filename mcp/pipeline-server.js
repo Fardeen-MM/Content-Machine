@@ -30,11 +30,6 @@ const { generateProposal } = require('../lib/proposal-generator');
 const { readJSON } = require('../lib/utils');
 const { generateBrief } = require('../generator/daily-brief');
 
-const server = new Server(
-  { name: 'mortar-pipeline', version: '1.0.0' },
-  { capabilities: { tools: {} } }
-);
-
 // ── Tool definitions ──
 
 const TOOLS = [
@@ -238,11 +233,15 @@ const TOOLS = [
   }
 ];
 
-server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools: TOOLS }));
+function createServer() {
+  const server = new Server(
+    { name: 'mortar-pipeline', version: '1.0.0' },
+    { capabilities: { tools: {} } }
+  );
 
-// ── Tool handlers ──
+  server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools: TOOLS }));
 
-server.setRequestHandler(CallToolRequestSchema, async (request) => {
+  server.setRequestHandler(CallToolRequestSchema, async (request) => {
   const { name, arguments: args } = request.params;
 
   try {
@@ -427,6 +426,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
   }
 });
 
+  return server;
+}
+
 function ok(data) {
   return { content: [{ type: 'text', text: JSON.stringify(data, null, 2) }] };
 }
@@ -435,12 +437,11 @@ function err(message) {
   return { content: [{ type: 'text', text: JSON.stringify({ error: message }) }], isError: true };
 }
 
-// ── Start ──
-
-async function main() {
+// Stdio mode when run directly
+if (require.main === module) {
+  const server = createServer();
   const transport = new StdioServerTransport();
-  await server.connect(transport);
-  console.error('[mcp] Pipeline server running');
+  server.connect(transport).then(() => console.error('[mcp] Pipeline server running (20 tools)'));
 }
 
-main().catch(err => { console.error(err); process.exit(1); });
+module.exports = { createServer };

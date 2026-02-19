@@ -18,10 +18,6 @@ const {
 } = require('@modelcontextprotocol/sdk/types.js');
 
 const API_KEY = process.env.INSTANTLY_API_KEY;
-if (!API_KEY) {
-  console.error('[mcp] INSTANTLY_API_KEY must be set');
-  process.exit(1);
-}
 const BASE = 'https://api.instantly.ai/api/v2';
 
 async function inst(path, opts = {}) {
@@ -41,11 +37,6 @@ async function inst(path, opts = {}) {
   }
   return res.json();
 }
-
-const server = new Server(
-  { name: 'mortar-instantly', version: '1.0.0' },
-  { capabilities: { tools: {} } }
-);
 
 const TOOLS = [
   // Campaigns
@@ -210,9 +201,15 @@ const TOOLS = [
   }
 ];
 
-server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools: TOOLS }));
+function createServer() {
+  const server = new Server(
+    { name: 'mortar-instantly', version: '1.0.0' },
+    { capabilities: { tools: {} } }
+  );
 
-server.setRequestHandler(CallToolRequestSchema, async (request) => {
+  server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools: TOOLS }));
+
+  server.setRequestHandler(CallToolRequestSchema, async (request) => {
   const { name, arguments: args } = request.params;
 
   try {
@@ -411,6 +408,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
   }
 });
 
+  return server;
+}
+
 function ok(data) {
   return { content: [{ type: 'text', text: JSON.stringify(data, null, 2) }] };
 }
@@ -419,10 +419,15 @@ function err(message) {
   return { content: [{ type: 'text', text: JSON.stringify({ error: message }) }], isError: true };
 }
 
-async function main() {
+// Stdio mode when run directly
+if (require.main === module) {
+  if (!API_KEY) {
+    console.error('[mcp] INSTANTLY_API_KEY must be set');
+    process.exit(1);
+  }
+  const server = createServer();
   const transport = new StdioServerTransport();
-  await server.connect(transport);
-  console.error('[mcp] Instantly server running (15 tools)');
+  server.connect(transport).then(() => console.error('[mcp] Instantly server running (15 tools)'));
 }
 
-main().catch(err => { console.error(err); process.exit(1); });
+module.exports = { createServer };

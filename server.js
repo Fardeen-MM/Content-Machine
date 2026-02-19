@@ -2239,6 +2239,61 @@ Return JSON array (no fences):
       return json(res, { ok: true });
     }
 
+    // --- Remote MCP (SSE) endpoints ---
+
+    if (pathname === '/mcp/health' && method === 'GET') {
+      return json(res, {
+        ok: true,
+        servers: {
+          pipeline: { tools: 20, status: 'available' },
+          fireflies: { tools: 5, status: 'available' },
+          ghl: { tools: 22, status: process.env.GHL_API_KEY ? 'available' : 'no_api_key' },
+          instantly: { tools: 15, status: process.env.INSTANTLY_API_KEY ? 'available' : 'no_api_key' }
+        }
+      });
+    }
+
+    // SSE endpoints for all 4 MCP servers
+    const mcpMatch = pathname.match(/^\/mcp\/(pipeline|fireflies|ghl|instantly)\/sse$/);
+    if (mcpMatch) {
+      const serverName = mcpMatch[1];
+
+      if (method === 'GET') {
+        // Establish SSE connection
+        const { SSEServerTransport } = require('@modelcontextprotocol/sdk/server/sse.js');
+        const transport = new SSEServerTransport(`/mcp/${serverName}/sse`, res);
+        const sessionId = transport.sessionId;
+
+        // Store transport for POST routing
+        if (!global._mcpTransports) global._mcpTransports = {};
+        global._mcpTransports[sessionId] = transport;
+
+        // Create and connect MCP server
+        const { createServer } = require(`./mcp/${serverName}-server.js`);
+        const mcpServer = createServer();
+        await mcpServer.connect(transport);
+        console.log(`[mcp-sse] ${serverName} connected (session: ${sessionId})`);
+
+        // Cleanup on disconnect
+        transport.onclose = () => {
+          delete global._mcpTransports[sessionId];
+          console.log(`[mcp-sse] ${serverName} disconnected (session: ${sessionId})`);
+        };
+        return; // SSE stream stays open
+      }
+
+      if (method === 'POST') {
+        // Route message to existing SSE transport
+        const sessionId = url.searchParams.get('sessionId');
+        if (!sessionId || !global._mcpTransports?.[sessionId]) {
+          return json(res, { error: 'Unknown session' }, 400);
+        }
+        const transport = global._mcpTransports[sessionId];
+        await transport.handlePostMessage(req, res);
+        return;
+      }
+    }
+
     // --- Static file serving ---
 
     // Serve dashboard
@@ -2374,6 +2429,8 @@ server.listen(PORT, HOST, () => {
   console.log(`  Claude API: ${process.env.ANTHROPIC_API_KEY ? 'OK' : 'NOT SET'}`);
   console.log(`  Fireflies: ${process.env.FIREFLIES_API_KEY ? 'OK' : 'NOT SET'}`);
   console.log(`  Telegram: ${process.env.TELEGRAM_BOT_TOKEN ? 'OK' : 'NOT SET'}`);
+  console.log(`  MCP SSE: /mcp/{pipeline,fireflies,ghl,instantly}/sse`);
+  console.log(`  MCP Health: /mcp/health`);
   console.log(`  Cron: daily brief 8AM EST, alerts every 2h`);
   console.log('');
 

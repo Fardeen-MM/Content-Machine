@@ -19,10 +19,6 @@ const {
 
 const GHL_API_KEY = process.env.GHL_API_KEY;
 const GHL_LOCATION_ID = process.env.GHL_LOCATION_ID;
-if (!GHL_API_KEY || !GHL_LOCATION_ID) {
-  console.error('[mcp] GHL_API_KEY and GHL_LOCATION_ID must be set');
-  process.exit(1);
-}
 const BASE_URL = 'https://services.leadconnectorhq.com';
 
 async function ghl(path, opts = {}) {
@@ -44,11 +40,6 @@ async function ghl(path, opts = {}) {
   }
   return res.json();
 }
-
-const server = new Server(
-  { name: 'mortar-ghl', version: '1.0.0' },
-  { capabilities: { tools: {} } }
-);
 
 // ── Tool definitions ──
 
@@ -273,11 +264,15 @@ const TOOLS = [
   }
 ];
 
-server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools: TOOLS }));
+function createServer() {
+  const server = new Server(
+    { name: 'mortar-ghl', version: '1.0.0' },
+    { capabilities: { tools: {} } }
+  );
 
-// ── Tool handlers ──
+  server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools: TOOLS }));
 
-server.setRequestHandler(CallToolRequestSchema, async (request) => {
+  server.setRequestHandler(CallToolRequestSchema, async (request) => {
   const { name, arguments: args } = request.params;
 
   try {
@@ -570,6 +565,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
   }
 });
 
+  return server;
+}
+
 function ok(data) {
   return { content: [{ type: 'text', text: JSON.stringify(data, null, 2) }] };
 }
@@ -578,10 +576,15 @@ function err(message) {
   return { content: [{ type: 'text', text: JSON.stringify({ error: message }) }], isError: true };
 }
 
-async function main() {
+// Stdio mode when run directly
+if (require.main === module) {
+  if (!GHL_API_KEY || !GHL_LOCATION_ID) {
+    console.error('[mcp] GHL_API_KEY and GHL_LOCATION_ID must be set');
+    process.exit(1);
+  }
+  const server = createServer();
   const transport = new StdioServerTransport();
-  await server.connect(transport);
-  console.error('[mcp] GHL server running (22 tools)');
+  server.connect(transport).then(() => console.error('[mcp] GHL server running (22 tools)'));
 }
 
-main().catch(err => { console.error(err); process.exit(1); });
+module.exports = { createServer };

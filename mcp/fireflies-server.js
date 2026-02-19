@@ -24,11 +24,6 @@ db.initDb();
 const fireflies = require('../lib/fireflies');
 const { processMeeting } = require('../lib/meeting-processor');
 
-const server = new Server(
-  { name: 'mortar-fireflies', version: '1.0.0' },
-  { capabilities: { tools: {} } }
-);
-
 const TOOLS = [
   {
     name: 'get_recent_calls',
@@ -80,9 +75,15 @@ const TOOLS = [
   }
 ];
 
-server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools: TOOLS }));
+function createServer() {
+  const server = new Server(
+    { name: 'mortar-fireflies', version: '1.0.0' },
+    { capabilities: { tools: {} } }
+  );
 
-server.setRequestHandler(CallToolRequestSchema, async (request) => {
+  server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools: TOOLS }));
+
+  server.setRequestHandler(CallToolRequestSchema, async (request) => {
   const { name, arguments: args } = request.params;
 
   try {
@@ -197,6 +198,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
   }
 });
 
+  return server;
+}
+
 function ok(data) {
   return { content: [{ type: 'text', text: JSON.stringify(data, null, 2) }] };
 }
@@ -205,10 +209,11 @@ function err(message) {
   return { content: [{ type: 'text', text: JSON.stringify({ error: message }) }], isError: true };
 }
 
-async function main() {
+// Stdio mode when run directly
+if (require.main === module) {
+  const server = createServer();
   const transport = new StdioServerTransport();
-  await server.connect(transport);
-  console.error('[mcp] Fireflies server running');
+  server.connect(transport).then(() => console.error('[mcp] Fireflies server running (5 tools)'));
 }
 
-main().catch(err => { console.error(err); process.exit(1); });
+module.exports = { createServer };

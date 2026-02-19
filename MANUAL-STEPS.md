@@ -105,9 +105,12 @@ Sends daily brief (8AM EST) and 2-hour alerts (stale deals, overdue proposals, p
 
 Connect Claude Desktop to the Command Centre via MCP (Model Context Protocol).
 
-### 6a. Pipeline Server (20 tools)
+**Test connections first:**
+```bash
+node scripts/test-connections.js
+```
 
-Gives Claude access to: pipeline, prospects, actions, pestering, deals, ROI, brief, content, meetings, proposals.
+### 6a. All 4 MCP Servers
 
 Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
 ```json
@@ -116,55 +119,58 @@ Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
     "mortar-pipeline": {
       "command": "node",
       "args": ["/path/to/content-machine/mcp/pipeline-server.js"],
-      "env": {
-        "ANTHROPIC_API_KEY": "sk-ant-...",
-        "NODE_ENV": "production"
-      }
-    }
-  }
-}
-```
-
-### 6b. Fireflies Server (5 tools)
-
-Gives Claude access to: recent calls, call detail, search, calls by prospect, Fireflies sync.
-
-Add to the same config file:
-```json
-{
-  "mcpServers": {
-    "mortar-pipeline": { "..." : "..." },
+      "env": { "ANTHROPIC_API_KEY": "sk-ant-..." }
+    },
     "mortar-fireflies": {
       "command": "node",
       "args": ["/path/to/content-machine/mcp/fireflies-server.js"],
+      "env": { "FIREFLIES_API_KEY": "..." }
+    },
+    "mortar-ghl": {
+      "command": "node",
+      "args": ["/path/to/content-machine/mcp/ghl-server.js"],
       "env": {
-        "ANTHROPIC_API_KEY": "sk-ant-...",
-        "FIREFLIES_API_KEY": "...",
-        "NODE_ENV": "production"
+        "GHL_API_KEY": "pit-0e29b039-484b-442c-98e5-daf7c9973fd1",
+        "GHL_LOCATION_ID": "XQ7XQbNXdilxGeKGOkHf"
+      }
+    },
+    "mortar-instantly": {
+      "command": "node",
+      "args": ["/path/to/content-machine/mcp/instantly-server.js"],
+      "env": {
+        "INSTANTLY_API_KEY": "YjRmMDBjYTMtZjk2OS00NGI4LWIyODUtMDg0MTc5MGU5MjQ5Om5oV3dJZ0dnUW5hYQ=="
       }
     }
   }
 }
 ```
 
-### 6c. Claude Project Setup
+**Servers overview:**
+- **mortar-pipeline** (20 tools): Command Centre DB — prospects, actions, pestering, deals, insights, ROI, brief, content, meetings, proposals
+- **mortar-fireflies** (5 tools): Call recordings — recent calls, call detail, search, calls by prospect, sync
+- **mortar-ghl** (22 tools): GoHighLevel CRM — pipelines, opportunities, contacts, notes, tasks, conversations, calendars, tags, custom fields, users
+- **mortar-instantly** (15 tools): Cold email — campaigns, analytics, leads, interested leads, email accounts, block list
+
+### 6b. Claude Project Setup
 
 1. Create a Claude Project named "Mortar Command Centre"
 2. Add the knowledge base as a project file: upload `data/knowledge-base.md`
 3. Set custom instructions:
    ```
-   You are the Mortar Metrics Command Centre — the operating brain that replaced
-   the daily whiteboard session. You have MCP tools connected to the live system.
+   You are the Mortar Metrics Command Centre. You have MCP tools connected to:
+   - mortar-pipeline: Command Centre database (prospects, actions, pestering, deals, insights)
+   - mortar-fireflies: Call recordings and transcripts
+   - mortar-ghl: GoHighLevel CRM (contacts, opportunities, notes, conversations, calendar)
+   - mortar-instantly: Cold email campaigns, analytics, interested leads
 
-   Your job: identify the #1 bottleneck, assign specific tasks to specific people
-   (Yaseer for sales, Monty for content, Fardeen for systems), track every deal,
-   and pester until things get done.
-
-   Always name names. Give deadlines. Reference real data. Think in revenue.
+   When asked about the pipeline: pull from GHL (source of truth for deals).
+   When asked about email performance: pull from Instantly.
+   When asked about call content: pull from Fireflies.
+   Always name names. Give deadlines. Think in revenue.
    "$4K deal dies Friday if nobody calls" — not "consider following up."
    ```
 
-**Verification**: Open Claude Desktop, start a new chat in the project. Type "What's the pipeline looking like?" — Claude should call `get_pipeline` and return live data.
+**Verification**: Open Claude Desktop, start a new chat in the project. Type "What's the pipeline looking like?" — Claude should call `get_pipeline_summary` and return live deal data from GHL.
 
 ---
 
@@ -179,6 +185,8 @@ Set all env vars in Railway dashboard > service > Variables:
 - `PORT=3099`
 - `FIREFLIES_API_KEY`, `FIREFLIES_WEBHOOK_SECRET`
 - `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`
+- `GHL_API_KEY`, `GHL_LOCATION_ID`
+- `INSTANTLY_API_KEY`
 - `INSTANTLY_WEBHOOK_SECRET`
 - `MORTAR_REPORTS_WEBHOOK_SECRET`
 - `GHL_WEBHOOK_SECRET`

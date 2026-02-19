@@ -9,7 +9,10 @@
     "generate": "node generator/run-daily.js",
     "seed": "node scripts/seed-data.js",
     "mcp:pipeline": "node mcp/pipeline-server.js",
-    "mcp:fireflies": "node mcp/fireflies-server.js"
+    "mcp:fireflies": "node mcp/fireflies-server.js",
+    "mcp:ghl": "node mcp/ghl-server.js",
+    "mcp:instantly": "node mcp/instantly-server.js",
+    "test:connections": "node scripts/test-connections.js"
   },
   "author": "Mortar Metrics",
   "license": "PRIVATE",

@@ -17,8 +17,12 @@ const {
   ListToolsRequestSchema
 } = require('@modelcontextprotocol/sdk/types.js');
 
-const GHL_API_KEY = process.env.GHL_API_KEY || 'pit-0e29b039-484b-442c-98e5-daf7c9973fd1';
-const GHL_LOCATION_ID = process.env.GHL_LOCATION_ID || 'XQ7XQbNXdilxGeKGOkHf';
+const GHL_API_KEY = process.env.GHL_API_KEY;
+const GHL_LOCATION_ID = process.env.GHL_LOCATION_ID;
+if (!GHL_API_KEY || !GHL_LOCATION_ID) {
+  console.error('[mcp] GHL_API_KEY and GHL_LOCATION_ID must be set');
+  process.exit(1);
+}
 const BASE_URL = 'https://services.leadconnectorhq.com';
 
 async function ghl(path, opts = {}) {

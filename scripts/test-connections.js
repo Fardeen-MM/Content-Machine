@@ -17,11 +17,11 @@ if (fs.existsSync(envPath)) {
   }
 }
 
-const GHL_API_KEY = process.env.GHL_API_KEY || 'pit-0e29b039-484b-442c-98e5-daf7c9973fd1';
-const GHL_LOCATION_ID = process.env.GHL_LOCATION_ID || 'XQ7XQbNXdilxGeKGOkHf';
+const GHL_API_KEY = process.env.GHL_API_KEY;
+const GHL_LOCATION_ID = process.env.GHL_LOCATION_ID;
 const GHL_BASE = 'https://services.leadconnectorhq.com';
 
-const INSTANTLY_API_KEY = process.env.INSTANTLY_API_KEY || 'YjRmMDBjYTMtZjk2OS00NGI4LWIyODUtMDg0MTc5MGU5MjQ5Om5oV3dJZ0dnUW5hYQ==';
+const INSTANTLY_API_KEY = process.env.INSTANTLY_API_KEY;
 const INSTANTLY_BASE = 'https://api.instantly.ai/api/v2';
 
 const FIREFLIES_API_KEY = process.env.FIREFLIES_API_KEY || '';

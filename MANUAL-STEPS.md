@@ -130,15 +130,15 @@ Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
       "command": "node",
       "args": ["/path/to/content-machine/mcp/ghl-server.js"],
       "env": {
-        "GHL_API_KEY": "pit-0e29b039-484b-442c-98e5-daf7c9973fd1",
-        "GHL_LOCATION_ID": "XQ7XQbNXdilxGeKGOkHf"
+        "GHL_API_KEY": "your-ghl-api-key",
+        "GHL_LOCATION_ID": "your-ghl-location-id"
       }
     },
     "mortar-instantly": {
       "command": "node",
       "args": ["/path/to/content-machine/mcp/instantly-server.js"],
       "env": {
-        "INSTANTLY_API_KEY": "YjRmMDBjYTMtZjk2OS00NGI4LWIyODUtMDg0MTc5MGU5MjQ5Om5oV3dJZ0dnUW5hYQ=="
+        "INSTANTLY_API_KEY": "your-instantly-api-key"
       }
     }
   }

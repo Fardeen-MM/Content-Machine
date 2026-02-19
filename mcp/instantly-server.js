@@ -17,7 +17,11 @@ const {
   ListToolsRequestSchema
 } = require('@modelcontextprotocol/sdk/types.js');
 
-const API_KEY = process.env.INSTANTLY_API_KEY || 'YjRmMDBjYTMtZjk2OS00NGI4LWIyODUtMDg0MTc5MGU5MjQ5Om5oV3dJZ0dnUW5hYQ==';
+const API_KEY = process.env.INSTANTLY_API_KEY;
+if (!API_KEY) {
+  console.error('[mcp] INSTANTLY_API_KEY must be set');
+  process.exit(1);
+}
 const BASE = 'https://api.instantly.ai/api/v2';
 
 async function inst(path, opts = {}) {

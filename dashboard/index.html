@@ -1349,6 +1349,7 @@ const state = {
   _calAssignSlot: null,
   _focusedContentIdx: 0,
   _extractingTriggers: false,
+  _showShortcuts: false,
   editText: '',
   sidebarOpen: false,
   filter: { status: 'all', source: 'all', category: 'all' },
@@ -1924,7 +1925,13 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'c' && !e.ctrlKey && !e.metaKey && !isEditing()) { state.page = 'content'; render(); }
   if (e.key === 't' && !e.ctrlKey && !e.metaKey && !isEditing()) { state.page = 'triggers'; render(); }
   if ((e.key === 'd' || e.key === 'D') && !e.ctrlKey && !e.metaKey && !isEditing()) { toggleDarkMode(); }
-  if (e.key === 'Escape') { state.editingFormat = null; state.sidebarOpen = false; state._remixOpen = null; state._calAssignSlot = null; render(); }
+  if (e.key === 'Escape') { state.editingFormat = null; state.sidebarOpen = false; state._remixOpen = null; state._calAssignSlot = null; state._showShortcuts = false; render(); }
+  if (e.key === '?' && !e.ctrlKey && !e.metaKey && !isEditing()) { state._showShortcuts = !state._showShortcuts; render(); }
+  if (e.key === '/' && !e.ctrlKey && !e.metaKey && !isEditing()) {
+    e.preventDefault();
+    const searchBox = document.querySelector('.search-input');
+    if (searchBox) searchBox.focus();
+  }
 
   // Content review shortcuts (only on content page, not editing)
   if (state.page === 'content' && !isEditing()) {
@@ -1955,9 +1962,6 @@ document.addEventListener('keydown', (e) => {
       if (state.selectedContent.has(current.id)) state.selectedContent.delete(current.id);
       else state.selectedContent.add(current.id);
       render();
-    }
-    if (e.key === '?' && !e.ctrlKey && !e.metaKey) {
-      toast('Shortcuts: j/k=navigate, Space=select, Esc=close, 1-9=pages, c=content, t=triggers', 'info');
     }
   }
 });
@@ -6236,6 +6240,47 @@ function render() {
                   } catch (err) { toast('Capture failed: ' + err.message, 'error'); }
                 }
               }, 'Save & Generate')
+            )
+          )
+        )
+      : null,
+    // Keyboard shortcuts modal
+    state._showShortcuts
+      ? h('div', { className: 'modal-overlay', onclick: (e) => { if (e.target.classList.contains('modal-overlay')) { state._showShortcuts = false; render(); } } },
+          h('div', { className: 'capture-modal', style: { maxWidth: '480px' } },
+            h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' } },
+              h('h3', { style: { fontFamily: "'Fraunces', serif" } }, 'Keyboard Shortcuts'),
+              h('button', { className: 'btn btn-ghost btn-sm', onclick: () => { state._showShortcuts = false; render(); } }, 'Esc')
+            ),
+            ...[
+              ['Navigation', [
+                ['1-7', 'Switch pages'],
+                ['c', 'Content page'],
+                ['t', 'Triggers page'],
+                ['9', 'Meetings page']
+              ]],
+              ['Content Review', [
+                ['j / k', 'Next / previous item'],
+                ['Space', 'Select / deselect item'],
+                ['a', 'Approve selected format'],
+                ['r', 'Reject selected format']
+              ]],
+              ['General', [
+                ['?', 'Toggle this help'],
+                ['Esc', 'Close modals / cancel edit'],
+                ['/', 'Focus search box'],
+                ['d', 'Toggle dark mode']
+              ]]
+            ].map(([section, keys]) =>
+              h('div', { style: { marginBottom: '16px' } },
+                h('h4', { style: { fontSize: '12px', color: 'var(--gray-400)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px' } }, section),
+                ...keys.map(([key, desc]) =>
+                  h('div', { style: { display: 'flex', justifyContent: 'space-between', padding: '4px 0', fontSize: '13px' } },
+                    h('span', { style: { color: 'var(--gray-500)' } }, desc),
+                    h('kbd', { style: { background: 'var(--gray-100)', padding: '2px 8px', borderRadius: '4px', fontSize: '12px', fontFamily: 'monospace', border: '1px solid var(--gray-200)' } }, key)
+                  )
+                )
+              )
             )
           )
         )

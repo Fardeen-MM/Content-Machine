@@ -1360,6 +1360,7 @@ const state = {
   _focusedContentIdx: 0,
   _extractingTriggers: false,
   _showShortcuts: false,
+  _rejectModal: null,
   editText: '',
   sidebarOpen: false,
   filter: { status: 'all', source: 'all', category: 'all', format: 'all' },
@@ -1455,7 +1456,7 @@ async function loadData() {
   state.loading = true;
   render();
   try {
-    const [content, triggers, stats, calendar, monthCal, settings, memory, performance, perfAnalytics, meetings, meetingStats, clients, allActions, chatMessages, healthData, inspirations, pestering, pesteringStages, insights, deals] = await Promise.all([
+    const [content, triggers, stats, calendar, monthCal, settings, memory, performance, perfAnalytics, meetings, meetingStats, clients, allActions, chatMessages, healthData, inspirations, pestering, pesteringStages, insights, deals, published] = await Promise.all([
       api('/api/content'),
       api('/api/triggers'),
       api('/api/stats'),
@@ -1475,7 +1476,8 @@ async function loadData() {
       api('/api/pestering').catch(() => []),
       api('/api/pestering/stages').catch(() => ({})),
       api('/api/insights').catch(() => []),
-      api('/api/deals').catch(() => [])
+      api('/api/deals').catch(() => []),
+      api('/api/published').catch(() => [])
     ]);
     state.content = content;
     state.triggers = triggers;
@@ -1497,6 +1499,7 @@ async function loadData() {
     state.pesteringStages = pesteringStages;
     state.insights = insights;
     state.deals = deals;
+    state.published = published;
   } catch (err) {
     console.error('Failed to load data:', err);
     toast('Failed to load data', 'error');
@@ -1537,19 +1540,28 @@ async function approveFormat(contentId, format) {
 }
 
 async function rejectFormat(contentId, format) {
-  // Optimistic update — show rejected immediately
+  // Show rejection reason picker modal
+  state._rejectModal = { contentId, format, reason: 'too_generic', note: '', suggestion: '' };
+  render();
+}
+
+async function submitRejection() {
+  const m = state._rejectModal;
+  if (!m) return;
+  const { contentId, format, reason, note, suggestion } = m;
+  state._rejectModal = null;
+
   const item = state.content.find(c => c.id === contentId);
   const prevStatus = item?.formats?.[format]?.status;
   if (item?.formats?.[format]) { item.formats[format].status = 'rejected'; render(); }
   try {
     const res = await api(`/api/content/${contentId}/reject`, {
       method: 'POST',
-      body: { format }
+      body: { format, reason, note, suggestion }
     });
     updateContentInState(res);
-    toast('Rejected', 'info');
+    toast('Rejected — feedback saved for future generation', 'info');
   } catch (err) {
-    // Rollback on failure
     if (item?.formats?.[format]) { item.formats[format].status = prevStatus || 'review'; }
     toast('Reject failed: ' + err.message, 'error');
   }
@@ -1948,7 +1960,7 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'c' && !e.ctrlKey && !e.metaKey && !isEditing()) { state.page = 'content'; render(); }
   if (e.key === 't' && !e.ctrlKey && !e.metaKey && !isEditing()) { state.page = 'triggers'; render(); }
   if ((e.key === 'd' || e.key === 'D') && !e.ctrlKey && !e.metaKey && !isEditing()) { toggleDarkMode(); }
-  if (e.key === 'Escape') { state.editingFormat = null; state.sidebarOpen = false; state._remixOpen = null; state._calAssignSlot = null; state._showShortcuts = false; render(); }
+  if (e.key === 'Escape') { state.editingFormat = null; state.sidebarOpen = false; state._remixOpen = null; state._calAssignSlot = null; state._showShortcuts = false; state._rejectModal = null; render(); }
   if (e.key === '?' && !e.ctrlKey && !e.metaKey && !isEditing()) { state._showShortcuts = !state._showShortcuts; render(); }
   if (e.key === '/' && !e.ctrlKey && !e.metaKey && !isEditing()) {
     e.preventDefault();
@@ -2990,6 +3002,14 @@ function renderFormatContent(content, formatKey, fmt) {
       h('button', {
         className: 'btn btn-outline btn-sm',
         onclick: () => {
+          const copyText = isThread ? fmt.content.join('\n\n') : (typeof text === 'string' ? text : JSON.stringify(text));
+          copyToClipboard(copyText, formatKey);
+        },
+        title: 'Copy to clipboard'
+      }, 'Copy'),
+      h('button', {
+        className: 'btn btn-outline btn-sm',
+        onclick: () => {
           state.editingFormat = `${content.id}:${formatKey}`;
           state.editText = isThread ? fmt.content.join('\n\n---\n\n') : (typeof text === 'string' ? text : JSON.stringify(text, null, 2));
           render();
@@ -3024,6 +3044,7 @@ function renderFormatContent(content, formatKey, fmt) {
         }, 'Remix'),
         state._remixOpen === `remix-${content.id}-${formatKey}`
           ? h('div', { style: { position: 'absolute', bottom: '100%', left: '0', background: 'white', border: '1px solid var(--gray-200)', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', padding: '4px', zIndex: '100', minWidth: '180px', marginBottom: '4px' } },
+              h('div', { style: { padding: '4px 12px 2px', fontSize: '10px', color: 'var(--gray-400)', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Rewrite In-Place'),
               ...['more_contrarian', 'add_story', 'shorten', 'more_data', 'more_human', 'stronger_hook'].map(d => {
                 const labels = { more_contrarian: 'More Contrarian', add_story: 'Add a Story', shorten: 'Shorten 40%', more_data: 'More Data/Numbers', more_human: 'More Human', stronger_hook: 'Stronger Hook' };
                 return h('div', {
@@ -3040,6 +3061,27 @@ function renderFormatContent(content, formatKey, fmt) {
                   onmouseover: (e) => { e.currentTarget.style.background = 'var(--gray-50)'; },
                   onmouseout: (e) => { e.currentTarget.style.background = 'transparent'; }
                 }, labels[d]);
+              }),
+              h('div', { style: { borderTop: '1px solid var(--gray-150)', margin: '4px 0' } }),
+              h('div', { style: { padding: '4px 12px 2px', fontSize: '10px', color: 'var(--gray-400)', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Create New Piece'),
+              ...['new-angle', 'different-audience', 'expand', 'simplify'].map(mode => {
+                const labels = { 'new-angle': 'Fresh Angle', 'different-audience': 'Different Audience', 'expand': 'Expand & Deepen', 'simplify': 'Make Viral' };
+                const descs = { 'new-angle': 'Same insight, different hook', 'different-audience': 'Rewrite for different practice area', 'expand': 'Longer, more detailed version', 'simplify': 'Punchy, shareable version' };
+                return h('div', {
+                  style: { padding: '6px 12px', fontSize: '12px', cursor: 'pointer', borderRadius: '4px', whiteSpace: 'nowrap' },
+                  onclick: async () => {
+                    state._remixOpen = null; render();
+                    toast(`Creating ${labels[mode]} remix...`, 'info');
+                    try {
+                      await api(`/api/content/${content.id}/remix`, { method: 'POST', body: { format: formatKey, mode } });
+                      toast('New remix created!', 'success');
+                      await loadData();
+                    } catch (err) { toast('Remix failed: ' + err.message, 'error'); }
+                  },
+                  onmouseover: (e) => { e.currentTarget.style.background = 'var(--gray-50)'; },
+                  onmouseout: (e) => { e.currentTarget.style.background = 'transparent'; },
+                  title: descs[mode]
+                }, labels[mode]);
               })
             )
           : null
@@ -3060,11 +3102,100 @@ function renderFormatContent(content, formatKey, fmt) {
   );
 }
 
+function copyToClipboard(text, label) {
+  navigator.clipboard.writeText(text).then(() => {
+    toast(`${label} copied to clipboard`, 'success');
+  }).catch(() => {
+    // Fallback for older browsers
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    toast(`${label} copied to clipboard`, 'success');
+  });
+}
+
+function getPublishingQueue() {
+  const published = state.published || [];
+  const publishedKeys = new Set(published.map(p => `${p.content_id}:${p.format}`));
+  const queue = [];
+  for (const item of state.content) {
+    if (item.status === 'archived') continue;
+    for (const [fmtKey, fmt] of Object.entries(item.formats || {})) {
+      if (fmt.status !== 'approved') continue;
+      if (publishedKeys.has(`${item.id}:${fmtKey}`)) continue;
+      queue.push({
+        content_id: item.id,
+        format: fmtKey,
+        trigger_title: item.trigger_title || 'Untitled',
+        content: typeof fmt.content === 'string' ? fmt.content : JSON.stringify(fmt.content),
+        quality_score: item.quality_score || 0,
+        generated_at: item.generated_at,
+        scheduled_for: fmt.scheduled_for || null
+      });
+    }
+  }
+  queue.sort((a, b) => (b.quality_score || 0) - (a.quality_score || 0));
+  return queue;
+}
+
 function renderContentPage() {
   const filtered = getFilteredContent();
   const hasSelected = state.selectedContent.size > 0;
+  const publishQueue = getPublishingQueue();
 
   return h('div', { className: 'page-content' },
+    // Publishing queue banner
+    publishQueue.length > 0
+      ? h('div', { style: { background: 'linear-gradient(135deg, var(--primary-50), #e0f2fe)', borderRadius: '12px', padding: '16px 20px', marginBottom: '16px', border: '1px solid var(--primary-200)' } },
+          h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: state._showPublishQueue ? '12px' : '0' } },
+            h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px' } },
+              h('span', { style: { fontSize: '18px' } }, '\u{1F4E4}'),
+              h('strong', { style: { fontSize: '14px', color: 'var(--primary-700)' } }, `${publishQueue.length} formats ready to publish`),
+              h('span', { style: { fontSize: '12px', color: 'var(--gray-500)' } }, '(approved but not yet published)')
+            ),
+            h('button', {
+              className: 'btn btn-sm btn-outline',
+              onclick: () => { state._showPublishQueue = !state._showPublishQueue; render(); }
+            }, state._showPublishQueue ? 'Hide' : 'Show Queue')
+          ),
+          state._showPublishQueue
+            ? h('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '400px', overflowY: 'auto' } },
+                ...publishQueue.slice(0, 20).map(item => {
+                  const fmtLabels = { linkedin: 'LinkedIn', x_single: 'Tweet', x_thread: 'Thread', blog: 'Blog', youtube_script: 'YouTube', newsletter: 'Newsletter', lead_magnet: 'Lead Magnet', short_video: 'Video Script', carousel: 'Carousel', poll: 'Poll', quote_cards: 'Quote Cards', stat_graphic: 'Stat Graphic', hot_take: 'Hot Take', before_after: 'Before/After', listicle: 'Listicle' };
+                  const preview = (item.content || '').slice(0, 120).replace(/\n/g, ' ');
+                  return h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 12px', background: 'var(--white)', borderRadius: '8px', border: '1px solid var(--gray-150)' } },
+                    h('span', { className: 'badge badge-blue', style: { fontSize: '10px', flexShrink: '0' } }, fmtLabels[item.format] || item.format),
+                    h('span', { style: { fontSize: '12px', color: 'var(--gray-600)', flex: '1', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } },
+                      h('strong', {}, item.trigger_title.slice(0, 50)),
+                      ' — ',
+                      preview
+                    ),
+                    h('button', {
+                      className: 'btn btn-sm btn-primary',
+                      style: { fontSize: '11px', flexShrink: '0' },
+                      onclick: () => copyToClipboard(item.content, fmtLabels[item.format] || item.format)
+                    }, 'Copy'),
+                    h('button', {
+                      className: 'btn btn-sm btn-outline',
+                      style: { fontSize: '11px', flexShrink: '0' },
+                      onclick: async () => {
+                        await api(`/api/content/${item.content_id}/publish`, { method: 'POST', body: { format: item.format } });
+                        copyToClipboard(item.content, fmtLabels[item.format] || item.format);
+                        toast('Marked as published', 'success');
+                        loadData();
+                      }
+                    }, 'Publish')
+                  );
+                })
+              )
+            : null
+        )
+      : null,
     // Filter bar with search and export
     h('div', { className: 'filter-bar' },
       ...['all', 'review', 'approved', 'rejected'].map(s =>
@@ -6329,6 +6460,43 @@ function render() {
                   } catch (err) { toast('Capture failed: ' + err.message, 'error'); }
                 }
               }, 'Save & Generate')
+            )
+          )
+        )
+      : null,
+    // Rejection feedback modal
+    state._rejectModal
+      ? h('div', { className: 'modal-overlay', onclick: (e) => { if (e.target.classList.contains('modal-overlay')) { state._rejectModal = null; render(); } } },
+          h('div', { className: 'capture-modal', style: { maxWidth: '420px' } },
+            h('h3', { style: { fontFamily: "'Fraunces', serif", marginBottom: '16px' } }, 'Why are you rejecting this?'),
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '16px' } },
+              ...['too_generic', 'wrong_tone', 'missing_numbers', 'bad_hook', 'off_brand', 'other'].map(reason => {
+                const labels = { too_generic: 'Too Generic', wrong_tone: 'Wrong Tone', missing_numbers: 'No Numbers', bad_hook: 'Bad Hook', off_brand: 'Off Brand', other: 'Other' };
+                const isSelected = state._rejectModal.reason === reason;
+                return h('button', {
+                  className: `btn btn-sm ${isSelected ? 'btn-primary' : 'btn-ghost'}`,
+                  style: { fontSize: '12px' },
+                  onclick: () => { state._rejectModal.reason = reason; render(); }
+                }, labels[reason]);
+              })
+            ),
+            h('input', {
+              type: 'text',
+              placeholder: 'Quick note (optional)',
+              value: state._rejectModal.note,
+              style: { width: '100%', padding: '8px 12px', borderRadius: '6px', border: '1px solid var(--gray-200)', marginBottom: '10px', fontSize: '13px', background: 'var(--white)', color: 'var(--gray-700)' },
+              oninput: (e) => { state._rejectModal.note = e.target.value; }
+            }),
+            h('input', {
+              type: 'text',
+              placeholder: 'Suggestion for improvement (optional)',
+              value: state._rejectModal.suggestion,
+              style: { width: '100%', padding: '8px 12px', borderRadius: '6px', border: '1px solid var(--gray-200)', marginBottom: '16px', fontSize: '13px', background: 'var(--white)', color: 'var(--gray-700)' },
+              oninput: (e) => { state._rejectModal.suggestion = e.target.value; }
+            }),
+            h('div', { style: { display: 'flex', gap: '8px', justifyContent: 'flex-end' } },
+              h('button', { className: 'btn btn-ghost', onclick: () => { state._rejectModal = null; render(); } }, 'Cancel'),
+              h('button', { className: 'btn btn-primary', onclick: submitRejection }, 'Reject with Feedback')
             )
           )
         )

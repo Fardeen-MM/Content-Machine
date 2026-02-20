@@ -482,25 +482,31 @@ async function handleRequest(req, res) {
 
       const body = await parseBody(req);
       const format = body.format;
+      const reason = body.reason || 'other'; // too_generic, wrong_tone, missing_numbers, bad_hook, off_brand, other
+      const suggestion = body.suggestion || '';
 
       if (format && content[idx].formats[format]) {
         content[idx].formats[format].status = 'rejected';
+        content[idx].formats[format].rejection_reason = reason;
       } else {
         for (const key of Object.keys(content[idx].formats)) {
           content[idx].formats[key].status = 'rejected';
+          content[idx].formats[key].rejection_reason = reason;
         }
         content[idx].status = 'rejected';
       }
 
-      if (body.note) {
-        content[idx].notes = (content[idx].notes || '') + `\nRejected: ${body.note}`;
+      const noteText = `[${reason}] ${body.note || ''}${suggestion ? ' → ' + suggestion : ''}`.trim();
+      if (noteText.length > 2) {
+        content[idx].notes = (content[idx].notes || '') + `\nRejected: ${noteText}`;
       }
 
       writeJSON('content.json', content);
 
-      // Learn from rejections — capture patterns to avoid
+      // Learn from rejections — capture structured patterns to avoid
       const memory = readJSON('memory.json', {});
       if (!memory.rejection_patterns) memory.rejection_patterns = [];
+      if (!memory.rejection_stats) memory.rejection_stats = {};
       const rejectedFormats = format
         ? [format]
         : Object.keys(content[idx].formats);
@@ -512,10 +518,16 @@ async function handleRequest(req, res) {
             trigger_title: content[idx].trigger_title,
             content_preview: (typeof fmt.content === 'string' ? fmt.content : JSON.stringify(fmt.content)).slice(0, 300),
             rejection_note: body.note || null,
+            reason,
+            suggestion: suggestion || null,
             rejected_at: now()
           });
-          // Keep only last 30 rejection patterns
-          if (memory.rejection_patterns.length > 30) memory.rejection_patterns = memory.rejection_patterns.slice(-30);
+          // Keep only last 50 rejection patterns
+          if (memory.rejection_patterns.length > 50) memory.rejection_patterns = memory.rejection_patterns.slice(-50);
+
+          // Track rejection stats by reason + format
+          const statsKey = `${fmtKey}:${reason}`;
+          memory.rejection_stats[statsKey] = (memory.rejection_stats[statsKey] || 0) + 1;
         }
       }
       writeJSON('memory.json', memory);
@@ -585,6 +597,42 @@ async function handleRequest(req, res) {
       // Sort newest first
       filtered.sort((a, b) => new Date(b.published_at || 0) - new Date(a.published_at || 0));
       return json(res, filtered);
+    }
+
+    // GET /api/publishing-queue — approved content ready to publish
+    if (pathname === '/api/publishing-queue' && method === 'GET') {
+      const content = readJSON('content.json');
+      const published = readJSON('published.json');
+      const publishedKeys = new Set(published.map(p => `${p.content_id}:${p.format}`));
+
+      const queue = [];
+      for (const item of content) {
+        if (item.status === 'archived') continue;
+        for (const [fmtKey, fmt] of Object.entries(item.formats || {})) {
+          if (fmt.status !== 'approved') continue;
+          if (publishedKeys.has(`${item.id}:${fmtKey}`)) continue;
+          queue.push({
+            content_id: item.id,
+            format: fmtKey,
+            trigger_title: item.trigger_title || 'Untitled',
+            trigger_source: item.trigger_source,
+            category: item.trigger_category,
+            content: typeof fmt.content === 'string' ? fmt.content : JSON.stringify(fmt.content),
+            quality_score: item.quality_score || 0,
+            generated_at: item.generated_at,
+            scheduled_for: fmt.scheduled_for || null,
+            hook_variants: item.hook_variants?.[fmtKey === 'linkedin' ? 'linkedin' : 'x'] || []
+          });
+        }
+      }
+      // Sort: scheduled first (by date), then by quality score
+      queue.sort((a, b) => {
+        if (a.scheduled_for && !b.scheduled_for) return -1;
+        if (!a.scheduled_for && b.scheduled_for) return 1;
+        if (a.scheduled_for && b.scheduled_for) return a.scheduled_for.localeCompare(b.scheduled_for);
+        return (b.quality_score || 0) - (a.quality_score || 0);
+      });
+      return json(res, { items: queue, total: queue.length });
     }
 
     // GET /api/calendar — monthly or weekly calendar
@@ -1352,7 +1400,7 @@ async function handleRequest(req, res) {
       return json(res, hooks);
     }
 
-    // POST /api/content/:id/remix — rewrite a format with a specific directive
+    // POST /api/content/:id/remix — rewrite a format with a directive OR create new content piece with a mode
     const remixFmtMatch = pathname.match(/^\/api\/content\/([a-f0-9]+)\/remix$/);
     if (remixFmtMatch && method === 'POST') {
       if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
@@ -1360,12 +1408,57 @@ async function handleRequest(req, res) {
       const idx = content.findIndex(c => c.id === remixFmtMatch[1]);
       if (idx === -1) return json(res, { error: 'Not found' }, 404);
       const body = await parseBody(req);
-      if (!body.format || !body.directive) return json(res, { error: 'format and directive required' }, 400);
+      const { buildSystemPromptWithMemory } = require('./generator/content-writer');
+
+      // Mode-based remix: creates a NEW content piece with different angle
+      if (body.mode) {
+        const sourceFormat = body.format || 'linkedin';
+        const fmt = content[idx].formats?.[sourceFormat];
+        if (!fmt?.content) return json(res, { error: `No ${sourceFormat} content to remix` }, 400);
+
+        try {
+          const { remixContent } = require('./lib/claude');
+          const remixed = await remixContent(fmt.content, content[idx].trigger_title, body.mode, buildSystemPromptWithMemory());
+
+          const newContent = {
+            id: generateId(),
+            trigger_id: content[idx].trigger_id,
+            trigger_title: content[idx].trigger_title,
+            trigger_source: content[idx].trigger_source,
+            trigger_category: content[idx].trigger_category,
+            trigger_url: content[idx].trigger_url,
+            generated_at: now(),
+            status: 'review',
+            remix_of: content[idx].id,
+            remix_mode: body.mode,
+            remix_angle: remixed.remix_angle || null,
+            formats: {
+              linkedin: { content: remixed.linkedin_post || null, status: 'review', edited: false },
+              x_single: { content: remixed.x_single || null, status: 'review', edited: false },
+              x_thread: { content: remixed.x_thread || null, status: 'review', edited: false },
+              hot_take: { content: remixed.hot_take || null, status: 'review', edited: false }
+            },
+            hook_variants: {},
+            image_prompt: null, image_url: null,
+            blog_keyword: null, youtube_topic: null, lead_magnet_topic: null,
+            quality_score: null,
+            notes: `Remixed from ${content[idx].id} (${body.mode})`
+          };
+          content.push(newContent);
+          writeJSON('content.json', content);
+          return json(res, { ok: true, content: newContent });
+        } catch (err) {
+          try { db.logError('generation', 'remix_content', err.message, { contentId: content[idx].id, mode: body.mode }); } catch {}
+          return json(res, { error: err.message }, 500);
+        }
+      }
+
+      // Directive-based remix: rewrites a single format IN-PLACE
+      if (!body.format || !body.directive) return json(res, { error: 'format and directive required (or use mode for new-piece remix)' }, 400);
       const fmt = content[idx].formats[body.format];
       if (!fmt?.content) return json(res, { error: 'Format has no content' }, 400);
 
       const { callClaude, HAIKU } = require('./lib/claude');
-      const { buildSystemPromptWithMemory } = require('./generator/content-writer');
       const directives = {
         'more_contrarian': 'Rewrite this to be MORE CONTRARIAN and PROVOCATIVE. Challenge the conventional wisdom. Take a strong stance. Make people want to argue in the comments.',
         'add_story': 'Rewrite this to LEAD WITH A SPECIFIC STORY — a real-sounding scenario of a law firm that experienced this problem. Include their practice area, the mistake, and the dollar amount lost. Make it feel like a conversation, not a lecture.',
@@ -1385,7 +1478,6 @@ async function handleRequest(req, res) {
           prompt: `DIRECTIVE: ${directiveText}\n\nORIGINAL CONTENT (${body.format}):\n${currentContent}\n\nTRIGGER CONTEXT: "${content[idx].trigger_title}"\n\nRewrite the content following the directive above. Return ONLY the rewritten content — no preamble, no explanation, no "here's the rewrite." Just the content itself.`,
           maxTokens: 2000
         });
-        // Store as remixed version
         content[idx].formats[body.format].content = remixed.trim();
         content[idx].formats[body.format].edited = true;
         content[idx].formats[body.format].remix_directive = body.directive;

@@ -155,11 +155,42 @@ function buildSystemPromptWithMemory() {
     }
     // Add rejection patterns — things to AVOID
     const rejections = memory.rejection_patterns || [];
+    const rejectionStats = memory.rejection_stats || {};
     if (rejections.length > 0) {
-      prompt += '\n\nREJECTED CONTENT — DO NOT write like these examples:\n';
-      const recent = rejections.slice(-5);
+      // Show top rejection reasons by frequency
+      const reasonCounts = {};
+      for (const r of rejections) {
+        const key = r.reason || 'other';
+        reasonCounts[key] = (reasonCounts[key] || 0) + 1;
+      }
+      const topReasons = Object.entries(reasonCounts).sort((a, b) => b[1] - a[1]);
+      if (topReasons.length > 0) {
+        const reasonLabels = {
+          too_generic: 'Too generic/vague (needs specific numbers and examples)',
+          wrong_tone: 'Wrong tone (too formal, too salesy, or off-brand)',
+          missing_numbers: 'Missing concrete numbers and data',
+          bad_hook: 'Weak hook (not compelling enough to stop scrolling)',
+          off_brand: 'Off-brand (doesn\'t sound like Mortar Metrics)',
+          other: 'Other quality issues'
+        };
+        prompt += '\n\nCOMMON REJECTION REASONS (avoid these patterns):\n';
+        for (const [reason, count] of topReasons.slice(0, 4)) {
+          prompt += `- ${reasonLabels[reason] || reason} (rejected ${count}x)\n`;
+        }
+      }
+      // Show recent rejection examples with suggestions
+      const withSuggestions = rejections.filter(r => r.suggestion).slice(-3);
+      if (withSuggestions.length > 0) {
+        prompt += '\nSPECIFIC FEEDBACK FROM REJECTIONS:\n';
+        for (const r of withSuggestions) {
+          prompt += `- [${r.format}] ${r.suggestion}\n`;
+        }
+      }
+      // Show a few recent rejection previews
+      const recent = rejections.slice(-3);
+      prompt += '\nREJECTED CONTENT — DO NOT write like these:\n';
       for (const r of recent) {
-        prompt += `- [${r.format}] "${r.content_preview.slice(0, 150)}..."${r.rejection_note ? ` Reason: ${r.rejection_note}` : ''}\n`;
+        prompt += `- [${r.format}] "${r.content_preview.slice(0, 120)}..."${r.rejection_note ? ` (${r.rejection_note})` : ''}\n`;
       }
     }
   } catch (err) {

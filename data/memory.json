@@ -1,4 +1,60 @@
 {
-  "approved_examples": [],
-  "style_notes": []
+  "approved_examples": [
+    {
+      "content_id": "942509da1ea4f8",
+      "format": "linkedin",
+      "content": "A law firm owner spent $57K on three agencies.\n\nTotal signed cases: 12.\n\nThat's $4,750 per case.\n\nHere's why they all failed.\n\nAgency 1: Promised 20 leads/month. Delivered 3. No call tracking. No reporting.\n\nAgency 2: Beautiful reports. Clicks up, CTR up, cases down. Optimizing vanity metrics.\n\nAgency 3: Ran ads to the wrong zip code for 4 months. Billed $2K/month the whole time.\n\nThe real problem: none measured what matters.\n\nSigned cases. That's it.\n\nBefore you hire anyone, ask three things:\n\n1. \"How do you define a lead?\" (If they say clicks, run.)\n2. \"What's my cost per signed case?\" (If they don't know, run.)\n3. \"Can I access all accounts?\" (If no, run.)\n\nGood agencies welcome accountability.\n\nBad ones hide behind impressions.",
+      "trigger_title": "Hired 3 marketing agencies in 2 years — all terrible. What am I doing wrong?",
+      "trigger_source": "reddit",
+      "trigger_category": "PAIN_POINT",
+      "was_edited": true,
+      "approved_at": "2026-02-20T18:11:00.490Z"
+    },
+    {
+      "content_id": "942509da1ea4f8",
+      "format": "x_single",
+      "content": "$57K across 3 agencies. 12 cases total. $4,750 per case. None tracked signed cases as their metric. Before hiring any agency: ask for cost per signed case, demand ad account access, and define what a \"lead\" is. Accountability > promises.",
+      "trigger_title": "Hired 3 marketing agencies in 2 years — all terrible. What am I doing wrong?",
+      "trigger_source": "reddit",
+      "trigger_category": "PAIN_POINT",
+      "was_edited": false,
+      "approved_at": "2026-02-20T18:11:00.490Z"
+    },
+    {
+      "content_id": "942509da1ea4f8",
+      "format": "x_thread",
+      "content": "[\"A law firm owner spent $57K on three marketing agencies in two years. Total signed cases: 12. That's $4,750 per case. Here's exactly what went wrong with each one 🧵\",\"Agency 1: Promised 20 leads/month. Delivered 3. No call tracking set up. No way to verify. Their response to complaints: \\\"trust the process.\\\" After 6 months and $18K, the firm fired them.\",\"Agency 2: Beautiful reports. Impressions up 200%. Click-through rate \\\"above industry average.\\\" Social engagement growing. Cases? Zero new ones. They optimized for metrics that look good in a slide deck but don't pay rent.\",\"Agency 3: Ran Google Ads to the wrong geographic area for 4 months. When caught, their response: \\\"that's a default Google setting.\\\" They never checked the basics. While billing $2K/month for \\\"management.\\\"\",\"The pattern across all three: NONE were measured on signed cases. Not one. They were measured on leads, clicks, impressions — everything except the thing that pays the bills.\",\"Before hiring any agency, ask three questions: (1) How do you define a lead? (2) What's my expected cost per signed case? (3) Can I have login access to all ad accounts? If any answer is unsatisfactory, walk away.\",\"Good agencies welcome accountability. They'll tell you exactly what a case costs and prove it monthly. Bad agencies hide behind vanity metrics and \\\"trust the process.\\\" $57K is expensive tuition, but the lesson is worth sharing.\"]",
+      "trigger_title": "Hired 3 marketing agencies in 2 years — all terrible. What am I doing wrong?",
+      "trigger_source": "reddit",
+      "trigger_category": "PAIN_POINT",
+      "was_edited": false,
+      "approved_at": "2026-02-20T18:11:00.490Z"
+    },
+    {
+      "content_id": "942509da1ea4f8",
+      "format": "short_video",
+      "content": "HOOK: A law firm owner spent $57,000 on three marketing agencies. Total signed cases across all three: twelve.\n\n[PAUSE]\n\nAgency one: promised 20 leads a month. Delivered three. No call tracking. \"Trust the process.\"\n\nAgency two: beautiful reports. Impressions up, clicks up, cases... zero.\n\nAgency three: ran Google Ads to the wrong geographic area. For four months.\n\n[PAUSE]\n\nThe pattern? None of them were measured on signed cases. Not one.\n\nBefore you hire any agency, ask three questions.\n\n[PAUSE]\n\nOne: how do you define a lead?\nTwo: what's my expected cost per signed case?\nThree: can I have login access to my ad accounts?\n\nIf any answer is vague, walk away. Good agencies welcome accountability.",
+      "trigger_title": "Hired 3 marketing agencies in 2 years — all terrible. What am I doing wrong?",
+      "trigger_source": "reddit",
+      "trigger_category": "PAIN_POINT",
+      "was_edited": false,
+      "approved_at": "2026-02-20T18:11:00.490Z"
+    }
+  ],
+  "style_notes": [
+    {
+      "note": "User edited linkedin before approving \"Hired 3 marketing agencies in 2 years — all terrible. What am I doing wrong?\" — the edited versions are the preferred style.",
+      "added_at": "2026-02-20T18:11:00.490Z",
+      "auto": true
+    }
+  ],
+  "rejection_patterns": [
+    {
+      "format": "linkedin",
+      "trigger_title": "Should I invest in SEO or PPC first? Budget is $5K/month",
+      "content_preview": "\"SEO or PPC first? Budget is $5K/month.\"\n\nI get this question every week.\n\nHere's the honest answer: it depends on how fast you need cases.\n\nNeed cases THIS month?\n→ Google Ads. $5K/month, you'll have leads in 48 hours.\n→ Expected: 15-30 leads/month for criminal defense\n→ Cost per lead: $170-330\n→ C",
+      "rejection_note": "Too generic, needs more specific numbers and a story",
+      "rejected_at": "2026-02-20T18:11:15.044Z"
+    }
+  ]
 }

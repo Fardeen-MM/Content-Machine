@@ -1348,6 +1348,7 @@ const state = {
   _remixOpen: null,
   _calAssignSlot: null,
   _focusedContentIdx: 0,
+  _extractingTriggers: false,
   editText: '',
   sidebarOpen: false,
   filter: { status: 'all', source: 'all', category: 'all' },
@@ -3448,6 +3449,22 @@ function renderTriggersPage() {
         `${filtered.length} triggers`
       ),
       h('button', {
+        className: 'btn btn-success btn-sm',
+        disabled: state.generating,
+        onclick: async () => {
+          const count = 5;
+          toast(`Generating content for top ${count} triggers...`, 'info');
+          state.generating = true; render();
+          try {
+            const result = await api('/api/generate-daily', { method: 'POST', body: { count } });
+            const generated = Array.isArray(result.content) ? result.content.length : 0;
+            toast(`Generated ${generated} content pieces!`, 'success');
+            await loadData();
+          } catch (err) { toast('Generation failed: ' + err.message, 'error'); }
+          state.generating = false; render();
+        }
+      }, state.generating ? 'Generating...' : 'Generate Top 5'),
+      h('button', {
         className: 'btn btn-primary btn-sm',
         onclick: () => { state.showAddTrigger = !state.showAddTrigger; render(); }
       }, state.showAddTrigger ? 'Cancel' : '+ Add Trigger')
@@ -4556,7 +4573,24 @@ function renderMeetingsPage() {
         }, 'Back'),
         h('h3', { style: { fontFamily: "'Fraunces', serif" } }, detail.title),
         typeBadge(detail.meeting_type),
-        sentimentIcon(detail.sentiment)
+        sentimentIcon(detail.sentiment),
+        h('div', { style: { marginLeft: 'auto' } },
+          h('button', {
+            className: 'btn btn-primary btn-sm',
+            disabled: state._extractingTriggers,
+            onclick: async () => {
+              state._extractingTriggers = true; render();
+              try {
+                const result = await api(`/api/meetings/${detail.id}/extract-triggers`, { method: 'POST' });
+                toast(`Extracted ${result.added || 0} content triggers from meeting`, 'success');
+                loadData();
+              } catch (err) {
+                toast('Failed to extract triggers: ' + err.message, 'error');
+              }
+              state._extractingTriggers = false; render();
+            }
+          }, state._extractingTriggers ? 'Extracting...' : 'Extract Content Triggers')
+        )
       ),
 
       // Meta row

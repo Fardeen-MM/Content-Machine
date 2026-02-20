@@ -1483,6 +1483,74 @@ async function handleRequest(req, res) {
       return;
     }
 
+    // POST /api/meetings/:id/extract-triggers — extract content triggers from meeting insights
+    const extractMatch = pathname.match(/^\/api\/meetings\/(\d+)\/extract-triggers$/);
+    if (extractMatch && method === 'POST') {
+      const meeting = db.getMeeting(parseInt(extractMatch[1]));
+      if (!meeting) return json(res, { error: 'Meeting not found' }, 404);
+
+      const ed = meeting.extracted_data || {};
+      const atoms = db.getAtoms({ meeting_id: meeting.id });
+      const triggers = readJSON('trigger-queue.json');
+      const newTriggers = [];
+
+      // Extract from pain points
+      for (const pp of (ed.pain_points || [])) {
+        if (pp.length > 20) {
+          newTriggers.push({
+            id: `meeting-${generateId()}`,
+            source: 'meeting',
+            source_detail: `From meeting: ${meeting.title}`,
+            title: pp.slice(0, 200),
+            raw_content: `Pain point from ${meeting.client_name || 'client'} meeting (${meeting.date?.slice(0, 10)}): ${pp}`,
+            category: 'PAIN_POINT',
+            captured_at: now(),
+            status: 'pending',
+            score: 0
+          });
+        }
+      }
+
+      // Extract from objections
+      for (const obj of (ed.objections || [])) {
+        if (obj.length > 20) {
+          newTriggers.push({
+            id: `meeting-${generateId()}`,
+            source: 'meeting',
+            source_detail: `From meeting: ${meeting.title}`,
+            title: `Objection: ${obj.slice(0, 180)}`,
+            raw_content: `Common objection from ${meeting.client_name || 'client'}: ${obj}. Address this in content to pre-handle objections.`,
+            category: 'QUESTION',
+            captured_at: now(),
+            status: 'pending',
+            score: 0
+          });
+        }
+      }
+
+      // Extract from content atoms
+      for (const atom of atoms.filter(a => a.type === 'insight' || a.type === 'quote' || a.type === 'success_story')) {
+        newTriggers.push({
+          id: `meeting-${generateId()}`,
+          source: 'meeting',
+          source_detail: `From meeting: ${meeting.title}`,
+          title: (atom.content || '').slice(0, 200),
+          raw_content: atom.content,
+          category: atom.type === 'success_story' ? 'CLIENT_WIN' : 'CONTENT_PIECE',
+          captured_at: now(),
+          status: 'pending',
+          score: 0
+        });
+      }
+
+      if (newTriggers.length > 0) {
+        triggers.push(...newTriggers);
+        writeJSON('trigger-queue.json', triggers);
+      }
+
+      return json(res, { ok: true, extracted: newTriggers.length, triggers: newTriggers.map(t => ({ id: t.id, title: t.title, category: t.category })) });
+    }
+
     // --- Clients API ---
 
     // GET /api/clients

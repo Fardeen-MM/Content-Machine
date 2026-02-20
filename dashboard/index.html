@@ -2634,6 +2634,37 @@ function renderDashboardPage() {
           )
         )
       : null,
+    // System health indicator
+    h('div', { className: 'card', style: { padding: '14px 20px', marginBottom: '20px', display: 'flex', gap: '20px', flexWrap: 'wrap', alignItems: 'center' } },
+      h('div', { style: { fontSize: '11px', fontWeight: '700', color: 'var(--gray-500)', textTransform: 'uppercase', letterSpacing: '0.5px' } }, 'System Health'),
+      h('div', { style: { display: 'flex', gap: '16px', flexWrap: 'wrap', flex: '1' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', gap: '6px' } },
+          h('span', { style: { width: '8px', height: '8px', borderRadius: '50%', background: state.settings?.claude_api ? 'var(--green)' : 'var(--red)' } }),
+          h('span', { style: { fontSize: '12px', color: 'var(--gray-500)' } }, 'Claude API')
+        ),
+        h('div', { style: { display: 'flex', alignItems: 'center', gap: '6px' } },
+          h('span', { style: { width: '8px', height: '8px', borderRadius: '50%', background: state.settings?.fireflies_api ? 'var(--green)' : 'var(--gray-300)' } }),
+          h('span', { style: { fontSize: '12px', color: 'var(--gray-500)' } }, 'Fireflies')
+        ),
+        (() => {
+          const freshCount = (state.triggers || []).filter(t => {
+            if (t.status !== 'pending') return false;
+            const age = Date.now() - new Date(t.captured_at || t.scraped_at || t.date || 0).getTime();
+            return age < 3 * 24 * 60 * 60 * 1000;
+          }).length;
+          const color = freshCount > 10 ? 'var(--green)' : freshCount > 0 ? 'var(--amber)' : 'var(--red)';
+          return h('div', { style: { display: 'flex', alignItems: 'center', gap: '6px' } },
+            h('span', { style: { width: '8px', height: '8px', borderRadius: '50%', background: color } }),
+            h('span', { style: { fontSize: '12px', color: 'var(--gray-500)' } }, `${freshCount} fresh triggers`)
+          );
+        })(),
+        h('div', { style: { display: 'flex', alignItems: 'center', gap: '6px' } },
+          h('span', { style: { fontSize: '12px', color: 'var(--gray-400)' } },
+            `Last refresh: ${state.lastRefreshed ? timeAgo(state.lastRefreshed) : 'never'}`
+          )
+        )
+      )
+    ),
     // Quick links row
     h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '12px' } },
       h('div', { className: 'card', style: { padding: '14px', cursor: 'pointer', textAlign: 'center' }, onclick: () => { state.page = 'content'; render(); } },
@@ -2741,7 +2772,13 @@ function renderContentCard(content) {
               style: { fontSize: '10px', color: pColor, fontWeight: '600', border: `1px solid ${pColor}44`, borderRadius: '4px', padding: '1px 6px' },
               title: `Predicted performance: ${pred.predicted_score} (confidence: ${pred.confidence}%)\nBest format: ${pred.best_format}`
             }, `Pred ${pred.predicted_score}`);
-          })()
+          })(),
+          content._similar_to && content._similar_to.length > 0
+            ? h('span', {
+                style: { fontSize: '10px', color: '#d97706', fontWeight: '600', border: '1px solid #d9770644', borderRadius: '4px', padding: '1px 6px', cursor: 'help' },
+                title: `Similar to ${content._similar_to.length} other content piece(s)`
+              }, `Dupe? (${content._similar_to.length})`)
+            : null
         )
       ),
       h('div', { style: { display: 'flex', gap: '6px', alignItems: 'center', flexShrink: '0' } },

@@ -407,6 +407,26 @@ async function handleRequest(req, res) {
       // Sort by generated_at descending
       content.sort((a, b) => new Date(b.generated_at) - new Date(a.generated_at));
 
+      // Flag potential duplicates (similar trigger titles within content)
+      const normTitle = (t) => (t || '').toLowerCase().replace(/[^a-z0-9 ]/g, '').replace(/\s+/g, ' ').trim();
+      for (let i = 0; i < content.length; i++) {
+        const titleA = normTitle(content[i].trigger_title);
+        const wordsA = new Set(titleA.split(' ').filter(w => w.length > 3));
+        if (wordsA.size < 3) continue;
+        for (let j = 0; j < content.length; j++) {
+          if (i === j) continue;
+          const titleB = normTitle(content[j].trigger_title);
+          const wordsB = new Set(titleB.split(' ').filter(w => w.length > 3));
+          if (wordsB.size < 3) continue;
+          const overlap = [...wordsA].filter(w => wordsB.has(w)).length;
+          const similarity = overlap / Math.min(wordsA.size, wordsB.size);
+          if (similarity > 0.7) {
+            if (!content[i]._similar_to) content[i]._similar_to = [];
+            content[i]._similar_to.push(content[j].id);
+          }
+        }
+      }
+
       const total = content.length;
       if (limit > 0) {
         content = content.slice(offset, offset + limit);
@@ -3542,6 +3562,52 @@ cron.schedule('0 7 * * *', () => {
     }
   } catch (err) {
     console.error('[cron] Auto-archive failed:', err.message);
+  }
+});
+
+// Auto-archive stale triggers (daily at 2:30AM EST = 7:30 UTC)
+cron.schedule('30 7 * * *', () => {
+  try {
+    const triggers = readJSON('trigger-queue.json');
+    const archived = readJSON('archived-triggers.json');
+    const cutoff = Date.now() - 21 * 24 * 60 * 60 * 1000;
+    const toArchive = [];
+    const keep = [];
+    for (const t of triggers) {
+      if (t.status === 'used') { keep.push(t); continue; }
+      const age = new Date(t.captured_at || t.scraped_at || t.date || 0).getTime();
+      if ((t.status === 'pending' && age < cutoff) || t.status === 'rejected') {
+        toArchive.push({ ...t, status: 'archived', archived_at: now() });
+      } else {
+        keep.push(t);
+      }
+    }
+    if (toArchive.length > 0) {
+      writeJSON('trigger-queue.json', keep);
+      writeJSON('archived-triggers.json', [...archived, ...toArchive]);
+      console.log(`[cron] Trigger auto-archive: ${toArchive.length} archived, ${keep.length} remaining`);
+    }
+  } catch (err) {
+    console.error('[cron] Trigger auto-archive failed:', err.message);
+    try { db.logError('cron', 'trigger_archive', err.message); } catch {}
+  }
+});
+
+// Auto-scrape for fresh triggers (daily at 6AM EST = 11 UTC)
+cron.schedule('0 11 * * *', async () => {
+  try {
+    console.log('[cron] Running daily scrape...');
+    const { runAll } = require('./scrapers/run-all');
+    await runAll();
+    const triggers = readJSON('trigger-queue.json');
+    const fresh = triggers.filter(t => {
+      const age = Date.now() - new Date(t.captured_at || t.scraped_at || t.date || 0).getTime();
+      return t.status === 'pending' && age < 24 * 60 * 60 * 1000;
+    });
+    console.log(`[cron] Daily scrape complete: ${fresh.length} new triggers today, ${triggers.length} total`);
+  } catch (err) {
+    console.error('[cron] Daily scrape failed:', err.message);
+    try { db.logError('cron', 'daily_scrape', err.message); } catch {}
   }
 });
 

@@ -550,6 +550,7 @@ async function handleRequest(req, res) {
       const format = body.format;
       if (!format) return json(res, { error: 'format required' }, 400);
 
+      const fmt = content[idx].formats[format] || {};
       const publishEntry = {
         content_id: content[idx].id,
         format,
@@ -558,7 +559,10 @@ async function handleRequest(req, res) {
         url: body.url || null,
         title: content[idx].trigger_title || 'Untitled',
         category: content[idx].trigger_category || null,
-        source: content[idx].trigger_source || null
+        source: content[idx].trigger_source || null,
+        hook_variant: fmt.selected_hook != null ? fmt.selected_hook : 'original',
+        was_edited: fmt.edited || false,
+        quality_score: content[idx].quality_score?.score || null
       };
       published.push(publishEntry);
       writeJSON('published.json', published);

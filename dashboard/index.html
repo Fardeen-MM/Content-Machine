@@ -1363,7 +1363,7 @@ const state = {
   _rejectModal: null,
   editText: '',
   sidebarOpen: false,
-  filter: { status: 'all', source: 'all', category: 'all', format: 'all', quality: 'all', dateRange: 'all' },
+  filter: { status: 'all', source: 'all', category: 'all', format: 'all', quality: 'all', dateRange: 'all', sort: 'newest' },
   toasts: [],
   urlInput: '',
   urlFormats: { linkedin: true, x_single: true, x_thread: true, short_video: true, blog: false, youtube_script: false },
@@ -1828,6 +1828,12 @@ function getFilteredContent() {
       return false;
     });
   }
+  // Sort
+  const sort = state.filter.sort || 'newest';
+  if (sort === 'newest') filtered.sort((a, b) => new Date(b.generated_at) - new Date(a.generated_at));
+  else if (sort === 'oldest') filtered.sort((a, b) => new Date(a.generated_at) - new Date(b.generated_at));
+  else if (sort === 'quality-high') filtered.sort((a, b) => (b.quality_score?.score || 0) - (a.quality_score?.score || 0));
+  else if (sort === 'quality-low') filtered.sort((a, b) => (a.quality_score?.score || 0) - (b.quality_score?.score || 0));
   return filtered;
 }
 
@@ -3339,6 +3345,16 @@ function renderContentPage() {
         h('option', { value: '7' }, 'This Week'),
         h('option', { value: '30' }, 'This Month'),
         h('option', { value: '90' }, 'Last 3 Months')
+      ),
+      h('select', {
+        style: { fontSize: '12px', padding: '4px 8px', borderRadius: '6px', border: '1px solid var(--gray-200)', background: 'var(--card-bg)', color: 'var(--gray-600)' },
+        value: state.filter.sort || 'newest',
+        onchange: (e) => { state.filter.sort = e.target.value; render(); }
+      },
+        h('option', { value: 'newest' }, 'Newest First'),
+        h('option', { value: 'oldest' }, 'Oldest First'),
+        h('option', { value: 'quality-high' }, 'Quality: High to Low'),
+        h('option', { value: 'quality-low' }, 'Quality: Low to High')
       ),
       (state.filter.source !== 'all' || state.filter.quality !== 'all' || state.filter.dateRange !== 'all')
         ? h('span', {

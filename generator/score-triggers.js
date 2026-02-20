@@ -74,6 +74,14 @@ function scoreTrigger(trigger) {
     score += 2;
   }
 
+  // Freshness decay — old triggers lose relevance
+  // After 7 days: 0.95^7 = 0.70 (30% penalty)
+  // After 14 days: 0.95^14 = 0.49 (51% penalty)
+  // After 30 days: 0.95^30 = 0.21 (79% penalty)
+  if (age > 3) {
+    score = Math.round(score * Math.pow(0.95, age - 3));
+  }
+
   return Math.max(0, score);
 }
 

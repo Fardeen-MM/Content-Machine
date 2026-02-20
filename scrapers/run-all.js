@@ -55,7 +55,7 @@ async function runAll() {
     console.error('[scraper] Competitors failed:', err.message);
   }
 
-  const newTriggers = [
+  const allNew = [
     ...results.reddit,
     ...results.rss,
     ...results.youtube,
@@ -63,6 +63,24 @@ async function runAll() {
     ...results.hackernews,
     ...results.competitors
   ];
+
+  // Cross-scraper deduplication — remove triggers with same URL or very similar titles
+  const existingUrls = new Set(existingTriggers.map(t => t.url).filter(Boolean));
+  const existingTitles = new Set(existingTriggers.map(t => (t.title || '').toLowerCase().trim()));
+  const seenUrls = new Set();
+  const seenTitles = new Set();
+  const newTriggers = allNew.filter(t => {
+    const url = t.url || '';
+    const title = (t.title || '').toLowerCase().trim();
+    if (url && (existingUrls.has(url) || seenUrls.has(url))) return false;
+    if (title && (existingTitles.has(title) || seenTitles.has(title))) return false;
+    if (url) seenUrls.add(url);
+    if (title) seenTitles.add(title);
+    return true;
+  });
+
+  const dupes = allNew.length - newTriggers.length;
+  if (dupes > 0) console.log(`  Deduplication: removed ${dupes} cross-scraper duplicates`);
 
   if (newTriggers.length > 0) {
     const updated = [...existingTriggers, ...newTriggers];

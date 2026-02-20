@@ -61,6 +61,12 @@ function verifyHmac(rawBody, signature, secret) {
   return crypto.timingSafeEqual(Buffer.from(computed), Buffer.from(signature));
 }
 
+function verifySecret(provided, expected) {
+  if (!provided || !expected) return false;
+  if (provided.length !== expected.length) return false;
+  return crypto.timingSafeEqual(Buffer.from(provided), Buffer.from(expected));
+}
+
 function buildChatContext(question) {
   const q = question.toLowerCase();
   const parts = [];
@@ -2071,7 +2077,7 @@ Return JSON array (no fences):
       const secret = process.env.INSTANTLY_WEBHOOK_SECRET;
       if (secret) {
         const headerSecret = req.headers['x-webhook-secret'];
-        if (headerSecret !== secret) {
+        if (!verifySecret(headerSecret, secret)) {
           return json(res, { error: 'Invalid secret' }, 401);
         }
       }
@@ -2156,7 +2162,7 @@ Return JSON array (no fences):
       const secret = process.env.MORTAR_REPORTS_WEBHOOK_SECRET;
       if (secret) {
         const headerSecret = req.headers['x-webhook-secret'];
-        if (headerSecret !== secret) {
+        if (!verifySecret(headerSecret, secret)) {
           return json(res, { error: 'Invalid secret' }, 401);
         }
       }
@@ -2231,7 +2237,7 @@ Return JSON array (no fences):
       const secret = process.env.GHL_WEBHOOK_SECRET;
       if (secret) {
         const headerSecret = req.headers['x-webhook-secret'];
-        if (headerSecret !== secret) {
+        if (!verifySecret(headerSecret, secret)) {
           return json(res, { error: 'Invalid secret' }, 401);
         }
       }
@@ -2267,7 +2273,7 @@ Return JSON array (no fences):
       const secret = process.env.LEAD_SCRAPER_WEBHOOK_SECRET;
       if (secret) {
         const headerSecret = req.headers['x-webhook-secret'];
-        if (headerSecret !== secret) {
+        if (!verifySecret(headerSecret, secret)) {
           return json(res, { error: 'Invalid secret' }, 401);
         }
       }
@@ -2360,6 +2366,31 @@ Return JSON array (no fences):
       }
 
       return json(res, { ok: true });
+    }
+
+    // --- System Health Check ---
+
+    if (pathname === '/health' && method === 'GET') {
+      const uptime = process.uptime();
+      const memUsage = process.memoryUsage();
+      let dbOk = false;
+      try { db.getDb().prepare('SELECT 1').get(); dbOk = true; } catch {}
+      const checks = {
+        server: true,
+        database: dbOk,
+        claude_api: !!process.env.ANTHROPIC_API_KEY,
+        fireflies: !!process.env.FIREFLIES_API_KEY,
+        telegram: !!process.env.TELEGRAM_BOT_TOKEN,
+      };
+      const ok = checks.server && checks.database && checks.claude_api;
+      return json(res, {
+        ok,
+        status: ok ? 'healthy' : 'degraded',
+        uptime: Math.floor(uptime),
+        memory_mb: Math.round(memUsage.rss / 1048576),
+        checks,
+        version: '1.1.0'
+      }, ok ? 200 : 503);
     }
 
     // --- Remote MCP (SSE) endpoints ---
@@ -2539,6 +2570,40 @@ cron.schedule('0 */2 * * *', async () => {
   }
 });
 
+// Fireflies auto-sync every 6 hours
+cron.schedule('0 */6 * * *', async () => {
+  if (!process.env.FIREFLIES_API_KEY) return;
+  console.log('[cron] Auto-syncing Fireflies transcripts...');
+  try {
+    const list = await fireflies.listTranscripts({ limit: 20 });
+    const conn = db.getDb();
+    let synced = 0;
+    for (const t of list) {
+      const exists = conn.prepare('SELECT 1 FROM meetings WHERE fireflies_id = ?').get(t.id);
+      if (exists) continue;
+      const full = await fireflies.fetchTranscript(t.id);
+      if (!full) continue;
+      const transcript = fireflies.sentencesToTranscript(full.sentences || []);
+      const meeting = db.insertMeeting({
+        fireflies_id: full.id,
+        title: full.title || 'Untitled',
+        date: full.dateString || new Date().toISOString(),
+        duration_minutes: full.duration || 0,
+        transcript,
+        raw_response: full
+      });
+      try { await processMeeting(meeting); } catch (e) { console.error('[cron] Process meeting error:', e.message); }
+      synced++;
+    }
+    if (synced > 0) {
+      console.log(`[cron] Synced ${synced} new meetings`);
+      sendTelegramAlert(`\u{1F399}\u{FE0F} Auto-synced ${synced} new meeting${synced > 1 ? 's' : ''} from Fireflies`);
+    }
+  } catch (err) {
+    console.error('[cron] Fireflies auto-sync failed:', err.message);
+  }
+});
+
 // --- Start server ---
 
 const server = http.createServer(handleRequest);
@@ -2569,3 +2634,24 @@ server.listen(PORT, HOST, () => {
     }).on('error', (e) => console.error('  Telegram webhook error:', e.message));
   }
 });
+
+// --- Graceful shutdown ---
+
+function gracefulShutdown(signal) {
+  console.log(`\n[shutdown] ${signal} received, shutting down...`);
+  server.close(() => {
+    console.log('[shutdown] HTTP server closed');
+    try {
+      const conn = db.getDb();
+      conn.pragma('wal_checkpoint(TRUNCATE)');
+      conn.close();
+      console.log('[shutdown] Database closed');
+    } catch {}
+    process.exit(0);
+  });
+  // Force exit after 10s if graceful fails
+  setTimeout(() => { console.error('[shutdown] Forced exit'); process.exit(1); }, 10000);
+}
+
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));

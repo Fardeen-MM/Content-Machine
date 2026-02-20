@@ -1346,6 +1346,7 @@ const state = {
   activeFormat: {},
   editingFormat: null,
   _remixOpen: null,
+  _calAssignSlot: null,
   editText: '',
   sidebarOpen: false,
   filter: { status: 'all', source: 'all' },
@@ -1493,7 +1494,10 @@ async function loadData() {
 }
 
 async function approveFormat(contentId, format) {
-  state.actionPending = true; render();
+  // Optimistic update — show approved immediately
+  const item = state.content.find(c => c.id === contentId);
+  const prevStatus = item?.formats?.[format]?.status;
+  if (item?.formats?.[format]) { item.formats[format].status = 'approved'; render(); }
   try {
     const res = await api(`/api/content/${contentId}/approve`, {
       method: 'POST',
@@ -1501,13 +1505,19 @@ async function approveFormat(contentId, format) {
     });
     updateContentInState(res);
     toast('Approved!', 'success');
-  } catch (err) { toast('Approve failed: ' + err.message, 'error'); }
-  state.actionPending = false;
+  } catch (err) {
+    // Rollback on failure
+    if (item?.formats?.[format]) { item.formats[format].status = prevStatus || 'review'; }
+    toast('Approve failed: ' + err.message, 'error');
+  }
   render();
 }
 
 async function rejectFormat(contentId, format) {
-  state.actionPending = true; render();
+  // Optimistic update — show rejected immediately
+  const item = state.content.find(c => c.id === contentId);
+  const prevStatus = item?.formats?.[format]?.status;
+  if (item?.formats?.[format]) { item.formats[format].status = 'rejected'; render(); }
   try {
     const res = await api(`/api/content/${contentId}/reject`, {
       method: 'POST',
@@ -1515,8 +1525,11 @@ async function rejectFormat(contentId, format) {
     });
     updateContentInState(res);
     toast('Rejected', 'info');
-  } catch (err) { toast('Reject failed: ' + err.message, 'error'); }
-  state.actionPending = false;
+  } catch (err) {
+    // Rollback on failure
+    if (item?.formats?.[format]) { item.formats[format].status = prevStatus || 'review'; }
+    toast('Reject failed: ' + err.message, 'error');
+  }
   render();
 }
 
@@ -3680,6 +3693,59 @@ function renderCalendarPage() {
   );
 }
 
+function renderCalendarAssignPicker(date, slotKey, platform) {
+  // Map platform to matching content format keys
+  const platformFormats = {
+    linkedin: ['linkedin', 'carousel', 'poll'],
+    x: ['x_single', 'x_thread'],
+    video: ['short_video'],
+    blog: ['blog'],
+    email: ['newsletter'],
+    youtube: ['youtube_script']
+  };
+  const matchingFormats = platformFormats[platform] || [platform];
+
+  // Find approved content that has matching formats
+  const candidates = (state.content || [])
+    .filter(c => {
+      const fmts = c.formats || {};
+      return matchingFormats.some(f => fmts[f] && fmts[f].status === 'approved');
+    })
+    .slice(0, 8);
+
+  return h('div', { style: { fontSize: '11px' } },
+    candidates.length === 0
+      ? h('div', { style: { color: 'var(--gray-400)', padding: '2px 0' } }, 'No approved content')
+      : h('div', { style: { maxHeight: '120px', overflowY: 'auto' } },
+          ...candidates.map(c => {
+            const fmt = matchingFormats.find(f => c.formats[f]?.status === 'approved');
+            return h('div', {
+              style: { padding: '3px 6px', cursor: 'pointer', borderRadius: '4px', marginBottom: '2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
+              onclick: async (e) => {
+                e.stopPropagation();
+                try {
+                  await api(`/api/calendar/${date}`, {
+                    method: 'PUT',
+                    body: { slot: slotKey, content_id: c.id, format: fmt, title: (c.trigger_title || '').slice(0, 80), status: 'approved' }
+                  });
+                  state._calAssignSlot = null;
+                  toast('Content assigned!', 'success');
+                  await loadCalendarMonth();
+                } catch (err) { toast('Assign failed: ' + err.message, 'error'); }
+              },
+              onmouseover: (e) => { e.currentTarget.style.background = 'var(--gray-100)'; },
+              onmouseout: (e) => { e.currentTarget.style.background = 'transparent'; }
+            }, (c.trigger_title || 'Untitled').slice(0, 35));
+          })
+        ),
+    h('button', {
+      className: 'btn btn-ghost',
+      style: { fontSize: '9px', padding: '1px 4px', color: 'var(--gray-400)', marginTop: '2px' },
+      onclick: (e) => { e.stopPropagation(); state._calAssignSlot = null; render(); }
+    }, 'Cancel')
+  );
+}
+
 function renderCalendarDayDetail(cal) {
   const day = cal.days.find(d => d.date === state.calendarSelectedDay);
   if (!day) return null;
@@ -3737,7 +3803,16 @@ function renderCalendarDayDetail(cal) {
                       }
                     }, 'x')
                   )
-                : h('div', { style: { fontSize: '11px', color: 'var(--gray-300)' } }, 'Empty')
+                : state._calAssignSlot === `${day.date}:${slotKey}`
+                  ? renderCalendarAssignPicker(day.date, slotKey, platform)
+                  : h('div', {
+                      style: { fontSize: '11px', color: 'var(--blue)', cursor: 'pointer', padding: '2px 0' },
+                      onclick: (e) => {
+                        e.stopPropagation();
+                        state._calAssignSlot = `${day.date}:${slotKey}`;
+                        render();
+                      }
+                    }, '+ Assign')
             );
           })
         )
@@ -5993,12 +6068,12 @@ function render() {
 // --- Init ---
 loadData();
 
-// Auto-refresh every 60 seconds when on dashboard
+// Auto-refresh: 60s on dashboard, 120s on other pages (keeps data fresh everywhere)
 setInterval(() => {
-  if (state.page === 'dashboard' && !state.loading && document.visibilityState === 'visible') {
+  if (!state.loading && document.visibilityState === 'visible') {
     loadData();
   }
-}, 60000);
+}, state.page === 'dashboard' ? 60000 : 120000);
 </script>
 </body>
 </html>

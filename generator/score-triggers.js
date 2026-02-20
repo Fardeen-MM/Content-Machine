@@ -1,4 +1,52 @@
-const { keywordScore, daysAgo } = require('../lib/utils');
+const { keywordScore, daysAgo, readJSON } = require('../lib/utils');
+
+// Source reliability cache — recalculated every 10 minutes
+let _sourceReliability = null;
+let _reliabilityCachedAt = 0;
+const RELIABILITY_CACHE_MS = 10 * 60 * 1000;
+
+function getSourceReliability() {
+  if (_sourceReliability && Date.now() - _reliabilityCachedAt < RELIABILITY_CACHE_MS) {
+    return _sourceReliability;
+  }
+  try {
+    const content = readJSON('content.json');
+    const stats = {};
+    for (const c of content) {
+      const src = c.trigger_source || 'unknown';
+      if (!stats[src]) stats[src] = { total: 0, approved: 0, rejected: 0 };
+      stats[src].total++;
+      if (c.status === 'approved') stats[src].approved++;
+      else if (c.status === 'rejected') stats[src].rejected++;
+    }
+    // Calculate reliability factor: 0.6x to 1.8x based on approval rate
+    // Baseline: sources with <3 content pieces get 1.0x (no data yet)
+    const reliability = {};
+    for (const [src, data] of Object.entries(stats)) {
+      if (data.total < 3) {
+        reliability[src] = { factor: 1.0, approval_rate: 0, total: data.total, note: 'insufficient data' };
+        continue;
+      }
+      const rate = data.approved / data.total;
+      // Linear mapping: 0% → 0.6x, 50% → 1.0x, 100% → 1.8x
+      const factor = rate <= 0.5
+        ? 0.6 + (rate / 0.5) * 0.4   // 0.6 to 1.0
+        : 1.0 + ((rate - 0.5) / 0.5) * 0.8; // 1.0 to 1.8
+      reliability[src] = {
+        factor: Math.round(factor * 100) / 100,
+        approval_rate: Math.round(rate * 100),
+        total: data.total,
+        approved: data.approved,
+        rejected: data.rejected
+      };
+    }
+    _sourceReliability = reliability;
+    _reliabilityCachedAt = Date.now();
+    return reliability;
+  } catch {
+    return {};
+  }
+}
 
 const HIGH_VALUE_TERMS = [
   'ROI', 'cases', 'intake', 'revenue', 'signed cases', 'cost per case',
@@ -82,6 +130,13 @@ function scoreTrigger(trigger) {
     score = Math.round(score * Math.pow(0.95, age - 3));
   }
 
+  // Source reliability weighting — boost proven sources, penalize poor ones
+  const reliability = getSourceReliability();
+  const srcInfo = reliability[trigger.source];
+  if (srcInfo && srcInfo.factor !== 1.0) {
+    score = Math.round(score * srcInfo.factor);
+  }
+
   return Math.max(0, score);
 }
 
@@ -97,4 +152,4 @@ function selectTopTriggers(triggers, count = 10) {
   return scored.slice(0, count);
 }
 
-module.exports = { scoreTrigger, scoreAndSort, selectTopTriggers };
+module.exports = { scoreTrigger, scoreAndSort, selectTopTriggers, getSourceReliability };

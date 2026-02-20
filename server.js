@@ -15,6 +15,9 @@ db.initDb();
 
 const PORT = process.env.PORT || 3000;
 
+// Batch generation progress tracking
+const _batchProgress = {};
+
 // --- Helpers ---
 
 function json(res, data, status = 200) {
@@ -792,6 +795,166 @@ async function handleRequest(req, res) {
       });
     }
 
+    // GET /api/analytics/insights — actionable insights and recommendations
+    if (pathname === '/api/analytics/insights' && method === 'GET') {
+      const content = readJSON('content.json');
+      const triggers = readJSON('trigger-queue.json');
+      const memory = readJSON('memory.json', {});
+      const { getSourceReliability } = require('./generator/score-triggers');
+
+      const insights = [];
+
+      // 1. Source reliability index
+      const sourceReliability = getSourceReliability();
+
+      // 2. Format approval rates — find best and worst
+      const formatStats = {};
+      for (const c of content) {
+        for (const [key, fmt] of Object.entries(c.formats || {})) {
+          if (!formatStats[key]) formatStats[key] = { total: 0, approved: 0, rejected: 0 };
+          formatStats[key].total++;
+          if (fmt.status === 'approved') formatStats[key].approved++;
+          else if (fmt.status === 'rejected') formatStats[key].rejected++;
+        }
+      }
+      // Find top 3 formats by approval rate (min 3 entries)
+      const formatRanking = Object.entries(formatStats)
+        .filter(([, d]) => d.total >= 3)
+        .map(([fmt, d]) => ({
+          format: fmt,
+          approval_rate: Math.round((d.approved / d.total) * 100),
+          rejection_rate: Math.round((d.rejected / d.total) * 100),
+          total: d.total,
+          approved: d.approved,
+          rejected: d.rejected
+        }))
+        .sort((a, b) => b.approval_rate - a.approval_rate);
+
+      if (formatRanking.length >= 2) {
+        const best = formatRanking[0];
+        const worst = formatRanking[formatRanking.length - 1];
+        insights.push({
+          type: 'format_performance',
+          severity: worst.rejection_rate > 50 ? 'warning' : 'info',
+          title: `Best format: ${best.format} (${best.approval_rate}% approved)`,
+          detail: `Worst: ${worst.format} at ${worst.approval_rate}% approval. Consider reviewing ${worst.format} prompts.`
+        });
+      }
+
+      // 3. Rejection pattern analysis from memory
+      const rejectionPatterns = memory.rejection_patterns || [];
+      const rejectionStats = {};
+      for (const rp of rejectionPatterns) {
+        const fmt = rp.format || 'unknown';
+        if (!rejectionStats[fmt]) rejectionStats[fmt] = { count: 0, reasons: {} };
+        rejectionStats[fmt].count++;
+        const reason = rp.rejection_reason || 'unspecified';
+        rejectionStats[fmt].reasons[reason] = (rejectionStats[fmt].reasons[reason] || 0) + 1;
+      }
+      if (rejectionPatterns.length > 0) {
+        const topRejected = Object.entries(rejectionStats)
+          .sort((a, b) => b[1].count - a[1].count)[0];
+        if (topRejected) {
+          const topReason = Object.entries(topRejected[1].reasons)
+            .sort((a, b) => b[1] - a[1])[0];
+          insights.push({
+            type: 'rejection_patterns',
+            severity: topRejected[1].count > 5 ? 'warning' : 'info',
+            title: `${topRejected[1].count} rejections on ${topRejected[0]} format`,
+            detail: topReason ? `Most common reason: ${topReason[0]} (${topReason[1]}x)` : ''
+          });
+        }
+      }
+
+      // 4. Content velocity — generation rate over last 7 days
+      const now = Date.now();
+      const weekAgo = now - 7 * 24 * 60 * 60 * 1000;
+      const recentContent = content.filter(c => new Date(c.generated_at).getTime() > weekAgo);
+      const prevWeek = content.filter(c => {
+        const t = new Date(c.generated_at).getTime();
+        return t > weekAgo - 7 * 24 * 60 * 60 * 1000 && t <= weekAgo;
+      });
+      const velocityChange = prevWeek.length > 0
+        ? Math.round(((recentContent.length - prevWeek.length) / prevWeek.length) * 100)
+        : null;
+      insights.push({
+        type: 'velocity',
+        severity: 'info',
+        title: `${recentContent.length} pieces generated this week`,
+        detail: velocityChange !== null
+          ? `${velocityChange >= 0 ? '+' : ''}${velocityChange}% vs last week (${prevWeek.length})`
+          : 'First week of tracking'
+      });
+
+      // 5. Trigger pipeline health
+      const pendingTriggers = triggers.filter(t => t.status === 'pending').length;
+      const staleTriggers = triggers.filter(t => {
+        if (t.status !== 'pending') return false;
+        const age = (now - new Date(t.captured_at).getTime()) / (24 * 60 * 60 * 1000);
+        return age > 14;
+      }).length;
+      if (staleTriggers > 10) {
+        insights.push({
+          type: 'stale_triggers',
+          severity: 'warning',
+          title: `${staleTriggers} stale triggers (>14 days old)`,
+          detail: `Out of ${pendingTriggers} pending triggers. Consider bulk-rejecting old ones.`
+        });
+      }
+
+      // 6. Content gaps — formats with no recent activity
+      const recentFormats = new Set();
+      for (const c of recentContent) {
+        for (const key of Object.keys(c.formats || {})) recentFormats.add(key);
+      }
+      const allFormats = ['linkedin', 'x_single', 'x_thread', 'short_video', 'carousel', 'hot_take', 'blog', 'lead_magnet'];
+      const missingFormats = allFormats.filter(f => !recentFormats.has(f));
+      if (missingFormats.length > 0 && recentContent.length > 0) {
+        insights.push({
+          type: 'content_gap',
+          severity: 'info',
+          title: `${missingFormats.length} formats with no recent content`,
+          detail: `Missing: ${missingFormats.join(', ')}`
+        });
+      }
+
+      // 7. Source diversity check
+      const recentSources = {};
+      for (const c of recentContent) {
+        const src = c.trigger_source || 'unknown';
+        recentSources[src] = (recentSources[src] || 0) + 1;
+      }
+      const dominantSource = Object.entries(recentSources).sort((a, b) => b[1] - a[1])[0];
+      if (dominantSource && recentContent.length > 5) {
+        const pct = Math.round((dominantSource[1] / recentContent.length) * 100);
+        if (pct > 60) {
+          insights.push({
+            type: 'source_diversity',
+            severity: 'warning',
+            title: `${pct}% of recent content from ${dominantSource[0]}`,
+            detail: 'Diversify sources for a more balanced content mix.'
+          });
+        }
+      }
+
+      return json(res, {
+        insights,
+        source_reliability: sourceReliability,
+        format_ranking: formatRanking,
+        rejection_stats: rejectionStats,
+        velocity: {
+          this_week: recentContent.length,
+          last_week: prevWeek.length,
+          change_pct: velocityChange
+        },
+        pipeline: {
+          pending_triggers: pendingTriggers,
+          stale_triggers: staleTriggers,
+          content_in_review: content.filter(c => c.status === 'review').length
+        }
+      });
+    }
+
     // POST /api/triggers/generate — generate content for a trigger
     if (pathname === '/api/triggers/generate' && method === 'POST') {
       const body = await parseBody(req);
@@ -818,7 +981,7 @@ async function handleRequest(req, res) {
       }
     }
 
-    // POST /api/generate-daily — trigger daily generation
+    // POST /api/generate-daily — trigger daily generation (supports batch)
     if (pathname === '/api/generate-daily' && method === 'POST') {
       if (!process.env.ANTHROPIC_API_KEY) {
         return json(res, { error: 'ANTHROPIC_API_KEY not configured. Set it in .env file.' }, 500);
@@ -833,6 +996,90 @@ async function handleRequest(req, res) {
         try { db.logError('generation', 'generate_daily', err.message); } catch {}
         return json(res, { error: err.message }, 500);
       }
+    }
+
+    // POST /api/generate-batch — generate content for selected triggers with progress
+    if (pathname === '/api/generate-batch' && method === 'POST') {
+      if (!process.env.ANTHROPIC_API_KEY) {
+        return json(res, { error: 'ANTHROPIC_API_KEY not configured. Set it in .env file.' }, 500);
+      }
+
+      const body = await parseBody(req);
+      const triggerIds = body.trigger_ids || [];
+      const count = body.count || 5;
+      const source = body.source || null;
+
+      if (triggerIds.length === 0 && !source && !count) {
+        return json(res, { error: 'Provide trigger_ids, source, or count' }, 400);
+      }
+
+      // Generate a batch ID for progress tracking
+      const batchId = generateId();
+      _batchProgress[batchId] = { total: 0, completed: 0, errors: 0, results: [], status: 'starting' };
+
+      // Start generation in background
+      setImmediate(async () => {
+        try {
+          const { runDaily } = require('./generator/run-daily');
+
+          if (triggerIds.length > 0) {
+            // Generate for specific triggers
+            _batchProgress[batchId].total = triggerIds.length;
+            _batchProgress[batchId].status = 'running';
+            for (const tid of triggerIds) {
+              try {
+                const result = await runDaily({ triggerId: tid });
+                _batchProgress[batchId].completed++;
+                if (result && result.length > 0) _batchProgress[batchId].results.push(result[0].id);
+              } catch (err) {
+                _batchProgress[batchId].errors++;
+                console.error(`[batch] Error generating ${tid}: ${err.message}`);
+              }
+            }
+          } else if (source) {
+            // Generate for top N triggers from a specific source
+            const triggers = readJSON('trigger-queue.json');
+            const { selectTopTriggers } = require('./generator/score-triggers');
+            const filtered = triggers.filter(t => t.status === 'pending' && t.source === source);
+            const top = selectTopTriggers(filtered, count);
+            _batchProgress[batchId].total = top.length;
+            _batchProgress[batchId].status = 'running';
+            for (const t of top) {
+              try {
+                const result = await runDaily({ triggerId: t.id });
+                _batchProgress[batchId].completed++;
+                if (result && result.length > 0) _batchProgress[batchId].results.push(result[0].id);
+              } catch (err) {
+                _batchProgress[batchId].errors++;
+              }
+            }
+          } else {
+            // Generate top N triggers
+            _batchProgress[batchId].total = count;
+            _batchProgress[batchId].status = 'running';
+            const result = await runDaily({ count });
+            _batchProgress[batchId].completed = (result || []).length;
+            _batchProgress[batchId].results = (result || []).map(r => r.id);
+          }
+
+          _batchProgress[batchId].status = 'done';
+        } catch (err) {
+          _batchProgress[batchId].status = 'error';
+          _batchProgress[batchId].error = err.message;
+        }
+        // Clean up after 30 minutes
+        setTimeout(() => { delete _batchProgress[batchId]; }, 30 * 60 * 1000);
+      });
+
+      return json(res, { ok: true, batch_id: batchId });
+    }
+
+    // GET /api/generate-batch/:id — check batch generation progress
+    if (pathname.startsWith('/api/generate-batch/') && method === 'GET') {
+      const batchId = pathname.split('/').pop();
+      const progress = _batchProgress[batchId];
+      if (!progress) return json(res, { error: 'Batch not found' }, 404);
+      return json(res, progress);
     }
 
     // POST /api/daily-brief — send daily brief to Telegram

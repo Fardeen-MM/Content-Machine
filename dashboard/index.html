@@ -1519,6 +1519,46 @@ async function loadData() {
   }
 }
 
+async function startBatchGeneration(opts = {}) {
+  state._batchDropdown = false;
+  state.generating = true;
+  state._batchProgress = { total: opts.count || 5, completed: 0, errors: 0, status: 'starting' };
+  render();
+
+  const label = opts.source ? `top ${opts.count || 5} from ${sourceLabel(opts.source)}` : `top ${opts.count || 5}`;
+  toast(`Generating content for ${label}...`, 'info');
+
+  try {
+    const result = await api('/api/generate-batch', { method: 'POST', body: opts });
+    if (result.batch_id) {
+      // Poll for progress
+      const pollInterval = setInterval(async () => {
+        try {
+          const progress = await api(`/api/generate-batch/${result.batch_id}`);
+          state._batchProgress = progress;
+          render();
+          if (progress.status === 'done' || progress.status === 'error') {
+            clearInterval(pollInterval);
+            state.generating = false;
+            state._batchProgress = null;
+            if (progress.status === 'done') {
+              toast(`Generated ${progress.completed} pieces (${progress.errors} errors)`, progress.errors > 0 ? 'warning' : 'success');
+            } else {
+              toast('Batch generation failed: ' + (progress.error || 'unknown'), 'error');
+            }
+            await loadData();
+          }
+        } catch { /* ignore poll errors */ }
+      }, 3000);
+    }
+  } catch (err) {
+    toast('Batch generation failed: ' + err.message, 'error');
+    state.generating = false;
+    state._batchProgress = null;
+    render();
+  }
+}
+
 async function approveFormat(contentId, format) {
   // Optimistic update — show approved immediately
   const item = state.content.find(c => c.id === contentId);
@@ -1946,6 +1986,14 @@ function setActiveFormat(contentId, format) {
 }
 
 // --- Keyboard Shortcuts ---
+document.addEventListener('click', (e) => {
+  // Close batch dropdown on click outside
+  if (state._batchDropdown && !e.target.closest('.btn-success')) {
+    state._batchDropdown = false;
+    render();
+  }
+});
+
 document.addEventListener('keydown', (e) => {
   // Global shortcuts
   if (e.key === '1' && !e.ctrlKey && !e.metaKey && !isEditing()) { state.page = 'dashboard'; render(); }
@@ -3609,6 +3657,96 @@ function renderAnalyticsPage() {
             : null
         )
       )
+    ),
+    // Fifth row — AI Insights
+    renderInsightsSection()
+  );
+}
+
+function renderInsightsSection() {
+  if (!state.analyticsInsights) {
+    // Fetch insights in background
+    if (!state._analyticsInsightsLoading) {
+      state._analyticsInsightsLoading = true;
+      api('/api/analytics/insights').then(data => {
+        state.analyticsInsights = data;
+        state._analyticsInsightsLoading = false;
+        render();
+      }).catch(() => { state._analyticsInsightsLoading = false; });
+    }
+    return h('div', { className: 'chart-card', style: { marginTop: '16px' } },
+      h('h4', {}, 'Insights'),
+      h('div', { style: { color: 'var(--gray-400)', fontSize: '13px', padding: '16px 0' } }, 'Loading insights...')
+    );
+  }
+
+  const data = state.analyticsInsights;
+  const severityColors = { warning: 'var(--amber)', info: 'var(--blue)', error: 'var(--red)' };
+  const severityBg = { warning: '#fffbeb', info: '#eff6ff', error: '#fef2f2' };
+
+  return h('div', { style: { marginTop: '16px' } },
+    // Insights cards
+    (data.insights && data.insights.length > 0) ? h('div', { className: 'chart-card' },
+      h('h4', { style: { display: 'flex', alignItems: 'center', gap: '8px' } },
+        'Actionable Insights',
+        h('span', { style: { fontSize: '11px', padding: '2px 8px', background: 'var(--blue)', color: 'white', borderRadius: '10px' } }, String(data.insights.length))
+      ),
+      h('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '12px' } },
+        ...data.insights.map(insight =>
+          h('div', { style: { padding: '12px 16px', background: severityBg[insight.severity] || '#f8fafc', borderLeft: `3px solid ${severityColors[insight.severity] || 'var(--gray-300)'}`, borderRadius: '0 8px 8px 0' } },
+            h('div', { style: { fontSize: '13px', fontWeight: '600', color: 'var(--gray-700)' } }, insight.title),
+            insight.detail ? h('div', { style: { fontSize: '12px', color: 'var(--gray-500)', marginTop: '4px' } }, insight.detail) : null
+          )
+        )
+      )
+    ) : null,
+    // Source reliability
+    h('div', { className: 'analytics-grid', style: { marginTop: '16px' } },
+      h('div', { className: 'chart-card' },
+        h('h4', {}, 'Source Reliability Index'),
+        data.source_reliability && Object.keys(data.source_reliability).length > 0
+          ? h('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '8px' } },
+              ...Object.entries(data.source_reliability)
+                .sort((a, b) => b[1].factor - a[1].factor)
+                .map(([src, info]) => {
+                  const pct = info.approval_rate || 0;
+                  const factorColor = info.factor >= 1.3 ? 'var(--green)' : info.factor >= 0.9 ? 'var(--blue)' : 'var(--amber)';
+                  return h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px' } },
+                    h('span', { style: { fontSize: '12px', fontWeight: '600', width: '100px', color: 'var(--gray-500)' } }, sourceLabel(src)),
+                    h('div', { style: { flex: '1', height: '16px', background: 'var(--gray-100)', borderRadius: '8px', overflow: 'hidden' } },
+                      h('div', { style: { width: `${pct}%`, height: '100%', background: factorColor, borderRadius: '8px', transition: 'width 0.5s ease' } })
+                    ),
+                    h('span', { style: { fontSize: '11px', fontWeight: '700', color: factorColor, minWidth: '44px', textAlign: 'right' } },
+                      info.note === 'insufficient data' ? 'N/A' : `${info.factor}x`
+                    ),
+                    h('span', { style: { fontSize: '11px', color: 'var(--gray-400)', minWidth: '50px', textAlign: 'right' } },
+                      info.total > 0 ? `${info.approved || 0}/${info.total}` : ''
+                    )
+                  );
+                })
+            )
+          : h('div', { style: { fontSize: '13px', color: 'var(--gray-400)', padding: '16px 0' } }, 'Generate and approve/reject content to see source reliability')
+      ),
+      // Content velocity
+      h('div', { className: 'chart-card' },
+        h('h4', {}, 'Content Velocity'),
+        h('div', { style: { display: 'flex', alignItems: 'baseline', gap: '12px', marginTop: '12px' } },
+          h('span', { style: { fontSize: '42px', fontWeight: '800', color: 'var(--accent)', fontFamily: "'Fraunces', serif" } },
+            String(data.velocity?.this_week || 0)),
+          h('span', { style: { fontSize: '14px', color: 'var(--gray-400)' } }, 'this week')
+        ),
+        data.velocity?.change_pct !== null ? h('div', { style: { fontSize: '13px', marginTop: '8px', color: (data.velocity?.change_pct || 0) >= 0 ? 'var(--green)' : 'var(--red)' } },
+          `${(data.velocity?.change_pct || 0) >= 0 ? '+' : ''}${data.velocity?.change_pct || 0}% vs last week (${data.velocity?.last_week || 0})`)
+        : h('div', { style: { fontSize: '13px', marginTop: '8px', color: 'var(--gray-400)' } }, 'First week of data'),
+        h('div', { style: { marginTop: '16px', padding: '12px', background: 'var(--gray-50)', borderRadius: 'var(--radius-sm)' } },
+          h('div', { style: { fontSize: '12px', color: 'var(--gray-500)' } },
+            `Pipeline: ${data.pipeline?.pending_triggers || 0} pending triggers, ${data.pipeline?.content_in_review || 0} in review`
+          ),
+          data.pipeline?.stale_triggers > 0 ? h('div', { style: { fontSize: '12px', color: 'var(--amber)', marginTop: '4px' } },
+            `${data.pipeline.stale_triggers} stale triggers (>14 days old)`
+          ) : null
+        )
+      )
     )
   );
 }
@@ -3672,22 +3810,37 @@ function renderTriggersPage() {
       h('span', { style: { fontSize: '13px', color: 'var(--gray-500)', marginLeft: '8px' } },
         `${filtered.length} triggers`
       ),
-      h('button', {
-        className: 'btn btn-success btn-sm',
-        disabled: state.generating,
-        onclick: async () => {
-          const count = 5;
-          toast(`Generating content for top ${count} triggers...`, 'info');
-          state.generating = true; render();
-          try {
-            const result = await api('/api/generate-daily', { method: 'POST', body: { count } });
-            const generated = Array.isArray(result.content) ? result.content.length : 0;
-            toast(`Generated ${generated} content pieces!`, 'success');
-            await loadData();
-          } catch (err) { toast('Generation failed: ' + err.message, 'error'); }
-          state.generating = false; render();
-        }
-      }, state.generating ? 'Generating...' : 'Generate Top 5'),
+      h('div', { style: { position: 'relative', display: 'inline-block' } },
+        h('button', {
+          className: 'btn btn-success btn-sm',
+          disabled: state.generating,
+          onclick: () => { state._batchDropdown = !state._batchDropdown; render(); }
+        }, state.generating ? (state._batchProgress ? `Generating ${state._batchProgress.completed}/${state._batchProgress.total}...` : 'Generating...') : 'Generate'),
+        state._batchDropdown ? h('div', {
+          style: { position: 'absolute', top: '100%', left: 0, zIndex: 100, background: 'var(--card-bg)', border: '1px solid var(--gray-200)', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.15)', padding: '8px 0', minWidth: '200px', marginTop: '4px' }
+        },
+          ...[5, 10, 20].map(n =>
+            h('div', {
+              style: { padding: '8px 16px', fontSize: '13px', cursor: 'pointer', color: 'var(--gray-600)' },
+              onmouseenter: function() { this.style.background = 'var(--gray-50)'; },
+              onmouseleave: function() { this.style.background = 'transparent'; },
+              onclick: () => startBatchGeneration({ count: n })
+            }, `Top ${n} triggers`)
+          ),
+          h('div', { style: { height: '1px', background: 'var(--gray-200)', margin: '4px 0' } }),
+          ...Object.entries(state.stats?.triggers?.by_source || {})
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 5)
+            .map(([src, cnt]) =>
+              h('div', {
+                style: { padding: '8px 16px', fontSize: '13px', cursor: 'pointer', color: 'var(--gray-600)' },
+                onmouseenter: function() { this.style.background = 'var(--gray-50)'; },
+                onmouseleave: function() { this.style.background = 'transparent'; },
+                onclick: () => startBatchGeneration({ source: src, count: 5 })
+              }, `Top 5 from ${sourceLabel(src)} (${cnt})`)
+            )
+        ) : null
+      ),
       h('button', {
         className: 'btn btn-primary btn-sm',
         onclick: () => { state.showAddTrigger = !state.showAddTrigger; render(); }

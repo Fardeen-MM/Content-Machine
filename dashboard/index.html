@@ -2903,7 +2903,7 @@ function renderFormatContent(content, formatKey, fmt) {
       fmt.status === 'approved'
         ? h('span', { style: { display: 'flex', gap: '6px', alignItems: 'center' } },
             h('span', { className: 'badge badge-approved', style: { padding: '5px 12px' } }, 'Approved'),
-            fmt.status === 'approved' && !fmt.published_at ? h('button', {
+            fmt.status === 'approved' && !fmt.published_at && !fmt.scheduled_for ? h('button', {
               className: 'btn btn-sm',
               style: { background: 'var(--green)', color: 'white', fontSize: '11px' },
               onclick: async () => {
@@ -2914,6 +2914,19 @@ function renderFormatContent(content, formatKey, fmt) {
                 } catch (err) { toast('Publish failed: ' + err.message, 'error'); }
               }
             }, 'Mark Published') : null,
+            (fmt.status === 'approved' || fmt.status === 'scheduled') && !fmt.published_at ? h('button', {
+              className: 'btn btn-sm',
+              style: { background: 'var(--blue)', color: 'white', fontSize: '11px' },
+              onclick: async () => {
+                const date = prompt('Schedule for date (YYYY-MM-DD):');
+                if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return;
+                try {
+                  await api(`/api/content/${content.id}/schedule`, { method: 'POST', body: { format: formatKey, date } });
+                  toast(`Scheduled ${formatKey} for ${date}`, 'success');
+                  await loadData();
+                } catch (err) { toast('Schedule failed: ' + err.message, 'error'); }
+              }
+            }, fmt.scheduled_for ? `Scheduled: ${fmt.scheduled_for}` : 'Schedule') : null,
             fmt.published_at ? h('span', { style: { fontSize: '11px', color: 'var(--green)' } }, 'Published') : null
           )
         : fmt.status === 'rejected'

@@ -574,8 +574,14 @@ async function handleRequest(req, res) {
     // GET /api/published — published content feed with enriched data
     if (pathname === '/api/published' && method === 'GET') {
       const published = readJSON('published.json');
+      const perfData = readJSON('performance.json');
       const platform = url.searchParams.get('platform');
       let filtered = platform ? published.filter(p => p.platform === platform) : published;
+      // Enrich with performance data
+      filtered = filtered.map(p => {
+        const perf = perfData.find(d => d.content_id === p.content_id && d.format === p.format);
+        return { ...p, performance: perf || null };
+      });
       // Sort newest first
       filtered.sort((a, b) => new Date(b.published_at || 0) - new Date(a.published_at || 0));
       return json(res, filtered);
@@ -991,7 +997,7 @@ async function handleRequest(req, res) {
       return json(res, { ok: true, updated });
     }
 
-    // POST /api/content/:id/schedule
+    // POST /api/content/:id/schedule — schedule content for a specific date
     const scheduleMatch = pathname.match(/^\/api\/content\/([a-f0-9]+)\/schedule$/);
     if (scheduleMatch && method === 'POST') {
       const content = readJSON('content.json');
@@ -999,10 +1005,36 @@ async function handleRequest(req, res) {
       if (idx === -1) return json(res, { error: 'Not found' }, 404);
 
       const body = await parseBody(req);
-      content[idx].scheduled_date = body.date || null;
+      const { format, date, slot } = body;
+      if (!date) return json(res, { error: 'date required (YYYY-MM-DD)' }, 400);
+
+      content[idx].scheduled_date = date;
       content[idx].scheduled_platforms = body.platforms || [];
+
+      // Update format status if specific format provided
+      if (format && content[idx].formats[format]) {
+        content[idx].formats[format].status = 'scheduled';
+        content[idx].formats[format].scheduled_for = date;
+      }
       writeJSON('content.json', content);
-      return json(res, { ok: true, ...content[idx] });
+
+      // Auto-assign to calendar
+      if (format) {
+        const calendarData = readJSON('calendar.json', {});
+        if (!calendarData[date]) calendarData[date] = {};
+        const slotKey = slot || `${format}_morning`;
+        calendarData[date][slotKey] = {
+          content_id: content[idx].id,
+          format,
+          title: (content[idx].trigger_title || 'Untitled').slice(0, 80),
+          preview: '',
+          status: 'scheduled',
+          assigned_at: now()
+        };
+        writeJSON('calendar.json', calendarData);
+      }
+
+      return json(res, { ok: true, scheduled_for: date });
     }
 
     // DELETE /api/triggers/:id

@@ -16,6 +16,23 @@ async function runDaily(options = {}) {
   const triggers = readJSON('trigger-queue.json');
   const existingContent = readJSON('content.json');
 
+  // Duplicate detection: normalize titles for comparison
+  const existingTitles = existingContent.map(c => (c.trigger_title || '').toLowerCase().replace(/[^a-z0-9 ]/g, '').trim());
+  function isDuplicateTitle(title) {
+    const norm = (title || '').toLowerCase().replace(/[^a-z0-9 ]/g, '').trim();
+    if (!norm || norm.length < 10) return false;
+    return existingTitles.some(et => {
+      if (et === norm) return true;
+      // Check if one contains the other (substring match for >60% length)
+      if (et.includes(norm) || norm.includes(et)) {
+        const shorter = Math.min(et.length, norm.length);
+        const longer = Math.max(et.length, norm.length);
+        return shorter / longer > 0.6;
+      }
+      return false;
+    });
+  }
+
   let selectedTriggers;
 
   if (triggerId) {
@@ -25,11 +42,22 @@ async function runDaily(options = {}) {
       console.error(`Trigger ${triggerId} not found`);
       return;
     }
+    if (isDuplicateTitle(trigger.title)) {
+      console.log(`[dedup] Trigger "${trigger.title}" has similar existing content, generating anyway (explicit request)`);
+    }
     selectedTriggers = [trigger];
   } else {
-    // Select top N pending triggers
+    // Select top N pending triggers, skip duplicates
     const usedTriggerIds = new Set(existingContent.map(c => c.trigger_id));
-    const unusedTriggers = triggers.filter(t => !usedTriggerIds.has(t.id) && t.status === 'pending');
+    const unusedTriggers = triggers.filter(t => {
+      if (usedTriggerIds.has(t.id)) return false;
+      if (t.status !== 'pending') return false;
+      if (isDuplicateTitle(t.title)) {
+        console.log(`[dedup] Skipping "${t.title}" — similar content exists`);
+        return false;
+      }
+      return true;
+    });
     selectedTriggers = selectTopTriggers(unusedTriggers, count);
   }
 

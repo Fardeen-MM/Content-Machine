@@ -1345,6 +1345,7 @@ const state = {
   loading: true,
   activeFormat: {},
   editingFormat: null,
+  _remixOpen: null,
   editText: '',
   sidebarOpen: false,
   filter: { status: 'all', source: 'all' },
@@ -2412,20 +2413,28 @@ function renderDashboardPage() {
 }
 
 function contentQualityScore(content) {
+  // Use server-side quality score if available
+  if (content.quality_score?.score !== undefined) return content.quality_score.score;
   let score = 0;
   const formats = Object.entries(content.formats || {});
   const filledFormats = formats.filter(([,v]) => v.content);
-  // Format coverage (0-40 pts)
-  score += Math.round((filledFormats.length / Math.max(formats.length, 1)) * 40);
-  // Content length (0-20 pts)
-  const totalLen = filledFormats.reduce((sum, [,v]) => sum + (v.content || '').length, 0);
-  score += Math.min(Math.round(totalLen / 200), 20);
+  // Format coverage (0-30 pts)
+  score += Math.round((filledFormats.length / Math.max(formats.length, 1)) * 30);
+  // LinkedIn quality check (0-25 pts)
+  const li = content.formats?.linkedin?.content || '';
+  if (li) {
+    const nums = (li.match(/\$[\d,]+|\d+%|\d+x|\d+\/month|\d+ cases/g) || []).length;
+    if (nums >= 2) score += 10; else if (nums >= 1) score += 5;
+    if ((li.match(/\n\n/g) || []).length >= 3) score += 5;
+    if (li.length >= 600 && li.length <= 1400) score += 5;
+    if (/\d\.\s|step \d/i.test(li)) score += 5;
+  }
   // Has blog? +15
   if (content.formats?.blog?.content) score += 15;
+  // Has hook variants? +10
+  if (content.hook_variants?.linkedin?.length >= 2) score += 10;
   // Has video script? +10
   if (content.formats?.short_video?.content || content.formats?.youtube_script?.content) score += 10;
-  // Has image prompt? +5
-  if (content.image_prompt) score += 5;
   // Edited by human? +10
   if (filledFormats.some(([,v]) => v.edited)) score += 10;
   return Math.min(score, 100);
@@ -2681,6 +2690,35 @@ function renderFormatContent(content, formatKey, fmt) {
           )
         )
       : null,
+    // Hook variants (for linkedin and x_single)
+    (formatKey === 'linkedin' || formatKey === 'x_single') && content.hook_variants
+      ? (() => {
+          const hookKey = formatKey === 'linkedin' ? 'linkedin' : 'x';
+          const hooks = content.hook_variants[hookKey] || [];
+          return hooks.length > 0 ? h('div', { style: { padding: '8px 20px', borderBottom: '1px solid var(--gray-100)', background: 'var(--gray-50)' } },
+            h('div', { style: { fontSize: '11px', fontWeight: '600', color: 'var(--gray-500)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' } }, 'Hook Variants — click to swap'),
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: '4px' } },
+              ...hooks.map((hook, i) =>
+                h('div', {
+                  style: { padding: '6px 10px', borderRadius: '6px', fontSize: '12px', cursor: 'pointer', border: '1px solid var(--gray-200)', background: 'white', transition: 'all 0.15s' },
+                  onclick: async () => {
+                    try {
+                      await api(`/api/content/${content.id}/swap-hook`, { method: 'POST', body: { format: formatKey, hook_index: i } });
+                      toast('Hook swapped!', 'success');
+                      await loadData();
+                    } catch (err) { toast('Swap failed: ' + err.message, 'error'); }
+                  },
+                  onmouseover: (e) => { e.currentTarget.style.borderColor = 'var(--blue)'; e.currentTarget.style.background = 'var(--blue-light, #eff6ff)'; },
+                  onmouseout: (e) => { e.currentTarget.style.borderColor = 'var(--gray-200)'; e.currentTarget.style.background = 'white'; }
+                },
+                  h('span', { style: { fontWeight: '600', color: 'var(--blue)', marginRight: '6px' } }, `${i + 1}.`),
+                  hook.length > 120 ? hook.slice(0, 120) + '...' : hook
+                )
+              )
+            )
+          ) : null;
+        })()
+      : null,
     // Social preview or raw content
     showPreview && formatKey === 'linkedin'
       ? renderLinkedInPreview(text)
@@ -2818,6 +2856,47 @@ function renderFormatContent(content, formatKey, fmt) {
         onclick: () => regenerateFormat(content.id, formatKey),
         title: 'Regenerate this format with AI'
       }, h('span', { innerHTML: icons.refresh, style: { width: '14px', height: '14px' } }), ' Regen'),
+      // Remix dropdown
+      typeof text === 'string' ? h('div', { style: { position: 'relative', display: 'inline-block' } },
+        h('button', {
+          className: 'btn btn-outline btn-sm',
+          style: { color: 'var(--purple)', borderColor: 'var(--purple)' },
+          onclick: (e) => {
+            e.stopPropagation();
+            const key = `remix-${content.id}-${formatKey}`;
+            state._remixOpen = state._remixOpen === key ? null : key;
+            render();
+          }
+        }, 'Remix'),
+        state._remixOpen === `remix-${content.id}-${formatKey}`
+          ? h('div', { style: { position: 'absolute', bottom: '100%', left: '0', background: 'white', border: '1px solid var(--gray-200)', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', padding: '4px', zIndex: '100', minWidth: '180px', marginBottom: '4px' } },
+              ...['more_contrarian', 'add_story', 'shorten', 'more_data', 'more_human', 'stronger_hook'].map(d => {
+                const labels = { more_contrarian: 'More Contrarian', add_story: 'Add a Story', shorten: 'Shorten 40%', more_data: 'More Data/Numbers', more_human: 'More Human', stronger_hook: 'Stronger Hook' };
+                return h('div', {
+                  style: { padding: '6px 12px', fontSize: '12px', cursor: 'pointer', borderRadius: '4px', whiteSpace: 'nowrap' },
+                  onclick: async () => {
+                    state._remixOpen = null; render();
+                    toast(`Remixing: ${labels[d]}...`, 'info');
+                    try {
+                      await api(`/api/content/${content.id}/remix`, { method: 'POST', body: { format: formatKey, directive: d } });
+                      toast('Remixed!', 'success');
+                      await loadData();
+                    } catch (err) { toast('Remix failed: ' + err.message, 'error'); }
+                  },
+                  onmouseover: (e) => { e.currentTarget.style.background = 'var(--gray-50)'; },
+                  onmouseout: (e) => { e.currentTarget.style.background = 'transparent'; }
+                }, labels[d]);
+              })
+            )
+          : null
+      ) : null,
+      // Quality flags
+      content.quality_score?.flags?.length > 0 && (formatKey === 'linkedin' || formatKey === 'x_single')
+        ? h('span', {
+            style: { fontSize: '10px', color: 'var(--amber)', cursor: 'help' },
+            title: content.quality_score.flags.filter(f => f.startsWith(formatKey)).join('\n')
+          }, content.quality_score.flags.filter(f => f.startsWith(formatKey)).length > 0 ? 'flags' : '')
+        : null,
       h('span', { className: 'char-count' },
         isThread
           ? `${fmt.content.length} tweets`

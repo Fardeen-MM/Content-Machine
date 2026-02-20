@@ -370,17 +370,19 @@ async function handleRequest(req, res) {
 
       writeJSON('content.json', content);
 
-      // Auto-save approved formats to memory
+      // Auto-save approved formats to memory + learn from edits
       const memory = readJSON('memory.json', {});
+      if (!memory.approved_examples) memory.approved_examples = [];
+      if (!memory.style_notes) memory.style_notes = [];
+      if (!memory.rejection_patterns) memory.rejection_patterns = [];
       const item = content[idx];
       const approvedFormats = Object.entries(item.formats)
         .filter(([, f]) => f.status === 'approved' && f.content);
       for (const [fmtKey, fmt] of approvedFormats) {
-        const exists = memory.approved_examples?.some(
+        const exists = memory.approved_examples.some(
           e => e.content_id === item.id && e.format === fmtKey
         );
         if (!exists) {
-          if (!memory.approved_examples) memory.approved_examples = [];
           memory.approved_examples.push({
             content_id: item.id,
             format: fmtKey,
@@ -388,17 +390,28 @@ async function handleRequest(req, res) {
             trigger_title: item.trigger_title,
             trigger_source: item.trigger_source,
             trigger_category: item.trigger_category,
+            was_edited: !!fmt.edited,
             approved_at: now()
           });
-          // Keep only last 50 examples per format
+          // Keep only last 30 examples per format (prioritize edited ones — they show preference)
           const byFormat = memory.approved_examples.filter(e => e.format === fmtKey);
-          if (byFormat.length > 50) {
-            const oldest = byFormat[0];
-            memory.approved_examples = memory.approved_examples.filter(e => e !== oldest);
+          if (byFormat.length > 30) {
+            // Remove oldest non-edited first, then oldest edited
+            const nonEdited = byFormat.filter(e => !e.was_edited);
+            const toRemove = nonEdited.length > 0 ? nonEdited[0] : byFormat[0];
+            memory.approved_examples = memory.approved_examples.filter(e => e !== toRemove);
           }
-          writeJSON('memory.json', memory);
         }
       }
+      // Auto-generate style note if content was edited then approved
+      const editedApproved = approvedFormats.filter(([, f]) => f.edited);
+      if (editedApproved.length > 0) {
+        const editNote = `User edited ${editedApproved.map(([k]) => k).join(', ')} before approving "${item.trigger_title}" — the edited versions are the preferred style.`;
+        memory.style_notes.push({ note: editNote, added_at: now(), auto: true });
+        // Keep last 50 style notes
+        if (memory.style_notes.length > 50) memory.style_notes = memory.style_notes.slice(-50);
+      }
+      writeJSON('memory.json', memory);
 
       return json(res, { ok: true, ...content[idx] });
     }
@@ -427,6 +440,29 @@ async function handleRequest(req, res) {
       }
 
       writeJSON('content.json', content);
+
+      // Learn from rejections — capture patterns to avoid
+      const memory = readJSON('memory.json', {});
+      if (!memory.rejection_patterns) memory.rejection_patterns = [];
+      const rejectedFormats = format
+        ? [format]
+        : Object.keys(content[idx].formats);
+      for (const fmtKey of rejectedFormats) {
+        const fmt = content[idx].formats[fmtKey];
+        if (fmt?.content) {
+          memory.rejection_patterns.push({
+            format: fmtKey,
+            trigger_title: content[idx].trigger_title,
+            content_preview: (typeof fmt.content === 'string' ? fmt.content : JSON.stringify(fmt.content)).slice(0, 300),
+            rejection_note: body.note || null,
+            rejected_at: now()
+          });
+          // Keep only last 30 rejection patterns
+          if (memory.rejection_patterns.length > 30) memory.rejection_patterns = memory.rejection_patterns.slice(-30);
+        }
+      }
+      writeJSON('memory.json', memory);
+
       return json(res, { ok: true, ...content[idx] });
     }
 
@@ -1195,6 +1231,84 @@ async function handleRequest(req, res) {
     if (pathname === '/api/hooks' && method === 'GET') {
       const hooks = readJSON('hooks.json');
       return json(res, hooks);
+    }
+
+    // POST /api/content/:id/remix — rewrite a format with a specific directive
+    const remixFmtMatch = pathname.match(/^\/api\/content\/([a-f0-9]+)\/remix$/);
+    if (remixFmtMatch && method === 'POST') {
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      const content = readJSON('content.json');
+      const idx = content.findIndex(c => c.id === remixFmtMatch[1]);
+      if (idx === -1) return json(res, { error: 'Not found' }, 404);
+      const body = await parseBody(req);
+      if (!body.format || !body.directive) return json(res, { error: 'format and directive required' }, 400);
+      const fmt = content[idx].formats[body.format];
+      if (!fmt?.content) return json(res, { error: 'Format has no content' }, 400);
+
+      const { callClaude, HAIKU } = require('./lib/claude');
+      const { buildSystemPromptWithMemory } = require('./generator/content-writer');
+      const directives = {
+        'more_contrarian': 'Rewrite this to be MORE CONTRARIAN and PROVOCATIVE. Challenge the conventional wisdom. Take a strong stance. Make people want to argue in the comments.',
+        'add_story': 'Rewrite this to LEAD WITH A SPECIFIC STORY — a real-sounding scenario of a law firm that experienced this problem. Include their practice area, the mistake, and the dollar amount lost. Make it feel like a conversation, not a lecture.',
+        'shorten': 'Rewrite this to be 40% SHORTER. Cut every word that doesn\'t earn its place. Make it punchy and dense. Every sentence should hit hard.',
+        'more_data': 'Rewrite this with MORE SPECIFIC NUMBERS AND DATA. Add dollar amounts, percentages, case counts, and time frames. Show the math. Make the reader feel the financial impact.',
+        'practice_specific': `Rewrite this tailored specifically to ${body.practice_area || 'personal injury'} lawyers. Use practice-area-specific numbers, scenarios, and pain points. Reference the typical case value, client type, and marketing challenges for this practice area.`,
+        'more_human': 'Rewrite this to sound MORE HUMAN and LESS LIKE AI. Use contractions. Start some sentences with "And" or "But". Include a moment of honest doubt or admission. Write like you\'re texting a friend who owns a law firm.',
+        'stronger_hook': 'Rewrite ONLY the opening hook (first 2-3 lines) to be dramatically more compelling. Use one of these patterns: (1) A specific failure with a dollar amount, (2) A surprising stat that contradicts expectations, (3) A micro-story that creates an information gap.'
+      };
+      const directiveText = directives[body.directive] || body.directive;
+      const currentContent = typeof fmt.content === 'string' ? fmt.content : JSON.stringify(fmt.content);
+
+      try {
+        const remixed = await callClaude({
+          model: HAIKU,
+          system: buildSystemPromptWithMemory(),
+          prompt: `DIRECTIVE: ${directiveText}\n\nORIGINAL CONTENT (${body.format}):\n${currentContent}\n\nTRIGGER CONTEXT: "${content[idx].trigger_title}"\n\nRewrite the content following the directive above. Return ONLY the rewritten content — no preamble, no explanation, no "here's the rewrite." Just the content itself.`,
+          maxTokens: 2000
+        });
+        // Store as remixed version
+        content[idx].formats[body.format].content = remixed.trim();
+        content[idx].formats[body.format].edited = true;
+        content[idx].formats[body.format].remix_directive = body.directive;
+        if (!content[idx].formats[body.format].original_content) {
+          content[idx].formats[body.format].original_content = currentContent;
+        }
+        writeJSON('content.json', content);
+        return json(res, { ok: true, remixed: remixed.trim(), format: body.format, directive: body.directive });
+      } catch (err) {
+        return json(res, { error: 'Remix failed: ' + err.message }, 500);
+      }
+    }
+
+    // POST /api/content/:id/swap-hook — swap in a hook variant
+    const swapHookMatch = pathname.match(/^\/api\/content\/([a-f0-9]+)\/swap-hook$/);
+    if (swapHookMatch && method === 'POST') {
+      const content = readJSON('content.json');
+      const idx = content.findIndex(c => c.id === swapHookMatch[1]);
+      if (idx === -1) return json(res, { error: 'Not found' }, 404);
+      const body = await parseBody(req);
+      if (!body.format || body.hook_index === undefined) return json(res, { error: 'format and hook_index required' }, 400);
+      const hookKey = body.format === 'linkedin' ? 'linkedin' : 'x';
+      const hooks = content[idx].hook_variants?.[hookKey] || [];
+      if (!hooks[body.hook_index]) return json(res, { error: 'Hook variant not found' }, 400);
+      const newHook = hooks[body.hook_index];
+      const fmt = content[idx].formats[body.format];
+      if (!fmt?.content || typeof fmt.content !== 'string') return json(res, { error: 'Format has no string content' }, 400);
+      // Replace the first 2 lines (the hook) with the selected variant
+      const lines = fmt.content.split('\n');
+      const hookEnd = lines.findIndex((l, i) => i > 0 && l.trim() === '') || 2;
+      const remainingContent = lines.slice(hookEnd).join('\n');
+      content[idx].formats[body.format].content = newHook + '\n' + remainingContent;
+      content[idx].formats[body.format].edited = true;
+      content[idx].formats[body.format].selected_hook = body.hook_index;
+      writeJSON('content.json', content);
+      // Track hook preference in memory
+      const memory = readJSON('memory.json', {});
+      if (!memory.hook_preferences) memory.hook_preferences = [];
+      memory.hook_preferences.push({ format: body.format, hook_index: body.hook_index, hook_text: newHook, trigger_title: content[idx].trigger_title, selected_at: now() });
+      if (memory.hook_preferences.length > 50) memory.hook_preferences = memory.hook_preferences.slice(-50);
+      writeJSON('memory.json', memory);
+      return json(res, { ok: true, new_content: content[idx].formats[body.format].content });
     }
 
     // POST /api/quality-check — quality check content

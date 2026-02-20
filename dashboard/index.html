@@ -1461,7 +1461,7 @@ async function loadData() {
   state.loading = true;
   render();
   try {
-    const [content, triggers, stats, calendar, monthCal, settings, memory, performance, perfAnalytics, meetings, meetingStats, clients, allActions, chatMessages, healthData, inspirations, pestering, pesteringStages, insights, deals, published, series] = await Promise.all([
+    const [content, triggers, stats, calendar, monthCal, settings, memory, performance, perfAnalytics, meetings, meetingStats, clients, allActions, chatMessages, healthData, inspirations, pestering, pesteringStages, insights, deals, published, series, predictions] = await Promise.all([
       api('/api/content'),
       api('/api/triggers'),
       api('/api/stats'),
@@ -1483,7 +1483,8 @@ async function loadData() {
       api('/api/insights').catch(() => []),
       api('/api/deals').catch(() => []),
       api('/api/published').catch(() => []),
-      api('/api/series').catch(() => [])
+      api('/api/series').catch(() => []),
+      api('/api/predictions').catch(() => ({ predictions: [], has_enough_data: false }))
     ]);
     state.content = content;
     state.triggers = triggers;
@@ -1507,6 +1508,7 @@ async function loadData() {
     state.deals = deals;
     state.published = published;
     state.series = series;
+    state.predictions = predictions;
   } catch (err) {
     console.error('Failed to load data:', err);
     toast('Failed to load data', 'error');
@@ -1841,6 +1843,12 @@ function getFilteredContent() {
   else if (sort === 'oldest') filtered.sort((a, b) => new Date(a.generated_at) - new Date(b.generated_at));
   else if (sort === 'quality-high') filtered.sort((a, b) => (b.quality_score?.score || 0) - (a.quality_score?.score || 0));
   else if (sort === 'quality-low') filtered.sort((a, b) => (a.quality_score?.score || 0) - (b.quality_score?.score || 0));
+  else if (sort === 'predicted') {
+    const preds = state.predictions?.predictions || [];
+    const predMap = {};
+    for (const p of preds) predMap[p.content_id] = p.predicted_score;
+    filtered.sort((a, b) => (predMap[b.id] || 0) - (predMap[a.id] || 0));
+  }
   return filtered;
 }
 
@@ -2724,7 +2732,16 @@ function renderContentCard(content) {
           h('span', {
             style: { fontSize: '10px', color: qLabel.color, fontWeight: '600', border: `1px solid ${qLabel.color}44`, borderRadius: '4px', padding: '1px 6px' },
             title: `Quality: ${qScore}/100`
-          }, `${qLabel.text} ${qScore}`)
+          }, `${qLabel.text} ${qScore}`),
+          (() => {
+            const pred = (state.predictions?.predictions || []).find(p => p.content_id === content.id);
+            if (!pred || !state.predictions?.has_enough_data) return null;
+            const pColor = pred.predicted_score >= 70 ? '#059669' : pred.predicted_score >= 40 ? '#d97706' : '#6b7280';
+            return h('span', {
+              style: { fontSize: '10px', color: pColor, fontWeight: '600', border: `1px solid ${pColor}44`, borderRadius: '4px', padding: '1px 6px' },
+              title: `Predicted performance: ${pred.predicted_score} (confidence: ${pred.confidence}%)\nBest format: ${pred.best_format}`
+            }, `Pred ${pred.predicted_score}`);
+          })()
         )
       ),
       h('div', { style: { display: 'flex', gap: '6px', alignItems: 'center', flexShrink: '0' } },
@@ -3389,7 +3406,8 @@ function renderContentPage() {
         h('option', { value: 'newest' }, 'Newest First'),
         h('option', { value: 'oldest' }, 'Oldest First'),
         h('option', { value: 'quality-high' }, 'Quality: High to Low'),
-        h('option', { value: 'quality-low' }, 'Quality: Low to High')
+        h('option', { value: 'quality-low' }, 'Quality: Low to High'),
+        h('option', { value: 'predicted' }, 'Predicted Performance')
       ),
       (state.filter.source !== 'all' || state.filter.quality !== 'all' || state.filter.dateRange !== 'all')
         ? h('span', {

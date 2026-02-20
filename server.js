@@ -18,6 +18,68 @@ const PORT = process.env.PORT || 3000;
 // Batch generation progress tracking
 const _batchProgress = {};
 
+// Auto-schedule content to the next available calendar slot
+function autoScheduleContent(contentItem) {
+  try {
+    const calendarData = readJSON('calendar.json', {});
+    const formatToPlatform = {
+      linkedin: 'linkedin', carousel: 'linkedin', poll: 'linkedin',
+      quote_cards: 'linkedin', listicle: 'linkedin', hot_take: 'linkedin',
+      before_after: 'linkedin', stat_graphic: 'linkedin',
+      x_single: 'x', x_thread: 'x',
+      short_video: 'video',
+      blog: 'blog', case_study: 'blog',
+      newsletter: 'email', lead_magnet: 'email',
+      youtube_script: 'youtube'
+    };
+    const platformTimePrefs = {
+      linkedin: ['morning', 'midday'], x: ['morning', 'midday', 'evening'],
+      video: ['midday'], blog: ['morning'], email: ['morning'], youtube: ['midday']
+    };
+
+    // Find first format with content
+    const formats = Object.entries(contentItem.formats || {})
+      .filter(([, fmt]) => fmt.content && fmt.status !== 'rejected');
+    if (formats.length === 0) return null;
+
+    const [format] = formats[0];
+    const platform = formatToPlatform[format];
+    if (!platform) return null;
+
+    const times = platformTimePrefs[platform] || ['morning'];
+
+    // Look ahead 14 days for an open slot
+    const today = new Date();
+    for (let i = 0; i < 14; i++) {
+      const d = new Date(today);
+      d.setDate(today.getDate() + i);
+      const dateKey = d.toISOString().split('T')[0];
+
+      for (const time of times) {
+        const slotKey = `${platform}_${time}`;
+        if (!calendarData[dateKey]?.[slotKey]) {
+          if (!calendarData[dateKey]) calendarData[dateKey] = {};
+          calendarData[dateKey][slotKey] = {
+            content_id: contentItem.id,
+            format,
+            title: (contentItem.trigger_title || '').slice(0, 80),
+            status: 'review',
+            auto_scheduled: true,
+            assigned_at: now()
+          };
+          writeJSON('calendar.json', calendarData);
+          console.log(`[auto-schedule] ${contentItem.id} → ${dateKey} ${slotKey}`);
+          return { date: dateKey, slot: slotKey, format };
+        }
+      }
+    }
+    return null;
+  } catch (err) {
+    console.error('[auto-schedule] Error:', err.message);
+    return null;
+  }
+}
+
 // --- Helpers ---
 
 function json(res, data, status = 200) {
@@ -871,6 +933,99 @@ async function handleRequest(req, res) {
       });
     }
 
+    // GET /api/predictions — performance predictions for pending/review content
+    if (pathname === '/api/predictions' && method === 'GET') {
+      const content = readJSON('content.json');
+      const perfData = readJSON('performance.json');
+      const published = readJSON('published.json');
+
+      // Build scoring model from historical performance
+      const formatAvg = {};
+      const sourceAvg = {};
+      const categoryAvg = {};
+      for (const entry of perfData) {
+        const score = entry.impressions + entry.engagement * 2 + entry.clicks * 5 + entry.leads * 20;
+        const item = content.find(c => c.id === entry.content_id);
+        // By format
+        if (!formatAvg[entry.format]) formatAvg[entry.format] = { total: 0, count: 0 };
+        formatAvg[entry.format].total += score;
+        formatAvg[entry.format].count++;
+        // By source
+        const src = item?.trigger_source || 'unknown';
+        if (!sourceAvg[src]) sourceAvg[src] = { total: 0, count: 0 };
+        sourceAvg[src].total += score;
+        sourceAvg[src].count++;
+        // By category
+        const cat = item?.trigger_category || 'unknown';
+        if (!categoryAvg[cat]) categoryAvg[cat] = { total: 0, count: 0 };
+        categoryAvg[cat].total += score;
+        categoryAvg[cat].count++;
+      }
+
+      // Calculate averages
+      for (const v of Object.values(formatAvg)) v.avg = v.count > 0 ? v.total / v.count : 0;
+      for (const v of Object.values(sourceAvg)) v.avg = v.count > 0 ? v.total / v.count : 0;
+      for (const v of Object.values(categoryAvg)) v.avg = v.count > 0 ? v.total / v.count : 0;
+
+      const globalAvg = perfData.length > 0
+        ? perfData.reduce((s, e) => s + e.impressions + e.engagement * 2 + e.clicks * 5 + e.leads * 20, 0) / perfData.length
+        : 50; // Default baseline
+
+      // Predict scores for unpublished content
+      const predictions = content
+        .filter(c => c.status === 'review' || c.status === 'approved')
+        .map(c => {
+          const formats = Object.keys(c.formats || {}).filter(f => c.formats[f].content);
+          const src = c.trigger_source || 'unknown';
+          const cat = c.trigger_category || 'unknown';
+
+          // Composite score: weight format (40%), source (30%), category (20%), quality (10%)
+          const bestFormat = formats.reduce((best, f) => {
+            const fScore = formatAvg[f]?.avg || globalAvg;
+            return fScore > best.score ? { format: f, score: fScore } : best;
+          }, { format: null, score: 0 });
+
+          const sourceScore = sourceAvg[src]?.avg || globalAvg;
+          const catScore = categoryAvg[cat]?.avg || globalAvg;
+          const qualityScore = c.quality_scores
+            ? Math.max(...Object.values(c.quality_scores).map(q => q.score || 0))
+            : 50;
+
+          const predicted = Math.round(
+            (bestFormat.score * 0.4) + (sourceScore * 0.3) + (catScore * 0.2) + (qualityScore * 0.1)
+          );
+
+          // Confidence based on data availability
+          const dataPoints = (formatAvg[bestFormat.format]?.count || 0) + (sourceAvg[src]?.count || 0);
+          const confidence = Math.min(100, Math.round(dataPoints * 10));
+
+          return {
+            content_id: c.id,
+            title: c.trigger_title,
+            status: c.status,
+            source: src,
+            category: cat,
+            best_format: bestFormat.format,
+            predicted_score: predicted,
+            confidence,
+            factors: {
+              format: { name: bestFormat.format, score: Math.round(bestFormat.score) },
+              source: { name: src, score: Math.round(sourceScore) },
+              category: { name: cat, score: Math.round(catScore) },
+              quality: Math.round(qualityScore)
+            }
+          };
+        })
+        .sort((a, b) => b.predicted_score - a.predicted_score);
+
+      return json(res, {
+        predictions,
+        model: { format_avg: formatAvg, source_avg: sourceAvg, category_avg: categoryAvg, global_avg: Math.round(globalAvg) },
+        data_points: perfData.length,
+        has_enough_data: perfData.length >= 5
+      });
+    }
+
     // GET /api/analytics/insights — actionable insights and recommendations
     if (pathname === '/api/analytics/insights' && method === 'GET') {
       const content = readJSON('content.json');
@@ -1050,7 +1205,13 @@ async function handleRequest(req, res) {
       try {
         const { runDaily } = require('./generator/run-daily');
         const result = await runDaily({ triggerId });
-        return json(res, { ok: true, content: result });
+        // Auto-schedule generated content
+        const scheduled = [];
+        for (const item of (result || [])) {
+          const slot = autoScheduleContent(item);
+          if (slot) scheduled.push({ content_id: item.id, ...slot });
+        }
+        return json(res, { ok: true, content: result, scheduled });
       } catch (err) {
         try { db.logError('generation', 'generate_for_trigger', err.message, { triggerId }); } catch {}
         return json(res, { error: err.message }, 500);
@@ -1067,7 +1228,13 @@ async function handleRequest(req, res) {
         const { runDaily } = require('./generator/run-daily');
         const body = await parseBody(req);
         const result = await runDaily({ count: body.count || 5 });
-        return json(res, { ok: true, content: result });
+        // Auto-schedule generated content
+        const scheduled = [];
+        for (const item of (result || [])) {
+          const slot = autoScheduleContent(item);
+          if (slot) scheduled.push({ content_id: item.id, ...slot });
+        }
+        return json(res, { ok: true, content: result, scheduled });
       } catch (err) {
         try { db.logError('generation', 'generate_daily', err.message); } catch {}
         return json(res, { error: err.message }, 500);
@@ -1106,7 +1273,10 @@ async function handleRequest(req, res) {
               try {
                 const result = await runDaily({ triggerId: tid });
                 _batchProgress[batchId].completed++;
-                if (result && result.length > 0) _batchProgress[batchId].results.push(result[0].id);
+                if (result && result.length > 0) {
+                  _batchProgress[batchId].results.push(result[0].id);
+                  autoScheduleContent(result[0]);
+                }
               } catch (err) {
                 _batchProgress[batchId].errors++;
                 console.error(`[batch] Error generating ${tid}: ${err.message}`);
@@ -1124,7 +1294,10 @@ async function handleRequest(req, res) {
               try {
                 const result = await runDaily({ triggerId: t.id });
                 _batchProgress[batchId].completed++;
-                if (result && result.length > 0) _batchProgress[batchId].results.push(result[0].id);
+                if (result && result.length > 0) {
+                  _batchProgress[batchId].results.push(result[0].id);
+                  autoScheduleContent(result[0]);
+                }
               } catch (err) {
                 _batchProgress[batchId].errors++;
               }

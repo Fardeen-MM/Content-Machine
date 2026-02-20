@@ -9,6 +9,10 @@ const googleNews = require('./google-news');
 const hackernews = require('./hackernews');
 const competitors = require('./competitors');
 
+function normalizeTitle(title) {
+  return (title || '').toLowerCase().replace(/[^a-z0-9 ]/g, '').replace(/\s+/g, ' ').trim();
+}
+
 async function runAll() {
   console.log('=== Content Machine Scraper Run ===');
   console.log(`Started: ${now()}`);
@@ -64,18 +68,35 @@ async function runAll() {
     ...results.competitors
   ];
 
-  // Cross-scraper deduplication — remove triggers with same URL or very similar titles
+  // Cross-scraper deduplication — remove triggers with same URL or similar titles
   const existingUrls = new Set(existingTriggers.map(t => t.url).filter(Boolean));
-  const existingTitles = new Set(existingTriggers.map(t => (t.title || '').toLowerCase().trim()));
+  const existingTitlesNorm = existingTriggers.map(t => normalizeTitle(t.title));
   const seenUrls = new Set();
-  const seenTitles = new Set();
+  const seenTitlesNorm = [];
   const newTriggers = allNew.filter(t => {
     const url = t.url || '';
-    const title = (t.title || '').toLowerCase().trim();
+    const titleNorm = normalizeTitle(t.title);
+    // Exact URL match
     if (url && (existingUrls.has(url) || seenUrls.has(url))) return false;
-    if (title && (existingTitles.has(title) || seenTitles.has(title))) return false;
+    // Exact normalized title match
+    if (titleNorm && (existingTitlesNorm.includes(titleNorm) || seenTitlesNorm.includes(titleNorm))) return false;
+    // Fuzzy title match — check if >70% of words overlap with any existing title
+    if (titleNorm && titleNorm.length > 20) {
+      const words = new Set(titleNorm.split(' ').filter(w => w.length > 3));
+      if (words.size >= 3) {
+        const isSimilar = [...existingTitlesNorm, ...seenTitlesNorm].some(existing => {
+          if (!existing || existing.length < 20) return false;
+          const existingWords = new Set(existing.split(' ').filter(w => w.length > 3));
+          if (existingWords.size < 3) return false;
+          const overlap = [...words].filter(w => existingWords.has(w)).length;
+          const similarity = overlap / Math.min(words.size, existingWords.size);
+          return similarity > 0.7;
+        });
+        if (isSimilar) return false;
+      }
+    }
     if (url) seenUrls.add(url);
-    if (title) seenTitles.add(title);
+    if (titleNorm) seenTitlesNorm.push(titleNorm);
     return true;
   });
 

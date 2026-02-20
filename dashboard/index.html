@@ -1347,6 +1347,7 @@ const state = {
   editingFormat: null,
   _remixOpen: null,
   _calAssignSlot: null,
+  _focusedContentIdx: 0,
   editText: '',
   sidebarOpen: false,
   filter: { status: 'all', source: 'all', category: 'all' },
@@ -1922,7 +1923,42 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'c' && !e.ctrlKey && !e.metaKey && !isEditing()) { state.page = 'content'; render(); }
   if (e.key === 't' && !e.ctrlKey && !e.metaKey && !isEditing()) { state.page = 'triggers'; render(); }
   if ((e.key === 'd' || e.key === 'D') && !e.ctrlKey && !e.metaKey && !isEditing()) { toggleDarkMode(); }
-  if (e.key === 'Escape') { state.editingFormat = null; state.sidebarOpen = false; render(); }
+  if (e.key === 'Escape') { state.editingFormat = null; state.sidebarOpen = false; state._remixOpen = null; state._calAssignSlot = null; render(); }
+
+  // Content review shortcuts (only on content page, not editing)
+  if (state.page === 'content' && !isEditing()) {
+    const filtered = getFilteredContent ? getFilteredContent() : [];
+    const idx = state._focusedContentIdx || 0;
+    const current = filtered[idx];
+
+    if (e.key === 'j' || e.key === 'ArrowDown') {
+      e.preventDefault();
+      state._focusedContentIdx = Math.min((state._focusedContentIdx || 0) + 1, filtered.length - 1);
+      render();
+      setTimeout(() => {
+        const cards = document.querySelectorAll('.content-card');
+        if (cards[state._focusedContentIdx]) cards[state._focusedContentIdx].scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 50);
+    }
+    if (e.key === 'k' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      state._focusedContentIdx = Math.max((state._focusedContentIdx || 0) - 1, 0);
+      render();
+      setTimeout(() => {
+        const cards = document.querySelectorAll('.content-card');
+        if (cards[state._focusedContentIdx]) cards[state._focusedContentIdx].scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 50);
+    }
+    if (e.key === ' ' && current) {
+      e.preventDefault();
+      if (state.selectedContent.has(current.id)) state.selectedContent.delete(current.id);
+      else state.selectedContent.add(current.id);
+      render();
+    }
+    if (e.key === '?' && !e.ctrlKey && !e.metaKey) {
+      toast('Shortcuts: j/k=navigate, Space=select, Esc=close, 1-9=pages, c=content, t=triggers', 'info');
+    }
+  }
 });
 
 function isEditing() {
@@ -3015,13 +3051,17 @@ function renderContentPage() {
           h('p', {}, state.searchQuery ? 'Try a different search term.' : 'Try changing your filters or generate new content.')
         )
       : h('div', { className: 'content-list' },
-          ...filtered.map(c => renderContentCardWithSelect(c))
+          ...filtered.map((c, i) => renderContentCardWithSelect(c, i))
         )
   );
 }
 
-function renderContentCardWithSelect(content) {
-  return h('div', { style: { display: 'flex', gap: '12px', alignItems: 'flex-start' } },
+function renderContentCardWithSelect(content, idx) {
+  const isFocused = state._focusedContentIdx === idx;
+  return h('div', {
+    style: { display: 'flex', gap: '12px', alignItems: 'flex-start', borderLeft: isFocused ? '3px solid var(--blue)' : '3px solid transparent', paddingLeft: '4px', transition: 'border-color 0.15s' },
+    onclick: () => { state._focusedContentIdx = idx; render(); }
+  },
     h('input', {
       type: 'checkbox', className: 'bulk-checkbox',
       checked: state.selectedContent.has(content.id),
@@ -4385,14 +4425,20 @@ function renderSettingsPage() {
             )
           )
         ),
+        settings.last_scrape_at
+          ? h('div', { style: { fontSize: '12px', color: 'var(--gray-400)', marginTop: '12px', padding: '8px 12px', background: 'var(--gray-50)', borderRadius: '6px' } },
+              'Last scraped: ' + timeAgo(settings.last_scrape_at),
+              settings.last_scrape_result ? ` (${settings.last_scrape_result.new_triggers} new triggers)` : ''
+            )
+          : null,
         h('button', {
           className: 'btn btn-primary',
-          style: { marginTop: '16px', width: '100%' },
+          style: { marginTop: '12px', width: '100%' },
           onclick: async () => {
-            toast('Running scrapers...', 'info');
+            toast('Running scrapers... this may take a minute', 'info');
             try {
-              await api('/api/scrape-now', { method: 'POST', body: {} });
-              toast('Scrape complete — refresh to see new triggers', 'success');
+              const result = await api('/api/scrape-now', { method: 'POST', body: {} });
+              toast(`Scrape complete! ${result.new_triggers || 0} new triggers found`, 'success');
               await loadData();
             } catch (err) {
               toast('Scrape failed: ' + err.message, 'error');

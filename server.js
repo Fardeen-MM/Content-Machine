@@ -1006,6 +1006,7 @@ async function handleRequest(req, res) {
       const triggers = readJSON('trigger-queue.json');
       const content = readJSON('content.json');
       const published = readJSON('published.json');
+      const settings = readJSON('settings.json', {});
       return json(res, {
         api_key: !!process.env.ANTHROPIC_API_KEY,
         fireflies_key: !!process.env.FIREFLIES_API_KEY,
@@ -1016,6 +1017,8 @@ async function handleRequest(req, res) {
         youtube_key: !!process.env.YOUTUBE_API_KEY,
         scrapers: ['reddit', 'rss', 'youtube', 'google-news', 'hackernews', 'competitors'],
         mcp_servers: ['pipeline', 'fireflies', 'ghl', 'instantly'],
+        last_scrape_at: settings.last_scrape_at || null,
+        last_scrape_result: settings.last_scrape_result || null,
         data: {
           triggers: triggers.length,
           content: content.length,
@@ -1053,9 +1056,19 @@ async function handleRequest(req, res) {
     // POST /api/scrape-now — run all scrapers
     if (pathname === '/api/scrape-now' && method === 'POST') {
       try {
+        const beforeCount = readJSON('trigger-queue.json').length;
         const { runAll } = require('./scrapers/run-all');
         await runAll();
-        return json(res, { ok: true });
+        const afterCount = readJSON('trigger-queue.json').length;
+        const newTriggers = afterCount - beforeCount;
+
+        // Save last scrape timestamp
+        const settings = readJSON('settings.json', {});
+        settings.last_scrape_at = now();
+        settings.last_scrape_result = { new_triggers: newTriggers, total: afterCount };
+        writeJSON('settings.json', settings);
+
+        return json(res, { ok: true, new_triggers: newTriggers, total: afterCount, scraped_at: now() });
       } catch (err) {
         return json(res, { error: err.message }, 500);
       }

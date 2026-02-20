@@ -1066,11 +1066,21 @@ h1, h2, h3, h4 { font-family: 'Fraunces', serif; }
   .page-content { padding: 16px; }
   .stats-grid { grid-template-columns: repeat(2, 1fr); }
   .calendar-grid { grid-template-columns: 1fr; }
-  .format-tabs { font-size: 12px; }
+  .format-tabs { font-size: 12px; overflow-x: auto; flex-wrap: nowrap; -webkit-overflow-scrolling: touch; }
   .content-card-header { flex-direction: column; }
   .url-input-group { flex-direction: column; }
   .perf-grid { grid-template-columns: 1fr; }
   .perf-inputs-grid { grid-template-columns: 1fr; }
+  .filter-bar { flex-wrap: wrap; gap: 8px; }
+  .filter-chip { padding: 6px 14px; font-size: 13px; }
+  .btn { min-height: 40px; padding: 8px 16px; }
+  .btn-sm { min-height: 36px; }
+  .search-input { width: 100% !important; }
+  .bulk-bar { flex-wrap: wrap; }
+  .modal-overlay { padding: 16px; }
+  .capture-modal { max-width: 100%; margin: 0; }
+  .trigger-table { font-size: 12px; }
+  .trigger-table th, .trigger-table td { padding: 8px; }
 }
 
 @media (max-width: 480px) {

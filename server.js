@@ -2,7 +2,7 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
-const { loadEnv, readJSON, writeJSON, generateId, now } = require('./lib/utils');
+const { loadEnv, readJSON, writeJSON, backupJSON, generateId, now } = require('./lib/utils');
 const jsonStore = require('./lib/json-store');
 const db = require('./lib/db');
 const fireflies = require('./lib/fireflies');
@@ -759,6 +759,7 @@ async function handleRequest(req, res) {
         const result = await runDaily({ triggerId });
         return json(res, { ok: true, content: result });
       } catch (err) {
+        try { db.logError('generation', 'generate_for_trigger', err.message, { triggerId }); } catch {}
         return json(res, { error: err.message }, 500);
       }
     }
@@ -775,6 +776,7 @@ async function handleRequest(req, res) {
         const result = await runDaily({ count: body.count || 5 });
         return json(res, { ok: true, content: result });
       } catch (err) {
+        try { db.logError('generation', 'generate_daily', err.message); } catch {}
         return json(res, { error: err.message }, 500);
       }
     }
@@ -946,6 +948,7 @@ async function handleRequest(req, res) {
       const body = await parseBody(req);
       const ids = body.ids || [];
       if (!ids.length) return json(res, { error: 'ids required' }, 400);
+      backupJSON('content.json');
 
       let updated = 0;
       await jsonStore.update('content.json', [], content => {
@@ -970,6 +973,7 @@ async function handleRequest(req, res) {
       const body = await parseBody(req);
       const ids = body.ids || [];
       if (!ids.length) return json(res, { error: 'ids required' }, 400);
+      backupJSON('content.json');
 
       let updated = 0;
       await jsonStore.update('content.json', [], content => {
@@ -1133,6 +1137,7 @@ async function handleRequest(req, res) {
 
         return json(res, { ok: true, new_triggers: newTriggers, total: afterCount, scraped_at: now() });
       } catch (err) {
+        try { db.logError('scraper', 'scrape_now', err.message); } catch {}
         return json(res, { error: err.message }, 500);
       }
     }
@@ -2526,6 +2531,8 @@ Return JSON array (no fences):
         fireflies: !!process.env.FIREFLIES_API_KEY,
         telegram: !!process.env.TELEGRAM_BOT_TOKEN,
       };
+      let errorCounts = { total: 0, lastHour: 0, last24h: 0 };
+      try { errorCounts = db.getErrorCounts(); } catch {}
       const ok = checks.server && checks.database && checks.claude_api;
       return json(res, {
         ok,
@@ -2533,8 +2540,40 @@ Return JSON array (no fences):
         uptime: Math.floor(uptime),
         memory_mb: Math.round(memUsage.rss / 1048576),
         checks,
-        version: '1.1.0'
+        errors: errorCounts,
+        features: {
+          content_generation: !!process.env.ANTHROPIC_API_KEY,
+          meeting_sync: !!process.env.FIREFLIES_API_KEY,
+          telegram_alerts: !!process.env.TELEGRAM_BOT_TOKEN,
+          image_generation: !!process.env.IDEOGRAM_API_KEY,
+        },
+        version: '1.2.0'
       }, ok ? 200 : 503);
+    }
+
+    // GET /api/backups — list available JSON backups
+    if (pathname === '/api/backups' && method === 'GET') {
+      const backupDir = path.join(__dirname, 'data', 'backups');
+      let files = [];
+      try {
+        files = fs.readdirSync(backupDir)
+          .filter(f => f.endsWith('.json'))
+          .map(f => {
+            const stat = fs.statSync(path.join(backupDir, f));
+            return { name: f, size: stat.size, modified: stat.mtime.toISOString() };
+          })
+          .sort((a, b) => b.modified.localeCompare(a.modified));
+      } catch {}
+      return json(res, { backups: files });
+    }
+
+    // GET /api/errors — recent error log
+    if (pathname === '/api/errors' && method === 'GET') {
+      const source = url.searchParams.get('source');
+      const limit = parseInt(url.searchParams.get('limit')) || 50;
+      const errors = db.getErrors({ limit, source });
+      const counts = db.getErrorCounts();
+      return json(res, { errors, counts });
     }
 
     // --- Remote MCP (SSE) endpoints ---
@@ -2646,6 +2685,7 @@ cron.schedule('0 13 * * *', async () => {
     console.log('[cron] Daily brief sent');
   } catch (err) {
     console.error('[cron] Daily brief failed:', err.message);
+    try { db.logError('cron', 'daily_brief', err.message); } catch {}
   }
 });
 
@@ -2711,6 +2751,7 @@ cron.schedule('0 */2 * * *', async () => {
     }
   } catch (err) {
     console.error('[cron] Alert check failed:', err.message);
+    try { db.logError('cron', 'alert_check', err.message); } catch {}
   }
 });
 
@@ -2745,6 +2786,7 @@ cron.schedule('0 */6 * * *', async () => {
     }
   } catch (err) {
     console.error('[cron] Fireflies auto-sync failed:', err.message);
+    try { db.logError('cron', 'fireflies_sync', err.message); } catch {}
   }
 });
 
@@ -2776,7 +2818,18 @@ cron.schedule('0 7 * * *', () => {
 
 // --- Start server ---
 
-const server = http.createServer(handleRequest);
+const server = http.createServer(async (req, res) => {
+  try {
+    await handleRequest(req, res);
+  } catch (err) {
+    console.error('[server] Unhandled error:', err.message);
+    try { db.logError('server', 'unhandled', err.message, { stack: err.stack, url: req.url, method: req.method }); } catch {}
+    if (!res.headersSent) {
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Internal server error' }));
+    }
+  }
+});
 
 const HOST = process.env.HOST || '0.0.0.0';
 

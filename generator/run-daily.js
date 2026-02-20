@@ -113,6 +113,31 @@ async function runDaily(options = {}) {
         content = await generateLeadMagnetContent(content, trigger);
       }
 
+      // Step 6: Quality gate enforcement
+      const { qualityCheck } = require('./quality-gate');
+      const qualityScores = {};
+      let autoApproved = 0;
+      let autoRejected = 0;
+      for (const [key, fmt] of Object.entries(content.formats || {})) {
+        if (!fmt.content) continue;
+        const result = qualityCheck(fmt.content, key, trigger);
+        qualityScores[key] = result;
+        if (result.score >= 80 && result.pass) {
+          fmt.status = 'approved';
+          fmt.auto_approved = true;
+          autoApproved++;
+        } else if (result.score < 30) {
+          fmt.status = 'rejected';
+          fmt.auto_rejected = true;
+          fmt.rejection_reason = `Auto-rejected: quality score ${result.score}/100 — ${result.issues.slice(0, 2).join('; ')}`;
+          autoRejected++;
+        }
+      }
+      content.quality_scores = qualityScores;
+      if (autoApproved > 0 || autoRejected > 0) {
+        console.log(`[quality] ${autoApproved} auto-approved, ${autoRejected} auto-rejected`);
+      }
+
       newContent.push(content);
 
       // Mark trigger as used

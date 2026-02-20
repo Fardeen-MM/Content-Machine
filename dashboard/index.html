@@ -4051,6 +4051,11 @@ function renderTriggersPage() {
     const q = state.searchQuery.toLowerCase();
     filtered = filtered.filter(t => `${t.title} ${t.source} ${t.category} ${t.raw_content || ''}`.toLowerCase().includes(q));
   }
+  // Sort triggers
+  const trigSort = state.filter.triggerSort || 'score';
+  if (trigSort === 'score') filtered.sort((a, b) => (b.score || 0) - (a.score || 0));
+  else if (trigSort === 'newest') filtered.sort((a, b) => new Date(b.captured_at || 0) - new Date(a.captured_at || 0));
+  else if (trigSort === 'oldest') filtered.sort((a, b) => new Date(a.captured_at || 0) - new Date(b.captured_at || 0));
 
   // Category counts for filter pills
   const catCounts = {};
@@ -4072,6 +4077,15 @@ function renderTriggersPage() {
         value: state.searchQuery,
         oninput: (e) => { state.searchQuery = e.target.value; render(); }
       }),
+      h('select', {
+        style: { fontSize: '12px', padding: '4px 8px', borderRadius: '6px', border: '1px solid var(--gray-200)', background: 'var(--card-bg)', color: 'var(--gray-600)', marginLeft: '8px' },
+        value: state.filter.triggerSort || 'score',
+        onchange: (e) => { state.filter.triggerSort = e.target.value; render(); }
+      },
+        h('option', { value: 'score' }, 'Score: High to Low'),
+        h('option', { value: 'newest' }, 'Newest First'),
+        h('option', { value: 'oldest' }, 'Oldest First')
+      ),
       h('span', { style: { fontSize: '13px', color: 'var(--gray-500)', marginLeft: '8px' } },
         `${filtered.length} triggers`
       ),
@@ -4320,11 +4334,11 @@ function renderTriggersPage() {
             const isExpanded = state.expandedTrigger === trigger.id;
             const rows = [
               h('tr', { style: { cursor: 'pointer' }, onclick: () => { state.expandedTrigger = isExpanded ? null : trigger.id; render(); } },
-                h('td', {},
+                h('td', { title: `Score: ${trigger.score || 0}/20\nSource: ${trigger.source}\nCategory: ${(trigger.category || '').replace(/_/g, ' ')}\nAge: ${timeAgo(trigger.captured_at)}` },
                   h('div', { className: 'score-bar' },
-                    h('span', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)', minWidth: '20px' } }, String(trigger.score || 0)),
+                    h('span', { style: { fontSize: '13px', fontWeight: '700', color: (trigger.score || 0) >= 15 ? 'var(--green)' : (trigger.score || 0) >= 10 ? 'var(--navy)' : 'var(--gray-400)', minWidth: '20px' } }, String(trigger.score || 0)),
                     h('div', { className: 'score-bg' },
-                      h('div', { className: 'score-fill', style: { width: `${Math.min((trigger.score || 0) / 20 * 100, 100)}%` } })
+                      h('div', { className: 'score-fill', style: { width: `${Math.min((trigger.score || 0) / 20 * 100, 100)}%`, background: (trigger.score || 0) >= 15 ? 'var(--green)' : (trigger.score || 0) >= 10 ? 'var(--blue)' : 'var(--gray-300)' } })
                     )
                   )
                 ),

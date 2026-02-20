@@ -8,7 +8,7 @@ const path = require('path');
 loadEnv();
 
 async function runDaily(options = {}) {
-  const { count = 5, triggerId = null, includeBlog = true, includeYouTube = true } = options;
+  const { count = 5, triggerId = null, includeBlog = true, includeYouTube = true, seriesTemplate = null } = options;
 
   console.log('=== Content Machine Daily Generation ===');
   console.log(`Started: ${now()}`);
@@ -75,7 +75,7 @@ async function runDaily(options = {}) {
 
     try {
       // Step 1: Generate social content
-      let content = await generateAllContent(trigger);
+      let content = await generateAllContent(trigger, { seriesTemplate });
 
       // Step 2: Generate image
       content = await generateContentImage(content);

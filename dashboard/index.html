@@ -1456,7 +1456,7 @@ async function loadData() {
   state.loading = true;
   render();
   try {
-    const [content, triggers, stats, calendar, monthCal, settings, memory, performance, perfAnalytics, meetings, meetingStats, clients, allActions, chatMessages, healthData, inspirations, pestering, pesteringStages, insights, deals, published] = await Promise.all([
+    const [content, triggers, stats, calendar, monthCal, settings, memory, performance, perfAnalytics, meetings, meetingStats, clients, allActions, chatMessages, healthData, inspirations, pestering, pesteringStages, insights, deals, published, series] = await Promise.all([
       api('/api/content'),
       api('/api/triggers'),
       api('/api/stats'),
@@ -1477,7 +1477,8 @@ async function loadData() {
       api('/api/pestering/stages').catch(() => ({})),
       api('/api/insights').catch(() => []),
       api('/api/deals').catch(() => []),
-      api('/api/published').catch(() => [])
+      api('/api/published').catch(() => []),
+      api('/api/series').catch(() => [])
     ]);
     state.content = content;
     state.triggers = triggers;
@@ -1500,6 +1501,7 @@ async function loadData() {
     state.insights = insights;
     state.deals = deals;
     state.published = published;
+    state.series = series;
   } catch (err) {
     console.error('Failed to load data:', err);
     toast('Failed to load data', 'error');
@@ -4375,8 +4377,13 @@ function renderCalendarDayDetail(cal) {
   const timeLabels = { morning: 'Morning (8-10am)', midday: 'Midday (12-2pm)', evening: 'Evening (5-7pm)' };
   const platformLabels = { linkedin: 'LinkedIn', x: 'X/Twitter', video: 'Video', blog: 'Blog', email: 'Email', youtube: 'YouTube' };
 
+  // Find matching series template
+  const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+  const dayOfWeek = dayNames[new Date(day.date).getDay()];
+  const series = (state.series || []).find(s => s.day === dayOfWeek && s.active !== false);
+
   return h('div', { className: 'cal-detail' },
-    h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' } },
+    h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: series ? '8px' : '16px' } },
       h('h4', {},
         `${day.day}, ${day.date}`,
         h('span', {
@@ -4389,6 +4396,10 @@ function renderCalendarDayDetail(cal) {
         onclick: () => { state.calendarSelectedDay = null; render(); }
       }, 'Close')
     ),
+    series ? h('div', { style: { padding: '8px 12px', background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: '6px', marginBottom: '16px', fontSize: '12px', color: '#0369a1' } },
+      h('strong', {}, series.name),
+      h('span', { style: { marginLeft: '8px', color: '#64748b' } }, `Pillar: ${series.pillar} | Formats: ${series.formats.join(', ')}`)
+    ) : null,
     h('div', { className: 'cal-detail-grid' },
       ...['morning', 'midday', 'evening'].map(time =>
         h('div', { className: 'cal-time-col' },

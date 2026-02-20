@@ -642,6 +642,12 @@ async function handleRequest(req, res) {
       return json(res, { items: queue, total: queue.length });
     }
 
+    // GET /api/series — content series templates
+    if (pathname === '/api/series' && method === 'GET') {
+      const series = readJSON('series.json');
+      return json(res, series);
+    }
+
     // GET /api/calendar — monthly or weekly calendar
     if (pathname === '/api/calendar' && method === 'GET') {
       const content = readJSON('content.json');
@@ -733,9 +739,14 @@ async function handleRequest(req, res) {
           trigger = top[0];
         }
 
+        // Look up series template for the day
+        const series = readJSON('series.json');
+        const dayOfWeek = new Date(date).toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+        const seriesTemplate = series.find(s => s.day === dayOfWeek && s.active !== false) || null;
+
         // Generate content
         const { runDaily } = require('./generator/run-daily');
-        const result = await runDaily({ triggerId: trigger.id });
+        const result = await runDaily({ triggerId: trigger.id, seriesTemplate });
         if (!result || result.length === 0) return json(res, { error: 'Generation produced no content' }, 500);
 
         const content = result[0];

@@ -234,11 +234,17 @@ function buildSystemPromptWithMemory() {
   return prompt;
 }
 
-async function generateAllContent(trigger) {
+async function generateAllContent(trigger, options = {}) {
   const contentId = generateId();
-  const systemPrompt = buildSystemPromptWithMemory();
+  let systemPrompt = buildSystemPromptWithMemory();
 
-  console.log(`[writer] Generating social content for: ${trigger.title}`);
+  // Apply series template if provided
+  if (options.seriesTemplate) {
+    const st = options.seriesTemplate;
+    systemPrompt += `\n\nSERIES CONTEXT — "${st.name}":\nThis content is part of the "${st.name}" recurring series (${st.day}).\nTemplate structure:\n${st.template_prompt}\nPillar: ${st.pillar}\nPreferred formats: ${st.formats.join(', ')}\nUse this template structure to shape the content. Follow the format guidelines but keep the core Mortar Metrics voice.`;
+  }
+
+  console.log(`[writer] Generating social content for: ${trigger.title}${options.seriesTemplate ? ` (series: ${options.seriesTemplate.name})` : ''}`);
 
   let social = null;
   try {

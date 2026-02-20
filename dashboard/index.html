@@ -4124,6 +4124,53 @@ function renderTriggersPage() {
         }, `${cat.replace(/_/g, ' ')} (${catCounts[cat]})`) : null
       )
     ),
+    // Scraper status bar
+    (() => {
+      const settings = state.settings || {};
+      const lastScrape = settings.last_scrape_at;
+      const lastResult = settings.last_scrape_result;
+      const sources = ['reddit', 'rss', 'youtube', 'google-news', 'hackernews', 'competitor'];
+      const sourceCounts = {};
+      for (const t of state.triggers.filter(t => t.status === 'pending')) {
+        sourceCounts[t.source] = (sourceCounts[t.source] || 0) + 1;
+      }
+      return h('div', { style: { display: 'flex', gap: '8px', marginBottom: '8px', alignItems: 'center', padding: '8px 12px', background: 'var(--gray-50)', border: '1px solid var(--gray-150)', borderRadius: '8px', fontSize: '12px', flexWrap: 'wrap' } },
+        h('span', { style: { fontWeight: '600', color: 'var(--gray-500)', marginRight: '4px' } }, 'Sources:'),
+        ...sources.map(src => {
+          const cnt = sourceCounts[src] || 0;
+          return h('span', {
+            style: { padding: '2px 8px', borderRadius: '12px', fontSize: '11px', background: cnt > 0 ? 'var(--blue)' + '18' : 'var(--gray-100)', color: cnt > 0 ? 'var(--blue)' : 'var(--gray-400)' }
+          }, `${sourceLabel(src)} ${cnt}`);
+        }),
+        h('span', { style: { marginLeft: 'auto', color: 'var(--gray-400)', fontSize: '11px' } },
+          lastScrape ? `Last scrape: ${timeAgo(lastScrape)}` + (lastResult ? ` (${lastResult.new_triggers} new)` : '') : 'Never scraped'
+        ),
+        h('button', {
+          className: 'btn btn-sm btn-outline',
+          style: { fontSize: '11px', marginLeft: '4px' },
+          disabled: state._scraping,
+          onclick: async () => {
+            state._scraping = true; render();
+            try {
+              const res = await api('/api/scrape-now', { method: 'POST' });
+              toast(`Scraped ${res.new_triggers} new triggers`, 'success');
+              await loadData();
+            } catch (err) { toast('Scrape failed', 'error'); }
+            state._scraping = false; render();
+          }
+        }, state._scraping ? 'Scraping...' : 'Refresh'),
+        h('button', {
+          className: 'btn btn-sm btn-outline',
+          style: { fontSize: '11px' },
+          onclick: async () => {
+            if (!confirm('Archive all stale triggers (21+ days)?')) return;
+            const res = await api('/api/triggers/auto-archive', { method: 'POST', body: { max_age_days: 21 } });
+            toast(`Archived ${res.archived} triggers`, 'success');
+            await loadData();
+          }
+        }, 'Archive Stale')
+      );
+    })(),
     // Bulk cleanup bar
     (() => {
       const pending = state.triggers.filter(t => t.status === 'pending');

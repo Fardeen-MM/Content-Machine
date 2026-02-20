@@ -1430,6 +1430,46 @@ async function handleRequest(req, res) {
       return json(res, { ok: true });
     }
 
+    // POST /api/triggers/bulk-reject — reject multiple triggers at once
+    if (pathname === '/api/triggers/bulk-reject' && method === 'POST') {
+      const body = await parseBody(req);
+      const { trigger_ids, older_than_days, source } = body;
+      let count = 0;
+      await jsonStore.update('trigger-queue.json', [], triggers => {
+        const cutoff = older_than_days ? Date.now() - older_than_days * 24 * 60 * 60 * 1000 : null;
+        for (let i = 0; i < triggers.length; i++) {
+          if (triggers[i].status !== 'pending') continue;
+          let match = false;
+          if (trigger_ids && trigger_ids.includes(triggers[i].id)) match = true;
+          if (cutoff && new Date(triggers[i].captured_at).getTime() < cutoff) match = true;
+          if (source && triggers[i].source === source && !trigger_ids) match = true;
+          if (match) { triggers[i].status = 'rejected'; count++; }
+        }
+        return triggers;
+      });
+      return json(res, { ok: true, rejected: count });
+    }
+
+    // POST /api/triggers/bulk-delete — delete rejected triggers
+    if (pathname === '/api/triggers/bulk-delete' && method === 'POST') {
+      const body = await parseBody(req);
+      const olderThanDays = body.older_than_days;
+      let count = 0;
+      await jsonStore.update('trigger-queue.json', [], triggers => {
+        const cutoff = olderThanDays > 0 ? Date.now() - olderThanDays * 24 * 60 * 60 * 1000 : Infinity;
+        const before = triggers.length;
+        const filtered = triggers.filter(t => {
+          if (t.status === 'rejected') {
+            if (olderThanDays === 0 || new Date(t.captured_at).getTime() < cutoff) return false;
+          }
+          return true;
+        });
+        count = before - filtered.length;
+        return filtered;
+      });
+      return json(res, { ok: true, deleted: count });
+    }
+
     // GET /api/memory
     if (pathname === '/api/memory' && method === 'GET') {
       const memory = readJSON('memory.json', {});

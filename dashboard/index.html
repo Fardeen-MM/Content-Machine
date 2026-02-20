@@ -3939,6 +3939,55 @@ function renderTriggersPage() {
         }, `${cat.replace(/_/g, ' ')} (${catCounts[cat]})`) : null
       )
     ),
+    // Bulk cleanup bar
+    (() => {
+      const pending = state.triggers.filter(t => t.status === 'pending');
+      const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+      const fourteenDaysAgo = Date.now() - 14 * 24 * 60 * 60 * 1000;
+      const stale7 = pending.filter(t => new Date(t.captured_at).getTime() < sevenDaysAgo).length;
+      const stale14 = pending.filter(t => new Date(t.captured_at).getTime() < fourteenDaysAgo).length;
+      const rejected = state.triggers.filter(t => t.status === 'rejected').length;
+      if (stale7 === 0 && rejected === 0) return null;
+      return h('div', { style: { display: 'flex', gap: '8px', marginBottom: '12px', alignItems: 'center', padding: '8px 12px', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: '8px', fontSize: '12px' } },
+        h('span', { style: { color: '#92400e', fontWeight: '600' } }, 'Cleanup:'),
+        stale7 > 0 ? h('button', {
+          className: 'btn btn-sm',
+          style: { fontSize: '11px', background: '#fbbf24', color: '#78350f', border: 'none', padding: '3px 10px' },
+          onclick: async () => {
+            if (!confirm(`Reject ${stale7} triggers older than 7 days?`)) return;
+            try {
+              const res = await api('/api/triggers/bulk-reject', { method: 'POST', body: { older_than_days: 7 } });
+              toast(`Rejected ${res.rejected} stale triggers`, 'success');
+              await loadData();
+            } catch (err) { toast('Failed: ' + err.message, 'error'); }
+          }
+        }, `Reject ${stale7} stale (>7d)`) : null,
+        stale14 > 0 ? h('button', {
+          className: 'btn btn-sm',
+          style: { fontSize: '11px', background: '#f59e0b', color: '#78350f', border: 'none', padding: '3px 10px' },
+          onclick: async () => {
+            if (!confirm(`Reject ${stale14} triggers older than 14 days?`)) return;
+            try {
+              const res = await api('/api/triggers/bulk-reject', { method: 'POST', body: { older_than_days: 14 } });
+              toast(`Rejected ${res.rejected} stale triggers`, 'success');
+              await loadData();
+            } catch (err) { toast('Failed: ' + err.message, 'error'); }
+          }
+        }, `Reject ${stale14} stale (>14d)`) : null,
+        rejected > 0 ? h('button', {
+          className: 'btn btn-sm',
+          style: { fontSize: '11px', background: '#fca5a5', color: '#991b1b', border: 'none', padding: '3px 10px' },
+          onclick: async () => {
+            if (!confirm(`Delete ${rejected} rejected triggers?`)) return;
+            try {
+              const res = await api('/api/triggers/bulk-delete', { method: 'POST', body: { older_than_days: 0 } });
+              toast(`Deleted ${res.deleted} rejected triggers`, 'success');
+              await loadData();
+            } catch (err) { toast('Failed: ' + err.message, 'error'); }
+          }
+        }, `Delete ${rejected} rejected`) : null
+      );
+    })(),
     // Add trigger form
     state.showAddTrigger
       ? h('div', { className: 'card', style: { padding: '20px', marginBottom: '16px' } },

@@ -1627,6 +1627,75 @@ async function handleRequest(req, res) {
       return json(res, { ok: true, rejected: count });
     }
 
+    // POST /api/triggers/auto-archive — archive stale triggers
+    if (pathname === '/api/triggers/auto-archive' && method === 'POST') {
+      const body = await parseBody(req);
+      const maxAgeDays = body.max_age_days || 21;
+      const cutoff = Date.now() - maxAgeDays * 24 * 60 * 60 * 1000;
+
+      const triggers = readJSON('trigger-queue.json');
+      const archived = readJSON('archived-triggers.json');
+
+      const toArchive = [];
+      const keep = [];
+
+      for (const t of triggers) {
+        if (t.status === 'used') { keep.push(t); continue; }
+        const age = new Date(t.captured_at || t.scraped_at || t.date || 0).getTime();
+        if (t.status === 'pending' && age < cutoff) {
+          toArchive.push({ ...t, status: 'archived', archived_at: now() });
+        } else if (t.status === 'rejected') {
+          toArchive.push({ ...t, status: 'archived', archived_at: now() });
+        } else {
+          keep.push(t);
+        }
+      }
+
+      if (toArchive.length > 0) {
+        writeJSON('trigger-queue.json', keep);
+        writeJSON('archived-triggers.json', [...archived, ...toArchive]);
+        console.log(`[auto-archive] Archived ${toArchive.length} triggers (${keep.length} remaining)`);
+      }
+
+      return json(res, {
+        ok: true,
+        archived: toArchive.length,
+        remaining: keep.length,
+        by_status: {
+          stale: toArchive.filter(t => t.status === 'archived').length,
+          rejected: toArchive.filter(t => t.status === 'rejected').length
+        }
+      });
+    }
+
+    // GET /api/triggers/health — trigger queue health stats
+    if (pathname === '/api/triggers/health' && method === 'GET') {
+      const triggers = readJSON('trigger-queue.json');
+      const archived = readJSON('archived-triggers.json');
+      const nowMs = Date.now();
+
+      const pending = triggers.filter(t => t.status === 'pending');
+      const fresh = pending.filter(t => (nowMs - new Date(t.captured_at || t.scraped_at || t.date || 0).getTime()) < 3 * 24 * 60 * 60 * 1000);
+      const stale7 = pending.filter(t => (nowMs - new Date(t.captured_at || t.scraped_at || t.date || 0).getTime()) > 7 * 24 * 60 * 60 * 1000);
+      const stale21 = pending.filter(t => (nowMs - new Date(t.captured_at || t.scraped_at || t.date || 0).getTime()) > 21 * 24 * 60 * 60 * 1000);
+
+      const bySource = {};
+      for (const t of pending) { bySource[t.source || 'unknown'] = (bySource[t.source || 'unknown'] || 0) + 1; }
+
+      return json(res, {
+        total: triggers.length,
+        pending: pending.length,
+        used: triggers.filter(t => t.status === 'used').length,
+        rejected: triggers.filter(t => t.status === 'rejected').length,
+        fresh_3d: fresh.length,
+        stale_7d: stale7.length,
+        stale_21d: stale21.length,
+        archived_total: archived.length,
+        by_source: bySource,
+        health: fresh.length > 10 ? 'good' : fresh.length > 0 ? 'fair' : 'stale'
+      });
+    }
+
     // POST /api/triggers/bulk-delete — delete rejected triggers
     if (pathname === '/api/triggers/bulk-delete' && method === 'POST') {
       const body = await parseBody(req);

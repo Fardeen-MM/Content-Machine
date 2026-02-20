@@ -2,34 +2,31 @@ const { generateId, now, matchesKeywords, stripHtml, truncate, parseXml, extract
 
 const FEEDS = [
   // Legal industry publications
-  { name: 'ABA Journal', url: 'https://www.abajournal.com/feed' },
-  { name: 'National Law Review', url: 'https://www.natlawreview.com/rss.xml' },
-  { name: 'JD Supra', url: 'https://www.jdsupra.com/rss/news.xml' },
-  { name: 'Law Technology Today', url: 'https://www.lawtechnologytoday.org/feed/' },
+  { name: 'ABA Journal', url: 'https://feeds.feedburner.com/abajournal/topstories' },
+  { name: 'National Law Review', url: 'https://natlawreview.com/feed' },
+  { name: 'JD Supra', url: 'https://www.jdsupra.com/resources/syndication/docsRSSfeed.aspx?ftype=AllContent&premium=1' },
   { name: 'Above the Law', url: 'https://abovethelaw.com/feed/' },
-  { name: 'Law.com', url: 'https://feeds.law.com/LawComNews' },
   { name: 'Lawyer Monthly', url: 'https://www.lawyer-monthly.com/feed/' },
   // Legal tech & practice management
   { name: 'Clio Blog', url: 'https://www.clio.com/blog/feed/' },
   { name: 'Lawyerist', url: 'https://lawyerist.com/feed/' },
   { name: 'Attorney at Work', url: 'https://www.attorneyatwork.com/feed/' },
   { name: 'LawSites Blog', url: 'https://www.lawnext.com/feed' },
-  { name: 'Smokeball Blog', url: 'https://www.smokeball.com/blog/feed/' },
+  { name: 'Smokeball Blog', url: 'https://www.smokeball.com/blog/rss.xml' },
   { name: 'PracticePanther Blog', url: 'https://www.practicepanther.com/blog/feed/' },
   // Legal marketing specific
   { name: 'Rankings.io Blog', url: 'https://rankings.io/blog/feed/' },
-  { name: 'Consultwebs Blog', url: 'https://www.consultwebs.com/blog/rss.xml' },
+  { name: 'Consultwebs Blog', url: 'https://www.consultwebs.com/blog/feed/' },
   { name: 'Good2bSocial', url: 'https://good2bsocial.com/feed/' },
-  { name: 'FindLaw Blog', url: 'https://www.findlaw.com/legalblogs/feed/' },
   // General marketing & growth
   { name: 'HubSpot Marketing', url: 'https://blog.hubspot.com/marketing/rss.xml' },
   { name: 'Neil Patel Blog', url: 'https://neilpatel.com/blog/feed/' },
   { name: 'Search Engine Journal', url: 'https://www.searchenginejournal.com/feed/' },
-  { name: 'Moz Blog', url: 'https://moz.com/devblog/feed' },
+  { name: 'Moz Blog', url: 'https://moz.com/feeds/blog.rss' },
   { name: 'Ahrefs Blog', url: 'https://ahrefs.com/blog/feed/' },
   { name: 'Content Marketing Institute', url: 'https://contentmarketinginstitute.com/feed/' },
   { name: 'Copyblogger', url: 'https://copyblogger.com/feed/' },
-  { name: 'MarketingProfs', url: 'https://www.marketingprofs.com/rss/topic/all' }
+  { name: 'MarketingProfs', url: 'https://feeds.feedblitz.com/marketingprofs' }
 ];
 
 function parseRssItems(xml) {
@@ -54,6 +51,17 @@ function parseRssItems(xml) {
   }
 
   return items;
+}
+
+function safeDate(dateStr) {
+  if (!dateStr) return null;
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return null;
+    return d.toISOString();
+  } catch {
+    return null;
+  }
 }
 
 async function scrapeFeed(feed, existingIds) {
@@ -97,7 +105,7 @@ async function scrapeFeed(feed, existingIds) {
         raw_content: truncate(item.content || item.description, 3000),
         url: item.link,
         category,
-        captured_at: item.pubDate ? new Date(item.pubDate).toISOString() : now(),
+        captured_at: safeDate(item.pubDate) || now(),
         status: 'pending',
         score: 0
       });

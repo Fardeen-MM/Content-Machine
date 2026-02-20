@@ -1,6 +1,6 @@
 const { loadEnv, readJSON, writeJSON, now } = require('../lib/utils');
 const { selectTopTriggers } = require('./score-triggers');
-const { generateAllContent, generateBlog, generateYouTube } = require('./content-writer');
+const { generateAllContent, generateBlog, generateYouTube, generateLeadMagnetContent } = require('./content-writer');
 const { generateContentImage } = require('./image-gen');
 const fs = require('fs');
 const path = require('path');
@@ -106,6 +106,11 @@ async function runDaily(options = {}) {
           fs.writeFileSync(path.join(scriptDir, filename), content.youtube_script);
           console.log(`[youtube] Saved to scripts/${filename}`);
         }
+      }
+
+      // Step 5: Generate lead magnet (if topic exists)
+      if (content.lead_magnet_topic) {
+        content = await generateLeadMagnetContent(content, trigger);
       }
 
       newContent.push(content);

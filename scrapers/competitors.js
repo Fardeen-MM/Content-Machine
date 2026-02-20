@@ -3,20 +3,19 @@ const { generateId, now, stripHtml, truncate, parseXml, extractCdata } = require
 const FEEDS = [
   // Direct competitors — legal marketing agencies
   { name: 'Rankings.io', url: 'https://rankings.io/blog/feed/' },
-  { name: 'Consultwebs', url: 'https://www.consultwebs.com/blog/rss.xml' },
+  { name: 'Consultwebs', url: 'https://www.consultwebs.com/blog/feed/' },
   { name: 'Good2bSocial', url: 'https://good2bsocial.com/feed/' },
   { name: 'Gladiator Law Marketing', url: 'https://gladiatorlawmarketing.com/feed/' },
   { name: 'PaperStreet', url: 'https://www.paperstreet.com/blog/feed/' },
-  { name: 'Scorpion', url: 'https://www.scorpion.co/blog/feed/' },
-  { name: 'Martindale-Avvo Blog', url: 'https://www.martindale.com/blog/feed/' },
-  { name: 'GNGF', url: 'https://gngf.com/feed/' },
-  { name: 'Justia Blog', url: 'https://onward.justia.com/feed/' },
-  { name: 'Foster Web Marketing', url: 'https://www.fosterwebmarketing.com/blog/rss.xml' }
+  { name: 'Martindale-Avvo Blog', url: 'https://www.martindale-avvo.com/blog/feed/' },
+  { name: 'Juris Digital', url: 'https://jurisdigital.com/feed/' },
+  { name: 'Postali', url: 'https://www.postali.com/feed/' },
+  { name: 'Foster Web Marketing', url: 'https://www.fosterwebmarketing.com/blog/rss.xml' },
+  { name: 'Clio Blog', url: 'https://www.clio.com/blog/feed/' }
 ];
 
 function parseRssItems(xml) {
   const items = [];
-  // Match <item>...</item> blocks
   const itemBlocks = parseXml(xml, 'item');
 
   for (const block of itemBlocks) {
@@ -36,6 +35,17 @@ function parseRssItems(xml) {
   }
 
   return items;
+}
+
+function safeDate(dateStr) {
+  if (!dateStr) return null;
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return null;
+    return d.toISOString();
+  } catch {
+    return null;
+  }
 }
 
 async function scrapeFeed(feed, existingIds) {
@@ -70,7 +80,7 @@ async function scrapeFeed(feed, existingIds) {
         url: item.link,
         category: 'CONTENT_PIECE',
         competitive_angle: true,
-        captured_at: item.pubDate ? new Date(item.pubDate).toISOString() : now(),
+        captured_at: safeDate(item.pubDate) || now(),
         status: 'pending',
         score: 0
       });

@@ -165,6 +165,39 @@ function buildSystemPromptWithMemory() {
   } catch (err) {
     console.log('[writer] No memory loaded:', err.message);
   }
+  // Add performance insights from published content
+  try {
+    const perfData = readJSON('performance.json');
+    if (perfData.length >= 3) {
+      const byFormat = {};
+      for (const p of perfData) {
+        if (!byFormat[p.format]) byFormat[p.format] = { total: 0, engagement: 0, impressions: 0, leads: 0 };
+        byFormat[p.format].total++;
+        byFormat[p.format].engagement += (p.engagement || 0);
+        byFormat[p.format].impressions += (p.impressions || 0);
+        byFormat[p.format].leads += (p.leads || 0);
+      }
+      const ranked = Object.entries(byFormat)
+        .filter(([, v]) => v.total >= 2 && v.impressions > 0)
+        .map(([fmt, v]) => ({ fmt, rate: ((v.engagement / v.impressions) * 100).toFixed(1), leads: v.leads, total: v.total }))
+        .sort((a, b) => parseFloat(b.rate) - parseFloat(a.rate));
+      if (ranked.length >= 2) {
+        prompt += '\n\nPERFORMANCE DATA (from published content — prioritize what works):\n';
+        prompt += 'Top performing formats:\n';
+        for (const r of ranked.slice(0, 5)) {
+          prompt += `- ${r.fmt}: ${r.rate}% engagement rate (${r.total} posts, ${r.leads} leads)\n`;
+        }
+        if (ranked.length > 3) {
+          prompt += 'Lower performing formats (give less priority):\n';
+          for (const r of ranked.slice(-2)) {
+            prompt += `- ${r.fmt}: ${r.rate}% engagement rate\n`;
+          }
+        }
+      }
+    }
+  } catch (err) {
+    // Performance data not available — skip
+  }
   _cachedPrompt = prompt;
   _cachedPromptAt = Date.now();
   return prompt;

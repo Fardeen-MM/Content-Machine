@@ -1349,7 +1349,7 @@ const state = {
   _calAssignSlot: null,
   editText: '',
   sidebarOpen: false,
-  filter: { status: 'all', source: 'all' },
+  filter: { status: 'all', source: 'all', category: 'all' },
   toasts: [],
   urlInput: '',
   urlFormats: { linkedin: true, x_single: true, x_thread: true, short_video: true, blog: false, youtube_script: false },
@@ -2392,6 +2392,30 @@ function renderDashboardPage() {
         )
       )
     ) : null,
+    // Content pipeline funnel
+    state.triggers?.length > 0 || state.content?.length > 0
+      ? h('div', { className: 'card', style: { padding: '16px', marginBottom: '20px' } },
+          h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)', marginBottom: '12px' } }, 'CONTENT PIPELINE'),
+          h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } },
+            ...[
+              { label: 'Triggers', count: state.triggers?.filter(t => t.status === 'pending').length || 0, color: 'var(--gray-400)', page: 'triggers' },
+              { label: 'Generated', count: state.content?.length || 0, color: 'var(--blue)', page: 'content' },
+              { label: 'In Review', count: state.content?.filter(c => c.status === 'review').length || 0, color: 'var(--amber)', page: 'content' },
+              { label: 'Approved', count: state.content?.filter(c => Object.values(c.formats || {}).some(f => f.status === 'approved')).length || 0, color: 'var(--green)', page: 'content' },
+              { label: 'Published', count: state.content?.filter(c => Object.values(c.formats || {}).some(f => f.published_at)).length || 0, color: 'var(--purple)', page: 'content' }
+            ].flatMap((stage, i, arr) => [
+              h('div', {
+                style: { flex: '1', textAlign: 'center', padding: '10px 4px', background: stage.color + '12', borderRadius: '8px', cursor: 'pointer' },
+                onclick: () => { state.page = stage.page; render(); }
+              },
+                h('div', { style: { fontSize: '20px', fontWeight: '700', color: stage.color, fontFamily: "'Fraunces', serif" } }, String(stage.count)),
+                h('div', { style: { fontSize: '11px', color: 'var(--gray-500)' } }, stage.label)
+              ),
+              i < arr.length - 1 ? h('span', { style: { fontSize: '16px', color: 'var(--gray-300)' } }, '\u2192') : null
+            ])
+          )
+        )
+      : null,
     // Quick links row
     h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '12px' } },
       h('div', { className: 'card', style: { padding: '14px', cursor: 'pointer', textAlign: 'center' }, onclick: () => { state.page = 'content'; render(); } },
@@ -3254,6 +3278,72 @@ function renderAnalyticsPage() {
           })
         )
       )
+    ),
+    // Fourth row — quality scores + top content
+    h('div', { className: 'analytics-grid' },
+      // Quality score distribution
+      h('div', { className: 'chart-card' },
+        h('h4', {}, 'Content Quality Scores'),
+        (() => {
+          const scored = content.filter(c => c.quality_score?.score != null);
+          if (scored.length === 0) return h('div', { style: { fontSize: '13px', color: 'var(--gray-400)', padding: '20px 0' } }, 'No quality scores yet — generate new content to see scores');
+          const buckets = { 'Excellent (80+)': 0, 'Good (60-79)': 0, 'Fair (40-59)': 0, 'Weak (<40)': 0 };
+          const bucketColors = { 'Excellent (80+)': '#059669', 'Good (60-79)': '#2563eb', 'Fair (40-59)': '#d97706', 'Weak (<40)': '#dc2626' };
+          scored.forEach(c => {
+            const s = c.quality_score.score;
+            if (s >= 80) buckets['Excellent (80+)']++;
+            else if (s >= 60) buckets['Good (60-79)']++;
+            else if (s >= 40) buckets['Fair (40-59)']++;
+            else buckets['Weak (<40)']++;
+          });
+          const avg = Math.round(scored.reduce((sum, c) => sum + c.quality_score.score, 0) / scored.length);
+          return h('div', {},
+            h('div', { style: { fontSize: '36px', fontWeight: '800', color: avg >= 80 ? 'var(--green)' : avg >= 60 ? 'var(--blue)' : 'var(--amber)', fontFamily: "'Fraunces', serif", marginBottom: '12px' } }, `${avg}%`),
+            h('div', { style: { fontSize: '12px', color: 'var(--gray-400)', marginBottom: '16px' } }, `Average quality across ${scored.length} pieces`),
+            ...Object.entries(buckets).map(([label, count]) =>
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' } },
+                h('span', { style: { fontSize: '12px', width: '110px', color: 'var(--gray-500)' } }, label),
+                h('div', { style: { flex: '1', height: '14px', background: 'var(--gray-100)', borderRadius: '7px', overflow: 'hidden' } },
+                  h('div', { style: { width: scored.length > 0 ? `${(count/scored.length)*100}%` : '0', height: '100%', background: bucketColors[label], borderRadius: '7px' } })
+                ),
+                h('span', { style: { fontSize: '12px', fontWeight: '600', minWidth: '24px', textAlign: 'right' } }, String(count))
+              )
+            )
+          );
+        })()
+      ),
+      // Top performing content (most approved formats)
+      h('div', { className: 'chart-card' },
+        h('h4', {}, 'Top Content Pieces'),
+        h('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px' } },
+          ...content
+            .map(c => ({
+              id: c.id,
+              title: c.trigger_title || 'Untitled',
+              approved: Object.values(c.formats || {}).filter(f => f.status === 'approved').length,
+              total: Object.keys(c.formats || {}).length,
+              score: c.quality_score?.score || 0
+            }))
+            .filter(c => c.approved > 0)
+            .sort((a, b) => b.approved - a.approved || b.score - a.score)
+            .slice(0, 6)
+            .map((c, i) =>
+              h('div', {
+                style: { display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 10px', background: i === 0 ? 'var(--green-light, #f0fdf4)' : 'transparent', borderRadius: '8px', cursor: 'pointer' },
+                onclick: () => { state.page = 'content'; state.filter.status = 'all'; state.searchQuery = c.title.slice(0, 30); render(); }
+              },
+                h('span', { style: { fontSize: '14px', fontWeight: '700', color: 'var(--gray-400)', width: '20px' } }, `${i + 1}`),
+                h('div', { style: { flex: '1', overflow: 'hidden' } },
+                  h('div', { style: { fontSize: '12px', fontWeight: '500', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } }, c.title),
+                  h('div', { style: { fontSize: '11px', color: 'var(--gray-400)' } }, `${c.approved}/${c.total} approved` + (c.score > 0 ? ` | Quality: ${c.score}%` : ''))
+                )
+              )
+            ),
+          content.filter(c => Object.values(c.formats || {}).some(f => f.status === 'approved')).length === 0
+            ? h('div', { style: { fontSize: '13px', color: 'var(--gray-400)', padding: '20px 0' } }, 'Approve content to see top performers here')
+            : null
+        )
+      )
     )
   );
 }
@@ -3286,10 +3376,17 @@ function renderTriggersPage() {
   if (state.filter.source !== 'all') {
     filtered = filtered.filter(t => t.source === state.filter.source);
   }
+  if (state.filter.category !== 'all') {
+    filtered = filtered.filter(t => t.category === state.filter.category);
+  }
   if (state.searchQuery) {
     const q = state.searchQuery.toLowerCase();
     filtered = filtered.filter(t => `${t.title} ${t.source} ${t.category} ${t.raw_content || ''}`.toLowerCase().includes(q));
   }
+
+  // Category counts for filter pills
+  const catCounts = {};
+  state.triggers.forEach(t => { catCounts[t.category] = (catCounts[t.category] || 0) + 1; });
 
   return h('div', { className: 'page-content' },
     h('div', { className: 'filter-bar' },
@@ -3314,6 +3411,19 @@ function renderTriggersPage() {
         className: 'btn btn-primary btn-sm',
         onclick: () => { state.showAddTrigger = !state.showAddTrigger; render(); }
       }, state.showAddTrigger ? 'Cancel' : '+ Add Trigger')
+    ),
+    // Category filter pills
+    h('div', { style: { display: 'flex', gap: '6px', marginBottom: '12px', flexWrap: 'wrap' } },
+      h('span', {
+        className: `filter-chip ${state.filter.category === 'all' ? 'active' : ''}`,
+        onclick: () => { state.filter.category = 'all'; render(); }
+      }, 'All Categories'),
+      ...['PAIN_POINT', 'DATA_POINT', 'QUESTION', 'NEWS', 'CONTENT_PIECE', 'CLIENT_WIN'].map(cat =>
+        catCounts[cat] ? h('span', {
+          className: `filter-chip ${state.filter.category === cat ? 'active' : ''}`,
+          onclick: () => { state.filter.category = state.filter.category === cat ? 'all' : cat; render(); }
+        }, `${cat.replace(/_/g, ' ')} (${catCounts[cat]})`) : null
+      )
     ),
     // Add trigger form
     state.showAddTrigger

@@ -1363,7 +1363,7 @@ const state = {
   _rejectModal: null,
   editText: '',
   sidebarOpen: false,
-  filter: { status: 'all', source: 'all', category: 'all', format: 'all' },
+  filter: { status: 'all', source: 'all', category: 'all', format: 'all', quality: 'all', dateRange: 'all' },
   toasts: [],
   urlInput: '',
   urlFormats: { linkedin: true, x_single: true, x_thread: true, short_video: true, blog: false, youtube_script: false },
@@ -1795,6 +1795,26 @@ function getFilteredContent() {
   if (state.filter.format !== 'all') {
     filtered = filtered.filter(c => c.formats && c.formats[state.filter.format]);
   }
+  // Source filter
+  if (state.filter.source && state.filter.source !== 'all') {
+    filtered = filtered.filter(c => c.trigger_source === state.filter.source);
+  }
+  // Quality score filter
+  if (state.filter.quality && state.filter.quality !== 'all') {
+    if (state.filter.quality === '0-40') {
+      filtered = filtered.filter(c => c.quality_score && c.quality_score.score < 40);
+    } else {
+      const minScore = parseInt(state.filter.quality);
+      filtered = filtered.filter(c => c.quality_score && c.quality_score.score >= minScore);
+    }
+  }
+  // Date range filter
+  if (state.filter.dateRange && state.filter.dateRange !== 'all') {
+    const days = parseInt(state.filter.dateRange);
+    const cutoff = Date.now() - days * 24 * 60 * 60 * 1000;
+    filtered = filtered.filter(c => new Date(c.generated_at).getTime() > cutoff);
+  }
+  // Text search
   if (state.searchQuery) {
     const q = state.searchQuery.toLowerCase();
     filtered = filtered.filter(c => {
@@ -3274,7 +3294,7 @@ function renderContentPage() {
       })
     ),
     // Format filter pills
-    h('div', { style: { display: 'flex', gap: '6px', marginBottom: '8px', flexWrap: 'wrap' } },
+    h('div', { style: { display: 'flex', gap: '6px', marginBottom: '4px', flexWrap: 'wrap' } },
       ...['all', 'linkedin', 'x_single', 'x_thread', 'blog', 'youtube_script', 'newsletter', 'lead_magnet', 'short_video', 'carousel'].map(f => {
         const count = f === 'all' ? state.content.length : state.content.filter(c => c.formats && c.formats[f]).length;
         if (f !== 'all' && count === 0) return null;
@@ -3285,6 +3305,48 @@ function renderContentPage() {
           onclick: () => { state.filter.format = f; render(); }
         }, `${labels[f] || f} (${count})`);
       })
+    ),
+    // Advanced filters row: source, quality, date
+    h('div', { style: { display: 'flex', gap: '8px', marginBottom: '8px', alignItems: 'center', flexWrap: 'wrap' } },
+      h('select', {
+        style: { fontSize: '12px', padding: '4px 8px', borderRadius: '6px', border: '1px solid var(--gray-200)', background: 'var(--card-bg)', color: 'var(--gray-600)' },
+        value: state.filter.source || 'all',
+        onchange: (e) => { state.filter.source = e.target.value; render(); }
+      },
+        h('option', { value: 'all' }, 'All Sources'),
+        ...Object.keys(state.stats?.triggers?.by_source || {}).map(src =>
+          h('option', { value: src }, sourceLabel(src))
+        )
+      ),
+      h('select', {
+        style: { fontSize: '12px', padding: '4px 8px', borderRadius: '6px', border: '1px solid var(--gray-200)', background: 'var(--card-bg)', color: 'var(--gray-600)' },
+        value: state.filter.quality || 'all',
+        onchange: (e) => { state.filter.quality = e.target.value; render(); }
+      },
+        h('option', { value: 'all' }, 'Any Quality'),
+        h('option', { value: '80' }, 'Excellent (80+)'),
+        h('option', { value: '60' }, 'Good (60+)'),
+        h('option', { value: '40' }, 'Fair (40+)'),
+        h('option', { value: '0-40' }, 'Weak (<40)')
+      ),
+      h('select', {
+        style: { fontSize: '12px', padding: '4px 8px', borderRadius: '6px', border: '1px solid var(--gray-200)', background: 'var(--card-bg)', color: 'var(--gray-600)' },
+        value: state.filter.dateRange || 'all',
+        onchange: (e) => { state.filter.dateRange = e.target.value; render(); }
+      },
+        h('option', { value: 'all' }, 'Any Date'),
+        h('option', { value: '1' }, 'Today'),
+        h('option', { value: '7' }, 'This Week'),
+        h('option', { value: '30' }, 'This Month'),
+        h('option', { value: '90' }, 'Last 3 Months')
+      ),
+      (state.filter.source !== 'all' || state.filter.quality !== 'all' || state.filter.dateRange !== 'all')
+        ? h('span', {
+            style: { fontSize: '11px', color: 'var(--blue)', cursor: 'pointer', textDecoration: 'underline' },
+            onclick: () => { state.filter.source = 'all'; state.filter.quality = 'all'; state.filter.dateRange = 'all'; render(); }
+          }, 'Clear filters')
+        : null,
+      h('span', { style: { fontSize: '12px', color: 'var(--gray-400)', marginLeft: 'auto' } }, `${filtered.length} results`)
     ),
     // Bulk action bar
     hasSelected
@@ -4349,14 +4411,34 @@ function renderCalendarDayDetail(cal) {
                   )
                 : state._calAssignSlot === `${day.date}:${slotKey}`
                   ? renderCalendarAssignPicker(day.date, slotKey, platform)
-                  : h('div', {
-                      style: { fontSize: '11px', color: 'var(--blue)', cursor: 'pointer', padding: '2px 0' },
-                      onclick: (e) => {
-                        e.stopPropagation();
-                        state._calAssignSlot = `${day.date}:${slotKey}`;
-                        render();
-                      }
-                    }, '+ Assign')
+                  : h('div', { style: { display: 'flex', gap: '8px', padding: '2px 0' } },
+                      h('span', {
+                        style: { fontSize: '11px', color: 'var(--blue)', cursor: 'pointer' },
+                        onclick: (e) => {
+                          e.stopPropagation();
+                          state._calAssignSlot = `${day.date}:${slotKey}`;
+                          render();
+                        }
+                      }, '+ Assign'),
+                      h('span', {
+                        style: { fontSize: '11px', color: 'var(--green)', cursor: state._calGenerating === `${day.date}:${slotKey}` ? 'wait' : 'pointer' },
+                        onclick: async (e) => {
+                          e.stopPropagation();
+                          const key = `${day.date}:${slotKey}`;
+                          if (state._calGenerating === key) return;
+                          state._calGenerating = key;
+                          render();
+                          try {
+                            toast('Generating content for this slot...', 'info');
+                            const res = await api('/api/calendar/generate', { method: 'POST', body: { date: day.date, slot: slotKey } });
+                            toast(`Generated: ${(res.trigger_title || '').slice(0, 50)}`, 'success');
+                            await Promise.all([loadData(), loadCalendarMonth()]);
+                          } catch (err) { toast('Generate failed: ' + err.message, 'error'); }
+                          state._calGenerating = null;
+                          render();
+                        }
+                      }, state._calGenerating === `${day.date}:${slotKey}` ? 'Generating...' : '+ Generate')
+                    )
             );
           })
         )

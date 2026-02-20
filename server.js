@@ -703,6 +703,63 @@ async function handleRequest(req, res) {
       return json(res, { ok: true, assigned, assignments });
     }
 
+    // POST /api/calendar/generate — generate content for a calendar slot
+    if (pathname === '/api/calendar/generate' && method === 'POST') {
+      if (!process.env.ANTHROPIC_API_KEY) {
+        return json(res, { error: 'ANTHROPIC_API_KEY not configured' }, 500);
+      }
+
+      const body = await parseBody(req);
+      const { date, slot, trigger_id } = body;
+      if (!date || !slot) return json(res, { error: 'date and slot required' }, 400);
+
+      try {
+        const triggers = readJSON('trigger-queue.json');
+        let trigger;
+
+        if (trigger_id) {
+          trigger = triggers.find(t => t.id === trigger_id);
+          if (!trigger) return json(res, { error: 'Trigger not found' }, 404);
+        } else {
+          // Auto-pick top pending trigger
+          const { selectTopTriggers } = require('./generator/score-triggers');
+          const pending = triggers.filter(t => t.status === 'pending');
+          const top = selectTopTriggers(pending, 1);
+          if (top.length === 0) return json(res, { error: 'No pending triggers available' }, 400);
+          trigger = top[0];
+        }
+
+        // Generate content
+        const { runDaily } = require('./generator/run-daily');
+        const result = await runDaily({ triggerId: trigger.id });
+        if (!result || result.length === 0) return json(res, { error: 'Generation produced no content' }, 500);
+
+        const content = result[0];
+        const platform = slot.split('_')[0];
+        const platformFormats = {
+          linkedin: 'linkedin', x: 'x_single', video: 'short_video',
+          blog: 'blog', email: 'newsletter', youtube: 'youtube_script'
+        };
+        const format = platformFormats[platform] || platform;
+
+        // Auto-assign to calendar slot
+        const calendarData = readJSON('calendar.json', {});
+        if (!calendarData[date]) calendarData[date] = {};
+        calendarData[date][slot] = {
+          content_id: content.id,
+          format,
+          title: (content.trigger_title || '').slice(0, 80),
+          status: 'review'
+        };
+        writeJSON('calendar.json', calendarData);
+
+        return json(res, { ok: true, content_id: content.id, trigger_title: trigger.title });
+      } catch (err) {
+        try { db.logError('generation', 'calendar_generate', err.message); } catch {}
+        return json(res, { error: err.message }, 500);
+      }
+    }
+
     // POST /api/content/:id/performance — log performance metrics
     const perfMatch = pathname.match(/^\/api\/content\/([a-zA-Z0-9_-]+)\/performance$/);
     if (perfMatch && method === 'POST') {

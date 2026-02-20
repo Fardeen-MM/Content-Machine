@@ -286,16 +286,28 @@ async function handleRequest(req, res) {
       const source = url.searchParams.get('source');
       const category = url.searchParams.get('category');
       const status = url.searchParams.get('status');
+      const search = url.searchParams.get('q');
+      const limit = parseInt(url.searchParams.get('limit')) || 0;
+      const offset = parseInt(url.searchParams.get('offset')) || 0;
 
       if (source) triggers = triggers.filter(t => t.source === source);
       if (category) triggers = triggers.filter(t => t.category === category);
       if (status) triggers = triggers.filter(t => t.status === status);
+      if (search) {
+        const q = search.toLowerCase();
+        triggers = triggers.filter(t => `${t.title || ''} ${t.raw_content || ''}`.toLowerCase().includes(q));
+      }
 
       // Score triggers
       const { scoreTrigger } = require('./generator/score-triggers');
       triggers = triggers.map(t => ({ ...t, score: scoreTrigger(t) }));
       triggers.sort((a, b) => b.score - a.score);
 
+      const total = triggers.length;
+      if (limit > 0) {
+        triggers = triggers.slice(offset, offset + limit);
+        return json(res, { items: triggers, total, limit, offset });
+      }
       return json(res, triggers);
     }
 
@@ -304,12 +316,51 @@ async function handleRequest(req, res) {
       let content = readJSON('content.json');
       const status = url.searchParams.get('status');
       const format = url.searchParams.get('format');
+      const search = url.searchParams.get('q');
+      const includeArchived = url.searchParams.get('archived') === 'true';
+      const limit = parseInt(url.searchParams.get('limit')) || 0;
+      const offset = parseInt(url.searchParams.get('offset')) || 0;
 
+      // Exclude archived by default unless explicitly requested
+      if (!includeArchived && status !== 'archived') {
+        content = content.filter(c => c.status !== 'archived');
+      }
       if (status) content = content.filter(c => c.status === status);
+      if (search) {
+        const q = search.toLowerCase();
+        content = content.filter(c => {
+          const meta = `${c.trigger_title || ''} ${c.trigger_source || ''} ${c.trigger_category || ''}`.toLowerCase();
+          if (meta.includes(q)) return true;
+          for (const fmt of Object.values(c.formats || {})) {
+            const txt = typeof fmt.content === 'string' ? fmt.content : '';
+            if (txt.toLowerCase().includes(q)) return true;
+          }
+          return false;
+        });
+      }
 
       // Sort by generated_at descending
       content.sort((a, b) => new Date(b.generated_at) - new Date(a.generated_at));
+
+      const total = content.length;
+      if (limit > 0) {
+        content = content.slice(offset, offset + limit);
+        return json(res, { items: content, total, limit, offset });
+      }
       return json(res, content);
+    }
+
+    // GET /api/preview/:id/lead_magnet — render lead magnet HTML preview
+    const previewMatch = pathname.match(/^\/api\/preview\/([a-f0-9]+)\/lead_magnet$/);
+    if (previewMatch && method === 'GET') {
+      const content = readJSON('content.json');
+      const item = content.find(c => c.id === previewMatch[1]);
+      if (!item) return json(res, { error: 'Not found' }, 404);
+      const lmContent = item.formats?.lead_magnet?.content;
+      if (!lmContent) return json(res, { error: 'No lead magnet generated for this content' }, 404);
+      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+      res.end(lmContent);
+      return;
     }
 
     // GET /api/content/:id
@@ -506,6 +557,18 @@ async function handleRequest(req, res) {
       writeJSON('content.json', content);
 
       return json(res, { ok: true, entry: publishEntry });
+    }
+
+    // POST /api/content/:id/archive — manually archive content
+    const archiveMatch = pathname.match(/^\/api\/content\/([a-f0-9]+)\/archive$/);
+    if (archiveMatch && method === 'POST') {
+      const content = readJSON('content.json');
+      const idx = content.findIndex(c => c.id === archiveMatch[1]);
+      if (idx === -1) return json(res, { error: 'Not found' }, 404);
+      content[idx].status = 'archived';
+      content[idx].archived_at = now();
+      writeJSON('content.json', content);
+      return json(res, { ok: true });
     }
 
     // GET /api/published — published content feed with enriched data
@@ -2682,6 +2745,32 @@ cron.schedule('0 */6 * * *', async () => {
     }
   } catch (err) {
     console.error('[cron] Fireflies auto-sync failed:', err.message);
+  }
+});
+
+// Auto-archive old published/rejected content (daily at 2AM EST)
+cron.schedule('0 7 * * *', () => {
+  try {
+    const content = readJSON('content.json');
+    const now = Date.now();
+    const ARCHIVE_AGE_MS = 90 * 24 * 60 * 60 * 1000; // 90 days
+    let archived = 0;
+    for (const item of content) {
+      if (item.status === 'archived') continue;
+      if (item.status !== 'published' && item.status !== 'rejected') continue;
+      const age = now - new Date(item.generated_at || 0).getTime();
+      if (age > ARCHIVE_AGE_MS) {
+        item.status = 'archived';
+        item.archived_at = new Date().toISOString();
+        archived++;
+      }
+    }
+    if (archived > 0) {
+      writeJSON('content.json', content);
+      console.log(`[cron] Auto-archived ${archived} old content pieces`);
+    }
+  } catch (err) {
+    console.error('[cron] Auto-archive failed:', err.message);
   }
 });
 

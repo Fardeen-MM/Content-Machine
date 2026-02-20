@@ -1446,6 +1446,11 @@ async function api(path, options = {}) {
     body: options.body ? JSON.stringify(options.body) : undefined
   });
   if (!res.ok) {
+    if (res.status === 429) throw new Error('System busy — try again in 30 seconds');
+    if (res.status >= 500) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || 'Server error — please retry');
+    }
     const err = await res.json().catch(() => ({ error: res.statusText }));
     throw new Error(err.error || `HTTP ${res.status}`);
   }
@@ -2035,6 +2040,8 @@ document.addEventListener('keydown', (e) => {
   if (e.key === '9' && !e.ctrlKey && !e.metaKey && !isEditing()) { state.page = 'settings'; render(); }
   if (e.key === 'c' && !e.ctrlKey && !e.metaKey && !isEditing()) { state.page = 'content'; render(); }
   if (e.key === 't' && !e.ctrlKey && !e.metaKey && !isEditing()) { state.page = 'triggers'; render(); }
+  if (e.key === 'l' && !e.ctrlKey && !e.metaKey && !isEditing()) { state.page = 'analytics'; render(); }
+  if (e.key === 'n' && !e.ctrlKey && !e.metaKey && !isEditing()) { state.page = 'calendar'; render(); }
   if ((e.key === 'd' || e.key === 'D') && !e.ctrlKey && !e.metaKey && !isEditing()) { toggleDarkMode(); }
   if (e.key === 'Escape') { state.editingFormat = null; state.sidebarOpen = false; state._remixOpen = null; state._calAssignSlot = null; state._showShortcuts = false; state._rejectModal = null; render(); }
   if (e.key === '?' && !e.ctrlKey && !e.metaKey && !isEditing()) { state._showShortcuts = !state._showShortcuts; render(); }
@@ -6848,10 +6855,15 @@ function render() {
             ),
             ...[
               ['Navigation', [
-                ['1-7', 'Switch pages'],
+                ['1', 'Dashboard'],
+                ['2', 'Pipeline'],
+                ['3', 'Meetings'],
+                ['4', 'Clients'],
+                ['5', 'Actions'],
                 ['c', 'Content page'],
                 ['t', 'Triggers page'],
-                ['9', 'Meetings page']
+                ['l', 'Analytics page'],
+                ['n', 'Calendar page']
               ]],
               ['Content Review', [
                 ['j / k', 'Next / previous item'],

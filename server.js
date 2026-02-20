@@ -389,6 +389,10 @@ async function handleRequest(req, res) {
         if (!content[idx].formats[body.format]) {
           return json(res, { error: `Unknown format: ${body.format}` }, 400);
         }
+        const trimmed = typeof body.content === 'string' ? body.content.trim() : body.content;
+        if (typeof trimmed === 'string' && !trimmed) {
+          return json(res, { error: 'Content cannot be empty' }, 400);
+        }
         content[idx].formats[body.format].content = body.content;
         content[idx].formats[body.format].edited = true;
       }

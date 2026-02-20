@@ -1362,7 +1362,7 @@ const state = {
   _showShortcuts: false,
   editText: '',
   sidebarOpen: false,
-  filter: { status: 'all', source: 'all', category: 'all' },
+  filter: { status: 'all', source: 'all', category: 'all', format: 'all' },
   toasts: [],
   urlInput: '',
   urlFormats: { linkedin: true, x_single: true, x_thread: true, short_video: true, blog: false, youtube_script: false },
@@ -1504,6 +1504,16 @@ async function loadData() {
   state.loading = false;
   state.lastRefreshed = new Date();
   render();
+
+  // Check for stale triggers (>7 days old, only on dashboard page, once per session)
+  if (state.page === 'dashboard' && !state._staleTriggerNotified) {
+    const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+    const staleTriggers = state.triggers.filter(t => t.status === 'pending' && new Date(t.captured_at) < sevenDaysAgo);
+    if (staleTriggers.length > 5) {
+      state._staleTriggerNotified = true;
+      toast(`${staleTriggers.length} triggers are over 7 days old. Generate content or clean them up.`, 'info');
+    }
+  }
 }
 
 async function approveFormat(contentId, format) {
@@ -1730,6 +1740,9 @@ function selectAllContent() {
 function getFilteredContent() {
   let filtered = [...state.content];
   if (state.filter.status !== 'all') filtered = filtered.filter(c => c.status === state.filter.status);
+  if (state.filter.format !== 'all') {
+    filtered = filtered.filter(c => c.formats && c.formats[state.filter.format]);
+  }
   if (state.searchQuery) {
     const q = state.searchQuery.toLowerCase();
     filtered = filtered.filter(c => {
@@ -2418,6 +2431,31 @@ function renderDashboardPage() {
         )
       )
     ) : null,
+    // Content Machine Quick Stats
+    h('div', { style: { marginBottom: '20px' } },
+      h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
+        h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)' } }, 'CONTENT MACHINE'),
+        h('button', { className: 'btn btn-ghost btn-sm', onclick: () => { state.page = 'content'; render(); } }, 'View Content')
+      ),
+      h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' } },
+        h('div', { className: 'card', style: { textAlign: 'center', padding: '14px', cursor: 'pointer' }, onclick: () => { state.page = 'triggers'; render(); } },
+          h('div', { style: { fontSize: '22px', fontWeight: '700', color: 'var(--blue)', fontFamily: "'Fraunces', serif" } }, String(state.triggers.filter(t => t.status === 'pending').length)),
+          h('div', { style: { fontSize: '11px', color: 'var(--gray-500)' } }, 'Pending Triggers')
+        ),
+        h('div', { className: 'card', style: { textAlign: 'center', padding: '14px', cursor: 'pointer' }, onclick: () => { state.page = 'content'; state.filter.status = 'review'; render(); } },
+          h('div', { style: { fontSize: '22px', fontWeight: '700', color: reviewContent > 0 ? 'var(--amber)' : 'var(--gray-400)', fontFamily: "'Fraunces', serif" } }, String(reviewContent)),
+          h('div', { style: { fontSize: '11px', color: 'var(--gray-500)' } }, 'Needs Review')
+        ),
+        h('div', { className: 'card', style: { textAlign: 'center', padding: '14px', cursor: 'pointer' }, onclick: () => { state.page = 'content'; state.filter.status = 'approved'; render(); } },
+          h('div', { style: { fontSize: '22px', fontWeight: '700', color: 'var(--green)', fontFamily: "'Fraunces', serif" } }, String(state.content.filter(c => c.status === 'approved').length)),
+          h('div', { style: { fontSize: '11px', color: 'var(--gray-500)' } }, 'Approved')
+        ),
+        h('div', { className: 'card', style: { textAlign: 'center', padding: '14px' } },
+          h('div', { style: { fontSize: '22px', fontWeight: '700', color: 'var(--navy)', fontFamily: "'Fraunces', serif" } }, String(state.content.length)),
+          h('div', { style: { fontSize: '11px', color: 'var(--gray-500)' } }, 'Total Content')
+        )
+      )
+    ),
     // Recent meetings
     recentMeetings.length > 0 ? h('div', { style: { marginBottom: '20px' } },
       h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
@@ -3054,6 +3092,19 @@ function renderContentPage() {
         placeholder: 'Search content...',
         value: state.searchQuery,
         oninput: (e) => { state.searchQuery = e.target.value; render(); }
+      })
+    ),
+    // Format filter pills
+    h('div', { style: { display: 'flex', gap: '6px', marginBottom: '8px', flexWrap: 'wrap' } },
+      ...['all', 'linkedin', 'x_single', 'x_thread', 'blog', 'youtube_script', 'newsletter', 'lead_magnet', 'short_video', 'carousel'].map(f => {
+        const count = f === 'all' ? state.content.length : state.content.filter(c => c.formats && c.formats[f]).length;
+        if (f !== 'all' && count === 0) return null;
+        const labels = { all: 'All Formats', linkedin: 'LinkedIn', x_single: 'Tweet', x_thread: 'Thread', blog: 'Blog', youtube_script: 'YouTube', newsletter: 'Newsletter', lead_magnet: 'Lead Magnet', short_video: 'Video', carousel: 'Carousel' };
+        return h('span', {
+          className: `filter-chip ${state.filter.format === f ? 'active' : ''}`,
+          style: { fontSize: '11px' },
+          onclick: () => { state.filter.format = f; render(); }
+        }, `${labels[f] || f} (${count})`);
       })
     ),
     // Bulk action bar

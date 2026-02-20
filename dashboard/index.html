@@ -2520,30 +2520,56 @@ function renderDashboardPage() {
       )
     ) : null,
     // Content Machine Quick Stats
-    h('div', { style: { marginBottom: '20px' } },
-      h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
-        h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)' } }, 'CONTENT MACHINE'),
-        h('button', { className: 'btn btn-ghost btn-sm', onclick: () => { state.page = 'content'; render(); } }, 'View Content')
-      ),
-      h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' } },
-        h('div', { className: 'card', style: { textAlign: 'center', padding: '14px', cursor: 'pointer' }, onclick: () => { state.page = 'triggers'; render(); } },
-          h('div', { style: { fontSize: '22px', fontWeight: '700', color: 'var(--blue)', fontFamily: "'Fraunces', serif" } }, String(state.triggers.filter(t => t.status === 'pending').length)),
-          h('div', { style: { fontSize: '11px', color: 'var(--gray-500)' } }, 'Pending Triggers')
+    (() => {
+      const pubQueue = (state.content || []).reduce((sum, c) => {
+        return sum + Object.values(c.formats || {}).filter(f => f.status === 'approved' && !f.published_at).length;
+      }, 0);
+      const totalPublished = (state.published || []).length;
+      return h('div', { style: { marginBottom: '20px' } },
+        h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
+          h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)' } }, 'CONTENT MACHINE'),
+          h('div', { style: { display: 'flex', gap: '8px' } },
+            h('button', {
+              className: 'btn btn-outline btn-sm',
+              disabled: state._scraping,
+              onclick: async () => {
+                state._scraping = true; render();
+                toast('Scraping all sources...', 'info');
+                try {
+                  const res = await api('/api/scrape-now', { method: 'POST' });
+                  toast(`Scraped ${res.new_triggers || 0} new triggers`, 'success');
+                  await loadData();
+                } catch (err) { toast('Scrape failed: ' + err.message, 'error'); }
+                state._scraping = false; render();
+              }
+            }, state._scraping ? 'Scraping...' : 'Scrape Now'),
+            h('button', { className: 'btn btn-ghost btn-sm', onclick: () => { state.page = 'content'; render(); } }, 'View Content')
+          )
         ),
-        h('div', { className: 'card', style: { textAlign: 'center', padding: '14px', cursor: 'pointer' }, onclick: () => { state.page = 'content'; state.filter.status = 'review'; render(); } },
-          h('div', { style: { fontSize: '22px', fontWeight: '700', color: reviewContent > 0 ? 'var(--amber)' : 'var(--gray-400)', fontFamily: "'Fraunces', serif" } }, String(reviewContent)),
-          h('div', { style: { fontSize: '11px', color: 'var(--gray-500)' } }, 'Needs Review')
-        ),
-        h('div', { className: 'card', style: { textAlign: 'center', padding: '14px', cursor: 'pointer' }, onclick: () => { state.page = 'content'; state.filter.status = 'approved'; render(); } },
-          h('div', { style: { fontSize: '22px', fontWeight: '700', color: 'var(--green)', fontFamily: "'Fraunces', serif" } }, String(state.content.filter(c => c.status === 'approved').length)),
-          h('div', { style: { fontSize: '11px', color: 'var(--gray-500)' } }, 'Approved')
-        ),
-        h('div', { className: 'card', style: { textAlign: 'center', padding: '14px' } },
-          h('div', { style: { fontSize: '22px', fontWeight: '700', color: 'var(--navy)', fontFamily: "'Fraunces', serif" } }, String(state.content.length)),
-          h('div', { style: { fontSize: '11px', color: 'var(--gray-500)' } }, 'Total Content')
+        h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '12px' } },
+          h('div', { className: 'card', style: { textAlign: 'center', padding: '14px', cursor: 'pointer' }, onclick: () => { state.page = 'triggers'; render(); } },
+            h('div', { style: { fontSize: '22px', fontWeight: '700', color: 'var(--blue)', fontFamily: "'Fraunces', serif" } }, String(state.triggers.filter(t => t.status === 'pending').length)),
+            h('div', { style: { fontSize: '11px', color: 'var(--gray-500)' } }, 'Pending Triggers')
+          ),
+          h('div', { className: 'card', style: { textAlign: 'center', padding: '14px', cursor: 'pointer' }, onclick: () => { state.page = 'content'; state.filter.status = 'review'; render(); } },
+            h('div', { style: { fontSize: '22px', fontWeight: '700', color: reviewContent > 0 ? 'var(--amber)' : 'var(--gray-400)', fontFamily: "'Fraunces', serif" } }, String(reviewContent)),
+            h('div', { style: { fontSize: '11px', color: 'var(--gray-500)' } }, 'Needs Review')
+          ),
+          h('div', { className: 'card', style: { textAlign: 'center', padding: '14px', cursor: 'pointer' }, onclick: () => { state.page = 'content'; state.filter.status = 'approved'; render(); } },
+            h('div', { style: { fontSize: '22px', fontWeight: '700', color: 'var(--green)', fontFamily: "'Fraunces', serif" } }, String(state.content.filter(c => c.status === 'approved').length)),
+            h('div', { style: { fontSize: '11px', color: 'var(--gray-500)' } }, 'Approved')
+          ),
+          h('div', { className: 'card', style: { textAlign: 'center', padding: '14px', cursor: 'pointer', background: pubQueue > 0 ? '#f0fdf4' : '' }, onclick: () => { state.page = 'content'; render(); } },
+            h('div', { style: { fontSize: '22px', fontWeight: '700', color: pubQueue > 0 ? 'var(--green)' : 'var(--gray-400)', fontFamily: "'Fraunces', serif" } }, String(pubQueue)),
+            h('div', { style: { fontSize: '11px', color: 'var(--gray-500)' } }, 'Ready to Publish')
+          ),
+          h('div', { className: 'card', style: { textAlign: 'center', padding: '14px' } },
+            h('div', { style: { fontSize: '22px', fontWeight: '700', color: 'var(--navy)', fontFamily: "'Fraunces', serif" } }, String(totalPublished)),
+            h('div', { style: { fontSize: '11px', color: 'var(--gray-500)' } }, 'Published')
+          )
         )
-      )
-    ),
+      );
+    })(),
     // Recent meetings
     recentMeetings.length > 0 ? h('div', { style: { marginBottom: '20px' } },
       h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },

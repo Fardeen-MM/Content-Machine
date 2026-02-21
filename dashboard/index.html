@@ -1517,6 +1517,9 @@ const state = {
   engagementPlaybook: null,
   atomizations: [],
   platformRules: null,
+  // Batch 52: Email Sequences + Weekly Plan + Profile Optimizer
+  emailSequences: [],
+  weeklyContentPlan: null,
 };
 
 // --- API Calls ---
@@ -1542,7 +1545,7 @@ async function loadData() {
   state.loading = true;
   render();
   try {
-    const [content, triggers, stats, calendar, monthCal, settings, memory, performance, perfAnalytics, meetings, meetingStats, clients, allActions, chatMessages, healthData, inspirations, pestering, pesteringStages, insights, deals, published, series, predictions, playbooks, ctaLibrary, trending, funnel, publishTracker, leadMagnets, contentHealth, scheduleOptimize, templates, dmSequences, hooks, pillarPlan, contentLeads, autopilot, scheduleQueue, engagementDashboard, contentBriefs, workflowPipeline, personas, calendarWeek, benchmarkReport, contentIdeas, socialProof, roiReport, audienceGrowth, contentThemes, distributionPlans, dmPipelines, competitorsTracked, dripCampaigns, autoResponses, expiringContent, amplifications, leadFunnels, calendarInsights, weeklyDigest, splitTests, workflowRules] = await Promise.all([
+    const [content, triggers, stats, calendar, monthCal, settings, memory, performance, perfAnalytics, meetings, meetingStats, clients, allActions, chatMessages, healthData, inspirations, pestering, pesteringStages, insights, deals, published, series, predictions, playbooks, ctaLibrary, trending, funnel, publishTracker, leadMagnets, contentHealth, scheduleOptimize, templates, dmSequences, hooks, pillarPlan, contentLeads, autopilot, scheduleQueue, engagementDashboard, contentBriefs, workflowPipeline, personas, calendarWeek, benchmarkReport, contentIdeas, socialProof, roiReport, audienceGrowth, contentThemes, distributionPlans, dmPipelines, competitorsTracked, dripCampaigns, autoResponses, expiringContent, amplifications, leadFunnels, calendarInsights, weeklyDigest, splitTests, workflowRules, youtubePipelines, carousels, contentMatrix, ctaStrategy, seriesTemplates, contentBank, engagementPlaybook, atomizations, platformRules, emailSequences, weeklyContentPlan] = await Promise.all([
       api('/api/content'),
       api('/api/triggers'),
       api('/api/stats'),
@@ -1612,7 +1615,9 @@ async function loadData() {
       api('/api/content-bank').catch(() => null),
       api('/api/engagement-playbook').catch(() => null),
       api('/api/atomizations').catch(() => []),
-      api('/api/platform-rules').catch(() => null)
+      api('/api/platform-rules').catch(() => null),
+      api('/api/email-sequences').catch(() => []),
+      api('/api/weekly-content-plan').catch(() => null)
     ]);
     state.content = content;
     state.triggers = triggers;
@@ -1684,6 +1689,8 @@ async function loadData() {
     state.engagementPlaybook = engagementPlaybook;
     state.atomizations = atomizations;
     state.platformRules = platformRules;
+    state.emailSequences = emailSequences;
+    state.weeklyContentPlan = weeklyContentPlan;
   } catch (err) {
     console.error('Failed to load data:', err);
     toast('Failed to load data', 'error');
@@ -2934,6 +2941,31 @@ function renderDashboardPage() {
                 } catch (err) { toast('Series setup failed: ' + err.message, 'error'); }
               }
             }, 'Series'),
+            h('button', {
+              className: 'btn btn-sm',
+              style: { background: '#0891b2', color: 'white', border: 'none' },
+              onclick: async () => {
+                toast('Building auto calendar...', 'info');
+                try {
+                  const res = await api('/api/calendar/auto-build', { method: 'POST' });
+                  toast(`Week plan built! ${res.sources?.series_available || 0} series, ${res.sources?.matrix_posts_available || 0} matrix posts`, 'success');
+                  loadData();
+                } catch (err) { toast('Auto calendar failed: ' + err.message, 'error'); }
+              }
+            }, 'Auto Cal'),
+            h('button', {
+              className: 'btn btn-sm',
+              style: { background: '#7c3aed', color: 'white', border: 'none' },
+              onclick: async () => {
+                toast('Optimizing LinkedIn profile...', 'info');
+                try {
+                  const res = await api('/api/profile-optimizer', { method: 'POST', body: { name: 'Fardeen', headline: 'Legal Marketing', about: 'We build systems that generate signed cases for law firms.' } });
+                  state._profileOptimizer = res.profile;
+                  toast('Profile optimized! Check recommendations.', 'success');
+                  render();
+                } catch (err) { toast('Profile optimizer failed: ' + err.message, 'error'); }
+              }
+            }, 'Profile'),
             h('button', { className: 'btn btn-ghost btn-sm', onclick: () => { state.page = 'content'; render(); } }, 'View Content')
           )
         ),
@@ -3291,6 +3323,45 @@ function renderDashboardPage() {
           )
         )
       )
+    ) : null,
+
+    // Email Sequences
+    state.emailSequences?.length > 0 ? h('div', { style: { marginBottom: '20px' } },
+      h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)', marginBottom: '8px' } }, `EMAIL SEQUENCES (${state.emailSequences.length})`),
+      h('div', { style: { display: 'grid', gap: '6px' } },
+        ...state.emailSequences.slice(0, 5).map(seq =>
+          h('div', { style: { padding: '10px 14px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)' } },
+            h('div', { style: { fontSize: '12px', fontWeight: '600', color: 'var(--navy)', marginBottom: '4px' } }, (seq.sequence_name || seq.title || '').slice(0, 60)),
+            h('div', { style: { display: 'flex', gap: '6px' } },
+              h('span', { style: { fontSize: '9px', padding: '2px 6px', background: '#eff6ff', color: '#2563eb', borderRadius: '8px', fontWeight: '600' } }, `${seq.emails?.length || 0} emails`),
+              h('span', { style: { fontSize: '9px', padding: '2px 6px', background: seq.status === 'active' ? '#f0fdf4' : '#fefce8', color: seq.status === 'active' ? '#059669' : '#ca8a04', borderRadius: '8px', fontWeight: '600' } }, seq.status || 'draft'),
+              seq.send_schedule ? h('span', { style: { fontSize: '9px', padding: '2px 6px', background: '#faf5ff', color: '#7c3aed', borderRadius: '8px', fontWeight: '600' } }, seq.send_schedule) : null
+            )
+          )
+        )
+      )
+    ) : null,
+
+    // Weekly Content Plan
+    state.weeklyContentPlan?.plan ? h('div', { style: { marginBottom: '20px' } },
+      h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)', marginBottom: '8px' } }, 'WEEKLY CONTENT PLAN'),
+      h('div', { style: { display: 'grid', gap: '4px' } },
+        ...state.weeklyContentPlan.plan.map(day =>
+          h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)' } },
+            h('div', { style: { width: '60px', fontSize: '10px', fontWeight: '700', color: 'var(--navy)', textTransform: 'uppercase' } }, day.day.slice(0, 3)),
+            h('div', { style: { flex: 1 } },
+              h('div', { style: { fontSize: '11px', fontWeight: '600', color: 'var(--navy)' } }, day.series_name || 'Open slot'),
+              h('div', { style: { fontSize: '10px', color: 'var(--gray-500)' } }, day.posting_time)
+            ),
+            day.hashtag ? h('span', { style: { fontSize: '9px', padding: '2px 6px', background: '#eff6ff', color: '#2563eb', borderRadius: '8px', fontWeight: '600' } }, day.hashtag) : null,
+            h('span', { style: { fontSize: '9px', padding: '2px 6px', background: '#f0fdf4', color: '#059669', borderRadius: '8px', fontWeight: '600' } }, day.format),
+            day.lead_magnet ? h('span', { style: { fontSize: '9px', padding: '2px 6px', background: '#fef2f2', color: '#dc2626', borderRadius: '8px', fontWeight: '600' } }, 'LM') : null
+          )
+        )
+      ),
+      state.weeklyContentPlan.notes ? h('div', { style: { marginTop: '6px', fontSize: '10px', color: 'var(--gray-500)', lineHeight: '1.4' } },
+        state.weeklyContentPlan.notes.map(n => `• ${n}`).join(' ')
+      ) : null
     ) : null,
 
     // Autopilot Status
@@ -4912,6 +4983,36 @@ function renderFormatContent(content, formatKey, fmt) {
               } catch (err) { toast('Atomize failed: ' + err.message, 'error'); }
             }
           }, 'Atomize')
+        : null,
+      // Email Sequence button (for blog, newsletter, case_study formats)
+      ['blog', 'newsletter', 'case_study', 'lead_magnet'].includes(formatKey) && typeof text === 'string'
+        ? h('button', {
+            className: 'btn btn-outline btn-sm',
+            style: { color: '#0891b2', borderColor: '#0891b2' },
+            onclick: async () => {
+              toast('Generating email sequence...', 'info');
+              try {
+                const res = await api(`/api/content/${content.id}/email-sequence`, { method: 'POST' });
+                toast(`Created ${res.sequence?.emails?.length || 5}-email sequence!`, 'success');
+                loadData();
+              } catch (err) { toast('Email sequence failed: ' + err.message, 'error'); }
+            }
+          }, 'Email Seq')
+        : null,
+      // Social Proof Post button (for case_study, blog formats)
+      ['case_study', 'blog', 'linkedin'].includes(formatKey) && typeof text === 'string'
+        ? h('button', {
+            className: 'btn btn-outline btn-sm',
+            style: { color: '#059669', borderColor: '#059669' },
+            onclick: async () => {
+              toast('Generating social proof post...', 'info');
+              try {
+                const res = await api(`/api/content/${content.id}/social-proof-post`, { method: 'POST' });
+                toast('Social proof post created!', 'success');
+                if (res.before_after_post) { navigator.clipboard.writeText(res.before_after_post); toast('Copied to clipboard!', 'success'); }
+              } catch (err) { toast('Social proof failed: ' + err.message, 'error'); }
+            }
+          }, 'Proof Post')
         : null,
       // AI Improve button
       typeof text === 'string' && fmt.status === 'review' ? h('button', {

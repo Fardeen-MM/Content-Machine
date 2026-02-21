@@ -9682,6 +9682,251 @@ Return JSON (no markdown fences):
       });
     }
 
+    // --- Batch 52: Auto Calendar Builder + Email Sequences + Profile Optimizer + Social Proof Posts ---
+
+    // POST /api/calendar/auto-build — auto-generate a full week using series + matrix + atomizations
+    if (pathname === '/api/calendar/auto-build' && method === 'POST') {
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+      const { BRAND_SYSTEM_PROMPT } = require('./generator/content-writer');
+
+      const series = readJSON('series-templates.json', { series: [] });
+      const matrix = readJSON('content-matrix.json', null);
+      const atomizations = readJSON('atomizations.json', []);
+      const content = readJSON('content.json', []);
+      const bank = readJSON('content-bank.json', { log: [], stats: { value: 0, cta: 0 } });
+
+      // Determine CTA eligibility from bank
+      const canAsk = bank.stats.cta === 0 || (bank.stats.value / bank.stats.cta) >= 4;
+
+      // Build weekly plan combining all sources
+      const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
+      const weekPlan = [];
+
+      for (const day of days) {
+        const seriesForDay = (series.series || []).find(s => s.day === day);
+        const matrixPosts = matrix?.pillars?.flatMap(p => p.concepts?.flatMap(c => c.posts || []) || []) || [];
+        const unusedMatrix = matrixPosts.filter(p => !p._used);
+        const randomMatrix = unusedMatrix.length > 0 ? unusedMatrix[Math.floor(Math.random() * unusedMatrix.length)] : null;
+
+        // Check for pending atomization derivatives
+        const pendingAtomizations = atomizations.flatMap(a => (a.derivatives || []).filter(d => d.schedule_day === day || d.schedule_day === 'tomorrow'));
+
+        weekPlan.push({
+          day,
+          series: seriesForDay ? { name: seriesForDay.name, format: seriesForDay.format, hashtag: seriesForDay.hashtag, template_prompt: seriesForDay.template_prompt } : null,
+          matrix_suggestion: randomMatrix ? { type: randomMatrix.type, hook: randomMatrix.hook } : null,
+          atomization_available: pendingAtomizations.length > 0 ? pendingAtomizations[0] : null,
+          cta_allowed: canAsk && day === 'wednesday', // One CTA per week, mid-week
+          posting_time: ['tuesday', 'wednesday', 'thursday'].includes(day) ? '8:00-10:00 AM' : '12:00-2:00 PM'
+        });
+      }
+
+      return json(res, {
+        ok: true,
+        week_plan: weekPlan,
+        sources: {
+          series_available: (series.series || []).length,
+          matrix_posts_available: matrix?.total_posts || 0,
+          atomizations_available: atomizations.reduce((s, a) => s + (a.derivatives?.length || 0), 0)
+        },
+        bank_status: { value: bank.stats.value, cta: bank.stats.cta, can_ask: canAsk }
+      });
+    }
+
+    // POST /api/content/:id/email-sequence — generate email nurture sequence from content
+    const emailSeqMatch = pathname.match(/^\/api\/content\/([a-f0-9]+)\/email-sequence$/);
+    if (emailSeqMatch && method === 'POST') {
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      const id = emailSeqMatch[1];
+      const allContent = readJSON('content.json', []);
+      const item = allContent.find(c => c.id === id);
+      if (!item) return json(res, { error: 'Content not found' }, 404);
+
+      const { callClaude, parseJsonResponse, SONNET } = require('./lib/claude');
+      const { BRAND_SYSTEM_PROMPT } = require('./generator/content-writer');
+      const source = item.formats?.blog?.content || item.formats?.linkedin?.content || '';
+
+      const prompt = `Create a 5-email nurture sequence from this content. This is for people who downloaded a lead magnet or engaged with a post but haven't booked a call yet.
+
+Topic: ${item.trigger_title}
+Source: ${source.slice(0, 3000)}
+
+Return JSON (no markdown fences):
+{
+  "sequence_name": "descriptive name",
+  "target_audience": "who this sequence is for",
+  "emails": [
+    {
+      "day": 1,
+      "subject": "under 50 chars, personalized feel",
+      "preview_text": "what shows after subject in inbox",
+      "body": "full email (200-400 words, conversational tone, one key insight per email)",
+      "cta": "specific action",
+      "cta_type": "reply|link|book_call"
+    }
+  ],
+  "expected_metrics": {
+    "open_rate": "35-45%",
+    "click_rate": "8-12%",
+    "reply_rate": "5-8%",
+    "booking_rate": "3-5%"
+  },
+  "send_schedule": "daily|every_other_day"
+}`;
+
+      try {
+        const text = await callClaude({ model: SONNET, system: BRAND_SYSTEM_PROMPT, prompt, maxTokens: 5000 });
+        const parsed = parseJsonResponse(text);
+        if (!parsed) return json(res, { error: 'Failed to generate sequence', raw_preview: (text || '').slice(0, 300) }, 500);
+
+        const sequences = readJSON('email-sequences.json', []);
+        const seq = { id: generateId(), content_id: id, title: item.trigger_title, ...parsed, status: 'draft', created_at: now() };
+        sequences.push(seq);
+        writeJSON('email-sequences.json', sequences);
+        return json(res, { ok: true, sequence: seq });
+      } catch (err) {
+        return json(res, { error: err.message }, 500);
+      }
+    }
+
+    // GET /api/email-sequences — list all email sequences
+    if (pathname === '/api/email-sequences' && method === 'GET') {
+      return json(res, readJSON('email-sequences.json', []));
+    }
+
+    // POST /api/profile-optimizer — analyze LinkedIn profile and suggest improvements
+    if (pathname === '/api/profile-optimizer' && method === 'POST') {
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      const { callClaude, parseJsonResponse, SONNET } = require('./lib/claude');
+      const { BRAND_SYSTEM_PROMPT } = require('./generator/content-writer');
+      const body = await parseBody(req);
+
+      const prompt = `Optimize a LinkedIn profile for a legal marketing agency owner. The profile should convert profile visitors into booked calls.
+
+Current info:
+Name: ${body.name || 'Mortar Metrics Founder'}
+Headline: ${body.headline || 'Legal Marketing Agency'}
+About: ${body.about || 'We help law firms grow.'}
+Experience: ${body.experience || 'Marketing agency owner'}
+
+Based on research from top B2B creators (Adam Robinson, Justin Welsh, Chris Walker), generate an optimized profile:
+
+Return JSON (no markdown fences):
+{
+  "headline": {
+    "current": "...",
+    "optimized": "under 120 chars, includes ICP + result + proof",
+    "why": "explanation"
+  },
+  "about_section": {
+    "optimized": "2000 chars max, follows: Hook → Story → Proof → Offer → CTA format",
+    "structure_notes": "what each paragraph does"
+  },
+  "featured_section": [
+    { "type": "post|article|link", "title": "what to feature", "why": "why this converts" }
+  ],
+  "banner_image": {
+    "text_suggestion": "what text to put on the banner",
+    "design_notes": "design recommendations"
+  },
+  "cta_button": {
+    "text": "Visit Website / Book a Call / etc",
+    "url_suggestion": "where it should point"
+  },
+  "tips": [
+    "specific actionable improvement"
+  ]
+}`;
+
+      try {
+        const text = await callClaude({ model: SONNET, system: BRAND_SYSTEM_PROMPT, prompt, maxTokens: 4000 });
+        const parsed = parseJsonResponse(text);
+        if (!parsed) return json(res, { error: 'Failed to optimize profile', raw_preview: (text || '').slice(0, 300) }, 500);
+        return json(res, { ok: true, profile: parsed });
+      } catch (err) {
+        return json(res, { error: err.message }, 500);
+      }
+    }
+
+    // POST /api/content/:id/social-proof-post — generate testimonial-style post from case study data
+    const spPostMatch = pathname.match(/^\/api\/content\/([a-f0-9]+)\/social-proof-post$/);
+    if (spPostMatch && method === 'POST') {
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      const id = spPostMatch[1];
+      const allContent = readJSON('content.json', []);
+      const item = allContent.find(c => c.id === id);
+      if (!item) return json(res, { error: 'Content not found' }, 404);
+
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+      const { BRAND_SYSTEM_PROMPT } = require('./generator/content-writer');
+      const source = item.formats?.linkedin?.content || item.formats?.blog?.content || '';
+
+      const prompt = `Extract social proof and create a results-focused testimonial-style post from this content.
+
+Source: ${source.slice(0, 2000)}
+Topic: ${item.trigger_title}
+
+Case study posts are the #1 highest-converting format for booking calls on LinkedIn. Create a post that makes the reader think "I want that for my firm."
+
+Return JSON (no markdown fences):
+{
+  "before_after_post": "full LinkedIn post showing transformation (before metrics → what changed → after metrics)",
+  "results_snapshot": {
+    "before": "pain state with numbers",
+    "after": "success state with numbers",
+    "timeframe": "how long",
+    "investment": "what it cost/required"
+  },
+  "quote_graphic_text": "one-line quotable result for a graphic",
+  "client_type": "what kind of firm/client this serves"
+}`;
+
+      try {
+        const text = await callClaude({ model: HAIKU, system: BRAND_SYSTEM_PROMPT, prompt, maxTokens: 2000 });
+        const parsed = parseJsonResponse(text);
+        if (!parsed) return json(res, { error: 'Failed to generate', raw_preview: (text || '').slice(0, 200) }, 500);
+        return json(res, { ok: true, content_id: id, ...parsed });
+      } catch (err) {
+        return json(res, { error: err.message }, 500);
+      }
+    }
+
+    // GET /api/weekly-content-plan — generate comprehensive weekly plan combining all systems
+    if (pathname === '/api/weekly-content-plan' && method === 'GET') {
+      const series = readJSON('series-templates.json', { series: [] });
+      const matrix = readJSON('content-matrix.json', null);
+      const bank = readJSON('content-bank.json', { log: [], stats: { value: 0, cta: 0 } });
+      const playbook = readJSON('engagement-playbook.json', null);
+
+      const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
+      const plan = days.map(day => {
+        const s = (series.series || []).find(sr => sr.day === day);
+        return {
+          day,
+          series_name: s?.name || null,
+          format: s?.format || 'text',
+          hashtag: s?.hashtag || null,
+          cta_tier: s?.cta_tier || 'conversation',
+          posting_time: ['tuesday', 'wednesday', 'thursday'].includes(day) ? '8-10 AM' : '12-2 PM',
+          example_topic: s?.example_topics?.[0] || null,
+          lead_magnet: s?.lead_magnet_cta || null
+        };
+      });
+
+      return json(res, {
+        plan,
+        matrix_posts_remaining: matrix?.total_posts || 0,
+        bank_balance: `${bank.stats.value} value, ${bank.stats.cta} CTA (${bank.stats.cta > 0 ? (bank.stats.value / bank.stats.cta).toFixed(1) : 'Infinity'}:1)`,
+        notes: [
+          'Post 5x/week (Mon-Fri) for optimal LinkedIn growth',
+          'One CTA per week maximum (Wednesday recommended)',
+          'Carousel on Monday for highest engagement format',
+          'Story/transparency posts build most trust (Wednesday/Thursday)'
+        ]
+      });
+    }
+
     // --- Static file serving ---
 
     // Serve dashboard

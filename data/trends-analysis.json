@@ -1,0 +1,139 @@
+{
+  "emerging_trends": [
+    {
+      "trend": "AI-Powered Law Firm Operations & Delegation",
+      "signals": [
+        "youtube: 'Be a Lazy Lawyer: Expert Delegation Tips', 'AI Video Editing & Content Automation Secrets', 'Agentic AI for Law Firms'",
+        "hackernews: Peter Thiel on Legal Tech Future, AI legal tech startup funding ($650M Thomson Reuters/Casetext)"
+      ],
+      "velocity": "rising",
+      "content_angle": "How to use AI agents for intake, document review, and delegation—without replacing lawyers. ROI case studies from firms under 10 lawyers.",
+      "urgency": "post_today",
+      "format": "Short-form video + case study blog posts + webinar"
+    },
+    {
+      "trend": "Lead Quality Over Lead Volume (PPC Accountability)",
+      "signals": [
+        "reddit: '$5K/month on Google Ads = 2 cases' (inefficiency narrative), 'Hit $15k Months but Feeling Stuck'",
+        "youtube: 'Lawyer Who Grew Revenue 59% with FEWER Leads'",
+        "competitor: 'Why Law Firm Marketing Costs Skyrocketed in 2025'"
+      ],
+      "velocity": "rising",
+      "content_angle": "The PPC efficiency crisis: Why traditional metrics are broken. New frameworks for cost-per-case analysis. Shift messaging from 'we get you leads' to 'we get you profitable cases.'",
+      "urgency": "post_today",
+      "format": "LinkedIn thought leadership + calculator tool (cost-per-case analyzer)"
+    },
+    {
+      "trend": "Employment Law & Labor Compliance (2025 Regulatory Wave)",
+      "signals": [
+        "rss: 'New Laws for NY Employers', 'Colombia's New Labor Inspection Model', 'FTC Enforcement on Unfair Labor Practices', 'AI Could Be in FCRA Territory'",
+        "reddit: 'laid off last week—separation letter language'"
+      ],
+      "velocity": "rising",
+      "content_angle": "2025 employment law compliance guides by state. AI hiring discrimination risk (FCRA angle). Timely for Q1 when companies audit practices.",
+      "urgency": "this_week",
+      "format": "State-specific compliance guides + webinar series + email nurture sequence"
+    },
+    {
+      "trend": "Cyber Incident Response & Privilege Management",
+      "signals": [
+        "rss: 'Court Decision Provides Guidance on Preserving Privilege in Cyber Incident Response'",
+        "hackernews: Growing legal tech funding narrative"
+      ],
+      "velocity": "rising",
+      "content_angle": "How to advise clients on cyber incident response without waiving privilege. Timely post-breach playbook for counsel.",
+      "urgency": "this_week",
+      "format": "Technical playbook + webinar for in-house counsel"
+    },
+    {
+      "trend": "Personal Injury (PI) Firm Marketing Inefficiency",
+      "signals": [
+        "reddit: Multiple posts about PI advertising ROI struggles, ghosting during hiring",
+        "content-ideas: '73% of law firm websites are losing cases before first call'"
+      ],
+      "velocity": "rising",
+      "content_angle": "PI firms are bleeding money on bad ads AND bad websites. Conversion-rate focus, not traffic. Intake optimization.",
+      "urgency": "post_today",
+      "format": "Conversion audit framework + audit-offer funnel"
+    },
+    {
+      "trend": "Family Law (Divorce/Heirship) DIY Concerns",
+      "signals": [
+        "reddit: 'Likely filing for divorce—how important is attorney in my county?', 'Navigating heirship process for real estate'",
+        "competitor: 'Technology in Family Law' podcast hint"
+      ],
+      "velocity": "rising",
+      "content_angle": "Content that addresses 'do I need an attorney?' honestly—then shows why they do (jurisdictional nuance, asset division, custody complexity). Trust-building angle.",
+      "urgency": "this_week",
+      "format": "FAQ + comparison guide (DIY vs. attorney) + decision tree"
+    },
+    {
+      "trend": "Legal Tech Funding & Integration (B2B Opportunity)",
+      "signals": [
+        "hackernews: Casetext $650M, Clio $250M, Atrium $10.5M, multiple startups",
+        "youtube: 'Build Authority: Law Firm Marketing That Survives AI'"
+      ],
+      "velocity": "peaking",
+      "content_angle": "For agency: position as 'we help law firms explain their tech stack to clients.' For law firms: thought leadership on legal tech ROI.",
+      "urgency": "this_month",
+      "format": "Report + podcast/interview series with legal tech founders"
+    }
+  ],
+  "dying_topics": [
+    "Generic 'top 10 law firm marketing tips' (oversaturated, low engagement)",
+    "Traditional billable-hours law firm consulting (AI making it obsolete)",
+    "Basic SEO for law firms (commoditized; shifting to conversion focus)",
+    "Lead generation volume pitches (narrative flipping to quality/efficiency)"
+  ],
+  "gap_opportunities": [
+    "Cost-per-case calculators & ROI templates (high intent, no one owns this)",
+    "Intake optimization audit framework (the Reddit pain point—'we get ghosted by candidates' implies workflow chaos)",
+    "State-by-state employment law 2025 compliance playbooks (timely, urgent, searchable)",
+    "Cyber incident response privilege guides for in-house counsel (niche, high-value, technical gap)",
+    "Solo/small firm AI delegation workflows (emotional need: 'how do I scale without burning out')",
+    "Family law 'should I hire an attorney' decision trees (addresses DIY competition honestly)",
+    "Legal tech evaluation framework for firm owners (meta-opportunity: help them choose tech)"
+  ],
+  "content_calendar_suggestions": [
+    {
+      "day": "Monday",
+      "topic": "Cost-Per-Case Crisis: Why Your PPC Spend Isn't Translating to Profits",
+      "angle": "Data-driven breakdown of the Reddit $5K/2 cases problem. Framework for measuring true ROI.",
+      "why_now": "PPC budgets max out Jan/Feb; firms are desperate to justify spend or cut it. High intent."
+    },
+    {
+      "day": "Tuesday",
+      "topic": "2025 Employment Law Compliance for NY/CA Employers: What Changed & What You Must Do",
+      "angle": "Regulatory checklist + template. Speak to in-house counsel & employment lawyers.",
+      "why_now": "New laws active now; Q1 is compliance audit season. Time-sensitive."
+    },
+    {
+      "day": "Wednesday",
+      "topic": "AI Hiring Discrimination: Is Your Screening Tool Exposing You to FCRA Liability?",
+      "angle": "Actionable risk framework + case studies. Speak to firms that use AI recruiting.",
+      "why_now": "FTC actively enforcing; firms using AI screening are at risk. Urgent."
+    },
+    {
+      "day": "Thursday",
+      "topic": "The 73% Problem: Why Your Website Loses Cases Before the First Call",
+      "angle": "Conversion audit framework + before/after examples. Offer free audit.",
+      "why_now": "Complements earlier week's PPC content. Drives qualified leads to your audit offer."
+    },
+    {
+      "day": "Friday",
+      "topic": "Lazy Lawyer Playbook: Delegation Systems That Free You From the Grind",
+      "angle": "Interview a firm owner who scaled with delegation. Lightweight YouTube short + blog.",
+      "why_now": "Inspirational close to the week; builds authority on the trending 'scaling with AI' theme."
+    }
+  ],
+  "competitor_moves": [
+    "PaperStreet heavily focused on compliance templates (CCPA/CPRA, privacy policies)—positioning as the 'risk mitigation' partner",
+    "Competitors emphasizing AI video editing & content automation (low effort = scalability narrative)",
+    "Website refresh/practice area optimization guides (suggesting law firms' old content is underperforming)",
+    "Intake gap analysis becoming standard (hidden conversion loss is the new pitch angle)",
+    "Podcast strategy emerging (Casetext, Greenberg Gross, others using audio for thought leadership)",
+    "Pricing transparency & cost narrative ('Why Marketing Costs Skyrocketed in 2025')—preparing for budget pushback"
+  ],
+  "trigger_count": 237,
+  "analyzed_at": "2026-02-21T08:06:20.579Z"
+}

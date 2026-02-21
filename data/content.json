@@ -2456,7 +2456,7 @@
     "trigger_category": "DATA_POINT",
     "trigger_url": "https://youtube.com/watch?v=v-67pfutZEk",
     "formats": {
-      "linkedin_post": "We just hit 5,000 days of running Crisp. That's 13+ years of watching law firms make the same operational mistake over and over. Here's what kills most practices: they treat their backend like it doesn't matter. Case management system is outdated. Billing is manual. Client communication happens in email chains nobody can find. Result? A 50-person firm operating like a 10-person shop. The math: if one attorney wastes 5 hours/week on admin work that software could handle, that's $52,000/year in lost billable time. Just one person. Now multiply that across your team. Here's how to fix it: (1) Audit where your team actually spends time — not guesses, actual time. (2) Map the three biggest time-sucks to existing software solutions. (3) Pick one system to implement this quarter — not five. (4) Train it properly or it dies. (5) Measure the time saved monthly. Your backend isn't boring. It's your profit margin.",
+      "linkedin_post": "5,000 days running Crisp. 13+ years watching law firms make the same mistake: ignoring their backend. Outdated case management. Manual billing. Lost email chains. A 50-person firm running like 10 people. One attorney wasting 5 hours/week on admin? $52,000/year in lost billables. Multiply that across your team. The fix: (1) Audit actual time spent—no guessing. (2) Map top three time-sucks to software solutions. (3) Implement ONE system this quarter. (4) Train properly or it fails. (5) Measure monthly time saved. Your backend is your profit margin.",
       "linkedin_hooks": [
         "We just hit 5,000 days running Crisp. And the biggest mistake we've seen isn't what you think. Most law firms treat their backend operations like they don't matter.",
         "A 50-person firm operating like a 10-person shop. That's what happens when your case management system is outdated and billing is still manual. We've watched this play out 5,000 times.",
@@ -2539,9 +2539,99 @@
         ]
       }
     },
-    "status": "review",
+    "status": "published",
     "generated_at": "2026-02-21T01:20:14.097Z",
-    "generation_mode": "autopilot"
+    "generation_mode": "autopilot",
+    "reviews": {
+      "linkedin_post": {
+        "overall_verdict": "revise",
+        "overall_score": 72,
+        "dimensions": {
+          "hook_quality": {
+            "score": 65,
+            "feedback": "The '5,000 days' milestone feels self-congratulatory rather than reader-focused. It makes the reader do math to understand the significance, and the payoff (firms make the same mistake) doesn't feel urgent enough. The hook should hit the pain point immediately, not bury it three sentences in.",
+            "fix": "Lead with the problem or the shocking stat. Try: 'Your attorneys are bleeding $52,000/year. Each. And you probably don't even know it.' Then bring in your credibility as context, not the opening gambit."
+          },
+          "value_density": {
+            "score": 85,
+            "feedback": "Excellent concrete value here. The $52,000 calculation is specific and actionable. The 5-step fix is practical. This is one of the strongest dimensions—you're giving away actual consulting-level advice. The 'backend = profit margin' reframe is sharp.",
+            "fix": "Minor: Consider adding one real example or mini case study. Even one sentence like 'We helped a 30-person firm in Atlanta save 180 hours/month by switching from [X] to [Y]' would make this even more tangible."
+          },
+          "readability": {
+            "score": 78,
+            "feedback": "Structure is solid with short paragraphs and numbered steps. The rhythm works. However, some sentences feel choppy to the point of being telegraphic ('Result?' as a one-word sentence, 'Just one person.'). This can work in moderation but feels overused here. The backend/profit margin closer is punchy but might be TOO punchy—risks being dismissed as oversimplification.",
+            "fix": "Smooth out 2-3 of those fragment sentences into fuller statements. Change 'Result?' to 'The result:' and connect it better to the previous thought. The final line might land harder as: 'Your backend isn't boring infrastructure. It's your profit margin walking out the door—or staying put.'"
+          },
+          "brand_voice": {
+            "score": 70,
+            "feedback": "The voice is confident and direct, which works for a legal marketing consultancy. But the opening feels slightly arrogant ('watching law firms make the same mistake over and over') without enough empathy. You're positioning as the expert who's frustrated with clients, rather than the partner who understands their challenges. The tone improves significantly in the solution section.",
+            "fix": "Reframe the 'watching firms make mistakes' angle. Instead of 'over and over,' try 'It's not their fault—nobody taught them to think about operations like a profit center.' Show you understand WHY they're stuck, not just THAT they're stuck."
+          },
+          "cta_effectiveness": {
+            "score": 55,
+            "feedback": "This is the weakest element. There's no CTA at all. The post ends with a mic-drop line ('Your backend isn't boring. It's your profit margin.') but gives readers nowhere to go. No question to drive comments, no resource offer, no conversation starter. For a marketing agency post, this is a missed opportunity—you've warmed them up but don't ask for any engagement.",
+            "fix": "Add a clear next step. Options: 'What's your biggest operational time-suck? Drop it below.' Or: 'Want our free Operations Audit template? DM me AUDIT.' Or softer: 'How does your firm handle this? Curious what's working out there.' You need SOMETHING to convert attention into action."
+          }
+        },
+        "strengths": [
+          "The $52,000 calculation is specific, credible, and immediately actionable—this is the kind of math that makes partners pay attention",
+          "The 5-step implementation plan is practical and realistic (especially #3: 'Pick one system... not five')—shows you understand change management in law firms",
+          "Value density is high; you're giving away real consulting insights rather than vague platitudes",
+          "The 'backend = profit margin' reframe is memorable and challenges conventional thinking",
+          "Short paragraphs and numbered list make it scannable for busy lawyers"
+        ],
+        "weaknesses": [
+          "Hook buries the lede—opens with your milestone rather than their pain point",
+          "No CTA whatsoever—conversation dies at the end with no path forward",
+          "Opening tone skews slightly arrogant ('watching firms make the same mistake') without enough empathy or context for WHY firms struggle",
+          "Overuse of sentence fragments creates a choppy reading experience in places",
+          "Missing social proof—no example, case study, or testimonial to validate the approach",
+          "The 'multiply that across your team' moment doesn't actually show the math—telling readers to imagine rather than giving them the full calculation"
+        ],
+        "line_edits": [
+          {
+            "original": "We just hit 5,000 days of running Crisp. That's 13+ years of watching law firms make the same operational mistake over and over.",
+            "suggested": "After 13 years working with law firms, I've seen one operational blindspot tank more practices than bad marketing or thin pipelines combined.",
+            "reason": "Makes it about them, not you. Removes the self-congratulatory math. Creates curiosity about what the blindspot is. More empathetic tone."
+          },
+          {
+            "original": "Result? A 50-person firm operating like a 10-person shop.",
+            "suggested": "The result: a 50-person firm with the operational efficiency of a 10-person shop—and the profit margins to match.",
+            "reason": "Smooths out the fragment. Adds consequence ('profit margins') that connects to your later math. Creates better flow."
+          },
+          {
+            "original": "The math: if one attorney wastes 5 hours/week on admin work that software could handle, that's $52,000/year in lost billable time. Just one person. Now multiply that across your team.",
+            "suggested": "The math is brutal: one attorney wasting 5 hours/week on admin work that software could handle = $52,000/year in lost billable time. If you have 15 attorneys, that's $780,000 walking out the door annually.",
+            "reason": "Don't make them do the multiplication—do it for them. The $780k figure is more shocking and concrete than asking them to imagine. Removes choppy fragments."
+          },
+          {
+            "original": "Your backend isn't boring. It's your profit margin.",
+            "suggested": "Your backend isn't boring infrastructure. It's your profit margin—and right now, it's bleeding. What's the biggest operational time-suck in your firm?",
+            "reason": "Completes the thought more fully. Adds urgency with 'bleeding.' Most importantly: ADDS A CTA to drive engagement and comments."
+          }
+        ],
+        "rewrite_hook": "Your attorneys are each losing $52,000/year to administrative work that software could do in minutes. After 13 years consulting with law firms, I can tell you: this isn't a technology problem. It's a priority problem.",
+        "missing_elements": [
+          "Call-to-action—any prompt for engagement, comments, or next steps",
+          "Social proof or example—even a brief anonymized case reference would strengthen credibility",
+          "The completed math—you tell them to multiply across the team but don't show the calculation for a typical firm",
+          "Acknowledgment of barriers—why haven't firms fixed this? Addressing objections ('I know you're busy, I know change is hard') would build trust",
+          "A bridge between diagnosis and solution—the transition from 'here's the problem' to 'here's how to fix it' is abrupt"
+        ],
+        "competitive_analysis": "This is above-average for legal marketing content on LinkedIn—most posts in this space are either too self-promotional or too generic. Your specific math and actionable steps put you in the top 25%. However, the best-performing posts in this niche (from agencies like Spotlight Branding, Mockingbird Marketing, or consultants like Jay Harrington) typically include: (1) a story or specific example, (2) a clear CTA that drives comments, and (3) a more empathetic tone that acknowledges WHY change is hard rather than just pointing out the problem. Your content has the substance; it needs better packaging on both ends (hook and CTA). The middle is strong. You're competing well on value delivery but losing ground on engagement mechanics. With revisions, this could easily be a 500+ like post that drives real conversations.",
+        "reviewed_at": "2026-02-21T08:05:53.971Z"
+      }
+    },
+    "published_at": "2026-02-21T08:06:24.277Z",
+    "published_platform": "linkedin",
+    "versions": {
+      "linkedin_post": [
+        {
+          "text": "We just hit 5,000 days of running Crisp. That's 13+ years of watching law firms make the same operational mistake over and over. Here's what kills most practices: they treat their backend like it doesn't matter. Case management system is outdated. Billing is manual. Client communication happens in email chains nobody can find. Result? A 50-person firm operating like a 10-person shop. The math: if one attorney wastes 5 hours/week on admin work that software could handle, that's $52,000/year in lost billable time. Just one person. Now multiply that across your team. Here's how to fix it: (1) Audit where your team actually spends time — not guesses, actual time. (2) Map the three biggest time-sucks to existing software solutions. (3) Pick one system to implement this quarter — not five. (4) Train it properly or it dies. (5) Measure the time saved monthly. Your backend isn't boring. It's your profit margin.",
+          "saved_at": "2026-02-21T08:06:38.092Z"
+        }
+      ]
+    }
   },
   {
     "id": "0290f613483e7695",

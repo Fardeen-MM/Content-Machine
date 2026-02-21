@@ -12447,6 +12447,285 @@ Return JSON:
       return json(res, readJSON('weekly-action-plan.json', null));
     }
 
+    // ======= BATCH 61: AI Content Reviewer, Trends Analyzer, Publishing Workflow, Authority Score =======
+
+    // POST /api/content/:id/ai-review — Comprehensive AI content review with actionable feedback
+    if (method === 'POST' && pathname.match(/^\/api\/content\/([^/]+)\/ai-review$/)) {
+      const contentId = pathname.split('/')[3];
+      const allContent = readJSON('content.json', []);
+      const item = allContent.find(c => c.id === contentId);
+      if (!item) return json(res, { error: 'Content not found' }, 404);
+      const body = await parseBody(req);
+      const formatKey = body.format || Object.keys(item.formats || {})[0];
+      const text = item.formats?.[formatKey]?.text || item.formats?.[formatKey];
+      if (!text) return json(res, { error: 'No content found' }, 400);
+
+      const { callClaude, parseJsonResponse, SONNET } = require('./lib/claude');
+      const result = await callClaude({
+        model: SONNET,
+        system: 'You are a senior content editor for a legal marketing agency. Review content like a tough-but-fair editor: be honest about what\'s weak, specific about how to fix it, and generous about what works. Score on 5 dimensions: hook quality, value density, readability, brand voice, and CTA effectiveness. Return JSON only.',
+        prompt: `Review this ${formatKey} content piece as a senior editor.
+
+Content:
+${typeof text === 'string' ? text.slice(0, 3000) : JSON.stringify(text).slice(0, 3000)}
+
+Return JSON:
+{
+  "overall_verdict": "publish|revise|kill",
+  "overall_score": 0-100,
+  "dimensions": {
+    "hook_quality": { "score": 0-100, "feedback": "specific feedback", "fix": "how to improve" },
+    "value_density": { "score": 0-100, "feedback": "...", "fix": "..." },
+    "readability": { "score": 0-100, "feedback": "...", "fix": "..." },
+    "brand_voice": { "score": 0-100, "feedback": "...", "fix": "..." },
+    "cta_effectiveness": { "score": 0-100, "feedback": "...", "fix": "..." }
+  },
+  "strengths": ["what's working well"],
+  "weaknesses": ["what needs fixing"],
+  "line_edits": [
+    { "original": "problematic sentence", "suggested": "improved version", "reason": "why" }
+  ],
+  "rewrite_hook": "if the hook is weak, here's a better one",
+  "missing_elements": ["what the content should include but doesn't"],
+  "competitive_analysis": "how this compares to top legal marketing content on LinkedIn"
+}`,
+        maxTokens: 4000
+      });
+      const parsed = parseJsonResponse(result);
+
+      // Save review to content item
+      const idx = allContent.findIndex(c => c.id === contentId);
+      if (idx !== -1) {
+        if (!allContent[idx].reviews) allContent[idx].reviews = {};
+        allContent[idx].reviews[formatKey] = { ...parsed, reviewed_at: now() };
+        writeJSON('content.json', allContent);
+      }
+      return json(res, { ok: true, content_id: contentId, format: formatKey, ...parsed });
+    }
+
+    // POST /api/trends-analyzer — Analyze trending topics across all scraped sources
+    if (method === 'POST' && pathname === '/api/trends-analyzer') {
+      const triggers = readJSON('trigger-queue.json', []);
+      const now_ts = Date.now();
+      const sevenDaysAgo = now_ts - 7 * 24 * 60 * 60 * 1000;
+      const recentTriggers = triggers.filter(t => new Date(t.captured_at) > sevenDaysAgo);
+
+      const sourceBreakdown = {};
+      recentTriggers.forEach(t => {
+        const src = t.source || 'unknown';
+        if (!sourceBreakdown[src]) sourceBreakdown[src] = [];
+        sourceBreakdown[src].push(t.title || t.topic);
+      });
+
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+      const result = await callClaude({
+        model: HAIKU,
+        system: 'You are a trends analyst who spots emerging patterns before they peak. Analyze scraped content to identify trending topics, emerging conversations, and content opportunities that a legal marketing agency should jump on NOW. Return JSON only.',
+        prompt: `Analyze these ${recentTriggers.length} triggers from the past 7 days to identify trends.
+
+By source:
+${Object.entries(sourceBreakdown).map(([src, titles]) => `${src} (${titles.length}): ${titles.slice(0, 10).join(' | ')}`).join('\n')}
+
+Return JSON:
+{
+  "emerging_trends": [
+    {
+      "trend": "what's trending",
+      "signals": ["where you're seeing this"],
+      "velocity": "rising|peaking|declining",
+      "content_angle": "how to create content about this",
+      "urgency": "post_today|this_week|this_month",
+      "format": "best content format for this"
+    }
+  ],
+  "dying_topics": ["topics that are losing traction"],
+  "gap_opportunities": ["topics nobody is covering well"],
+  "content_calendar_suggestions": [
+    { "day": "Monday", "topic": "...", "angle": "...", "why_now": "..." }
+  ],
+  "competitor_moves": ["what competitors seem to be doing based on the data"]
+}`,
+        maxTokens: 3000
+      });
+      const parsed = parseJsonResponse(result);
+      const analysis = { ...parsed, trigger_count: recentTriggers.length, analyzed_at: now() };
+      writeJSON('trends-analysis.json', analysis);
+      return json(res, { ok: true, ...analysis });
+    }
+
+    // GET /api/trends-analysis
+    if (method === 'GET' && pathname === '/api/trends-analysis') {
+      return json(res, readJSON('trends-analysis.json', null));
+    }
+
+    // POST /api/publish-workflow — Execute publishing workflow for a content piece
+    if (method === 'POST' && pathname === '/api/publish-workflow') {
+      const body = await parseBody(req);
+      const contentId = body.content_id;
+      const platform = body.platform || 'linkedin';
+
+      if (!contentId) return json(res, { error: 'content_id required' }, 400);
+
+      const allContent = readJSON('content.json', []);
+      const item = allContent.find(c => c.id === contentId);
+      if (!item) return json(res, { error: 'Content not found' }, 404);
+
+      // Find the best format for the target platform
+      const platformFormats = {
+        linkedin: ['linkedin_post', 'linkedin', 'carousel', 'poll', 'hot_take'],
+        x: ['x_single', 'x_thread', 'hot_take'],
+        email: ['newsletter', 'blog'],
+        youtube: ['youtube_script', 'short_video_script']
+      };
+      const candidates = platformFormats[platform] || Object.keys(item.formats || {});
+      const formatKey = candidates.find(f => item.formats?.[f]) || Object.keys(item.formats || {})[0];
+      const text = item.formats?.[formatKey]?.text || item.formats?.[formatKey];
+      if (!text) return json(res, { error: `No ${platform} format found` }, 400);
+
+      // Build publishing package
+      const published = readJSON('published.json', []);
+      const contentBank = readJSON('content-bank.json', { log: [], stats: {} });
+
+      const publishEntry = {
+        content_id: contentId,
+        platform,
+        format: formatKey,
+        content: typeof text === 'string' ? text : JSON.stringify(text),
+        published_at: now(),
+        status: 'ready'
+      };
+
+      published.push(publishEntry);
+      writeJSON('published.json', published);
+
+      // Update content bank
+      const contentType = text.toString().includes('audit') || text.toString().includes('free') || text.toString().includes('DM') ? 'cta' : 'value';
+      contentBank.log.push({ content_id: contentId, type: contentType, platform, posted_at: now() });
+      contentBank.stats[contentType] = (contentBank.stats[contentType] || 0) + 1;
+      writeJSON('content-bank.json', contentBank);
+
+      // Mark content as published
+      const idx = allContent.findIndex(c => c.id === contentId);
+      if (idx !== -1) {
+        allContent[idx].status = 'published';
+        allContent[idx].published_at = now();
+        allContent[idx].published_platform = platform;
+        writeJSON('content.json', allContent);
+      }
+
+      return json(res, {
+        ok: true,
+        content_id: contentId,
+        platform,
+        format: formatKey,
+        content: typeof text === 'string' ? text.slice(0, 500) : 'Content ready',
+        bank_type: contentType,
+        bank_ratio: `${contentBank.stats.value || 0} value : ${contentBank.stats.cta || 0} CTA`,
+        next_action: `Copy content and post to ${platform}. Engage with comments for first 60 minutes.`
+      });
+    }
+
+    // GET /api/authority-score — Calculate overall authority score based on all activities
+    if (method === 'GET' && pathname === '/api/authority-score') {
+      const allContent = readJSON('content.json', []);
+      const published = readJSON('published.json', []);
+      const series = readJSON('series-templates.json', { series: [] });
+      const leadMagnets = readJSON('generated-lead-magnets.json', []);
+      const newsletters = readJSON('newsletters.json', []);
+      const contentDna = readJSON('content-dna.json', null);
+      const audienceSegments = readJSON('audience-segments.json', null);
+      const growthPlaybook = readJSON('growth-playbook.json', null);
+
+      let score = 0;
+      const breakdown = [];
+
+      // Content Volume (max 20 points)
+      const contentPts = Math.min(20, allContent.length);
+      score += contentPts;
+      breakdown.push({ category: 'Content Volume', score: contentPts, max: 20, detail: `${allContent.length} pieces` });
+
+      // Publishing Consistency (max 20 points)
+      const pubPts = Math.min(20, published.length * 4);
+      score += pubPts;
+      breakdown.push({ category: 'Publishing', score: pubPts, max: 20, detail: `${published.length} published` });
+
+      // Strategic Assets (max 20 points)
+      const assetPts = Math.min(20, (leadMagnets.length * 4) + (newsletters.length * 3) + ((series.series || []).length * 2));
+      score += assetPts;
+      breakdown.push({ category: 'Strategic Assets', score: assetPts, max: 20, detail: `${leadMagnets.length} magnets, ${newsletters.length} newsletters` });
+
+      // Content Strategy (max 20 points)
+      const stratPts = (contentDna ? 5 : 0) + (audienceSegments ? 5 : 0) + (growthPlaybook ? 5 : 0) + ((series.series || []).length > 3 ? 5 : 0);
+      score += stratPts;
+      breakdown.push({ category: 'Strategy Depth', score: stratPts, max: 20, detail: `DNA + Segments + Playbook + Series` });
+
+      // Content Quality (max 20 points)
+      const approved = allContent.filter(c => c.status === 'approved' || c.status === 'published').length;
+      const qualPts = allContent.length > 0 ? Math.min(20, Math.round(approved / allContent.length * 20)) : 0;
+      score += qualPts;
+      breakdown.push({ category: 'Quality Rate', score: qualPts, max: 20, detail: `${approved}/${allContent.length} approved` });
+
+      const level = score >= 80 ? 'Authority' : score >= 60 ? 'Rising Voice' : score >= 40 ? 'Building' : score >= 20 ? 'Getting Started' : 'Beginner';
+
+      return json(res, {
+        authority_score: score,
+        level,
+        breakdown,
+        next_milestone: score < 40 ? 'Build: Create 10 more content pieces and publish 3' : score < 60 ? 'Rise: Generate lead magnets and start weekly newsletter' : score < 80 ? 'Lead: Establish content DNA and grow to 20+ published' : 'Maintain: Keep publishing consistently and expand to new platforms'
+      });
+    }
+
+    // POST /api/content/:id/rewrite — AI rewrite with specific direction
+    if (method === 'POST' && pathname.match(/^\/api\/content\/([^/]+)\/rewrite$/)) {
+      const contentId = pathname.split('/')[3];
+      const allContent = readJSON('content.json', []);
+      const item = allContent.find(c => c.id === contentId);
+      if (!item) return json(res, { error: 'Content not found' }, 404);
+      const body = await parseBody(req);
+      const formatKey = body.format || Object.keys(item.formats || {})[0];
+      const text = item.formats?.[formatKey]?.text || item.formats?.[formatKey];
+      if (!text) return json(res, { error: 'No content found' }, 400);
+      const direction = body.direction || 'more engaging and punchy';
+
+      const { callClaude, parseJsonResponse, SONNET } = require('./lib/claude');
+      const result = await callClaude({
+        model: SONNET,
+        system: 'You are a senior content writer for Mortar Metrics, a legal marketing agency. Rewrite content based on specific editorial direction while preserving the core message and data points. Return JSON only.',
+        prompt: `Rewrite this content with this direction: "${direction}"
+
+Original:
+${typeof text === 'string' ? text.slice(0, 3000) : JSON.stringify(text).slice(0, 3000)}
+
+Return JSON:
+{
+  "rewritten": "the full rewritten content",
+  "changes_made": ["list of specific changes"],
+  "preserved": ["what was kept from the original"],
+  "word_count_change": "+X or -X words"
+}`,
+        maxTokens: 4000
+      });
+      const parsed = parseJsonResponse(result);
+
+      // Save as a new version
+      const idx = allContent.findIndex(c => c.id === contentId);
+      if (idx !== -1 && parsed.rewritten) {
+        if (!allContent[idx].versions) allContent[idx].versions = {};
+        if (!allContent[idx].versions[formatKey]) allContent[idx].versions[formatKey] = [];
+        allContent[idx].versions[formatKey].push({
+          text: typeof text === 'string' ? text : JSON.stringify(text),
+          saved_at: now()
+        });
+        if (typeof allContent[idx].formats[formatKey] === 'string') {
+          allContent[idx].formats[formatKey] = parsed.rewritten;
+        } else if (allContent[idx].formats[formatKey]?.text) {
+          allContent[idx].formats[formatKey].text = parsed.rewritten;
+        }
+        writeJSON('content.json', allContent);
+      }
+      return json(res, { ok: true, content_id: contentId, format: formatKey, ...parsed });
+    }
+
     // --- Static file serving ---
 
     // Serve dashboard

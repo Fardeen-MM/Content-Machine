@@ -3622,6 +3622,352 @@ Return JSON array (no fences):
       }
     }
 
+    // --- Content Series API ---
+
+    // GET /api/series — list all content series
+    if (pathname === '/api/series' && method === 'GET') {
+      const series = readJSON('series.json', []);
+      return json(res, series);
+    }
+
+    // POST /api/series — create a new series
+    if (pathname === '/api/series' && method === 'POST') {
+      const body = await parseBody(req);
+      if (!body.name || !body.day) return json(res, { error: 'name and day required' }, 400);
+      const series = readJSON('series.json', []);
+      const newSeries = {
+        id: body.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+        name: body.name,
+        day: body.day,
+        frequency: body.frequency || 'weekly',
+        description: body.description || '',
+        template_prompt: body.template_prompt || '',
+        formats: body.formats || ['linkedin', 'x_single'],
+        pillar: body.pillar || 'tactical',
+        hashtag: body.hashtag || '',
+        active: true,
+        episodes: [],
+        created_at: now()
+      };
+      series.push(newSeries);
+      writeJSON('series.json', series);
+      return json(res, { ok: true, series: newSeries });
+    }
+
+    // PUT /api/series/:id — update a series
+    const seriesUpdateMatch = pathname.match(/^\/api\/series\/([\w-]+)$/);
+    if (seriesUpdateMatch && method === 'PUT') {
+      const body = await parseBody(req);
+      const series = readJSON('series.json', []);
+      const idx = series.findIndex(s => s.id === seriesUpdateMatch[1]);
+      if (idx === -1) return json(res, { error: 'Series not found' }, 404);
+      if (body.name !== undefined) series[idx].name = body.name;
+      if (body.day !== undefined) series[idx].day = body.day;
+      if (body.description !== undefined) series[idx].description = body.description;
+      if (body.template_prompt !== undefined) series[idx].template_prompt = body.template_prompt;
+      if (body.formats !== undefined) series[idx].formats = body.formats;
+      if (body.active !== undefined) series[idx].active = body.active;
+      if (body.hashtag !== undefined) series[idx].hashtag = body.hashtag;
+      writeJSON('series.json', series);
+      return json(res, { ok: true, series: series[idx] });
+    }
+
+    // POST /api/series/:id/generate — generate next episode for a series
+    const seriesGenMatch = pathname.match(/^\/api\/series\/([\w-]+)\/generate$/);
+    if (seriesGenMatch && method === 'POST') {
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      const body = await parseBody(req);
+      const series = readJSON('series.json', []);
+      const idx = series.findIndex(s => s.id === seriesGenMatch[1]);
+      if (idx === -1) return json(res, { error: 'Series not found' }, 404);
+
+      const s = series[idx];
+      const episodeNum = (s.episodes || []).length + 1;
+
+      // Find a matching trigger to use as source material
+      const triggers = readJSON('trigger-queue.json');
+      const { scoreTrigger } = require('./generator/score-triggers');
+      let sourceTrigger = null;
+      if (body.trigger_id) {
+        sourceTrigger = triggers.find(t => t.id === body.trigger_id);
+      } else {
+        // Pick top ungenerated trigger matching the series pillar/category
+        const candidates = triggers
+          .filter(t => t.status === 'pending')
+          .map(t => ({ ...t, score: scoreTrigger(t) }))
+          .sort((a, b) => b.score - a.score);
+        sourceTrigger = candidates[0] || null;
+      }
+
+      if (!sourceTrigger) return json(res, { error: 'No trigger available for series episode' }, 400);
+
+      try {
+        const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+        const { buildSystemPromptWithMemory } = require('./generator/content-writer');
+        const systemPrompt = buildSystemPromptWithMemory();
+
+        const prompt = `You are generating episode #${episodeNum} of the "${s.name}" content series.
+
+SERIES CONCEPT: ${s.description}
+SERIES DAY: ${s.day} (${s.frequency})
+HASHTAG: ${s.hashtag || 'none'}
+
+TEMPLATE INSTRUCTIONS:
+${s.template_prompt}
+
+SOURCE MATERIAL (use this as inspiration/data for the episode):
+Title: ${sourceTrigger.title}
+Content: ${(sourceTrigger.raw_content || '').slice(0, 2000)}
+
+Generate content for these formats: ${s.formats.join(', ')}
+
+Return a JSON object (raw JSON, no markdown fences) with these keys:
+{
+  "episode_title": "A catchy title for this episode",
+  "episode_hook": "The opening hook (first 2 lines)",
+${s.formats.map(f => {
+  if (f === 'linkedin') return '  "linkedin": "Full LinkedIn post (800-1300 chars)"';
+  if (f === 'x_single') return '  "x_single": "Single tweet under 280 chars"';
+  if (f === 'x_thread') return '  "x_thread": ["tweet1", "tweet2", "tweet3", "tweet4", "tweet5"]';
+  if (f === 'carousel') return '  "carousel": ["Slide 1", "Slide 2", "Slide 3", "Slide 4", "Slide 5"]';
+  if (f === 'short_video') return '  "short_video": "30-90 second script with [PAUSE] markers"';
+  if (f === 'newsletter') return '  "newsletter": "Full newsletter with subject line"';
+  if (f === 'blog') return '  "blog": "Full blog post in markdown (1500+ words)"';
+  return `  "${f}": "Content for ${f} format"`;
+}).join(',\n')}
+}
+
+Add the series hashtag ${s.hashtag || ''} naturally at the end of social posts.`;
+
+        const text = await callClaude({ model: HAIKU, system: systemPrompt, prompt, maxTokens: 4000 });
+        const parsed = parseJsonResponse(text);
+        if (!parsed) return json(res, { error: 'Failed to parse series content' }, 500);
+
+        // Create content item from series episode
+        const content = readJSON('content.json');
+        const contentId = generateId();
+        const formats = {};
+        for (const fmt of s.formats) {
+          if (parsed[fmt]) {
+            formats[fmt] = { content: parsed[fmt], status: 'review', edited: false };
+          }
+        }
+
+        const contentItem = {
+          id: contentId,
+          trigger_id: sourceTrigger.id,
+          trigger_title: parsed.episode_title || sourceTrigger.title,
+          trigger_source: 'series',
+          trigger_category: s.pillar?.toUpperCase() || 'CONTENT_PIECE',
+          series_id: s.id,
+          series_episode: episodeNum,
+          formats,
+          status: 'review',
+          quality_score: null,
+          created_at: now()
+        };
+        content.push(contentItem);
+        writeJSON('content.json', content);
+
+        // Record episode
+        series[idx].episodes = series[idx].episodes || [];
+        series[idx].episodes.push({
+          number: episodeNum,
+          content_id: contentId,
+          title: parsed.episode_title || `Episode ${episodeNum}`,
+          trigger_id: sourceTrigger.id,
+          generated_at: now()
+        });
+        writeJSON('series.json', series);
+
+        // Mark trigger as used
+        const trigIdx = triggers.findIndex(t => t.id === sourceTrigger.id);
+        if (trigIdx !== -1) {
+          triggers[trigIdx].status = 'used';
+          triggers[trigIdx].used_at = now();
+          writeJSON('trigger-queue.json', triggers);
+        }
+
+        return json(res, { ok: true, content_id: contentId, episode: episodeNum, title: parsed.episode_title });
+      } catch (err) {
+        return json(res, { error: err.message }, 500);
+      }
+    }
+
+    // --- Lead Magnet Auto-Generation ---
+
+    // POST /api/lead-magnets/generate — auto-generate lead magnets from top triggers
+    if (pathname === '/api/lead-magnets/generate' && method === 'POST') {
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      const body = await parseBody(req);
+      const count = Math.min(body.count || 3, 5);
+
+      const batchId = generateId();
+      _batchProgress[batchId] = { total: count, completed: 0, errors: 0, results: [], status: 'starting', type: 'lead_magnets' };
+
+      setImmediate(async () => {
+        try {
+          const { generateLeadMagnet } = require('./lib/claude');
+          const { renderLeadMagnetHTML } = require('./generator/lead-magnet-renderer');
+          const { buildSystemPromptWithMemory } = require('./generator/content-writer');
+          const { scoreTrigger } = require('./generator/score-triggers');
+          const systemPrompt = buildSystemPromptWithMemory();
+
+          const triggers = readJSON('trigger-queue.json');
+          // Find triggers with lead_magnet_topic or high scores
+          const candidates = triggers
+            .filter(t => t.status === 'pending')
+            .map(t => ({ ...t, score: scoreTrigger(t) }))
+            .sort((a, b) => b.score - a.score)
+            .slice(0, count);
+
+          _batchProgress[batchId].total = candidates.length;
+          _batchProgress[batchId].status = 'running';
+
+          for (const trigger of candidates) {
+            try {
+              const triggerWithTopic = { ...trigger, lead_magnet_topic: trigger.lead_magnet_topic || trigger.title };
+              const parsed = await generateLeadMagnet(triggerWithTopic, systemPrompt);
+              const html = renderLeadMagnetHTML(parsed);
+
+              // Create or update content item
+              let content = readJSON('content.json');
+              let existing = content.find(c => c.trigger_id === trigger.id);
+              if (existing) {
+                const idx = content.indexOf(existing);
+                content[idx].formats.lead_magnet = { content: html, status: 'review', edited: false };
+                content[idx].lead_magnet_meta = { title: parsed.title, type: parsed.type, subtitle: parsed.subtitle };
+              } else {
+                const contentItem = {
+                  id: generateId(),
+                  trigger_id: trigger.id,
+                  trigger_title: trigger.title,
+                  trigger_source: trigger.source,
+                  trigger_category: trigger.category,
+                  formats: { lead_magnet: { content: html, status: 'review', edited: false } },
+                  lead_magnet_meta: { title: parsed.title, type: parsed.type, subtitle: parsed.subtitle },
+                  status: 'review',
+                  created_at: now()
+                };
+                content.push(contentItem);
+                existing = contentItem;
+              }
+              writeJSON('content.json', content);
+
+              _batchProgress[batchId].completed++;
+              _batchProgress[batchId].results.push({ content_id: existing.id, title: parsed.title, type: parsed.type });
+            } catch (err) {
+              _batchProgress[batchId].errors++;
+              console.error(`[lead-magnet] Error for trigger ${trigger.id}: ${err.message}`);
+            }
+          }
+          _batchProgress[batchId].status = 'done';
+        } catch (err) {
+          _batchProgress[batchId].status = 'error';
+          _batchProgress[batchId].error = err.message;
+        }
+        setTimeout(() => { delete _batchProgress[batchId]; }, 30 * 60 * 1000);
+      });
+
+      return json(res, { ok: true, batch_id: batchId });
+    }
+
+    // GET /api/lead-magnets — list all generated lead magnets
+    if (pathname === '/api/lead-magnets' && method === 'GET') {
+      const content = readJSON('content.json');
+      const magnets = content
+        .filter(c => c.formats?.lead_magnet)
+        .map(c => ({
+          content_id: c.id,
+          title: c.lead_magnet_meta?.title || c.trigger_title,
+          type: c.lead_magnet_meta?.type || 'unknown',
+          subtitle: c.lead_magnet_meta?.subtitle || '',
+          status: c.formats.lead_magnet.status,
+          trigger_title: c.trigger_title,
+          created_at: c.created_at
+        }))
+        .sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+      return json(res, magnets);
+    }
+
+    // --- Multi-Platform Publish Tracking ---
+
+    // POST /api/content/:id/track-publish — track where content was published
+    const trackPublishMatch = pathname.match(/^\/api\/content\/([a-f0-9]+)\/track-publish$/);
+    if (trackPublishMatch && method === 'POST') {
+      const body = await parseBody(req);
+      if (!body.format || !body.platform) return json(res, { error: 'format and platform required' }, 400);
+
+      const content = readJSON('content.json');
+      const idx = content.findIndex(c => c.id === trackPublishMatch[1]);
+      if (idx === -1) return json(res, { error: 'Not found' }, 404);
+
+      // Track publish across platforms
+      if (!content[idx].publish_tracking) content[idx].publish_tracking = [];
+      content[idx].publish_tracking.push({
+        format: body.format,
+        platform: body.platform,
+        url: body.url || null,
+        published_at: now(),
+        notes: body.notes || ''
+      });
+
+      // Also update format status
+      if (content[idx].formats[body.format]) {
+        content[idx].formats[body.format].status = 'published';
+        content[idx].formats[body.format].published_at = now();
+        content[idx].formats[body.format].publish_url = body.url || null;
+      }
+
+      writeJSON('content.json', content);
+
+      // Also add to published.json
+      const published = readJSON('published.json');
+      published.push({
+        content_id: content[idx].id,
+        format: body.format,
+        platform: body.platform,
+        published_at: now(),
+        url: body.url || null,
+        title: content[idx].trigger_title || 'Untitled'
+      });
+      writeJSON('published.json', published);
+
+      return json(res, { ok: true });
+    }
+
+    // GET /api/publish-tracker — overview of publish status across platforms
+    if (pathname === '/api/publish-tracker' && method === 'GET') {
+      const content = readJSON('content.json');
+      const platforms = ['linkedin', 'x', 'youtube', 'blog', 'newsletter', 'instagram'];
+      const tracker = [];
+
+      for (const item of content) {
+        if (!item.formats) continue;
+        const approvedFormats = Object.entries(item.formats)
+          .filter(([, f]) => f.status === 'approved' || f.status === 'published');
+        if (approvedFormats.length === 0) continue;
+
+        const publishStatus = {};
+        for (const p of platforms) {
+          const tracking = (item.publish_tracking || []).find(t => t.platform === p);
+          publishStatus[p] = tracking ? { published: true, url: tracking.url, date: tracking.published_at } : { published: false };
+        }
+
+        tracker.push({
+          content_id: item.id,
+          title: item.trigger_title || 'Untitled',
+          formats: Object.keys(item.formats).filter(f => item.formats[f].status === 'approved' || item.formats[f].status === 'published'),
+          publish_status: publishStatus,
+          series_id: item.series_id || null,
+          created_at: item.created_at
+        });
+      }
+
+      tracker.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+      return json(res, { items: tracker, platforms });
+    }
+
     // --- Static file serving ---
 
     // Serve dashboard

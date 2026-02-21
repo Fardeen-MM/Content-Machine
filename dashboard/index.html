@@ -1436,6 +1436,14 @@ const state = {
   deals: [],
   showAddDeal: false,
   newDeal: { client_name: '', outcome: 'won', monthly_value: '', loss_reason: '', notes: '' },
+  // Content Series
+  series: [],
+  seriesGenerating: null,
+  // Publish Tracker
+  publishTracker: { items: [], platforms: [] },
+  // Lead Magnets
+  leadMagnets: [],
+  leadMagnetGenerating: false,
 };
 
 // --- API Calls ---
@@ -1461,7 +1469,7 @@ async function loadData() {
   state.loading = true;
   render();
   try {
-    const [content, triggers, stats, calendar, monthCal, settings, memory, performance, perfAnalytics, meetings, meetingStats, clients, allActions, chatMessages, healthData, inspirations, pestering, pesteringStages, insights, deals, published, series, predictions] = await Promise.all([
+    const [content, triggers, stats, calendar, monthCal, settings, memory, performance, perfAnalytics, meetings, meetingStats, clients, allActions, chatMessages, healthData, inspirations, pestering, pesteringStages, insights, deals, published, series, predictions, playbooks, ctaLibrary, trending, funnel, publishTracker, leadMagnets] = await Promise.all([
       api('/api/content'),
       api('/api/triggers'),
       api('/api/stats'),
@@ -1488,7 +1496,9 @@ async function loadData() {
       api('/api/playbooks').catch(() => ({})),
       api('/api/cta-library').catch(() => ({})),
       api('/api/trending').catch(() => ({ trending_topics: [], trending_phrases: [], categories: {}, source_velocity: {} })),
-      api('/api/funnel').catch(() => ({ funnel: [], queue: {}, totals: {} }))
+      api('/api/funnel').catch(() => ({ funnel: [], queue: {}, totals: {} })),
+      api('/api/publish-tracker').catch(() => ({ items: [], platforms: [] })),
+      api('/api/lead-magnets').catch(() => [])
     ]);
     state.content = content;
     state.triggers = triggers;
@@ -1517,6 +1527,8 @@ async function loadData() {
     state.ctaLibrary = ctaLibrary;
     state.trending = trending;
     state.funnel = funnel;
+    state.publishTracker = publishTracker;
+    state.leadMagnets = leadMagnets;
   } catch (err) {
     console.error('Failed to load data:', err);
     toast('Failed to load data', 'error');
@@ -2181,6 +2193,8 @@ function renderSidebar() {
     { id: 'calendar', icon: icons.calendar, label: 'Calendar' },
     { id: 'analytics', icon: icons.analytics, label: 'Analytics' },
     { id: 'playbooks', icon: icons.content, label: 'Playbooks', key: 'P' },
+    { id: 'series', icon: icons.calendar, label: 'Series', key: 'S' },
+    { id: 'publish-tracker', icon: icons.analytics, label: 'Publish Tracker' },
     { id: 'settings', icon: icons.settings, label: 'Settings', key: '9' },
   ];
 
@@ -5479,6 +5493,225 @@ function renderMemoryPage() {
   );
 }
 
+function renderSeriesPage() {
+  const series = state.series || [];
+  const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+  const dayColors = { monday: '#dc2626', tuesday: '#2563eb', wednesday: '#059669', thursday: '#d97706', friday: '#7c3aed', saturday: '#0ea5e9', sunday: '#ec4899' };
+
+  return h('div', {},
+    h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' } },
+      h('div', {},
+        h('h2', { style: { fontFamily: "'Fraunces', serif", fontSize: '24px' } }, 'Content Series'),
+        h('p', { style: { color: 'var(--gray-500)', fontSize: '14px' } }, `${series.filter(s => s.active).length} active series, ${series.reduce((s, x) => s + (x.episodes || []).length, 0)} episodes generated`)
+      ),
+      h('div', { style: { display: 'flex', gap: '8px' } },
+        h('button', {
+          className: 'btn btn-primary btn-sm',
+          disabled: state.leadMagnetGenerating,
+          onclick: async () => {
+            state.leadMagnetGenerating = true; render();
+            try {
+              const res = await api('/api/lead-magnets/generate', { method: 'POST', body: { count: 3 } });
+              if (res.batch_id) {
+                const poll = setInterval(async () => {
+                  const prog = await api(`/api/generate-batch/${res.batch_id}`);
+                  if (prog.status === 'done' || prog.status === 'error') {
+                    clearInterval(poll);
+                    state.leadMagnetGenerating = false;
+                    toast(`Generated ${prog.completed} lead magnets`, prog.status === 'done' ? 'success' : 'error');
+                    loadData();
+                  }
+                }, 5000);
+              }
+            } catch (err) { state.leadMagnetGenerating = false; toast(err.message, 'error'); render(); }
+          }
+        }, state.leadMagnetGenerating ? 'Generating Lead Magnets...' : 'Generate Lead Magnets')
+      )
+    ),
+    // Week view — show which series goes on which day
+    h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '8px', marginBottom: '24px' } },
+      ...days.map(day => {
+        const daySeries = series.filter(s => s.day === day && s.active);
+        return h('div', { style: { background: 'white', borderRadius: 'var(--radius-sm)', padding: '12px', border: '1px solid var(--gray-200)', minHeight: '80px' } },
+          h('div', { style: { fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', color: dayColors[day] || 'var(--gray-500)', marginBottom: '8px' } }, day),
+          ...daySeries.map(s => h('div', { style: { fontSize: '12px', padding: '4px 8px', borderRadius: '6px', background: `${dayColors[day]}15`, color: dayColors[day], fontWeight: '600', marginBottom: '4px' } }, s.name))
+        );
+      })
+    ),
+    // Series cards
+    ...series.map(s => {
+      const episodes = s.episodes || [];
+      const isGenerating = state.seriesGenerating === s.id;
+      return h('div', { style: { background: 'white', borderRadius: 'var(--radius)', padding: '20px', marginBottom: '12px', border: '1px solid var(--gray-200)', opacity: s.active ? 1 : 0.5 } },
+        h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' } },
+          h('div', {},
+            h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' } },
+              h('h3', { style: { fontFamily: "'Fraunces', serif", fontSize: '18px' } }, s.name),
+              h('span', { style: { fontSize: '11px', padding: '2px 8px', borderRadius: '10px', background: `${dayColors[s.day] || 'var(--gray-400)'}20`, color: dayColors[s.day] || 'var(--gray-500)', fontWeight: '600' } }, s.day),
+              s.hashtag ? h('span', { style: { fontSize: '11px', color: 'var(--blue)', fontWeight: '500' } }, s.hashtag) : null,
+              h('span', { style: { fontSize: '11px', color: 'var(--gray-400)' } }, `${episodes.length} episodes`)
+            ),
+            h('p', { style: { color: 'var(--gray-500)', fontSize: '13px', marginTop: '4px' } }, s.description)
+          ),
+          h('div', { style: { display: 'flex', gap: '6px' } },
+            h('button', {
+              className: 'btn btn-sm',
+              style: { fontSize: '12px', padding: '4px 12px', borderRadius: '6px', border: '1px solid var(--gray-200)', background: 'white', cursor: 'pointer' },
+              onclick: async () => {
+                const series = readJSON ? state.series : state.series;
+                const idx = series.findIndex(x => x.id === s.id);
+                if (idx !== -1) {
+                  await api(`/api/series/${s.id}`, { method: 'PUT', body: { active: !s.active } });
+                  loadData();
+                }
+              }
+            }, s.active ? 'Pause' : 'Resume'),
+            h('button', {
+              className: 'btn btn-primary btn-sm',
+              disabled: isGenerating,
+              onclick: async () => {
+                state.seriesGenerating = s.id; render();
+                try {
+                  const res = await api(`/api/series/${s.id}/generate`, { method: 'POST' });
+                  toast(`Episode #${res.episode} generated: ${res.title}`, 'success');
+                  state.seriesGenerating = null;
+                  loadData();
+                } catch (err) {
+                  state.seriesGenerating = null;
+                  toast(err.message, 'error');
+                  render();
+                }
+              }
+            }, isGenerating ? 'Generating...' : 'Generate Next Episode')
+          )
+        ),
+        // Formats
+        h('div', { style: { display: 'flex', gap: '4px', marginTop: '8px' } },
+          ...(s.formats || []).map(f => h('span', { style: { fontSize: '10px', padding: '2px 6px', borderRadius: '4px', background: 'var(--gray-100)', color: 'var(--gray-600)' } }, f))
+        ),
+        // Recent episodes
+        episodes.length > 0 ? h('div', { style: { marginTop: '12px', borderTop: '1px solid var(--gray-100)', paddingTop: '12px' } },
+          h('div', { style: { fontSize: '12px', fontWeight: '600', color: 'var(--gray-500)', marginBottom: '6px' } }, 'Recent Episodes'),
+          ...episodes.slice(-3).reverse().map(ep =>
+            h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: '13px', padding: '4px 0' } },
+              h('span', {}, `#${ep.number}: ${ep.title}`),
+              h('span', { style: { color: 'var(--gray-400)', fontSize: '11px' } }, ep.generated_at?.slice(0, 10) || '')
+            )
+          )
+        ) : null
+      );
+    }),
+    // Lead Magnets section
+    state.leadMagnets && state.leadMagnets.length > 0
+      ? h('div', { style: { marginTop: '24px' } },
+          h('h3', { style: { fontFamily: "'Fraunces', serif", fontSize: '18px', marginBottom: '12px' } }, `Lead Magnets (${state.leadMagnets.length})`),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '12px' } },
+            ...state.leadMagnets.map(lm =>
+              h('div', { style: { background: 'white', borderRadius: 'var(--radius-sm)', padding: '16px', border: '1px solid var(--gray-200)' } },
+                h('div', { style: { fontSize: '11px', padding: '2px 8px', borderRadius: '10px', background: 'var(--purple-light)', color: 'var(--purple)', fontWeight: '600', display: 'inline-block', marginBottom: '6px' } }, lm.type),
+                h('h4', { style: { fontSize: '14px', fontWeight: '600', marginBottom: '4px' } }, lm.title),
+                h('p', { style: { fontSize: '12px', color: 'var(--gray-500)' } }, lm.subtitle),
+                h('div', { style: { marginTop: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
+                  h('span', { style: { fontSize: '11px', padding: '2px 8px', borderRadius: '10px', background: lm.status === 'approved' ? 'var(--green-light)' : 'var(--amber-light)', color: lm.status === 'approved' ? 'var(--green)' : 'var(--amber)', fontWeight: '600' } }, lm.status),
+                  h('button', {
+                    style: { fontSize: '11px', padding: '2px 8px', borderRadius: '6px', border: '1px solid var(--gray-200)', background: 'white', cursor: 'pointer' },
+                    onclick: () => {
+                      state.page = 'content';
+                      state.filter = { ...state.filter, format: 'lead_magnet' };
+                      render();
+                    }
+                  }, 'View')
+                )
+              )
+            )
+          )
+        )
+      : null
+  );
+}
+
+function renderPublishTrackerPage() {
+  const tracker = state.publishTracker || { items: [], platforms: [] };
+  const items = tracker.items || [];
+  const platforms = tracker.platforms || ['linkedin', 'x', 'youtube', 'blog', 'newsletter', 'instagram'];
+  const platformColors = { linkedin: '#0077b5', x: '#1da1f2', youtube: '#dc2626', blog: '#059669', newsletter: '#d97706', instagram: '#e1306c' };
+
+  // Stats
+  const totalContent = items.length;
+  const totalPublished = items.filter(i => Object.values(i.publish_status || {}).some(p => p.published)).length;
+  const byPlatform = {};
+  for (const p of platforms) {
+    byPlatform[p] = items.filter(i => i.publish_status?.[p]?.published).length;
+  }
+
+  return h('div', {},
+    h('h2', { style: { fontFamily: "'Fraunces', serif", fontSize: '24px', marginBottom: '4px' } }, 'Publish Tracker'),
+    h('p', { style: { color: 'var(--gray-500)', fontSize: '14px', marginBottom: '20px' } }, `${totalPublished} of ${totalContent} pieces published across platforms`),
+    // Platform stats bar
+    h('div', { style: { display: 'grid', gridTemplateColumns: `repeat(${platforms.length}, 1fr)`, gap: '8px', marginBottom: '24px' } },
+      ...platforms.map(p =>
+        h('div', { style: { background: 'white', borderRadius: 'var(--radius-sm)', padding: '12px', border: '1px solid var(--gray-200)', textAlign: 'center' } },
+          h('div', { style: { fontSize: '22px', fontWeight: '700', fontFamily: "'Fraunces', serif", color: platformColors[p] || 'var(--gray-700)' } }, String(byPlatform[p] || 0)),
+          h('div', { style: { fontSize: '11px', fontWeight: '600', textTransform: 'uppercase', color: 'var(--gray-500)' } }, p)
+        )
+      )
+    ),
+    // Content publish matrix
+    items.length === 0
+      ? h('div', { style: { textAlign: 'center', padding: '40px', color: 'var(--gray-400)' } }, 'No approved content yet. Approve content to start tracking.')
+      : h('div', { style: { background: 'white', borderRadius: 'var(--radius)', border: '1px solid var(--gray-200)', overflow: 'hidden' } },
+          // Header row
+          h('div', { style: { display: 'grid', gridTemplateColumns: `2fr repeat(${platforms.length}, 1fr)`, padding: '10px 16px', borderBottom: '2px solid var(--gray-200)', background: 'var(--gray-50)' } },
+            h('div', { style: { fontSize: '12px', fontWeight: '700', color: 'var(--gray-500)' } }, 'CONTENT'),
+            ...platforms.map(p => h('div', { style: { fontSize: '11px', fontWeight: '700', color: platformColors[p], textAlign: 'center', textTransform: 'uppercase' } }, p))
+          ),
+          // Content rows
+          ...items.slice(0, 50).map(item =>
+            h('div', { style: { display: 'grid', gridTemplateColumns: `2fr repeat(${platforms.length}, 1fr)`, padding: '10px 16px', borderBottom: '1px solid var(--gray-100)', alignItems: 'center' } },
+              h('div', {},
+                h('div', { style: { fontSize: '13px', fontWeight: '500' } }, item.title?.slice(0, 60) || 'Untitled'),
+                h('div', { style: { fontSize: '11px', color: 'var(--gray-400)', display: 'flex', gap: '6px' } },
+                  ...item.formats.slice(0, 3).map(f => h('span', {}, f)),
+                  item.series_id ? h('span', { style: { color: 'var(--blue)' } }, item.series_id) : null
+                )
+              ),
+              ...platforms.map(p => {
+                const status = item.publish_status?.[p];
+                if (status?.published) {
+                  return h('div', { style: { textAlign: 'center' } },
+                    status.url
+                      ? h('a', { href: status.url, target: '_blank', style: { color: platformColors[p], fontSize: '16px', textDecoration: 'none' } }, '\u2713')
+                      : h('span', { style: { color: platformColors[p], fontSize: '16px' } }, '\u2713')
+                  );
+                }
+                // Show publish button for formats matching this platform
+                const platformFormats = { linkedin: ['linkedin', 'carousel', 'poll'], x: ['x_single', 'x_thread'], youtube: ['short_video', 'youtube_script'], blog: ['blog'], newsletter: ['newsletter'], instagram: ['carousel', 'quote_cards', 'stat_graphic'] };
+                const matchingFormats = (platformFormats[p] || []).filter(f => item.formats.includes(f));
+                if (matchingFormats.length === 0) return h('div', { style: { textAlign: 'center', color: 'var(--gray-300)' } }, '\u2014');
+                return h('div', { style: { textAlign: 'center' } },
+                  h('button', {
+                    style: { width: '24px', height: '24px', borderRadius: '50%', border: `2px solid ${platformColors[p]}40`, background: 'white', cursor: 'pointer', fontSize: '10px', color: platformColors[p], display: 'inline-flex', alignItems: 'center', justifyContent: 'center' },
+                    onclick: async () => {
+                      const url = prompt(`Enter the published URL for ${p} (optional):`);
+                      try {
+                        await api(`/api/content/${item.content_id}/track-publish`, {
+                          method: 'POST',
+                          body: { format: matchingFormats[0], platform: p, url: url || null }
+                        });
+                        toast(`Tracked publish on ${p}`, 'success');
+                        loadData();
+                      } catch (err) { toast(err.message, 'error'); }
+                    },
+                    title: `Mark as published on ${p}`
+                  }, '+')
+                );
+              })
+            )
+          )
+        )
+  );
+}
+
 function renderPlaybooksPage() {
   const pb = state.playbooks || {};
   const ctas = state.ctaLibrary || {};
@@ -7375,6 +7608,8 @@ function render() {
         : state.page === 'inspirations' ? renderInspirationsPage()
         : state.page === 'performance' ? renderPerformancePage()
         : state.page === 'playbooks' ? renderPlaybooksPage()
+        : state.page === 'series' ? renderSeriesPage()
+        : state.page === 'publish-tracker' ? renderPublishTrackerPage()
         : state.page === 'settings' ? renderSettingsPage()
         : state.page === 'memory' ? renderMemoryPage()
         : state.page === 'save-url' ? renderSaveUrlPage()

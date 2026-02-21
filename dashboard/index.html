@@ -1587,6 +1587,9 @@ const state = {
   socialListening: null,
   authorityBuilder: null,
   quickWins: null,
+  // Batch 68: Content Calendar AI, Daily Briefing
+  contentCalendarAi: null,
+  dailyBriefing: null,
 };
 
 // --- API Calls ---
@@ -1612,7 +1615,7 @@ async function loadData() {
   state.loading = true;
   render();
   try {
-    const [content, triggers, stats, calendar, monthCal, settings, memory, performance, perfAnalytics, meetings, meetingStats, clients, allActions, chatMessages, healthData, inspirations, pestering, pesteringStages, insights, deals, published, series, predictions, playbooks, ctaLibrary, trending, funnel, publishTracker, leadMagnets, contentHealth, scheduleOptimize, templates, dmSequences, hooks, pillarPlan, contentLeads, autopilot, scheduleQueue, engagementDashboard, contentBriefs, workflowPipeline, personas, calendarWeek, benchmarkReport, contentIdeas, socialProof, roiReport, audienceGrowth, contentThemes, distributionPlans, dmPipelines, competitorsTracked, dripCampaigns, autoResponses, expiringContent, amplifications, leadFunnels, calendarInsights, weeklyDigest, splitTests, workflowRules, youtubePipelines, carousels, contentMatrix, ctaStrategy, seriesTemplates, contentBank, engagementPlaybook, atomizations, platformRules, emailSequences, weeklyContentPlan, repurposeChains, lmFunnels, perfReport, contentPillars, compAnalyses, nurtureCampaigns, authorityPlan, flywheelData, velocityData, audienceSegments, contentDna, topicClusters, voiceProfiles, dmScriptsData, replyStrategyData, systemHealthData, contentRecyclerData, commentStrategyData, newslettersData, distributionEngineData, socialProofEngineData, advancedAnalyticsData, growthPlaybookData, genLeadMagnetsData, funnelAnalysisData, autoRepurposeData, weeklyActionPlanData, trendsAnalysisData, authorityScoreData, contentIntelData, conversionOptData, contentMatrixData, draftingStrategyData, zeroClickBankData, contentVelocityData, pillarRotatorData, savedRepliesData, audienceBuilderData, weeklyReportData, competitiveIntelData, contentScoringData, postSchedulerData, trendHijackerData, leadMagnetFunnelsData, outboundSequencesData, icpRefinedData, winLossData, contentRoiData, contentExperimentsData, socialListeningData, authorityBuilderData, quickWinsData] = await Promise.all([
+    const [content, triggers, stats, calendar, monthCal, settings, memory, performance, perfAnalytics, meetings, meetingStats, clients, allActions, chatMessages, healthData, inspirations, pestering, pesteringStages, insights, deals, published, series, predictions, playbooks, ctaLibrary, trending, funnel, publishTracker, leadMagnets, contentHealth, scheduleOptimize, templates, dmSequences, hooks, pillarPlan, contentLeads, autopilot, scheduleQueue, engagementDashboard, contentBriefs, workflowPipeline, personas, calendarWeek, benchmarkReport, contentIdeas, socialProof, roiReport, audienceGrowth, contentThemes, distributionPlans, dmPipelines, competitorsTracked, dripCampaigns, autoResponses, expiringContent, amplifications, leadFunnels, calendarInsights, weeklyDigest, splitTests, workflowRules, youtubePipelines, carousels, contentMatrix, ctaStrategy, seriesTemplates, contentBank, engagementPlaybook, atomizations, platformRules, emailSequences, weeklyContentPlan, repurposeChains, lmFunnels, perfReport, contentPillars, compAnalyses, nurtureCampaigns, authorityPlan, flywheelData, velocityData, audienceSegments, contentDna, topicClusters, voiceProfiles, dmScriptsData, replyStrategyData, systemHealthData, contentRecyclerData, commentStrategyData, newslettersData, distributionEngineData, socialProofEngineData, advancedAnalyticsData, growthPlaybookData, genLeadMagnetsData, funnelAnalysisData, autoRepurposeData, weeklyActionPlanData, trendsAnalysisData, authorityScoreData, contentIntelData, conversionOptData, contentMatrixData, draftingStrategyData, zeroClickBankData, contentVelocityData, pillarRotatorData, savedRepliesData, audienceBuilderData, weeklyReportData, competitiveIntelData, contentScoringData, postSchedulerData, trendHijackerData, leadMagnetFunnelsData, outboundSequencesData, icpRefinedData, winLossData, contentRoiData, contentExperimentsData, socialListeningData, authorityBuilderData, quickWinsData, contentCalendarAiData, dailyBriefingData] = await Promise.all([
       api('/api/content'),
       api('/api/triggers'),
       api('/api/stats'),
@@ -1736,7 +1739,9 @@ async function loadData() {
       api('/api/content-experiments').catch(() => null),
       api('/api/social-listening').catch(() => null),
       api('/api/authority-builder').catch(() => null),
-      api('/api/quick-wins').catch(() => null)
+      api('/api/quick-wins').catch(() => null),
+      api('/api/content-calendar-ai').catch(() => null),
+      api('/api/daily-briefing').catch(() => null)
     ]);
     state.content = content;
     state.triggers = triggers;
@@ -1862,6 +1867,8 @@ async function loadData() {
     state.socialListening = socialListeningData;
     state.authorityBuilder = authorityBuilderData;
     state.quickWins = quickWinsData;
+    state.contentCalendarAi = contentCalendarAiData;
+    state.dailyBriefing = dailyBriefingData;
   } catch (err) {
     console.error('Failed to load data:', err);
     toast('Failed to load data', 'error');
@@ -3624,6 +3631,32 @@ function renderDashboardPage() {
                 render();
               } catch (err) { toast('Authority failed: ' + err.message, 'error'); }
             }}, 'Authority'),
+            h('button', { className: 'btn btn-outline btn-sm', style: { color: '#4f46e5', borderColor: '#4f46e5' }, onclick: async () => {
+              toast('Generating daily briefing...', 'info');
+              try {
+                const res = await api('/api/daily-briefing', { method: 'POST' });
+                state.dailyBriefing = res;
+                toast(res.greeting?.slice(0, 60) || 'Briefing ready!', 'success');
+                render();
+              } catch (err) { toast('Briefing failed: ' + err.message, 'error'); }
+            }}, 'Brief'),
+            h('button', { className: 'btn btn-outline btn-sm', style: { color: '#0369a1', borderColor: '#0369a1' }, onclick: async () => {
+              toast('Building AI calendar...', 'info');
+              try {
+                const res = await api('/api/content-calendar-ai', { method: 'POST' });
+                state.contentCalendarAi = res;
+                toast(`Calendar: ${res.total_posts || 0} posts planned for 2 weeks`, 'success');
+                render();
+              } catch (err) { toast('Calendar failed: ' + err.message, 'error'); }
+            }}, 'Cal AI'),
+            h('button', { className: 'btn btn-outline btn-sm', style: { color: '#dc2626', borderColor: '#dc2626' }, onclick: async () => {
+              toast('Archiving old content...', 'info');
+              try {
+                const res = await api('/api/content-archive', { method: 'POST' });
+                toast(`Archived: ${res.archived_count} old items, ${res.remaining} remaining`, 'success');
+                loadData();
+              } catch (err) { toast('Archive failed: ' + err.message, 'error'); }
+            }}, 'Archive'),
             h('button', { className: 'btn btn-ghost btn-sm', onclick: () => { state.page = 'content'; render(); } }, 'View Content')
           )
         ),
@@ -4813,6 +4846,42 @@ function renderDashboardPage() {
           h('div', { style: { padding: '4px 10px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px' } },
             h('div', { style: { fontWeight: '600', color: 'var(--navy)' } }, e.name || ''),
             h('div', { style: { color: 'var(--gray-500)', marginTop: '1px' } }, e.hypothesis || '')
+          )
+        )
+      )
+    ) : null,
+
+    // Daily Briefing (Batch 68)
+    state.dailyBriefing?.greeting ? h('div', { style: { marginBottom: '20px', padding: '10px', background: 'linear-gradient(135deg, #eff6ff, #faf5ff)', borderRadius: 'var(--radius)', border: '1px solid #c7d2fe' } },
+      h('div', { style: { fontSize: '11px', fontWeight: '700', color: '#4f46e5', marginBottom: '6px' } }, 'TODAY'),
+      h('div', { style: { fontSize: '12px', color: 'var(--navy)', marginBottom: '6px' } }, state.dailyBriefing.greeting || ''),
+      state.dailyBriefing.top_3_today ? h('div', { style: { display: 'grid', gap: '3px' } },
+        ...(state.dailyBriefing.top_3_today || []).map((a, i) =>
+          h('div', { style: { fontSize: '10px', color: 'var(--gray-600)', display: 'flex', gap: '6px' } },
+            h('span', { style: { fontWeight: '700', color: '#4f46e5', minWidth: '14px' } }, `${i + 1}.`),
+            h('span', null, a)
+          )
+        )
+      ) : null,
+      state.dailyBriefing.motivation ? h('div', { style: { fontSize: '10px', color: '#7c3aed', fontStyle: 'italic', marginTop: '6px' } }, state.dailyBriefing.motivation) : null
+    ) : null,
+
+    // AI Content Calendar (Batch 68)
+    state.contentCalendarAi?.weeks ? h('div', { style: { marginBottom: '20px' } },
+      h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
+        h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)' } }, 'AI CALENDAR'),
+        h('div', { style: { fontSize: '12px', fontWeight: '700', padding: '2px 8px', borderRadius: '8px', background: '#dbeafe', color: '#2563eb' } }, `${state.contentCalendarAi.total_posts || 0} posts`)
+      ),
+      ...(state.contentCalendarAi.weeks || []).slice(0, 1).map(w =>
+        h('div', null,
+          h('div', { style: { fontSize: '10px', fontWeight: '600', color: 'var(--gray-500)', marginBottom: '4px' } }, `Week ${w.week}: ${w.theme || ''}`),
+          h('div', { style: { display: 'grid', gap: '2px' } },
+            ...(w.posts || []).slice(0, 5).map(p =>
+              h('div', { style: { padding: '3px 10px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px', display: 'flex', justifyContent: 'space-between' } },
+                h('span', { style: { fontWeight: '600', color: 'var(--navy)' } }, `${p.day} ${p.time || ''}`),
+                h('span', { style: { color: 'var(--gray-500)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '150px' } }, p.topic || p.hook || '')
+              )
+            )
           )
         )
       )

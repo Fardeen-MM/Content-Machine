@@ -14417,6 +14417,237 @@ Return COMPACT JSON:
       return json(res, readJSON('quick-wins.json', null));
     }
 
+    // ========== BATCH 68: Content Calendar AI, Headline Tester, Email Subject Lines, Power Hour Planner, Multi-Platform Publisher, Collaboration Notes, Content Archive ==========
+
+    // POST /api/content-calendar-ai — AI-generated optimized content calendar for next 2 weeks
+    if (method === 'POST' && pathname === '/api/content-calendar-ai') {
+      const published = readJSON('published.json', []);
+      const matrix = readJSON('content-matrix-full.json', null);
+      const rotator = readJSON('pillar-rotator.json', null);
+      const schedule = readJSON('post-scheduler.json', null);
+
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+      const result = await callClaude({
+        model: HAIKU,
+        system: 'You are a content calendar strategist. Create a detailed 2-week calendar with specific post topics, times, and platforms. Balance pillars, formats, and funnel stages. Return JSON only.',
+        prompt: `Create a 2-week content calendar for a legal marketing agency.
+
+${matrix ? `Pillars: ${JSON.stringify(matrix.pillars?.map(p => p.name))}` : ''}
+${schedule ? `Best times: ${JSON.stringify(schedule.best_times)}` : ''}
+Published so far: ${published.length}
+
+Return COMPACT JSON:
+{
+  "weeks": [
+    {
+      "week": 1,
+      "theme": "weekly theme",
+      "posts": [
+        { "day": "Mon", "time": "8:30 AM", "platform": "LinkedIn", "pillar": "name", "format": "type", "topic": "specific topic", "hook": "opening line idea" }
+      ]
+    }
+  ],
+  "total_posts": 0,
+  "pillar_coverage": "which pillars are covered"
+}`,
+        maxTokens: 2500
+      });
+      const parsed = parseJsonResponse(result);
+      const calendar = { ...(parsed || {}), generated_at: now() };
+      writeJSON('content-calendar-ai.json', calendar);
+      return json(res, { ok: true, ...calendar });
+    }
+
+    // GET /api/content-calendar-ai
+    if (method === 'GET' && pathname === '/api/content-calendar-ai') {
+      return json(res, readJSON('content-calendar-ai.json', null));
+    }
+
+    // POST /api/headline-tester — Test and score multiple headline variations
+    if (method === 'POST' && pathname === '/api/headline-tester') {
+      const body = await parseBody(req);
+      const headlines = body.headlines || [];
+      if (!headlines.length) return json(res, { error: 'Provide headlines array' }, 400);
+
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+      const result = await callClaude({
+        model: HAIKU,
+        system: 'You are a headline testing expert. Score headlines on curiosity, clarity, urgency, and specificity. Return JSON only.',
+        prompt: `Score these headlines for a legal marketing audience:
+
+${headlines.slice(0, 5).map((h, i) => `${i + 1}. "${h}"`).join('\n')}
+
+Return COMPACT JSON:
+{
+  "scores": [
+    { "headline": "text", "score": 0-100, "strengths": ["s1"], "weakness": "main issue", "improved": "better version" }
+  ],
+  "winner": 0,
+  "winner_reason": "why this headline wins"
+}`,
+        maxTokens: 2000
+      });
+      const parsed = parseJsonResponse(result);
+      return json(res, { ok: true, ...(parsed || {}) });
+    }
+
+    // POST /api/email-subjects — Generate email subject line variations for any content
+    if (method === 'POST' && pathname.match(/^\/api\/content\/([^/]+)\/email-subjects$/)) {
+      const contentId = pathname.match(/^\/api\/content\/([^/]+)\/email-subjects$/)[1];
+      const content = readJSON('content.json', []);
+      const item = content.find(c => c.id === contentId);
+      if (!item) return json(res, { error: 'Content not found' }, 404);
+
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+      const result = await callClaude({
+        model: HAIKU,
+        system: 'You are an email subject line expert. Generate subject lines that achieve 40%+ open rates. Return JSON only.',
+        prompt: `Generate 5 email subject lines for this content: "${(item.title || '').slice(0, 200)}"
+
+Return COMPACT JSON:
+{
+  "subjects": [
+    { "subject": "subject line (under 60 chars)", "preview": "preview text (under 90 chars)", "style": "curiosity|urgency|benefit|personal|contrarian", "predicted_open_rate": "X%" }
+  ],
+  "best": 0,
+  "send_time": "best day/time to send"
+}`,
+        maxTokens: 1500
+      });
+      const parsed = parseJsonResponse(result);
+      return json(res, { ok: true, content_id: contentId, ...(parsed || {}) });
+    }
+
+    // POST /api/power-hour — Generate a focused 1-hour content production plan
+    if (method === 'POST' && pathname === '/api/power-hour') {
+      const content = readJSON('content.json', []);
+      const triggers = readJSON('trigger-queue.json', []);
+      const approvedCount = content.filter(c => c.status === 'approved').length;
+      const pendingTriggers = triggers.filter(t => t.status === 'pending').length;
+
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+      const result = await callClaude({
+        model: HAIKU,
+        system: 'You are a productivity coach for content creators. Design a focused 1-hour power session that maximizes output. Return JSON only.',
+        prompt: `Design a 1-hour content power hour plan.
+
+Current state: ${approvedCount} approved (unpublished), ${pendingTriggers} pending triggers, ${content.length} total content
+
+Return COMPACT JSON:
+{
+  "blocks": [
+    { "minutes": "0-10", "task": "what to do", "output": "expected output" }
+  ],
+  "expected_output": "what you'll have after 1 hour",
+  "pre_session": "one thing to prepare before starting",
+  "energy_tip": "how to maintain focus"
+}`,
+        maxTokens: 1500
+      });
+      const parsed = parseJsonResponse(result);
+      return json(res, { ok: true, ...(parsed || {}) });
+    }
+
+    // POST /api/collab-notes — Create collaboration/brief notes for content
+    if (method === 'POST' && pathname.match(/^\/api\/content\/([^/]+)\/collab-notes$/)) {
+      const contentId = pathname.match(/^\/api\/content\/([^/]+)\/collab-notes$/)[1];
+      const content = readJSON('content.json', []);
+      const item = content.find(c => c.id === contentId);
+      if (!item) return json(res, { error: 'Content not found' }, 404);
+
+      const body = await parseBody(req);
+      const note = body.note || '';
+
+      if (!item.collab_notes) item.collab_notes = [];
+      item.collab_notes.push({
+        note,
+        created_at: now(),
+        author: body.author || 'system'
+      });
+      writeJSON('content.json', content);
+      return json(res, { ok: true, content_id: contentId, notes: item.collab_notes });
+    }
+
+    // POST /api/content-archive — Archive old content and free up the pipeline
+    if (method === 'POST' && pathname === '/api/content-archive') {
+      const content = readJSON('content.json', []);
+      const cutoff = Date.now() - 30 * 86400000;
+
+      const toArchive = content.filter(c => {
+        if (c.status === 'published' || c.status === 'approved') return false;
+        const created = new Date(c.created_at || c.generated_at).getTime();
+        return created < cutoff;
+      });
+
+      const archived = [];
+      toArchive.forEach(c => {
+        c.status = 'archived';
+        c.archived_at = now();
+        archived.push({ id: c.id, title: c.title?.slice(0, 60) });
+      });
+
+      if (archived.length > 0) {
+        writeJSON('content.json', content);
+      }
+
+      const existingArchive = readJSON('content-archive.json', []);
+      existingArchive.push({ archived_at: now(), count: archived.length, items: archived });
+      writeJSON('content-archive.json', existingArchive);
+
+      return json(res, {
+        ok: true,
+        archived_count: archived.length,
+        archived_items: archived,
+        remaining: content.filter(c => c.status !== 'archived').length,
+        generated_at: now()
+      });
+    }
+
+    // GET /api/content-archive
+    if (method === 'GET' && pathname === '/api/content-archive') {
+      return json(res, readJSON('content-archive.json', []));
+    }
+
+    // POST /api/daily-briefing — Generate a comprehensive daily content briefing
+    if (method === 'POST' && pathname === '/api/daily-briefing') {
+      const content = readJSON('content.json', []);
+      const triggers = readJSON('trigger-queue.json', []);
+      const published = readJSON('published.json', []);
+      const quickWins = readJSON('quick-wins.json', null);
+      const velocity = readJSON('content-velocity.json', null);
+      const weeklyReport = readJSON('weekly-content-report.json', null);
+
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+      const result = await callClaude({
+        model: HAIKU,
+        system: 'You are a content operations manager. Write a concise daily briefing that tells the team exactly what to focus on today. Return JSON only.',
+        prompt: `Write today's content briefing.
+
+Stats: ${content.length} content, ${published.length} published, ${triggers.filter(t => t.status === 'pending').length} pending triggers, ${content.filter(c => c.status === 'approved').length} approved/unpublished
+${velocity ? `Velocity: ${velocity.production?.daily_rate}/day, bottleneck: ${velocity.speed?.bottleneck}` : ''}
+${weeklyReport ? `Weekly grade: ${weeklyReport.grade}` : ''}
+${quickWins?.one_thing_today ? `Priority: ${quickWins.one_thing_today}` : ''}
+
+Return COMPACT JSON:
+{
+  "greeting": "one-line morning greeting with today's focus",
+  "top_3_today": ["action 1", "action 2", "action 3"],
+  "content_status": "one line summary of pipeline health",
+  "motivation": "one motivational line based on data"
+}`,
+        maxTokens: 1000
+      });
+      const parsed = parseJsonResponse(result);
+      const briefing = { ...(parsed || {}), generated_at: now() };
+      writeJSON('daily-briefing.json', briefing);
+      return json(res, { ok: true, ...briefing });
+    }
+
+    // GET /api/daily-briefing
+    if (method === 'GET' && pathname === '/api/daily-briefing') {
+      return json(res, readJSON('daily-briefing.json', null));
+    }
+
     // --- Static file serving ---
 
     // Serve dashboard

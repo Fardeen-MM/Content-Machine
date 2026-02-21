@@ -1,0 +1,170 @@
+{
+  "by_hour": {
+    "0": {
+      "engagements": 0,
+      "impressions": 0,
+      "count": 0
+    },
+    "1": {
+      "engagements": 0,
+      "impressions": 0,
+      "count": 0
+    },
+    "2": {
+      "engagements": 0,
+      "impressions": 0,
+      "count": 0
+    },
+    "3": {
+      "engagements": 0,
+      "impressions": 0,
+      "count": 0
+    },
+    "4": {
+      "engagements": 0,
+      "impressions": 0,
+      "count": 0
+    },
+    "5": {
+      "engagements": 0,
+      "impressions": 0,
+      "count": 0
+    },
+    "6": {
+      "engagements": 0,
+      "impressions": 0,
+      "count": 0
+    },
+    "7": {
+      "engagements": 0,
+      "impressions": 0,
+      "count": 0
+    },
+    "8": {
+      "engagements": 0,
+      "impressions": 0,
+      "count": 0
+    },
+    "9": {
+      "engagements": 2.72,
+      "impressions": 2500,
+      "count": 1
+    },
+    "10": {
+      "engagements": 0,
+      "impressions": 0,
+      "count": 0
+    },
+    "11": {
+      "engagements": 0,
+      "impressions": 0,
+      "count": 0
+    },
+    "12": {
+      "engagements": 0,
+      "impressions": 0,
+      "count": 0
+    },
+    "13": {
+      "engagements": 0,
+      "impressions": 0,
+      "count": 0
+    },
+    "14": {
+      "engagements": 0,
+      "impressions": 0,
+      "count": 0
+    },
+    "15": {
+      "engagements": 0,
+      "impressions": 0,
+      "count": 0
+    },
+    "16": {
+      "engagements": 0,
+      "impressions": 0,
+      "count": 0
+    },
+    "17": {
+      "engagements": 0,
+      "impressions": 0,
+      "count": 0
+    },
+    "18": {
+      "engagements": 0,
+      "impressions": 0,
+      "count": 0
+    },
+    "19": {
+      "engagements": 0,
+      "impressions": 0,
+      "count": 0
+    },
+    "20": {
+      "engagements": 0,
+      "impressions": 0,
+      "count": 0
+    },
+    "21": {
+      "engagements": 0,
+      "impressions": 0,
+      "count": 0
+    },
+    "22": {
+      "engagements": 0,
+      "impressions": 0,
+      "count": 0
+    },
+    "23": {
+      "engagements": 0,
+      "impressions": 0,
+      "count": 0
+    }
+  },
+  "by_day": {
+    "Sun": {
+      "engagements": 0,
+      "impressions": 0,
+      "count": 0
+    },
+    "Mon": {
+      "engagements": 0,
+      "impressions": 0,
+      "count": 0
+    },
+    "Tue": {
+      "engagements": 0,
+      "impressions": 0,
+      "count": 0
+    },
+    "Wed": {
+      "engagements": 0,
+      "impressions": 0,
+      "count": 0
+    },
+    "Thu": {
+      "engagements": 0,
+      "impressions": 0,
+      "count": 0
+    },
+    "Fri": {
+      "engagements": 0,
+      "impressions": 0,
+      "count": 0
+    },
+    "Sat": {
+      "engagements": 2.72,
+      "impressions": 2500,
+      "count": 1
+    }
+  },
+  "best_time": "Sat at 9:00",
+  "best_hour": 9,
+  "best_day": "Sat",
+  "total_data_points": 1,
+  "recommendations": [
+    "Best posting time: Sat at 9:00",
+    "More engagement data needed for reliable recommendations"
+  ],
+  "generated_at": "2026-02-21T17:30:07.711Z"
+}

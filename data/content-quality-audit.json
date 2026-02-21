@@ -1,0 +1,159 @@
+{
+  "total_audited": 41,
+  "average_score": 47,
+  "grade": "F",
+  "issues_found": 41,
+  "critical_issues": 30,
+  "top_issues": [
+    {
+      "id": "657fd7635c61e6fc",
+      "title": "Call insight: We watched a firm generate 5,000 leads monthly on a $2-3K bu",
+      "score": 35,
+      "issues": [
+        "Low format diversity",
+        "Content too short",
+        "No clear CTA detected"
+      ]
+    },
+    {
+      "id": "2a3227e1afa2fb78",
+      "title": "Call insight: The real opportunity in lead generation isn't getting more v",
+      "score": 35,
+      "issues": [
+        "Low format diversity",
+        "Content too short",
+        "No clear CTA detected"
+      ]
+    },
+    {
+      "id": "28ac7a9f58a263c6",
+      "title": "Call insight: Your intake team stops working at 5 PM. Your potential clien",
+      "score": 35,
+      "issues": [
+        "Low format diversity",
+        "Content too short",
+        "No clear CTA detected"
+      ]
+    },
+    {
+      "id": "8341e619808ae019",
+      "title": "Call insight: We keep meeting executive assistants secretly building sprea",
+      "score": 35,
+      "issues": [
+        "Low format diversity",
+        "Content too short",
+        "No clear CTA detected"
+      ]
+    },
+    {
+      "id": "ec092ef2822c6bc1",
+      "title": "Call insight: Your intake team is asking the same questions in the same or",
+      "score": 35,
+      "issues": [
+        "Low format diversity",
+        "Content too short",
+        "No clear CTA detected"
+      ]
+    },
+    {
+      "id": "602f738cf8a9e190",
+      "title": "Call insight: You're probably wasting 2-3 hours a day on intake conversati",
+      "score": 35,
+      "issues": [
+        "Low format diversity",
+        "Content too short",
+        "No clear CTA detected"
+      ]
+    },
+    {
+      "id": "8314cf61a187cdb0",
+      "title": "For newer lawyers: an example of how to separate the wheat from the chaff",
+      "score": 35,
+      "issues": [
+        "Low format diversity",
+        "Content too short",
+        "No clear CTA detected"
+      ]
+    },
+    {
+      "id": "010490bde5781407",
+      "title": "Paralegal/Legal Assistant for Plaintiff's Employment Firm (CA)",
+      "score": 35,
+      "issues": [
+        "Low format diversity",
+        "Content too short",
+        "No clear CTA detected"
+      ]
+    },
+    {
+      "id": "17613aa38257031a",
+      "title": "Show HN: Stripe Specialist Team Scam – 50%+ deals",
+      "score": 35,
+      "issues": [
+        "Low format diversity",
+        "Content too short",
+        "No clear CTA detected"
+      ]
+    },
+    {
+      "id": "dd33fd2be463cf5f",
+      "title": "Spent $5K/month on Google Ads for my PI firm and got 2 cases",
+      "score": 45,
+      "issues": [
+        "Content too short",
+        "No clear CTA detected"
+      ]
+    },
+    {
+      "id": "c4c23c4858e12fc8",
+      "title": "My web designer charges $300/mo and my site looks like it's from 2005",
+      "score": 45,
+      "issues": [
+        "Content too short",
+        "No clear CTA detected"
+      ]
+    },
+    {
+      "id": "7f77c159bb8ccf6a",
+      "title": "Fired my 3rd marketing agency this year — what am I doing wrong?",
+      "score": 45,
+      "issues": [
+        "Content too short",
+        "No clear CTA detected"
+      ]
+    },
+    {
+      "id": "8dfa41e3fa145ba7",
+      "title": "Speed to lead is killing us — callers hang up after 30 seconds",
+      "score": 45,
+      "issues": [
+        "Content too short",
+        "No clear CTA detected"
+      ]
+    },
+    {
+      "id": "4c20a864324032bb",
+      "title": "Just found out my marketing agency was running ads to the wrong zip codes for 6 months",
+      "score": 45,
+      "issues": [
+        "Content too short",
+        "No clear CTA detected"
+      ]
+    },
+    {
+      "id": "4d214093372dfe2a",
+      "title": "Clio Legal Trends Report: 67% of firms don't track marketing ROI",
+      "score": 45,
+      "issues": [
+        "Content too short",
+        "No clear CTA detected"
+      ]
+    }
+  ],
+  "common_issues": {
+    "Low format diversity": 9,
+    "Content too short": 36,
+    "No clear CTA detected": 41
+  },
+  "generated_at": "2026-02-21T17:29:53.993Z"
+}

@@ -1644,6 +1644,12 @@ const state = {
   conversionFunnelViz: null,
   contentRoiDetail: null,
   weeklyGrowthReport: null,
+  pipelineBoard: null,
+  contentQualityAudit: null,
+  calendarHeatmap: null,
+  contentGoals: null,
+  abTestDashboard: null,
+  engagementHeatmap: null,
 };
 
 // --- API Calls ---
@@ -1669,7 +1675,7 @@ async function loadData() {
   state.loading = true;
   render();
   try {
-    const [content, triggers, stats, calendar, monthCal, settings, memory, performance, perfAnalytics, meetings, meetingStats, clients, allActions, chatMessages, healthData, inspirations, pestering, pesteringStages, insights, deals, published, series, predictions, playbooks, ctaLibrary, trending, funnel, publishTracker, leadMagnets, contentHealth, scheduleOptimize, templates, dmSequences, hooks, pillarPlan, contentLeads, autopilot, scheduleQueue, engagementDashboard, contentBriefs, workflowPipeline, personas, calendarWeek, benchmarkReport, contentIdeas, socialProof, roiReport, audienceGrowth, contentThemes, distributionPlans, dmPipelines, competitorsTracked, dripCampaigns, autoResponses, expiringContent, amplifications, leadFunnels, calendarInsights, weeklyDigest, splitTests, workflowRules, youtubePipelines, carousels, contentMatrix, ctaStrategy, seriesTemplates, contentBank, engagementPlaybook, atomizations, platformRules, emailSequences, weeklyContentPlan, repurposeChains, lmFunnels, perfReport, contentPillars, compAnalyses, nurtureCampaigns, authorityPlan, flywheelData, velocityData, audienceSegments, contentDna, topicClusters, voiceProfiles, dmScriptsData, replyStrategyData, systemHealthData, contentRecyclerData, commentStrategyData, newslettersData, distributionEngineData, socialProofEngineData, advancedAnalyticsData, growthPlaybookData, genLeadMagnetsData, funnelAnalysisData, autoRepurposeData, weeklyActionPlanData, trendsAnalysisData, authorityScoreData, contentIntelData, conversionOptData, contentMatrixData, draftingStrategyData, zeroClickBankData, contentVelocityData, pillarRotatorData, savedRepliesData, audienceBuilderData, weeklyReportData, competitiveIntelData, contentScoringData, postSchedulerData, trendHijackerData, leadMagnetFunnelsData, outboundSequencesData, icpRefinedData, winLossData, contentRoiData, contentExperimentsData, socialListeningData, authorityBuilderData, quickWinsData, contentCalendarAiData, dailyBriefingData, engagementTrackerData, commentToDmData, contentSeriesPlannerData, hookBankData, engagementScorerData, conversionTrackerData, contentGapFinderData, audienceGrowthTrackerData, performanceBenchmarksData, flywheelAnalyzerData, topicAuthorityData, socialProofCollectorData, newsletterBuilderData, dmSequenceBuilderData, contentRecyclerScanData, contentDnaAnalyzerData, swipeFileData, crossPostTrackerData, smartSchedulerData, contentSystemHealthV2Data, competitorContentTrackerData, revenueAttributionData, pipelineValueTrackerData, contentCostCalculatorData, leadScorerData, retargetingBuilderData, campaignRoiData, monthlyContentReportData, approvalWorkflowData, autoPublishQueueData, contentTemplateLibraryData, engagementAlertsData, contentTagsData, contentFreshnessData, leadMagnetPerfData, collabBoardData, platformAnalyticsAggData, postLengthData, pillarHealthData, distScorecardData, contentVelocityTrackerData, competitorBenchData, contentQueueData, personaMatchData, ctaPerfData, leadNurtureData, convFunnelVizData, contentRoiDetailData, weeklyGrowthData] = await Promise.all([
+    const [content, triggers, stats, calendar, monthCal, settings, memory, performance, perfAnalytics, meetings, meetingStats, clients, allActions, chatMessages, healthData, inspirations, pestering, pesteringStages, insights, deals, published, series, predictions, playbooks, ctaLibrary, trending, funnel, publishTracker, leadMagnets, contentHealth, scheduleOptimize, templates, dmSequences, hooks, pillarPlan, contentLeads, autopilot, scheduleQueue, engagementDashboard, contentBriefs, workflowPipeline, personas, calendarWeek, benchmarkReport, contentIdeas, socialProof, roiReport, audienceGrowth, contentThemes, distributionPlans, dmPipelines, competitorsTracked, dripCampaigns, autoResponses, expiringContent, amplifications, leadFunnels, calendarInsights, weeklyDigest, splitTests, workflowRules, youtubePipelines, carousels, contentMatrix, ctaStrategy, seriesTemplates, contentBank, engagementPlaybook, atomizations, platformRules, emailSequences, weeklyContentPlan, repurposeChains, lmFunnels, perfReport, contentPillars, compAnalyses, nurtureCampaigns, authorityPlan, flywheelData, velocityData, audienceSegments, contentDna, topicClusters, voiceProfiles, dmScriptsData, replyStrategyData, systemHealthData, contentRecyclerData, commentStrategyData, newslettersData, distributionEngineData, socialProofEngineData, advancedAnalyticsData, growthPlaybookData, genLeadMagnetsData, funnelAnalysisData, autoRepurposeData, weeklyActionPlanData, trendsAnalysisData, authorityScoreData, contentIntelData, conversionOptData, contentMatrixData, draftingStrategyData, zeroClickBankData, contentVelocityData, pillarRotatorData, savedRepliesData, audienceBuilderData, weeklyReportData, competitiveIntelData, contentScoringData, postSchedulerData, trendHijackerData, leadMagnetFunnelsData, outboundSequencesData, icpRefinedData, winLossData, contentRoiData, contentExperimentsData, socialListeningData, authorityBuilderData, quickWinsData, contentCalendarAiData, dailyBriefingData, engagementTrackerData, commentToDmData, contentSeriesPlannerData, hookBankData, engagementScorerData, conversionTrackerData, contentGapFinderData, audienceGrowthTrackerData, performanceBenchmarksData, flywheelAnalyzerData, topicAuthorityData, socialProofCollectorData, newsletterBuilderData, dmSequenceBuilderData, contentRecyclerScanData, contentDnaAnalyzerData, swipeFileData, crossPostTrackerData, smartSchedulerData, contentSystemHealthV2Data, competitorContentTrackerData, revenueAttributionData, pipelineValueTrackerData, contentCostCalculatorData, leadScorerData, retargetingBuilderData, campaignRoiData, monthlyContentReportData, approvalWorkflowData, autoPublishQueueData, contentTemplateLibraryData, engagementAlertsData, contentTagsData, contentFreshnessData, leadMagnetPerfData, collabBoardData, platformAnalyticsAggData, postLengthData, pillarHealthData, distScorecardData, contentVelocityTrackerData, competitorBenchData, contentQueueData, personaMatchData, ctaPerfData, leadNurtureData, convFunnelVizData, contentRoiDetailData, weeklyGrowthData, pipelineBoardData, contentQualityAuditData, calendarHeatmapData, contentGoalsData, abTestDashData, engagementHeatmapData] = await Promise.all([
       api('/api/content'),
       api('/api/triggers'),
       api('/api/stats'),
@@ -1844,7 +1850,13 @@ async function loadData() {
       api('/api/lead-nurture-sequence').catch(() => null),
       api('/api/conversion-funnel-viz').catch(() => null),
       api('/api/content-roi-detail').catch(() => null),
-      api('/api/weekly-growth-report').catch(() => null)
+      api('/api/weekly-growth-report').catch(() => null),
+      api('/api/pipeline-board').catch(() => null),
+      api('/api/content-quality-audit').catch(() => null),
+      api('/api/calendar-heatmap').catch(() => null),
+      api('/api/content-goals').catch(() => null),
+      api('/api/ab-test-dashboard').catch(() => null),
+      api('/api/engagement-heatmap').catch(() => null)
     ]);
     state.content = content;
     state.triggers = triggers;
@@ -2021,6 +2033,12 @@ async function loadData() {
     state.conversionFunnelViz = convFunnelVizData;
     state.contentRoiDetail = contentRoiDetailData;
     state.weeklyGrowthReport = weeklyGrowthData;
+    state.pipelineBoard = pipelineBoardData;
+    state.contentQualityAudit = contentQualityAuditData;
+    state.calendarHeatmap = calendarHeatmapData;
+    state.contentGoals = contentGoalsData;
+    state.abTestDashboard = abTestDashData;
+    state.engagementHeatmap = engagementHeatmapData;
   } catch (err) {
     console.error('Failed to load data:', err);
     toast('Failed to load data', 'error');
@@ -4050,6 +4068,33 @@ function renderDashboardPage() {
                 render();
               } catch (err) { toast('ROI calc failed: ' + err.message, 'error'); }
             }}, 'ROI+'),
+            h('button', { className: 'btn btn-outline btn-sm', style: { color: '#f59e0b', borderColor: '#f59e0b' }, onclick: async () => {
+              toast('Running quality audit...', 'info');
+              try {
+                const res = await api('/api/content-quality-audit', { method: 'POST' });
+                state.contentQualityAudit = res;
+                toast(`Audit: ${res.grade} (${res.average_score}/100), ${res.issues_found} issues`, res.grade === 'A' || res.grade === 'B' ? 'success' : 'error');
+                render();
+              } catch (err) { toast('Audit failed: ' + err.message, 'error'); }
+            }}, 'Audit'),
+            h('button', { className: 'btn btn-outline btn-sm', onclick: async () => {
+              toast('Building pipeline board...', 'info');
+              try {
+                const res = await api('/api/pipeline-board', { method: 'POST' });
+                state.pipelineBoard = res;
+                toast(`Pipeline: ${res.summary?.total_in_pipeline} items, bottleneck: ${res.summary?.bottleneck}`, 'success');
+                render();
+              } catch (err) { toast('Pipeline failed: ' + err.message, 'error'); }
+            }}, 'Pipeline'),
+            h('button', { className: 'btn btn-outline btn-sm', style: { color: '#6366f1', borderColor: '#6366f1' }, onclick: async () => {
+              toast('Building engagement heatmap...', 'info');
+              try {
+                const res = await api('/api/engagement-heatmap', { method: 'POST' });
+                state.engagementHeatmap = res;
+                toast(`Best time: ${res.best_time}`, 'success');
+                render();
+              } catch (err) { toast('Heatmap failed: ' + err.message, 'error'); }
+            }}, 'Heatmap'),
             h('button', { className: 'btn btn-ghost btn-sm', onclick: () => { state.page = 'content'; render(); } }, 'View Content')
           )
         ),
@@ -5956,6 +6001,37 @@ function renderDashboardPage() {
         h('span', { style: { color: state.contentRoiDetail.summary.overall_roi >= 0 ? '#059669' : '#dc2626', fontWeight: '700' } }, `${state.contentRoiDetail.summary.overall_roi}% ROI`)
       ),
       h('div', { style: { fontSize: '12px', color: 'var(--gray-500)' } }, `$${state.contentRoiDetail.summary.total_cost} cost | $${state.contentRoiDetail.summary.total_revenue} revenue | ${state.contentRoiDetail.summary.profitable_pieces} profitable pieces`)
+    ) : null,
+
+    // Pipeline Board
+    state.pipelineBoard?.summary?.total_in_pipeline ? h('div', { style: { marginBottom: '20px' } },
+      h('div', { style: { fontWeight: '700', marginBottom: '8px' } }, 'Content Pipeline'),
+      h('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap' } },
+        ...Object.entries(state.pipelineBoard.board || {}).map(([stage, data]) =>
+          h('div', { style: { flex: 1, minWidth: '60px', background: stage === 'published' ? '#d1fae5' : stage === 'approved' ? '#dbeafe' : stage === 'rejected' ? '#fee2e2' : 'var(--gray-50)', borderRadius: '6px', padding: '8px', textAlign: 'center' } },
+            h('div', { style: { fontWeight: '700', fontSize: '16px' } }, String(data.count)),
+            h('div', { style: { fontSize: '10px', color: 'var(--gray-500)', textTransform: 'capitalize' } }, stage)
+          )
+        )
+      ),
+      h('div', { style: { marginTop: '6px', fontSize: '11px', color: 'var(--gray-500)' } }, `Bottleneck: ${state.pipelineBoard.summary.bottleneck} | Throughput: ${state.pipelineBoard.summary.throughput_rate}%`)
+    ) : null,
+
+    // Content Quality Audit
+    state.contentQualityAudit?.total_audited ? h('div', { style: { marginBottom: '20px' } },
+      h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
+        h('span', { style: { fontWeight: '700' } }, 'Quality Audit'),
+        h('span', { style: { color: state.contentQualityAudit.grade === 'A' || state.contentQualityAudit.grade === 'B' ? '#059669' : '#dc2626', fontWeight: '700' } }, `${state.contentQualityAudit.grade} (${state.contentQualityAudit.average_score}/100)`)
+      ),
+      h('div', { style: { fontSize: '12px', color: 'var(--gray-500)' } }, `${state.contentQualityAudit.issues_found} issues found (${state.contentQualityAudit.critical_issues} critical)`)
+    ) : null,
+
+    // Engagement Heatmap
+    state.engagementHeatmap?.best_time ? h('div', { style: { marginBottom: '20px' } },
+      h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
+        h('span', { style: { fontWeight: '700' } }, 'Best Posting Time'),
+        h('span', { style: { color: '#6366f1', fontSize: '13px', fontWeight: '600' } }, state.engagementHeatmap.best_time)
+      )
     ) : null,
 
     // Autopilot Status

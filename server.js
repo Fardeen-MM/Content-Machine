@@ -17779,6 +17779,341 @@ Content: ${firstContent.substring(0, 2000)}`;
       return json(res, readJSON('weekly-growth-report.json') || { content: {}, publishing: {}, leads: {} });
     }
 
+    // ========== BATCH 78: Content Operations & Team Productivity ==========
+
+    // --- Content Pipeline Status Board ---
+    // Visual kanban-style pipeline showing content through all stages
+    if (method === 'POST' && pathname === '/api/pipeline-board') {
+      const content = readJSON('content.json');
+      const published = readJSON('published.json') || [];
+
+      const stages = {
+        draft: content.filter(c => c.status === 'pending' || c.status === 'draft'),
+        review: content.filter(c => c.status === 'review'),
+        approved: content.filter(c => c.status === 'approved'),
+        scheduled: content.filter(c => c.status === 'scheduled'),
+        published: published,
+        rejected: content.filter(c => c.status === 'rejected')
+      };
+
+      const board = {};
+      for (const [stage, items] of Object.entries(stages)) {
+        board[stage] = {
+          count: items.length,
+          items: items.slice(0, 10).map(c => ({
+            id: c.id,
+            title: c.trigger_title || 'Untitled',
+            format_count: Object.keys(c.formats || {}).length,
+            age_days: Math.floor((Date.now() - new Date(c.generated_at || c.published_at || 0).getTime()) / (24 * 60 * 60 * 1000))
+          }))
+        };
+      }
+
+      const totalInPipeline = content.length;
+      const avgAge = content.length ? Math.round(content.reduce((s, c) => s + (Date.now() - new Date(c.generated_at || 0).getTime()), 0) / content.length / (24 * 60 * 60 * 1000)) : 0;
+
+      const report = {
+        board,
+        summary: {
+          total_in_pipeline: totalInPipeline,
+          total_published: published.length,
+          avg_age_days: avgAge,
+          throughput_rate: totalInPipeline > 0 ? Math.round((published.length / totalInPipeline) * 100) : 0,
+          bottleneck: Object.entries(board).sort((a, b) => b[1].count - a[1].count)[0]?.[0] || 'none'
+        },
+        generated_at: new Date().toISOString()
+      };
+
+      writeJSON('pipeline-board.json', report);
+      return json(res, report);
+    }
+    if (method === 'GET' && pathname === '/api/pipeline-board') {
+      return json(res, readJSON('pipeline-board.json') || { board: {}, summary: {} });
+    }
+
+    // --- Content Audit Tool ---
+    // Comprehensive audit of all content for quality, compliance, and optimization
+    if (method === 'POST' && pathname === '/api/content-quality-audit') {
+      const content = readJSON('content.json');
+      const issues = [];
+      let totalScore = 0;
+
+      for (const c of content) {
+        const fmts = c.formats || {};
+        const formatCount = Object.keys(fmts).length;
+        let score = 70;
+        const contentIssues = [];
+
+        if (formatCount < 3) { score -= 10; contentIssues.push('Low format diversity'); }
+        if (formatCount >= 8) score += 10;
+
+        const firstContent = typeof Object.values(fmts)[0] === 'string' ? Object.values(fmts)[0] : '';
+        if (firstContent.length < 50) { score -= 15; contentIssues.push('Content too short'); }
+        if (firstContent.length > 3000) { score -= 5; contentIssues.push('May be too long for social'); }
+
+        if (!c.trigger_title) { score -= 5; contentIssues.push('Missing trigger title'); }
+
+        const hasCta = firstContent.toLowerCase().includes('book') || firstContent.toLowerCase().includes('schedule') || firstContent.toLowerCase().includes('contact') || firstContent.toLowerCase().includes('learn more');
+        if (!hasCta) { score -= 10; contentIssues.push('No clear CTA detected'); }
+
+        score = Math.max(0, Math.min(100, score));
+        totalScore += score;
+
+        if (contentIssues.length > 0) {
+          issues.push({ id: c.id, title: c.trigger_title || 'Untitled', score, issues: contentIssues });
+        }
+      }
+
+      const avgScore = content.length ? Math.round(totalScore / content.length) : 0;
+      const report = {
+        total_audited: content.length,
+        average_score: avgScore,
+        grade: avgScore >= 80 ? 'A' : avgScore >= 70 ? 'B' : avgScore >= 60 ? 'C' : avgScore >= 50 ? 'D' : 'F',
+        issues_found: issues.length,
+        critical_issues: issues.filter(i => i.score < 50).length,
+        top_issues: issues.sort((a, b) => a.score - b.score).slice(0, 15),
+        common_issues: {},
+        generated_at: new Date().toISOString()
+      };
+
+      for (const item of issues) {
+        for (const issue of item.issues) {
+          report.common_issues[issue] = (report.common_issues[issue] || 0) + 1;
+        }
+      }
+
+      writeJSON('content-quality-audit.json', report);
+      return json(res, report);
+    }
+    if (method === 'GET' && pathname === '/api/content-quality-audit') {
+      return json(res, readJSON('content-quality-audit.json') || { total_audited: 0, average_score: 0 });
+    }
+
+    // --- Team Activity Feed ---
+    // Track all team actions for transparency and accountability
+    if (method === 'POST' && pathname === '/api/team-activity') {
+      const body = await parseBody(req);
+      const store = (() => { const raw = readJSON('team-activity.json'); return (raw && raw.activities) ? raw : { activities: [] }; })();
+
+      store.activities.unshift({
+        id: generateId(),
+        user: body.user || 'system',
+        action: body.action || 'unknown',
+        target: body.target || '',
+        details: body.details || '',
+        timestamp: new Date().toISOString()
+      });
+
+      if (store.activities.length > 200) store.activities = store.activities.slice(0, 200);
+
+      store.total = store.activities.length;
+      store.today = store.activities.filter(a => {
+        const today = new Date().toISOString().split('T')[0];
+        return a.timestamp.startsWith(today);
+      }).length;
+      store.generated_at = new Date().toISOString();
+      writeJSON('team-activity.json', store);
+      return json(res, { ok: true, total: store.total, today: store.today });
+    }
+    if (method === 'GET' && pathname === '/api/team-activity') {
+      return json(res, readJSON('team-activity.json') || { activities: [], total: 0 });
+    }
+
+    // --- Content Calendar Heatmap ---
+    // Generate heatmap data for content creation/publishing patterns
+    if (method === 'POST' && pathname === '/api/calendar-heatmap') {
+      const content = readJSON('content.json');
+      const published = readJSON('published.json') || [];
+
+      const heatmap = {};
+      const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+      for (const c of [...content, ...published]) {
+        const date = new Date(c.generated_at || c.published_at || 0);
+        const key = date.toISOString().split('T')[0];
+        if (!heatmap[key]) heatmap[key] = { date: key, day: dayNames[date.getDay()], created: 0, published: 0 };
+        if (c.status === 'published' || published.includes(c)) heatmap[key].published++;
+        else heatmap[key].created++;
+      }
+
+      const sorted = Object.values(heatmap).sort((a, b) => a.date.localeCompare(b.date));
+      const maxActivity = Math.max(...sorted.map(d => d.created + d.published), 1);
+
+      const byDay = {};
+      for (const d of sorted) {
+        if (!byDay[d.day]) byDay[d.day] = { total: 0, count: 0 };
+        byDay[d.day].total += d.created + d.published;
+        byDay[d.day].count++;
+      }
+      const bestDay = Object.entries(byDay).sort((a, b) => (b[1].total / b[1].count) - (a[1].total / a[1].count))[0]?.[0] || 'Unknown';
+
+      const report = {
+        days: sorted.slice(-90),
+        max_activity: maxActivity,
+        total_days_active: sorted.length,
+        best_day: bestDay,
+        avg_per_day: sorted.length ? Math.round(sorted.reduce((s, d) => s + d.created + d.published, 0) / sorted.length * 10) / 10 : 0,
+        generated_at: new Date().toISOString()
+      };
+
+      writeJSON('calendar-heatmap.json', report);
+      return json(res, report);
+    }
+    if (method === 'GET' && pathname === '/api/calendar-heatmap') {
+      return json(res, readJSON('calendar-heatmap.json') || { days: [], best_day: 'Unknown' });
+    }
+
+    // --- Content Goal Tracker ---
+    // Set and track content production goals
+    if (method === 'POST' && pathname === '/api/content-goals') {
+      const body = await parseBody(req);
+      const store = (() => { const raw = readJSON('content-goals.json'); return (raw && raw.goals) ? raw : { goals: [] }; })();
+
+      if (body.action === 'create') {
+        store.goals.push({
+          id: generateId(),
+          name: body.name || 'Weekly Content Goal',
+          target: body.target || 10,
+          metric: body.metric || 'content_created',
+          period: body.period || 'weekly',
+          current: 0,
+          active: true,
+          created_at: new Date().toISOString()
+        });
+      } else if (body.action === 'update') {
+        const content = readJSON('content.json');
+        const published = readJSON('published.json') || [];
+        const now = Date.now();
+        const weekMs = 7 * 24 * 60 * 60 * 1000;
+        const monthMs = 30 * 24 * 60 * 60 * 1000;
+
+        for (const g of store.goals) {
+          const periodMs = g.period === 'weekly' ? weekMs : g.period === 'monthly' ? monthMs : weekMs;
+          if (g.metric === 'content_created') {
+            g.current = content.filter(c => now - new Date(c.generated_at || 0).getTime() < periodMs).length;
+          } else if (g.metric === 'content_published') {
+            g.current = published.filter(c => now - new Date(c.published_at || c.generated_at || 0).getTime() < periodMs).length;
+          } else if (g.metric === 'content_approved') {
+            g.current = content.filter(c => c.status === 'approved' && now - new Date(c.generated_at || 0).getTime() < periodMs).length;
+          }
+          g.progress = g.target > 0 ? Math.min(100, Math.round((g.current / g.target) * 100)) : 0;
+          g.on_track = g.progress >= 50;
+        }
+      }
+
+      store.total_goals = store.goals.length;
+      store.on_track = store.goals.filter(g => g.on_track).length;
+      store.generated_at = new Date().toISOString();
+      writeJSON('content-goals.json', store);
+      return json(res, store);
+    }
+    if (method === 'GET' && pathname === '/api/content-goals') {
+      return json(res, readJSON('content-goals.json') || { goals: [], total_goals: 0 });
+    }
+
+    // --- Content A/B Test Results Dashboard ---
+    // Aggregate A/B test results across all content
+    if (method === 'POST' && pathname === '/api/ab-test-dashboard') {
+      const content = readJSON('content.json');
+      const engagement = readJSON('engagement-tracker.json');
+      const engList = Array.isArray(engagement) ? engagement : [];
+
+      const tests = [];
+      for (const c of content) {
+        const fmts = c.formats || {};
+        if (Object.keys(fmts).length >= 2) {
+          const variants = Object.entries(fmts).slice(0, 3).map(([fmt, val]) => {
+            const text = typeof val === 'string' ? val : '';
+            const eng = engList.find(e => e.content_id === c.id && e.format === fmt);
+            return {
+              format: fmt,
+              length: text.length,
+              engagement: eng?.engagement_rate || 0,
+              impressions: eng?.impressions || 0
+            };
+          });
+
+          const winner = variants.sort((a, b) => b.engagement - a.engagement)[0];
+          tests.push({
+            content_id: c.id,
+            title: c.trigger_title || 'Untitled',
+            variants,
+            winner: winner?.format || variants[0]?.format,
+            confidence: variants.length >= 2 && variants[0].engagement > 0 ? 'high' : 'low'
+          });
+        }
+      }
+
+      const report = {
+        total_tests: tests.length,
+        high_confidence: tests.filter(t => t.confidence === 'high').length,
+        tests: tests.slice(0, 20),
+        winning_formats: {},
+        generated_at: new Date().toISOString()
+      };
+
+      for (const t of tests) {
+        const w = t.winner || 'unknown';
+        report.winning_formats[w] = (report.winning_formats[w] || 0) + 1;
+      }
+
+      writeJSON('ab-test-dashboard.json', report);
+      return json(res, report);
+    }
+    if (method === 'GET' && pathname === '/api/ab-test-dashboard') {
+      return json(res, readJSON('ab-test-dashboard.json') || { total_tests: 0, tests: [] });
+    }
+
+    // --- Engagement Heatmap ---
+    // When do our audience engage most? Time-of-day and day-of-week analysis
+    if (method === 'POST' && pathname === '/api/engagement-heatmap') {
+      const engagement = readJSON('engagement-tracker.json');
+      const engList = Array.isArray(engagement) ? engagement : [];
+      const published = readJSON('published.json') || [];
+
+      const hourMap = {};
+      const dayMap = {};
+      const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+      for (let h = 0; h < 24; h++) hourMap[h] = { engagements: 0, impressions: 0, count: 0 };
+      for (const d of dayNames) dayMap[d] = { engagements: 0, impressions: 0, count: 0 };
+
+      for (const e of engList) {
+        const date = new Date(e.logged_at || e.timestamp || 0);
+        const hour = date.getHours();
+        const day = dayNames[date.getDay()];
+        hourMap[hour].engagements += e.engagements || e.engagement_rate || 0;
+        hourMap[hour].impressions += e.impressions || 0;
+        hourMap[hour].count++;
+        dayMap[day].engagements += e.engagements || e.engagement_rate || 0;
+        dayMap[day].impressions += e.impressions || 0;
+        dayMap[day].count++;
+      }
+
+      const bestHour = Object.entries(hourMap).sort((a, b) => b[1].engagements - a[1].engagements)[0]?.[0] || '12';
+      const bestDay = Object.entries(dayMap).sort((a, b) => b[1].engagements - a[1].engagements)[0]?.[0] || 'Tue';
+
+      const report = {
+        by_hour: hourMap,
+        by_day: dayMap,
+        best_time: `${bestDay} at ${bestHour}:00`,
+        best_hour: parseInt(bestHour),
+        best_day: bestDay,
+        total_data_points: engList.length,
+        recommendations: [
+          `Best posting time: ${bestDay} at ${bestHour}:00`,
+          engList.length < 10 ? 'More engagement data needed for reliable recommendations' : 'Sufficient data for timing optimization'
+        ],
+        generated_at: new Date().toISOString()
+      };
+
+      writeJSON('engagement-heatmap.json', report);
+      return json(res, report);
+    }
+    if (method === 'GET' && pathname === '/api/engagement-heatmap') {
+      return json(res, readJSON('engagement-heatmap.json') || { by_hour: {}, by_day: {}, best_time: 'Unknown' });
+    }
+
     // --- Static file serving ---
 
     // Serve dashboard

@@ -1,0 +1,134 @@
+{
+  "board": {
+    "draft": {
+      "count": 0,
+      "items": []
+    },
+    "review": {
+      "count": 35,
+      "items": [
+        {
+          "id": "c4c23c4858e12fc8",
+          "title": "My web designer charges $300/mo and my site looks like it's from 2005",
+          "format_count": 4,
+          "age_days": 6
+        },
+        {
+          "id": "7f77c159bb8ccf6a",
+          "title": "Fired my 3rd marketing agency this year — what am I doing wrong?",
+          "format_count": 4,
+          "age_days": 6
+        },
+        {
+          "id": "8dfa41e3fa145ba7",
+          "title": "Speed to lead is killing us — callers hang up after 30 seconds",
+          "format_count": 4,
+          "age_days": 7
+        },
+        {
+          "id": "4d214093372dfe2a",
+          "title": "Clio Legal Trends Report: 67% of firms don't track marketing ROI",
+          "format_count": 4,
+          "age_days": 6
+        },
+        {
+          "id": "428fe56f109338c7",
+          "title": "ABA: Average PI firm spends $124K on marketing annually",
+          "format_count": 4,
+          "age_days": 7
+        },
+        {
+          "id": "13497fe9d9ea6a2c",
+          "title": "National Law Review: AI is transforming how law firms acquire clients",
+          "format_count": 4,
+          "age_days": 7
+        },
+        {
+          "id": "858d056a779d6",
+          "title": "We switched from Avvo to Google LSAs — 4x more cases at half the cost",
+          "format_count": 4,
+          "age_days": 5
+        },
+        {
+          "id": "1d3caed24b1928",
+          "title": "Our intake team started texting leads within 30 seconds — conversion up 41%",
+          "format_count": 4,
+          "age_days": 5
+        },
+        {
+          "id": "6416c9f94e5c38",
+          "title": "Google just rolled out AI Overviews for legal queries — is SEO for lawyers dead?",
+          "format_count": 4,
+          "age_days": 6
+        },
+        {
+          "id": "a318e2a656b57",
+          "title": "Negative keywords saved my law firm client $3,200/month",
+          "format_count": 4,
+          "age_days": 5
+        }
+      ]
+    },
+    "approved": {
+      "count": 5,
+      "items": [
+        {
+          "id": "dd33fd2be463cf5f",
+          "title": "Spent $5K/month on Google Ads for my PI firm and got 2 cases",
+          "format_count": 4,
+          "age_days": 6
+        },
+        {
+          "id": "4c20a864324032bb",
+          "title": "Just found out my marketing agency was running ads to the wrong zip codes for 6 months",
+          "format_count": 4,
+          "age_days": 6
+        },
+        {
+          "id": "942509da1ea4f8",
+          "title": "Hired 3 marketing agencies in 2 years — all terrible. What am I doing wrong?",
+          "format_count": 7,
+          "age_days": 5
+        },
+        {
+          "id": "6e4f84de57065",
+          "title": "Is TikTok worth it for a law firm? Seems unprofessional",
+          "format_count": 4,
+          "age_days": 6
+        },
+        {
+          "id": "17613aa38257031a",
+          "title": "Show HN: Stripe Specialist Team Scam – 50%+ deals",
+          "format_count": 2,
+          "age_days": 20505
+        }
+      ]
+    },
+    "scheduled": {
+      "count": 0,
+      "items": []
+    },
+    "published": {
+      "count": 1,
+      "items": [
+        {
+          "title": "Untitled",
+          "format_count": 0,
+          "age_days": 0
+        }
+      ]
+    },
+    "rejected": {
+      "count": 0,
+      "items": []
+    }
+  },
+  "summary": {
+    "total_in_pipeline": 41,
+    "total_published": 1,
+    "avg_age_days": 2004,
+    "throughput_rate": 2,
+    "bottleneck": "review"
+  },
+  "generated_at": "2026-02-21T17:29:00.390Z"
+}

@@ -1,0 +1,45 @@
+{
+  "days": [
+    {
+      "date": "1970-01-01",
+      "day": "Wed",
+      "created": 4,
+      "published": 0
+    },
+    {
+      "date": "2026-02-13",
+      "day": "Fri",
+      "created": 1,
+      "published": 0
+    },
+    {
+      "date": "2026-02-14",
+      "day": "Sat",
+      "created": 4,
+      "published": 0
+    },
+    {
+      "date": "2026-02-15",
+      "day": "Sun",
+      "created": 15,
+      "published": 0
+    },
+    {
+      "date": "2026-02-20",
+      "day": "Fri",
+      "created": 12,
+      "published": 0
+    },
+    {
+      "date": "2026-02-21",
+      "day": "Fri",
+      "created": 4,
+      "published": 2
+    }
+  ],
+  "max_activity": 15,
+  "total_days_active": 6,
+  "best_day": "Sun",
+  "avg_per_day": 7,
+  "generated_at": "2026-02-21T17:29:12.071Z"
+}

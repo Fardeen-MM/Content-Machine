@@ -1,0 +1,15 @@
+{
+  "activities": [
+    {
+      "id": "91f73e05c6658b19",
+      "user": "fardeen",
+      "action": "approved",
+      "target": "4aa23b276fa5218b",
+      "details": "Approved LinkedIn post for publishing",
+      "timestamp": "2026-02-21T17:29:07.782Z"
+    }
+  ],
+  "total": 1,
+  "today": 1,
+  "generated_at": "2026-02-21T17:29:07.783Z"
+}

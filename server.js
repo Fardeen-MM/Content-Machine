@@ -7693,6 +7693,210 @@ Return JSON: {
       return json(res, { ok: true, prediction: parsed });
     }
 
+    // === Batch 46: Drip Campaigns + Auto-Responder + Content Expiration ===
+
+    // POST /api/drip-campaigns — create multi-day content drip from a topic
+    if (pathname === '/api/drip-campaigns' && method === 'POST') {
+      const body = await parseBody(req);
+      const topic = body.topic || body.title;
+      if (!topic) return json(res, { error: 'Topic required' }, 400);
+
+      const { callClaude, parseJsonResponse, SONNET } = require('./lib/claude.js');
+      const { BRAND_SYSTEM_PROMPT } = require('./generator/content-writer.js');
+      let text, parsed;
+      try {
+        text = await callClaude({
+          model: SONNET,
+          system: BRAND_SYSTEM_PROMPT + '\nReturn JSON only.',
+          prompt: `Create a 5-day content drip campaign for nurturing law firm leads on the topic: "${topic}"
+
+TARGET: Law firm owners considering hiring a marketing agency
+GOAL: Build trust, demonstrate expertise, and drive to a consultation call
+
+For each day, create:
+- Day number and theme
+- LinkedIn post content (300-800 chars, direct and specific)
+- Email subject + body (3-5 paragraphs)
+- CTA for that day
+- Key data point or story to include
+
+Return JSON: {
+  "campaign_name": "...",
+  "target_audience": "...",
+  "days": [{
+    "day": 1,
+    "theme": "...",
+    "linkedin_post": "...",
+    "email_subject": "...",
+    "email_body": "...",
+    "cta": "...",
+    "data_point": "..."
+  }],
+  "success_metric": "...",
+  "nurture_goal": "..."
+}`,
+          maxTokens: 6000
+        });
+        parsed = parseJsonResponse(text);
+      } catch (err) {
+        return json(res, { error: 'AI error: ' + err.message }, 500);
+      }
+      if (!parsed) return json(res, { error: 'Failed to create drip', raw_preview: (text || '').slice(0, 200) }, 500);
+
+      const drips = readJSON('drip-campaigns.json', []);
+      const drip = {
+        id: generateId(),
+        topic,
+        ...parsed,
+        status: 'active',
+        subscribers: 0,
+        created_at: now()
+      };
+      drips.push(drip);
+      writeJSON('drip-campaigns.json', drips);
+      return json(res, { ok: true, campaign: drip });
+    }
+
+    // GET /api/drip-campaigns — list all drip campaigns
+    if (pathname === '/api/drip-campaigns' && method === 'GET') {
+      return json(res, readJSON('drip-campaigns.json', []));
+    }
+
+    // DELETE /api/drip-campaigns/:id
+    if (pathname.match(/^\/api\/drip-campaigns\/[^/]+$/) && method === 'DELETE') {
+      const id = pathname.split('/')[3];
+      const drips = readJSON('drip-campaigns.json', []);
+      writeJSON('drip-campaigns.json', drips.filter(d => d.id !== id));
+      return json(res, { ok: true });
+    }
+
+    // --- Engagement Auto-Responder ---
+
+    // POST /api/auto-responses/generate — AI generates response templates
+    if (pathname === '/api/auto-responses/generate' && method === 'POST') {
+      const body = await parseBody(req);
+      const contentTitle = body.content_title || 'general legal marketing content';
+
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude.js');
+      let text, parsed;
+      try {
+        text = await callClaude({
+          model: HAIKU,
+          system: 'You create engagement response templates. Return JSON only.',
+          prompt: `Create response templates for engaging with comments on this content: "${contentTitle}"
+
+Create templates for these comment types:
+1. Question about services
+2. Objection/pushback
+3. Agreement/support
+4. Request for help
+5. Competitor mention
+6. Price question
+
+For each template provide:
+- Category name
+- 2 response variants (short and detailed)
+- Tone guidance
+- CTA to include
+
+Return JSON: {
+  "templates": [{
+    "category": "...",
+    "short_response": "...",
+    "detailed_response": "...",
+    "tone": "...",
+    "cta": "..."
+  }]
+}`,
+          maxTokens: 2000
+        });
+        parsed = parseJsonResponse(text);
+      } catch (err) {
+        return json(res, { error: 'AI error: ' + err.message }, 500);
+      }
+      if (!parsed) return json(res, { error: 'Failed to generate responses', raw_preview: (text || '').slice(0, 200) }, 500);
+
+      const responses = readJSON('auto-responses.json', []);
+      const entry = { id: generateId(), content_title: contentTitle, ...parsed, created_at: now() };
+      responses.push(entry);
+      writeJSON('auto-responses.json', responses);
+      return json(res, { ok: true, responses: entry });
+    }
+
+    // GET /api/auto-responses — list all response templates
+    if (pathname === '/api/auto-responses' && method === 'GET') {
+      return json(res, readJSON('auto-responses.json', []));
+    }
+
+    // --- Content Expiration & Refresh ---
+
+    // GET /api/content/expiring — flag aging content
+    if (pathname === '/api/content/expiring' && method === 'GET') {
+      const allContent = readJSON('content.json', []);
+      const now_ms = Date.now();
+      const DAY = 24 * 60 * 60 * 1000;
+
+      const expiring = allContent
+        .filter(c => {
+          const created = new Date(c.created_at || c.generated_at || 0).getTime();
+          return (now_ms - created) > 30 * DAY;
+        })
+        .map(c => {
+          const created = new Date(c.created_at || c.generated_at || 0).getTime();
+          const ageDays = Math.floor((now_ms - created) / DAY);
+          const urgency = ageDays > 90 ? 'critical' : ageDays > 60 ? 'high' : 'moderate';
+          return { id: c.id, title: c.trigger_title, age_days: ageDays, urgency, formats: Object.keys(c.formats || {}).length, status: c.status };
+        })
+        .sort((a, b) => b.age_days - a.age_days);
+
+      return json(res, {
+        total_expiring: expiring.length,
+        critical: expiring.filter(e => e.urgency === 'critical').length,
+        high: expiring.filter(e => e.urgency === 'high').length,
+        moderate: expiring.filter(e => e.urgency === 'moderate').length,
+        items: expiring
+      });
+    }
+
+    // POST /api/content/:id/refresh — AI refreshes content with updated angle
+    if (pathname.match(/^\/api\/content\/[^/]+\/refresh$/) && method === 'POST') {
+      const id = pathname.split('/')[3];
+      const allContent = readJSON('content.json', []);
+      const item = allContent.find(c => c.id === id);
+      if (!item) return json(res, { error: 'not found' }, 404);
+
+      const linkedinContent = item.formats?.linkedin?.content || Object.values(item.formats || {})[0]?.content || '';
+      if (!linkedinContent) return json(res, { error: 'No content to refresh' }, 400);
+
+      const { callClaude, HAIKU } = require('./lib/claude.js');
+      const { BRAND_SYSTEM_PROMPT } = require('./generator/content-writer.js');
+
+      const refreshed = await callClaude({
+        model: HAIKU,
+        system: BRAND_SYSTEM_PROMPT,
+        prompt: `Refresh this content with a new hook, updated data, and fresh perspective. Keep the core insight but make it feel new.
+
+ORIGINAL (${item.trigger_title}):
+${linkedinContent.slice(0, 2000)}
+
+Rules: New opening hook, update dated references, add fresh data point, keep core message, same length/format.`,
+        maxTokens: 2000
+      });
+
+      if (!item.formats) item.formats = {};
+      const originalKey = item.formats.linkedin ? 'linkedin' : Object.keys(item.formats)[0] || 'linkedin';
+      item.formats[originalKey + '_refreshed'] = {
+        content: refreshed,
+        status: 'draft',
+        generated_at: now(),
+        refresh_of: originalKey
+      };
+      item.last_refreshed = now();
+      writeJSON('content.json', allContent);
+
+      return json(res, { ok: true, refreshed_content: refreshed.slice(0, 300) + '...' });
+    }
+
     // --- Content Series API ---
 
     // GET /api/series — list all content series

@@ -1492,6 +1492,10 @@ const state = {
   // DM Pipelines & Competitors
   dmPipelines: [],
   competitorsTracked: [],
+  // Drip Campaigns & Auto-Responses
+  dripCampaigns: [],
+  autoResponses: [],
+  expiringContent: null,
 };
 
 // --- API Calls ---
@@ -1517,7 +1521,7 @@ async function loadData() {
   state.loading = true;
   render();
   try {
-    const [content, triggers, stats, calendar, monthCal, settings, memory, performance, perfAnalytics, meetings, meetingStats, clients, allActions, chatMessages, healthData, inspirations, pestering, pesteringStages, insights, deals, published, series, predictions, playbooks, ctaLibrary, trending, funnel, publishTracker, leadMagnets, contentHealth, scheduleOptimize, templates, dmSequences, hooks, pillarPlan, contentLeads, autopilot, scheduleQueue, engagementDashboard, contentBriefs, workflowPipeline, personas, calendarWeek, benchmarkReport, contentIdeas, socialProof, roiReport, audienceGrowth, contentThemes, distributionPlans, dmPipelines, competitorsTracked] = await Promise.all([
+    const [content, triggers, stats, calendar, monthCal, settings, memory, performance, perfAnalytics, meetings, meetingStats, clients, allActions, chatMessages, healthData, inspirations, pestering, pesteringStages, insights, deals, published, series, predictions, playbooks, ctaLibrary, trending, funnel, publishTracker, leadMagnets, contentHealth, scheduleOptimize, templates, dmSequences, hooks, pillarPlan, contentLeads, autopilot, scheduleQueue, engagementDashboard, contentBriefs, workflowPipeline, personas, calendarWeek, benchmarkReport, contentIdeas, socialProof, roiReport, audienceGrowth, contentThemes, distributionPlans, dmPipelines, competitorsTracked, dripCampaigns, autoResponses, expiringContent] = await Promise.all([
       api('/api/content'),
       api('/api/triggers'),
       api('/api/stats'),
@@ -1569,7 +1573,10 @@ async function loadData() {
       api('/api/themes').catch(() => null),
       api('/api/distribution-plans').catch(() => []),
       api('/api/dm-pipelines').catch(() => []),
-      api('/api/competitors/tracked').catch(() => [])
+      api('/api/competitors/tracked').catch(() => []),
+      api('/api/drip-campaigns').catch(() => []),
+      api('/api/auto-responses').catch(() => []),
+      api('/api/content/expiring').catch(() => null)
     ]);
     state.content = content;
     state.triggers = triggers;
@@ -1623,6 +1630,9 @@ async function loadData() {
     state.distributionPlans = distributionPlans;
     state.dmPipelines = dmPipelines;
     state.competitorsTracked = competitorsTracked;
+    state.dripCampaigns = dripCampaigns;
+    state.autoResponses = autoResponses;
+    state.expiringContent = expiringContent;
   } catch (err) {
     console.error('Failed to load data:', err);
     toast('Failed to load data', 'error');
@@ -3323,6 +3333,55 @@ function renderDashboardPage() {
             comp.analysis ? h('div', { style: { fontSize: '10px', color: '#059669', marginTop: '2px' } }, 'Analyzed') : h('div', { style: { fontSize: '10px', color: '#d97706', marginTop: '2px' } }, 'Needs samples')
           )
         )
+      )
+    ) : null,
+    // Drip Campaigns
+    state.dripCampaigns?.length > 0 ? h('div', { style: { marginBottom: '20px' } },
+      h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
+        h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)' } }, `DRIP CAMPAIGNS (${state.dripCampaigns.length})`),
+        h('div', { style: { fontSize: '11px', color: 'var(--gray-500)' } }, `${state.dripCampaigns.filter(d => d.status === 'active').length} active`)
+      ),
+      h('div', { style: { display: 'grid', gap: '6px' } },
+        ...state.dripCampaigns.slice(0, 5).map(drip =>
+          h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 14px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', borderLeft: '4px solid #059669' } },
+            h('div', { style: { flex: '1' } },
+              h('div', { style: { fontSize: '12px', fontWeight: '600', color: 'var(--navy)' } }, drip.campaign_name || drip.topic),
+              h('div', { style: { fontSize: '10px', color: 'var(--gray-500)' } }, `${drip.days?.length || 0} days | ${drip.target_audience?.slice(0, 50) || ''} | ${drip.nurture_goal?.slice(0, 40) || ''}`)
+            ),
+            h('span', { style: { fontSize: '10px', padding: '2px 8px', borderRadius: '10px', fontWeight: '600', background: drip.status === 'active' ? '#f0fdf4' : '#f1f5f9', color: drip.status === 'active' ? '#059669' : '#64748b' } }, drip.status)
+          )
+        )
+      )
+    ) : null,
+    // Content Expiring
+    state.expiringContent?.total_expiring > 0 ? h('div', { style: { marginBottom: '20px' } },
+      h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
+        h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)' } }, `CONTENT AGING (${state.expiringContent.total_expiring})`),
+        h('div', { style: { display: 'flex', gap: '6px' } },
+          state.expiringContent.critical > 0 ? h('span', { style: { fontSize: '10px', padding: '2px 8px', borderRadius: '10px', fontWeight: '600', background: '#fef2f2', color: '#dc2626' } }, `${state.expiringContent.critical} critical`) : null,
+          state.expiringContent.high > 0 ? h('span', { style: { fontSize: '10px', padding: '2px 8px', borderRadius: '10px', fontWeight: '600', background: '#fffbeb', color: '#d97706' } }, `${state.expiringContent.high} high`) : null,
+          h('span', { style: { fontSize: '10px', padding: '2px 8px', borderRadius: '10px', fontWeight: '600', background: '#f1f5f9', color: '#64748b' } }, `${state.expiringContent.moderate} moderate`)
+        )
+      ),
+      h('div', { style: { display: 'grid', gap: '4px' } },
+        ...state.expiringContent.items.slice(0, 5).map(item => {
+          const urgColors = { critical: '#dc2626', high: '#d97706', moderate: '#64748b' };
+          return h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 10px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)' } },
+            h('div', { style: { fontSize: '12px', fontWeight: '700', color: urgColors[item.urgency] || '#64748b', minWidth: '40px' } }, `${item.age_days}d`),
+            h('div', { style: { flex: '1', fontSize: '11px', color: 'var(--navy)' } }, (item.title || '').slice(0, 50)),
+            h('button', {
+              style: { fontSize: '10px', padding: '2px 8px', background: '#0891b2', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' },
+              onclick: async () => {
+                toast('Refreshing content...', 'info');
+                try {
+                  await api(`/api/content/${item.id}/refresh`, { method: 'POST' });
+                  toast('Content refreshed with new angle!', 'success');
+                  loadData();
+                } catch (err) { toast('Refresh failed: ' + err.message, 'error'); }
+              }
+            }, 'Refresh')
+          );
+        })
       )
     ) : null,
     // Audience Growth

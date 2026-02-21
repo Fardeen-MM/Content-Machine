@@ -1,0 +1,51 @@
+[
+  {
+    "id": "b6f2101d65ed20bc",
+    "content_title": "Why your law firm marketing agency is failing you",
+    "templates": [
+      {
+        "category": "Question about services",
+        "short_response": "Great question! We specialize in [specific service]. The key difference is we focus on [unique value]. Happy to discuss how this applies to your firm—DM me.",
+        "detailed_response": "Thanks for asking! Our approach differs because we [specific methodology]. Most law firms we work with struggle with [common pain point], which is exactly what our [service name] addresses. We've helped firms like [example type] increase [metric] by [percentage]. Would love to explore if this fits your situation.",
+        "tone": "Helpful, knowledgeable, conversational",
+        "cta": "DM for a quick consultation"
+      },
+      {
+        "category": "Objection/pushback",
+        "short_response": "Fair point—that's a concern we hear often. The reality is [reframe]. Happy to show you how we've addressed this with other firms.",
+        "detailed_response": "I appreciate the pushback. You're right that [acknowledge objection]. However, what we've found is [counter with data/experience]. The firms that succeed typically [best practice]. I'd be interested in learning more about your specific situation to see if this applies.",
+        "tone": "Respectful, understanding, solution-oriented",
+        "cta": "Let's chat about your specific challenges"
+      },
+      {
+        "category": "Agreement/support",
+        "short_response": "Exactly! You've identified the core issue. This is why we built [solution]. Glad this resonates with you.",
+        "detailed_response": "You nailed it. This is exactly what we're seeing across the legal industry. The firms winning right now are [best practice]. It's refreshing when someone recognizes this challenge. If you're looking to address this, we've built [specific offering] specifically for situations like yours.",
+        "tone": "Energetic, validating, collaborative",
+        "cta": "Let's connect and discuss implementation"
+      },
+      {
+        "category": "Request for help",
+        "short_response": "Absolutely—we'd love to help. Can you share a bit more about [specific challenge]? Best to continue this via DM or a quick call.",
+        "detailed_response": "Happy to help! To give you the most relevant guidance, it would help to know: [2-3 specific questions]. From there, we can outline some immediate steps and discuss whether a deeper partnership makes sense for you.",
+        "tone": "Eager to help, professional, efficient",
+        "cta": "Book a free 15-min strategy call"
+      },
+      {
+        "category": "Competitor mention",
+        "short_response": "They do solid work. We typically differentiate because [key difference]. Worth exploring both options to see what fits your firm's goals best.",
+        "detailed_response": "They're a good firm. We often compare against them because we operate in similar space. The main differences: [3 specific differentiators]. Most firms we convert from competitors tell us [specific value realized]. Happy to do a side-by-side if you're considering options.",
+        "tone": "Confident, respectful of competition, value-focused",
+        "cta": "Schedule a comparison consultation"
+      },
+      {
+        "category": "Price question",
+        "short_response": "Investment varies based on scope and goals. Our typical range is [range], but let's discuss your needs first to give accurate pricing.",
+        "detailed_response": "Good question. Pricing depends on several factors: [scope items]. Our minimum is [minimum], and most firms invest [typical range] for [typical results]. We also offer [flexible option] for firms just starting. Let's discuss your goals and timeline to give you an accurate quote.",
+        "tone": "Transparent, value-emphasizing, consultative",
+        "cta": "Get a custom quote with no obligation"
+      }
+    ],
+    "created_at": "2026-02-21T02:10:37.766Z"
+  }
+]

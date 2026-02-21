@@ -13023,6 +13023,343 @@ Return JSON:
       });
     }
 
+    // ======= BATCH 63: Golden Hour Playbook, Content Matrix Generator, Hook Scorer, Depth Score Optimizer =======
+
+    // POST /api/golden-hour — Generate "Golden Hour" engagement script for first 90 min after posting
+    if (method === 'POST' && pathname === '/api/golden-hour') {
+      const body = await parseBody(req);
+      const contentId = body.content_id;
+      const platform = body.platform || 'linkedin';
+
+      let postText = body.post_text || '';
+      if (contentId && !postText) {
+        const allContent = readJSON('content.json', []);
+        const item = allContent.find(c => c.id === contentId);
+        if (item) {
+          const fk = Object.keys(item.formats || {}).find(k => k.includes(platform === 'x' ? 'x_' : 'linkedin')) || Object.keys(item.formats || {})[0];
+          postText = item.formats?.[fk]?.text || item.formats?.[fk] || '';
+        }
+      }
+
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+      const result = await callClaude({
+        model: HAIKU,
+        system: 'You are a LinkedIn growth strategist. The first 90 minutes after posting determine 70% of a post\'s total reach. LinkedIn\'s algorithm makes visibility decisions in this window. Every minute counts. Create a specific, time-blocked action plan for maximizing engagement during this critical window. Return JSON only.',
+        prompt: `Create a Golden Hour engagement playbook for this ${platform} post.
+
+Post content: ${typeof postText === 'string' ? postText.slice(0, 1000) : 'General post'}
+
+Return JSON:
+{
+  "pre_post": {
+    "time": "15 min before posting",
+    "actions": [
+      { "action": "specific task", "why": "why this helps", "duration": "3 min" }
+    ]
+  },
+  "minute_0_15": {
+    "actions": [
+      { "action": "specific task", "why": "...", "duration": "..." }
+    ]
+  },
+  "minute_15_45": {
+    "actions": [
+      { "action": "specific task", "why": "...", "duration": "..." }
+    ]
+  },
+  "minute_45_90": {
+    "actions": [
+      { "action": "specific task", "why": "...", "duration": "..." }
+    ]
+  },
+  "self_comment": "a valuable first comment to post on your own content (this boosts engagement signal)",
+  "reply_templates": [
+    { "trigger": "when someone says X", "reply": "respond with Y (always ask a follow-up question)" }
+  ],
+  "accounts_to_tag": ["types of accounts to tag in comments (not in post)"],
+  "expected_reach_boost": "2-3x vs no golden hour strategy"
+}`,
+        maxTokens: 3000
+      });
+      const parsed = parseJsonResponse(result);
+      return json(res, { ok: true, platform, ...parsed });
+    }
+
+    // POST /api/content-matrix — Generate a full content matrix (Justin Welsh method: 5 pillars x 3 concepts x 7 formats = 105 posts)
+    if (method === 'POST' && pathname === '/api/content-matrix-generator') {
+      const contentDna = readJSON('content-dna.json', null);
+      const series = readJSON('series-templates.json', { series: [] });
+
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+      const result = await callClaude({
+        model: HAIKU,
+        system: `You are a content strategist using Justin Welsh's Content Matrix system for Mortar Metrics (legal marketing agency helping law firms get more signed cases). Return ONLY valid JSON, no other text.`,
+        prompt: `Generate a content matrix. Return JSON with this EXACT structure:
+{
+  "mantra": "one core belief sentence",
+  "pillars": [
+    {
+      "name": "pillar name",
+      "description": "short description",
+      "concepts": [
+        {
+          "thesis": "strong opinion",
+          "teaching": "post title for teaching format",
+          "contrarian": "post title for contrarian format",
+          "case_study": "post title for case study format",
+          "listicle": "post title for listicle format"
+        }
+      ]
+    }
+  ],
+  "execution": "one paragraph on weekly rotation"
+}
+
+Generate exactly 5 pillars with 2 concepts each. Keep all values SHORT (under 15 words each).
+Existing series: ${JSON.stringify((series.series || []).map(s => s.name)).slice(0, 200)}
+${contentDna ? `DNA: ${JSON.stringify({ formula: contentDna.formula }).slice(0, 200)}` : ''}`,
+        maxTokens: 3000
+      });
+      const parsed = parseJsonResponse(result);
+      const matrix = { ...parsed, total_post_ideas: (parsed.pillars || []).reduce((n, p) => n + (p.concepts || []).length * 4, 0), generated_at: now() };
+      writeJSON('content-matrix-full.json', matrix);
+      return json(res, { ok: true, ...matrix });
+    }
+
+    // GET /api/content-matrix-full
+    if (method === 'GET' && pathname === '/api/content-matrix-full') {
+      return json(res, readJSON('content-matrix-full.json', null));
+    }
+
+    // POST /api/hook-scorer — Score and improve a hook using the 8 proven formulas
+    if (method === 'POST' && pathname === '/api/hook-scorer') {
+      const body = await parseBody(req);
+      const hook = body.hook || body.text || '';
+      if (!hook) return json(res, { error: 'hook text required' }, 400);
+
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+      const result = await callClaude({
+        model: HAIKU,
+        system: `You are a hook-scoring expert. Score hooks against these 8 proven formulas:
+1. Bold Claim — makes a strong, verifiable assertion
+2. Specific Number — uses concrete data (847 posts, 23 leads, $40K)
+3. Pain Point Confession — vulnerable opening about struggle/failure
+4. Contrarian Opener — challenges existing belief
+5. "You're Not..." Pattern — pattern interrupt through controlled polarization
+6. Specific Result — concrete outcome that creates curiosity
+7. Story Opener — starts in medias res with specific detail (6:47 AM, last Tuesday)
+8. Unexpected Comparison — novel analogy that makes familiar concepts fresh
+
+A great hook is under 210 characters (LinkedIn "see more" cutoff), creates a curiosity gap, and makes it impossible not to keep reading. Return JSON only.`,
+        prompt: `Score this hook and provide 5 improved alternatives.
+
+Hook: "${hook.slice(0, 500)}"
+
+Return JSON:
+{
+  "score": 0-100,
+  "formula_match": "which of the 8 formulas this most resembles",
+  "strengths": ["what works"],
+  "weaknesses": ["what could be better"],
+  "character_count": 0,
+  "under_210_chars": true,
+  "curiosity_gap": "does it create one? how?",
+  "improved_hooks": [
+    {
+      "hook": "rewritten hook",
+      "formula": "which formula this uses",
+      "why_better": "specific improvement",
+      "char_count": 0
+    }
+  ],
+  "best_recommendation": 0
+}`,
+        maxTokens: 2500
+      });
+      const parsed = parseJsonResponse(result);
+      return json(res, { ok: true, original: hook.slice(0, 500), ...parsed });
+    }
+
+    // POST /api/content/:id/depth-optimizer — Optimize content for LinkedIn's "Depth Score" algorithm
+    if (method === 'POST' && pathname.match(/^\/api\/content\/([^/]+)\/depth-optimizer$/)) {
+      const contentId = pathname.split('/')[3];
+      const allContent = readJSON('content.json', []);
+      const item = allContent.find(c => c.id === contentId);
+      if (!item) return json(res, { error: 'Content not found' }, 404);
+      const body = await parseBody(req);
+      const formatKey = body.format || Object.keys(item.formats || {}).find(k => k.includes('linkedin')) || Object.keys(item.formats || {})[0];
+      const text = item.formats?.[formatKey]?.text || item.formats?.[formatKey];
+      if (!text) return json(res, { error: 'No content found' }, 400);
+
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+      const result = await callClaude({
+        model: HAIKU,
+        system: `You are a LinkedIn algorithm expert specializing in Depth Score optimization. LinkedIn's Depth Score measures how long people ACTUALLY engage with your content — reading time, comment depth, carousel swipes — not just reactions. Key factors:
+- Dwell time: longer reads = higher score. Aim for 1300-2000 chars
+- Comment depth: multi-reply comment threads signal quality
+- Save rate: saves are the strongest signal of value
+- Profile visits from post: shows content drove curiosity about you
+- Format bonus: Carousels get 3x dwell time, documents 2x
+- Writing level: 4th grade reading level performs best
+- Short paragraphs (1-2 sentences), white space between sections
+- Questions that demand real answers, not yes/no
+Return JSON only.`,
+        prompt: `Optimize this content for maximum Depth Score.
+
+Current content:
+${typeof text === 'string' ? text.slice(0, 3000) : JSON.stringify(text).slice(0, 3000)}
+
+Return JSON:
+{
+  "depth_score_estimate": 0-100,
+  "optimized_content": "full rewritten content optimized for depth",
+  "changes": [
+    { "what": "change description", "why": "how this increases depth score" }
+  ],
+  "dwell_time_tricks": ["techniques used to increase reading time"],
+  "comment_triggers": ["questions/statements designed to generate deep comment threads"],
+  "save_triggers": ["elements that make people save the post"],
+  "reading_level": "grade level of optimized content",
+  "character_count": 0,
+  "format_recommendation": "text|carousel|document — which format maximizes depth for this content"
+}`,
+        maxTokens: 3500
+      });
+      const parsed = parseJsonResponse(result);
+      return json(res, { ok: true, content_id: contentId, format: formatKey, ...parsed });
+    }
+
+    // POST /api/zero-click-bank — Track and manage the 4:1 value-to-ask ratio (Amanda Natividad banking system)
+    if (method === 'POST' && pathname === '/api/zero-click-bank') {
+      const contentBank = readJSON('content-bank.json', { log: [], stats: {} });
+      const published = readJSON('published.json', []);
+      const body = await parseBody(req);
+
+      // If logging a new post type
+      if (body.action === 'log') {
+        const type = body.type || 'value'; // 'value' or 'cta'
+        contentBank.log.push({ type, platform: body.platform || 'linkedin', posted_at: now(), content_id: body.content_id || null });
+        contentBank.stats[type] = (contentBank.stats[type] || 0) + 1;
+        writeJSON('content-bank.json', contentBank);
+      }
+
+      const valueCount = contentBank.stats.value || 0;
+      const ctaCount = contentBank.stats.cta || 0;
+      const ratio = ctaCount > 0 ? (valueCount / ctaCount).toFixed(1) : valueCount > 0 ? 'all value' : '0:0';
+      const canAsk = valueCount >= (ctaCount + 1) * 4;
+
+      return json(res, {
+        ok: true,
+        value_posts: valueCount,
+        cta_posts: ctaCount,
+        ratio: `${valueCount}:${ctaCount}`,
+        ratio_decimal: typeof ratio === 'string' ? ratio : parseFloat(ratio),
+        target_ratio: '4:1',
+        can_post_cta: canAsk,
+        next_action: canAsk ? 'You have enough bank balance — your next post can include a CTA' : `Post ${Math.max(0, (ctaCount + 1) * 4 - valueCount)} more value posts before your next CTA`,
+        recent_log: contentBank.log.slice(-10).reverse()
+      });
+    }
+
+    // POST /api/drafting-strategy — "Drafting Off Giants" strategy for borrowed audience growth (Justin Welsh method)
+    if (method === 'POST' && pathname === '/api/drafting-strategy') {
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+      const result = await callClaude({
+        model: HAIKU,
+        system: 'You are a LinkedIn growth strategist using Justin Welsh\'s "Drafting Off Giants" method. The strategy: identify 10-15 large accounts in your niche (50K+ followers), comment on their posts within 15 minutes of publishing, always add genuine value (never "Great post!"), and ride their distribution to get in front of thousands. This generates thousands of profile impressions per week. Return JSON only.',
+        prompt: `Create a "Drafting Off Giants" strategy for a legal marketing agency targeting law firm owners.
+
+Return COMPACT JSON. Keep values SHORT (under 20 words each). Exactly 5 target accounts:
+{
+  "target_accounts": [
+    { "name": "category name", "why": "short overlap reason", "approach": "comment approach" }
+  ],
+  "daily_steps": ["step 1", "step 2", "step 3"],
+  "rules": ["rule 1", "rule 2", "rule 3"],
+  "mistakes": ["mistake 1", "mistake 2"],
+  "results": { "week_1": "result", "month_1": "result", "month_3": "result" }
+}`,
+        maxTokens: 2000
+      });
+      const parsed = parseJsonResponse(result);
+      if (!parsed || !parsed.target_accounts) {
+        return json(res, { error: 'AI response parsing failed. Try again.', raw_preview: (result || '').slice(0, 300) }, 500);
+      }
+      const strategy = { ...parsed, generated_at: now() };
+      writeJSON('drafting-strategy.json', strategy);
+      return json(res, { ok: true, ...strategy });
+    }
+
+    // GET /api/drafting-strategy
+    if (method === 'GET' && pathname === '/api/drafting-strategy') {
+      return json(res, readJSON('drafting-strategy.json', null));
+    }
+
+    // POST /api/content/:id/readability-check — Check and optimize reading level (target: 4th grade)
+    if (method === 'POST' && pathname.match(/^\/api\/content\/([^/]+)\/readability-check$/)) {
+      const contentId = pathname.split('/')[3];
+      const allContent = readJSON('content.json', []);
+      const item = allContent.find(c => c.id === contentId);
+      if (!item) return json(res, { error: 'Content not found' }, 404);
+      const body = await parseBody(req);
+      const formatKey = body.format || Object.keys(item.formats || {})[0];
+      const text = item.formats?.[formatKey]?.text || item.formats?.[formatKey];
+      if (!text || typeof text !== 'string') return json(res, { error: 'No text content found' }, 400);
+
+      // Calculate readability metrics without AI
+      const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
+      const words = text.split(/\s+/).filter(w => w.length > 0);
+      const syllables = words.reduce((sum, w) => sum + Math.max(1, w.replace(/[^aeiouy]/gi, '').length), 0);
+
+      const avgWordsPerSentence = sentences.length > 0 ? (words.length / sentences.length).toFixed(1) : 0;
+      const avgSyllablesPerWord = words.length > 0 ? (syllables / words.length).toFixed(1) : 0;
+
+      // Flesch-Kincaid Grade Level
+      const gradeLevel = sentences.length > 0 && words.length > 0
+        ? Math.max(0, (0.39 * (words.length / sentences.length) + 11.8 * (syllables / words.length) - 15.59)).toFixed(1)
+        : 0;
+
+      const fleschScore = sentences.length > 0 && words.length > 0
+        ? Math.max(0, Math.min(100, (206.835 - 1.015 * (words.length / sentences.length) - 84.6 * (syllables / words.length)))).toFixed(0)
+        : 0;
+
+      // Character and line analysis
+      const lines = text.split('\n').filter(l => l.trim().length > 0);
+      const longSentences = sentences.filter(s => s.split(/\s+/).length > 20);
+      const jargonWords = words.filter(w => w.length > 10 && !['information', 'performance', 'opportunity', 'consultation', 'advertising'].includes(w.toLowerCase()));
+
+      return json(res, {
+        ok: true,
+        content_id: contentId,
+        format: formatKey,
+        readability: {
+          grade_level: parseFloat(gradeLevel),
+          flesch_score: parseInt(fleschScore),
+          target_grade: 4,
+          verdict: parseFloat(gradeLevel) <= 6 ? 'excellent' : parseFloat(gradeLevel) <= 8 ? 'good' : 'too complex'
+        },
+        metrics: {
+          word_count: words.length,
+          sentence_count: sentences.length,
+          paragraph_count: lines.length,
+          avg_words_per_sentence: parseFloat(avgWordsPerSentence),
+          avg_syllables_per_word: parseFloat(avgSyllablesPerWord),
+          character_count: text.length,
+          long_sentences: longSentences.length,
+          complex_words: jargonWords.length
+        },
+        issues: [
+          parseFloat(gradeLevel) > 8 ? `Grade level ${gradeLevel} — target is 4-6. Simplify language.` : null,
+          parseFloat(avgWordsPerSentence) > 20 ? `Average ${avgWordsPerSentence} words/sentence — keep under 20.` : null,
+          longSentences.length > 0 ? `${longSentences.length} sentences are 20+ words — break them up.` : null,
+          jargonWords.length > 3 ? `${jargonWords.length} complex words detected — use simpler alternatives.` : null,
+          text.length > 2000 ? `${text.length} chars — LinkedIn sweet spot is 1300-2000.` : null,
+          text.length < 500 ? `Only ${text.length} chars — longer posts get more dwell time. Aim for 1300+.` : null
+        ].filter(Boolean),
+        linkedin_optimal: text.length >= 1300 && text.length <= 2000 && parseFloat(gradeLevel) <= 6
+      });
+    }
+
     // --- Static file serving ---
 
     // Serve dashboard

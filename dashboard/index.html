@@ -94,12 +94,12 @@ h1, h2, h3, h4 { font-family: 'Fraunces', serif; }
 .nav-item {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 10px 20px;
+  gap: 10px;
+  padding: 7px 20px;
   color: rgba(255,255,255,0.7);
   cursor: pointer;
   transition: var(--transition);
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
   border-left: 3px solid transparent;
 }
@@ -110,11 +110,11 @@ h1, h2, h3, h4 { font-family: 'Fraunces', serif; }
 .nav-item svg { width: 18px; height: 18px; flex-shrink: 0; }
 
 .nav-section {
-  font-size: 11px;
+  font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 1px;
   color: rgba(255,255,255,0.3);
-  padding: 16px 20px 8px;
+  padding: 12px 20px 4px;
   font-weight: 600;
 }
 
@@ -1333,6 +1333,80 @@ h1, h2, h3, h4 { font-family: 'Fraunces', serif; }
 @media (max-width: 768px) {
   .analytics-grid { grid-template-columns: 1fr; }
 }
+
+/* Filter selects */
+.filter-select {
+  font-size: 12px;
+  padding: 5px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--gray-200);
+  background: var(--card-bg);
+  color: var(--gray-600);
+  cursor: pointer;
+  outline: none;
+  transition: var(--transition);
+}
+.filter-select:focus { border-color: var(--blue); }
+[data-theme="dark"] .filter-select { background: var(--gray-800); border-color: var(--gray-600); color: var(--gray-300); }
+
+/* Collapsible sections */
+.collapsible-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  user-select: none;
+  transition: var(--transition);
+  margin-bottom: 8px;
+}
+.collapsible-header:hover { background: var(--gray-50); border-color: var(--gray-300); }
+.collapsible-header .ch-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--navy);
+}
+.collapsible-header .ch-badge {
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 10px;
+  background: var(--blue);
+  color: white;
+  font-weight: 600;
+  margin-left: 8px;
+}
+.collapsible-header .ch-arrow {
+  font-size: 12px;
+  color: var(--gray-400);
+  transition: transform 0.2s ease;
+}
+.collapsible-header.open .ch-arrow { transform: rotate(180deg); }
+.collapsible-body { display: none; margin-bottom: 16px; }
+.collapsible-body.open { display: block; }
+
+/* Action button grid */
+.action-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 6px;
+  padding: 4px 0;
+}
+.action-grid .btn {
+  font-size: 11px;
+  padding: 6px 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Widget group container */
+.widget-group { margin-bottom: 8px; }
+.widget-group-body { padding: 4px 0; }
 </style>
 </head>
 <body>
@@ -1684,7 +1758,46 @@ const state = {
   audiencePersonaInsights: null,
   contentCalendarOptimizer: null,
   contentImpactScore: null,
+  // Collapsible sections state (action categories default collapsed except first)
+  collapsedSections: JSON.parse(localStorage.getItem('collapsedSections') || JSON.stringify({
+    'cm-analyze': true, 'cm-strategy': true, 'cm-engage': true, 'cm-compete': true,
+    'wg-strategy': true, 'wg-scheduling': true, 'wg-performance': true, 'wg-competition': true, 'wg-automation': true, 'wg-other': true
+  })),
 };
+
+// --- Collapsible Section Helper ---
+function toggleSection(id) {
+  state.collapsedSections[id] = !state.collapsedSections[id];
+  localStorage.setItem('collapsedSections', JSON.stringify(state.collapsedSections));
+  render();
+}
+function isOpen(id) { return !state.collapsedSections[id]; }
+
+function renderCollapsible(id, title, badge, children) {
+  const open = isOpen(id);
+  return h('div', { className: 'widget-group' },
+    h('div', {
+      className: 'collapsible-header' + (open ? ' open' : ''),
+      onclick: () => toggleSection(id)
+    },
+      h('div', { style: { display: 'flex', alignItems: 'center' } },
+        h('span', { className: 'ch-title' }, title),
+        badge != null ? h('span', { className: 'ch-badge' }, String(badge)) : null
+      ),
+      h('span', { className: 'ch-arrow' }, '\u25BC')
+    ),
+    h('div', { className: 'collapsible-body' + (open ? ' open' : '') }, ...children)
+  );
+}
+
+function renderActionBtn(label, color, onclick, opts = {}) {
+  return h('button', {
+    className: 'btn btn-sm',
+    style: { background: color, color: 'white', border: 'none', fontSize: '11px', padding: '6px 10px' },
+    disabled: opts.disabled || false,
+    onclick
+  }, opts.loading ? (opts.loadingText || 'Loading...') : label);
+}
 
 // --- API Calls ---
 async function api(path, options = {}) {
@@ -2791,24 +2904,53 @@ function h(tag, attrs = {}, ...children) {
 }
 
 function renderSidebar() {
-  const navItems = [
-    { id: 'dashboard', icon: icons.dashboard, label: 'Dashboard', key: '1' },
-    { id: 'pipeline', icon: icons.pipeline, label: 'Pipeline', key: '2' },
-    { id: 'meetings', icon: icons.meetings, label: 'Meetings', key: '3' },
-    { id: 'clients', icon: icons.clients, label: 'Clients', key: '4' },
-    { id: 'actions', icon: icons.actions, label: 'Actions', key: '5' },
-    { id: 'pestering', icon: icons.pestering, label: 'Pestering', key: '6' },
-    { id: 'insights', icon: icons.insights, label: 'Insights', key: '7' },
-    { id: 'deals', icon: icons.deals, label: 'Deals', key: '8' },
-    { id: 'content', icon: icons.content, label: 'Content', key: 'C' },
-    { id: 'triggers', icon: icons.triggers, label: 'Triggers', key: 'T' },
-    { id: 'calendar', icon: icons.calendar, label: 'Calendar' },
-    { id: 'analytics', icon: icons.analytics, label: 'Analytics' },
-    { id: 'playbooks', icon: icons.content, label: 'Playbooks', key: 'P' },
-    { id: 'series', icon: icons.calendar, label: 'Series', key: 'S' },
-    { id: 'publish-tracker', icon: icons.analytics, label: 'Publish Tracker' },
-    { id: 'settings', icon: icons.settings, label: 'Settings', key: '9' },
+  const navGroups = [
+    { section: 'Overview', items: [
+      { id: 'dashboard', icon: icons.dashboard, label: 'Dashboard', key: '1' },
+      { id: 'pipeline', icon: icons.pipeline, label: 'Pipeline', key: '2' },
+    ]},
+    { section: 'CRM', items: [
+      { id: 'meetings', icon: icons.meetings, label: 'Meetings', key: '3' },
+      { id: 'clients', icon: icons.clients, label: 'Clients', key: '4' },
+      { id: 'actions', icon: icons.actions, label: 'Actions', key: '5' },
+      { id: 'pestering', icon: icons.pestering, label: 'Follow-ups', key: '6' },
+      { id: 'deals', icon: icons.deals, label: 'Deals', key: '8' },
+    ]},
+    { section: 'Content', items: [
+      { id: 'content', icon: icons.content, label: 'Content', key: 'C' },
+      { id: 'triggers', icon: icons.triggers, label: 'Triggers', key: 'T' },
+      { id: 'calendar', icon: icons.calendar, label: 'Calendar' },
+      { id: 'analytics', icon: icons.analytics, label: 'Analytics' },
+      { id: 'playbooks', icon: icons.content, label: 'Playbooks', key: 'P' },
+      { id: 'series', icon: icons.calendar, label: 'Series', key: 'S' },
+      { id: 'publish-tracker', icon: icons.analytics, label: 'Publish Tracker' },
+    ]},
+    { section: 'Intelligence', items: [
+      { id: 'insights', icon: icons.insights, label: 'Insights', key: '7' },
+      { id: 'performance', icon: icons.performance, label: 'Performance' },
+      { id: 'inspirations', icon: icons.triggers, label: 'Inspirations' },
+    ]},
+    { section: 'Tools', items: [
+      { id: 'save-url', icon: icons.link, label: 'Save URL' },
+      { id: 'memory', icon: icons.brain, label: 'Memory' },
+      { id: 'settings', icon: icons.settings, label: 'Settings', key: '9' },
+    ]},
   ];
+
+  function navItem(item) {
+    const reviewCount = item.id === 'content' ? state.content.filter(c => c.status === 'review').length : 0;
+    const actionCount = item.id === 'actions' ? (state.allActions || []).filter(a => a.status === 'open').length : 0;
+    return h('div', {
+      className: `nav-item ${state.page === item.id ? 'active' : ''}`,
+      onclick: () => { state.page = item.id; state.sidebarOpen = false; render(); }
+    },
+      h('span', { innerHTML: item.icon }),
+      h('span', {}, item.label),
+      reviewCount > 0 ? h('span', { style: { background: 'var(--red)', color: 'white', borderRadius: '10px', fontSize: '10px', padding: '1px 6px', marginLeft: '4px', fontWeight: '700' }}, String(reviewCount)) : null,
+      actionCount > 0 ? h('span', { style: { background: 'var(--amber)', color: 'white', borderRadius: '10px', fontSize: '10px', padding: '1px 6px', marginLeft: '4px', fontWeight: '700' }}, String(actionCount)) : null,
+      item.key ? h('span', { className: 'kbd', style: { marginLeft: 'auto' } }, item.key) : null
+    );
+  }
 
   return h('nav', { className: `sidebar ${state.sidebarOpen ? 'open' : ''}` },
     h('div', { className: 'sidebar-header' },
@@ -2829,46 +2971,10 @@ function renderSidebar() {
         'Ask the Brain'
       )
     ),
-    h('div', { className: 'nav-section' }, 'Menu'),
-    ...navItems.map(item =>
-      h('div', {
-        className: `nav-item ${state.page === item.id ? 'active' : ''}`,
-        onclick: () => { state.page = item.id; state.sidebarOpen = false; render(); }
-      },
-        h('span', { innerHTML: item.icon }),
-        h('span', {}, item.label),
-        item.id === 'content' && state.content.filter(c => c.status === 'review').length > 0
-          ? h('span', { style: {
-              background: 'var(--red)', color: 'white', borderRadius: '10px',
-              fontSize: '10px', padding: '1px 6px', marginLeft: '4px', fontWeight: '700'
-            }}, String(state.content.filter(c => c.status === 'review').length))
-          : null,
-        item.id === 'actions' && (state.allActions || []).filter(a => a.status === 'open').length > 0
-          ? h('span', { style: {
-              background: 'var(--amber)', color: 'white', borderRadius: '10px',
-              fontSize: '10px', padding: '1px 6px', marginLeft: '4px', fontWeight: '700'
-            }}, String((state.allActions || []).filter(a => a.status === 'open').length))
-          : null,
-        h('span', { className: 'kbd', style: { marginLeft: 'auto' } }, item.key)
-      )
-    ),
-    h('div', { className: 'nav-section', style: { marginTop: '16px' } }, 'Tools'),
-    h('div', { className: `nav-item ${state.page === 'save-url' ? 'active' : ''}`, onclick: () => { state.page = 'save-url'; render(); } },
-      h('span', { innerHTML: icons.link }),
-      h('span', {}, 'Save URL')
-    ),
-    h('div', { className: `nav-item ${state.page === 'memory' ? 'active' : ''}`, onclick: () => { state.page = 'memory'; render(); } },
-      h('span', { innerHTML: icons.brain }),
-      h('span', {}, 'Memory')
-    ),
-    h('div', { className: `nav-item ${state.page === 'inspirations' ? 'active' : ''}`, onclick: () => { state.page = 'inspirations'; render(); } },
-      h('span', { innerHTML: icons.triggers }),
-      h('span', {}, 'Inspirations')
-    ),
-    h('div', { className: `nav-item ${state.page === 'performance' ? 'active' : ''}`, onclick: () => { state.page = 'performance'; render(); } },
-      h('span', { innerHTML: icons.performance }),
-      h('span', {}, 'Performance')
-    ),
+    ...navGroups.flatMap(group => [
+      h('div', { className: 'nav-section', style: group.section === 'Overview' ? {} : { marginTop: '8px' } }, group.section),
+      ...group.items.map(navItem)
+    ]),
     h('div', { className: 'sidebar-footer' },
       h('button', {
         className: 'theme-toggle',
@@ -3004,6 +3110,219 @@ function renderCategoryBreakdown(s) {
           h('span', { style: { fontSize: '12px', fontWeight: '600', color: 'var(--gray-600)', minWidth: '24px', textAlign: 'right' } }, String(count))
         );
       })
+    )
+  );
+}
+
+function renderContentActions() {
+  const ab = (label, color, endpoint, opts = {}) => {
+    const loadKey = opts.stateKey ? `_loading_${opts.stateKey}` : null;
+    return h('button', {
+      className: 'btn btn-sm',
+      style: { background: color, color: 'white', border: 'none', fontSize: '11px', padding: '6px 10px', whiteSpace: 'nowrap' },
+      disabled: loadKey ? state[loadKey] : false,
+      onclick: async () => {
+        if (loadKey) { state[loadKey] = true; render(); }
+        toast(opts.toast || `Running ${label}...`, 'info');
+        try {
+          const res = await api(endpoint, { method: opts.method || 'POST', ...(opts.body ? { body: opts.body } : {}) });
+          if (opts.stateKey) state[opts.stateKey] = res;
+          toast(opts.successMsg ? opts.successMsg(res) : `${label} complete!`, 'success');
+          if (opts.reload) await loadData(); else render();
+        } catch (err) { toast(`${label} failed: ` + err.message, 'error'); }
+        if (loadKey) { state[loadKey] = false; render(); }
+      }
+    }, (loadKey && state[loadKey]) ? 'Loading...' : label);
+  };
+
+  const categories = [
+    { id: 'cm-generate', title: 'Generate & Publish', defaultOpen: true, buttons: [
+      ab('Batch 5', '#059669', '/api/batch-generate', { body: { count: 5, format: 'linkedin' }, reload: true, successMsg: r => `Generated ${r.generated || r.successes || 0} posts` }),
+      ab('Batch 7', '#059669', '/api/batch-generate', { body: { count: 7 }, reload: true, successMsg: r => `Generated ${r.successes || 0}/${r.requested || 7} posts` }),
+      ab('Auto-Regen', '#d97706', '/api/content/auto-regen', { reload: true, successMsg: r => r.candidates > 0 ? `Regenerating ${r.candidates} items` : r.message || 'Done' }),
+      ab('Repurpose', '#6366f1', '/api/auto-repurpose', { reload: true, successMsg: r => `${r.count || 0} pieces repurposed` }),
+      ab('Newsletter', '#4f46e5', '/api/newsletter-compiler', { reload: true, successMsg: r => `Newsletter: "${r.subject_line}"` }),
+      ab('Build Swipe', '#475569', '/api/swipe-file/auto-save', { successMsg: r => `Saved ${r.saved} examples (${r.total} total)` }),
+      ab('Lead Magnet', '#be185d', '/api/lead-magnet-generator', { method: 'POST', body: { type: 'checklist' }, reload: true, successMsg: r => `Lead magnet: "${r.title}"` }),
+      ab('Archive', '#dc2626', '/api/content-archive', { reload: true, successMsg: r => `Archived ${r.archived_count} old items` }),
+      ab('Newslettr', '#4f46e5', '/api/newsletter-builder', { reload: true, successMsg: r => `Newsletter: "${(r.subject_line || '').slice(0, 40)}"` }),
+      ab('Export Cal', '#059669', '/api/calendar-export', { method: 'GET', successMsg: () => 'Calendar exported!' }),
+    ]},
+    { id: 'cm-analyze', title: 'Analyze & Score', buttons: [
+      ab('Intelligence', '#1e40af', '/api/content-intelligence', { stateKey: 'contentIntelligence' }),
+      ab('DNA', '#6366f1', '/api/content-dna', { stateKey: 'contentDna', successMsg: r => `DNA: "${(r.formula || '').slice(0, 50)}"` }),
+      ab('Hooks', '#7c3aed', '/api/hooks/analyze', { stateKey: 'hookAnalysis', successMsg: r => `Avg: ${r.average_score}%` }),
+      ab('Score', '#0e7490', '/api/content-scoring', { stateKey: 'contentScoring', successMsg: r => `Avg: ${r.avg_score}` }),
+      ab('Audit', '#059669', '/api/content-audit', { successMsg: r => `${r.total_content} items, ${r.approval_rate}% approved` }),
+      ab('Audit+', '#f59e0b', '/api/content-quality-audit', { stateKey: 'contentQualityAudit', successMsg: r => `${r.grade} (${r.average_score}/100)` }),
+      ab('Benchmarks', '#475569', '/api/performance-benchmarks', { stateKey: 'performanceBenchmarks', successMsg: r => `Grade: ${r.overall_grade}` }),
+      ab('Flywheel', '#475569', '/api/flywheel-analyzer', { stateKey: 'flywheelAnalyzer', successMsg: r => `${r.flywheel_velocity}/100 (${r.momentum})` }),
+      ab('Velocity', '#dc2626', '/api/content-velocity', { stateKey: 'contentVelocity', successMsg: r => `${r.production?.daily_rate}/day` }),
+      ab('Health', '#059669', '/api/content-system-health', { stateKey: 'contentSystemHealthV2', successMsg: r => `${r.grade} (${r.overall_score}/100)` }),
+      ab('Impact', '#7c3aed', '/api/content-impact-score', { stateKey: 'contentImpactScore', successMsg: r => `${r.grade} (${r.impact_score}/100)` }),
+      ab('Readability', '#2563eb', '/api/content-readability-scorer', { stateKey: 'contentReadabilityScorer', successMsg: r => `Avg: ${r.avg_readability}/100` }),
+      ab('Forecast', '#6366f1', '/api/engagement-forecast', { stateKey: 'engagementForecast', successMsg: r => `7d: ${r.predicted_7d_total} engagements` }),
+      ab('Brand Voice', '#0891b2', '/api/brand-voice-consistency', { stateKey: 'brandVoiceConsistency', successMsg: r => `${r.avg_consistency}% consistent` }),
+      ab('Eng Score', '#475569', '/api/engagement-scorer', { stateKey: 'engagementScorer', successMsg: r => `Scored ${r.total_scored}, avg: ${r.avg_score}` }),
+      ab('Heatmap', '#6366f1', '/api/engagement-heatmap', { stateKey: 'engagementHeatmap', successMsg: r => `Best: ${r.best_time}` }),
+      ab('Scorecard', '#0891b2', '/api/weekly-content-scorecard', { stateKey: 'weeklyContentScorecard', successMsg: r => `${r.grade} (${r.total_score}/100)` }),
+      ab('ROI', '#15803d', '/api/content-roi', { stateKey: 'contentRoi', successMsg: r => `ROI: ${r.roi_percentage}%` }),
+      ab('ROI+', '#6366f1', '/api/content-roi-detail', { stateKey: 'contentRoiDetail', successMsg: r => `${r.summary?.overall_roi}%` }),
+      ab('Cost', '#475569', '/api/content-cost-calculator', { stateKey: 'contentCostCalculator', successMsg: r => `$${r.per_piece?.cost || 0}/piece` }),
+      ab('Lengths', '#475569', '/api/post-length-analyzer', { stateKey: 'postLengthAnalyzer', successMsg: r => `${r.total_analyzed} analyzed` }),
+      ab('Headlines', '#d97706', '/api/headline-analyzer', { stateKey: 'headlineAnalyzer', successMsg: r => `Avg: ${r.avg_score}/100` }),
+      ab('Perf Tiers', '#2563eb', '/api/content-performance-tiers', { stateKey: 'contentPerformanceTiers', successMsg: r => `S: ${r.tier_counts?.S}, avg: ${r.avg_score}` }),
+    ]},
+    { id: 'cm-strategy', title: 'Strategy & Planning', buttons: [
+      ab('Pillars', '#2563eb', '/api/content-pillars/generate', { body: {}, stateKey: 'contentPillars', successMsg: r => `${r.pillars?.length || 0} pillars` }),
+      ab('Clusters', '#0d9488', '/api/topic-clusters', { stateKey: 'topicClusters', successMsg: r => `${r.clusters?.length || 0} clusters` }),
+      ab('Themes', '#6366f1', '/api/themes/analyze', { stateKey: 'contentThemes', successMsg: r => `${r.themes?.length || 0} themes` }),
+      ab('Matrix', '#7c2d12', '/api/content-matrix-generator', { stateKey: 'contentMatrix', successMsg: r => `${r.total_post_ideas || 0} ideas` }),
+      ab('Matrix+', '#0891b2', '/api/content-matrix/build', { stateKey: 'contentMatrix', successMsg: r => `${r.matrix?.total_posts || 0} posts` }),
+      ab('Series', '#dc2626', '/api/series-templates/setup', { stateKey: 'seriesTemplates', successMsg: r => `${r.templates?.series?.length || 0} series` }),
+      ab('Gaps', '#475569', '/api/content-gap-finder', { stateKey: 'contentGapFinder', successMsg: r => `${r.coverage_score}% coverage` }),
+      ab('Plan', '#0d9488', '/api/weekly-action-plan', { stateKey: 'weeklyActionPlan', successMsg: r => `Theme: ${r.week_theme}` }),
+      ab('Rotate', '#7c3aed', '/api/pillar-rotator', { stateKey: 'pillarRotator', successMsg: r => `Next: ${r.next_5_posts?.map(p => p.pillar).join(', ')}` }),
+      ab('Pipeline', '#475569', '/api/pipeline-board', { stateKey: 'pipelineBoard', successMsg: r => `${r.summary?.total_in_pipeline} items` }),
+      ab('Authority', '#6d28d9', '/api/authority-builder', { stateKey: 'authorityBuilder', successMsg: r => `Stage: ${r.current_stage}` }),
+      ab('ICP', '#4f46e5', '/api/icp-refiner', { stateKey: 'icpRefined', successMsg: r => `ICP: ${r.primary_icp?.title || 'refined'}` }),
+      ab('Win/Loss', '#9333ea', '/api/win-loss-analysis', { stateKey: 'winLossAnalysis', successMsg: r => `Rate: ${r.win_rate}` }),
+      ab('Convert', '#9333ea', '/api/conversion-optimizer', { stateKey: 'conversionOptimizer', successMsg: r => `Score: ${r.conversion_score}/100` }),
+      ab('Funnel', '#ea580c', '/api/funnel-analyzer', { stateKey: 'funnelAnalysis', successMsg: r => `Health: ${r.funnel_health}` }),
+      ab('Cal AI', '#0369a1', '/api/content-calendar-ai', { stateKey: 'contentCalendarAi', successMsg: r => `${r.total_posts || 0} posts planned` }),
+      ab('Auto Cal', '#0891b2', '/api/calendar/auto-build', { reload: true, successMsg: r => `Built!` }),
+      ab('Playbook', '#7c3aed', '/api/growth-playbook', { stateKey: 'growthPlaybook', successMsg: () => '90-day playbook created!' }),
+    ]},
+    { id: 'cm-engage', title: 'Engage & Distribute', buttons: [
+      ab('Comments', '#ea580c', '/api/comment-strategy', { stateKey: 'commentStrategy', successMsg: r => `${r.daily_targets?.length || 0} targets` }),
+      ab('DM Scripts', '#1d9bf0', '/api/dm-scripts', { reload: true }),
+      ab('Replies', '#7c3aed', '/api/reply-strategy', { stateKey: 'replyStrategy', successMsg: r => `${r.target_accounts?.length || 0} accounts` }),
+      ab('Engage', '#dc2626', '/api/engagement-booster', { successMsg: r => `Focus: ${r.todays_focus}` }),
+      ab('Bio', '#0891b2', '/api/bio-optimizer', { successMsg: () => 'Bio optimized!' }),
+      ab('Profile', '#7c3aed', '/api/profile-optimizer', { body: { name: 'Fardeen', headline: 'Legal Marketing', about: 'We build systems that generate signed cases for law firms.' }, stateKey: '_profileOptimizer', successMsg: () => 'Profile optimized!' }),
+      ab('Listen', '#7c2d12', '/api/social-listening', { stateKey: 'socialListening', successMsg: r => `${r.total_signals} signals` }),
+      ab('Draft', '#0369a1', '/api/drafting-strategy', { stateKey: 'draftingStrategy', successMsg: r => `${r.target_accounts?.length || 0} targets` }),
+      ab('Golden', '#059669', '/api/golden-hour', { successMsg: r => `${r.minute_by_minute?.length || 6} time blocks` }),
+      ab('Proof', '#059669', '/api/social-proof-engine', { reload: true, successMsg: r => `${r.testimonial_posts?.length || 0} posts` }),
+      ab('Distrib', '#2563eb', '/api/distribution-engine', { stateKey: 'distributionEngine', successMsg: r => `${r.total_touchpoints || 0} touchpoints` }),
+      ab('Schedule', '#0ea5e9', '/api/smart-schedule', { body: { days: 7 }, successMsg: r => `${r.total_scheduled} scheduled` }),
+      ab('Post Sched', '#4338ca', '/api/post-scheduler', { stateKey: 'postScheduler', successMsg: r => `${r.weekly_schedule?.length || 0} slots` }),
+      ab('Saved Reps', '#ca8a04', '/api/saved-replies', { stateKey: 'savedReplies', successMsg: r => `${r.replies?.length || 0} templates` }),
+      ab('Tags', '#475569', '/api/content-tags', { stateKey: 'contentTags', method: 'GET', successMsg: r => `${r.total_tags} tags` }),
+      ab('Alerts', '#f59e0b', '/api/engagement-alerts', { stateKey: 'engagementAlerts', method: 'GET', successMsg: r => `${r.triggered?.length || 0} triggered` }),
+      ab('Queue', '#7c3aed', '/api/auto-publish-queue', { stateKey: 'autoPublishQueue', method: 'GET', successMsg: r => `${r.total} items` }),
+    ]},
+    { id: 'cm-compete', title: 'Compete & Monitor', buttons: [
+      ab('Competitors', '#dc2626', '/api/competitors/analyze', { reload: true, successMsg: r => `${r.competitors?.length || 0} analyzed` }),
+      ab('Spy', '#dc2626', '/api/competitor-analysis', { reload: true, successMsg: r => `${r.content_gaps?.length || 0} gaps` }),
+      ab('Intel', '#be123c', '/api/competitive-intel', { stateKey: 'competitiveIntel', successMsg: r => `${r.gaps_we_can_fill?.length || 0} gaps` }),
+      ab('Trends', '#d97706', '/api/trending-angles', { successMsg: r => `${r.trending_angles?.length || 0} angles` }),
+      ab('Trends+', '#dc2626', '/api/trends-analyzer', { stateKey: 'trendsAnalysis', successMsg: r => `${r.emerging_trends?.length || 0} emerging` }),
+      ab('Hijack', '#ea580c', '/api/trend-hijacker', { stateKey: 'trendHijacker', successMsg: r => `${r.trends?.length || 0} hijackable` }),
+      ab('Quick Wins', '#059669', '/api/quick-wins', { stateKey: 'quickWins', successMsg: r => `${r.quick_wins?.length || 0} found` }),
+      ab('Brief', '#4f46e5', '/api/daily-briefing', { stateKey: 'dailyBriefing', successMsg: r => r.greeting?.slice(0, 60) || 'Briefing ready!' }),
+      ab('Digest', '#d97706', '/api/analytics/generate-digest', { successMsg: r => `Grade: ${r.digest?.grade}` }),
+      ab('Viral', '#f59e0b', '/api/viral-detector', { stateKey: 'viralDetector', successMsg: r => `${r.total_candidates} candidates` }),
+      ab('Cannibal', '#dc2626', '/api/cannibalisation-check', { stateKey: 'cannibalisationCheck', successMsg: r => `${r.total_conflicts} conflicts` }),
+      ab('Comp Gaps', '#7c3aed', '/api/competitor-gap-finder', { stateKey: 'competitorGapFinder', successMsg: r => `${r.total_gaps} gaps` }),
+      ab('Compliance', '#059669', '/api/content-compliance-checker', { stateKey: 'contentComplianceChecker', successMsg: r => `${r.compliance_rate}% compliant` }),
+      ab('Supply', '#2563eb', '/api/content-supply-chain', { stateKey: 'contentSupplyChain', successMsg: r => `Bottleneck: ${r.bottleneck || 'None'}` }),
+      ab('Momentum', '#0891b2', '/api/topic-momentum-tracker', { stateKey: 'topicMomentum', successMsg: r => `${r.rising} rising` }),
+      ab('Fresh', '#059669', '/api/content-freshness-scan', { stateKey: 'contentFreshness', successMsg: r => `${r.freshness_score}% fresh` }),
+      ab('Recycle', '#059669', '/api/content-recycler', { stateKey: 'contentRecycler', successMsg: r => `${r.suggestions?.length || 0} recyclable` }),
+      ab('Cluster Map', '#0d9488', '/api/content-cluster-map', { stateKey: 'contentClusterMap', successMsg: r => `${r.total_clusters} clusters` }),
+      ab('Leads', '#dc2626', '/api/lead-scorer', { stateKey: 'leadScorer', successMsg: r => `${r.hot_leads} hot leads` }),
+      ab('Weekly', '#0891b2', '/api/weekly-growth-report', { stateKey: 'weeklyGrowthReport', successMsg: r => `${r.content?.created} created` }),
+      ab('ROI Camp', '#059669', '/api/campaign-roi', { stateKey: 'campaignRoi', successMsg: r => `ROI: ${r.financial?.roi_percentage || 0}%` }),
+      ab('Funnel Viz', '#10b981', '/api/conversion-funnel-viz', { stateKey: 'conversionFunnelViz', successMsg: r => `${r.stages?.length} stages` }),
+      ab('Distrib+', '#7c3aed', '/api/distribution-scorecard', { stateKey: 'distributionScorecard', successMsg: r => `${r.grade} (${r.overall_score}/100)` }),
+      ab('Velocity+', '#059669', '/api/content-velocity-tracker', { stateKey: 'contentVelocityTracker', successMsg: r => `${r.velocity_score}/100` }),
+      ab('Analytics', '#6366f1', '/api/platform-analytics', { stateKey: 'platformAnalyticsAgg', successMsg: r => `${r.totals?.total_impressions || 0} impressions` }),
+    ]},
+  ];
+
+  return h('div', {},
+    // Primary actions row
+    h('div', { style: { display: 'flex', gap: '8px', marginBottom: '12px', flexWrap: 'wrap' } },
+      h('button', {
+        className: 'btn btn-outline btn-sm',
+        disabled: state._scraping,
+        onclick: async () => {
+          state._scraping = true; render();
+          toast('Scraping all sources...', 'info');
+          try {
+            const res = await api('/api/scrape-now', { method: 'POST' });
+            toast(`Scraped ${res.new_triggers || 0} new triggers`, 'success');
+            await loadData();
+          } catch (err) { toast('Scrape failed: ' + err.message, 'error'); }
+          state._scraping = false; render();
+        }
+      }, state._scraping ? 'Scraping...' : 'Scrape Now'),
+      h('button', {
+        className: 'btn btn-primary btn-sm',
+        disabled: state._generatingWeek,
+        onclick: async () => {
+          state._generatingWeek = true; render();
+          toast('Generating a full week of content...', 'info');
+          try {
+            const res = await api('/api/generate-week', { method: 'POST' });
+            if (res.batch_id) {
+              state._weekBatchId = res.batch_id;
+              const poll = setInterval(async () => {
+                try {
+                  const prog = await api(`/api/generate-batch/${res.batch_id}`);
+                  if (prog.status === 'done') {
+                    clearInterval(poll);
+                    state._generatingWeek = false;
+                    toast(`Week generated! ${prog.completed} pieces`, 'success');
+                    await loadData();
+                  } else if (prog.status === 'error') {
+                    clearInterval(poll);
+                    state._generatingWeek = false;
+                    toast('Generation failed', 'error');
+                    render();
+                  }
+                } catch (e) {}
+              }, 5000);
+            }
+          } catch (err) {
+            toast('Failed: ' + err.message, 'error');
+            state._generatingWeek = false; render();
+          }
+        }
+      }, state._generatingWeek ? 'Generating...' : 'Generate Week'),
+      h('button', {
+        className: 'btn btn-sm',
+        style: { background: state.autopilot?.enabled ? '#059669' : '#64748b', color: 'white', border: 'none' },
+        onclick: async () => {
+          try {
+            const res = await api('/api/autopilot/enable', { method: 'POST', body: { enabled: !state.autopilot?.enabled } });
+            state.autopilot = { ...state.autopilot, enabled: res.enabled, settings: res.settings };
+            toast(res.enabled ? 'Auto-pilot ENABLED' : 'Auto-pilot disabled', res.enabled ? 'success' : 'info');
+            render();
+          } catch (err) { toast('Failed: ' + err.message, 'error'); }
+        }
+      }, state.autopilot?.enabled ? 'Autopilot ON' : 'Autopilot OFF'),
+      state.autopilot?.enabled ? h('button', {
+        className: 'btn btn-sm',
+        style: { background: '#0ea5e9', color: 'white', border: 'none' },
+        onclick: async () => {
+          toast('Running auto-pilot cycle...', 'info');
+          try {
+            const res = await api('/api/autopilot/run', { method: 'POST' });
+            const r = res.results;
+            toast(`Autopilot: ${r.generate?.generated || 0} generated`, 'success');
+            await loadData();
+          } catch (err) { toast('Autopilot run failed: ' + err.message, 'error'); }
+        }
+      }, 'Run Now') : null,
+      h('button', { className: 'btn btn-ghost btn-sm', onclick: () => { state.page = 'content'; render(); } }, 'View Content')
+    ),
+    // Categorized action groups
+    ...categories.map(cat =>
+      renderCollapsible(cat.id, cat.title, cat.buttons.length,
+        [h('div', { className: 'action-grid' }, ...cat.buttons)]
+      )
     )
   );
 }
@@ -3177,1164 +3496,9 @@ function renderDashboardPage() {
       const totalPublished = (state.published || []).length;
       return h('div', { style: { marginBottom: '20px' } },
         h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
-          h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)' } }, 'CONTENT MACHINE'),
-          h('div', { style: { display: 'flex', gap: '8px' } },
-            h('button', {
-              className: 'btn btn-outline btn-sm',
-              disabled: state._scraping,
-              onclick: async () => {
-                state._scraping = true; render();
-                toast('Scraping all sources...', 'info');
-                try {
-                  const res = await api('/api/scrape-now', { method: 'POST' });
-                  toast(`Scraped ${res.new_triggers || 0} new triggers`, 'success');
-                  await loadData();
-                } catch (err) { toast('Scrape failed: ' + err.message, 'error'); }
-                state._scraping = false; render();
-              }
-            }, state._scraping ? 'Scraping...' : 'Scrape Now'),
-            h('button', {
-              className: 'btn btn-primary btn-sm',
-              disabled: state._generatingWeek,
-              onclick: async () => {
-                state._generatingWeek = true; render();
-                toast('Generating a full week of content...', 'info');
-                try {
-                  const res = await api('/api/generate-week', { method: 'POST' });
-                  if (res.batch_id) {
-                    state._weekBatchId = res.batch_id;
-                    // Poll for completion
-                    const poll = setInterval(async () => {
-                      try {
-                        const prog = await api(`/api/generate-batch/${res.batch_id}`);
-                        if (prog.status === 'done') {
-                          clearInterval(poll);
-                          state._generatingWeek = false;
-                          toast(`Week generated! ${prog.completed} pieces, ${prog.scheduled || 0} auto-scheduled`, 'success');
-                          await loadData();
-                        } else if (prog.status === 'error') {
-                          clearInterval(poll);
-                          state._generatingWeek = false;
-                          toast('Generation failed: ' + (prog.error || 'unknown'), 'error');
-                          render();
-                        }
-                      } catch (e) {}
-                    }, 5000);
-                  }
-                } catch (err) {
-                  toast('Failed: ' + err.message, 'error');
-                  state._generatingWeek = false; render();
-                }
-              }
-            }, state._generatingWeek ? 'Generating...' : 'Generate Week'),
-            h('button', {
-              className: 'btn btn-outline btn-sm',
-              style: { color: '#7c3aed', borderColor: '#7c3aed' },
-              disabled: state.generatingPillarPlan,
-              onclick: async () => {
-                state.generatingPillarPlan = true; render();
-                toast('Analyzing content for pillar strategy...', 'info');
-                try {
-                  const res = await api('/api/pillars/plan', { method: 'POST' });
-                  state.pillarPlan = res;
-                  state.generatingPillarPlan = false;
-                  toast(`Created ${res.pillars?.length || 0} content pillars!`, 'success');
-                  render();
-                } catch (err) { state.generatingPillarPlan = false; toast('Failed: ' + err.message, 'error'); render(); }
-              }
-            }, state.generatingPillarPlan ? 'Planning...' : 'Plan Pillars'),
-            h('button', {
-              className: 'btn btn-outline btn-sm',
-              style: { color: '#d97706', borderColor: '#d97706' },
-              onclick: async () => {
-                toast('Finding low-performing content to regenerate...', 'info');
-                try {
-                  const res = await api('/api/content/auto-regen', { method: 'POST' });
-                  toast(res.candidates > 0 ? `Regenerating ${res.candidates} items. Results in ~60s.` : res.message, res.candidates > 0 ? 'success' : 'info');
-                  if (res.candidates > 0) setTimeout(() => loadData(), 30000);
-                } catch (err) { toast('Failed: ' + err.message, 'error'); }
-              }
-            }, 'Auto-Regen'),
-            h('button', {
-              className: 'btn btn-outline btn-sm',
-              style: { color: '#dc2626', borderColor: '#dc2626' },
-              onclick: async () => {
-                toast('Analyzing competitor content...', 'info');
-                try {
-                  const res = await api('/api/competitors/analyze', { method: 'POST' });
-                  toast(`Analyzed ${res.competitors?.length || 0} competitors. ${res.opportunities?.length || 0} opportunities found.`, 'success');
-                  loadData();
-                } catch (err) { toast('Analysis failed: ' + err.message, 'error'); }
-              }
-            }, 'Competitors'),
-            h('button', {
-              className: 'btn btn-outline btn-sm',
-              onclick: async () => {
-                toast('Auto-saving best content to swipe file...', 'info');
-                try {
-                  const res = await api('/api/swipe-file/auto-save', { method: 'POST' });
-                  toast(`Saved ${res.saved} examples to swipe file (${res.total} total)`, 'success');
-                } catch (err) { toast('Swipe save failed: ' + err.message, 'error'); }
-              }
-            }, 'Build Swipe'),
-            h('button', {
-              className: 'btn btn-sm',
-              style: { background: '#7c3aed', color: 'white', border: 'none' },
-              onclick: async () => {
-                state.loadingIntelligence = true; render();
-                try {
-                  state.contentIntelligence = await api('/api/content-intelligence');
-                  toast('Intelligence report generated', 'success');
-                } catch (err) { toast('Failed: ' + err.message, 'error'); }
-                state.loadingIntelligence = false; render();
-              }
-            }, state.loadingIntelligence ? 'Analyzing...' : 'Intelligence'),
-            h('button', {
-              className: 'btn btn-sm',
-              style: { background: state.autopilot?.enabled ? '#059669' : '#64748b', color: 'white', border: 'none' },
-              onclick: async () => {
-                try {
-                  const res = await api('/api/autopilot/enable', { method: 'POST', body: { enabled: !state.autopilot?.enabled } });
-                  state.autopilot = { ...state.autopilot, enabled: res.enabled, settings: res.settings };
-                  toast(res.enabled ? 'Auto-pilot ENABLED' : 'Auto-pilot disabled', res.enabled ? 'success' : 'info');
-                  render();
-                } catch (err) { toast('Failed: ' + err.message, 'error'); }
-              }
-            }, state.autopilot?.enabled ? 'Autopilot ON' : 'Autopilot OFF'),
-            state.autopilot?.enabled ? h('button', {
-              className: 'btn btn-sm',
-              style: { background: '#0ea5e9', color: 'white', border: 'none' },
-              onclick: async () => {
-                toast('Running auto-pilot cycle...', 'info');
-                try {
-                  const res = await api('/api/autopilot/run', { method: 'POST' });
-                  const r = res.results;
-                  toast(`Autopilot: ${r.generate?.generated || 0} generated, ${r.ctas || 0} CTAs, ${r.swipes || 0} swipes`, 'success');
-                  await loadData();
-                } catch (err) { toast('Autopilot run failed: ' + err.message, 'error'); }
-              }
-            }, 'Run Now') : null,
-            h('button', {
-              className: 'btn btn-sm',
-              style: { background: '#0891b2', color: 'white', border: 'none' },
-              onclick: async () => {
-                state.generatingIdeas = true; render();
-                try {
-                  const res = await api('/api/ideas/generate', { method: 'POST' });
-                  state.contentIdeas = await api('/api/ideas');
-                  toast(`Generated ${res.ideas?.length || 0} content ideas`, 'success');
-                } catch (err) { toast('Idea generation failed: ' + err.message, 'error'); }
-                state.generatingIdeas = false; render();
-              }
-            }, state.generatingIdeas ? 'Generating...' : 'Ideas'),
-            h('button', {
-              className: 'btn btn-sm',
-              style: { background: '#6366f1', color: 'white', border: 'none' },
-              onclick: async () => {
-                try {
-                  const res = await api('/api/themes/analyze', { method: 'POST' });
-                  state.contentThemes = res;
-                  toast(`Found ${res.themes?.length || 0} content themes`, 'success');
-                  render();
-                } catch (err) { toast('Theme analysis failed: ' + err.message, 'error'); }
-              }
-            }, 'Themes'),
-            h('button', {
-              className: 'btn btn-sm',
-              style: { background: '#d97706', color: 'white', border: 'none' },
-              onclick: async () => {
-                toast('Generating weekly digest...', 'info');
-                try {
-                  const res = await api('/api/analytics/generate-digest', { method: 'POST' });
-                  state.weeklyDigest = res.digest;
-                  toast(`Weekly digest: Grade ${res.digest?.grade}`, 'success');
-                  render();
-                } catch (err) { toast('Digest failed: ' + err.message, 'error'); }
-              }
-            }, 'Digest'),
-            h('button', {
-              className: 'btn btn-sm',
-              style: { background: '#0891b2', color: 'white', border: 'none' },
-              onclick: async () => {
-                toast('Building content matrix (50+ post ideas)...', 'info');
-                try {
-                  const res = await api('/api/content-matrix/build', { method: 'POST' });
-                  state.contentMatrix = res.matrix;
-                  toast(`Matrix built: ${res.matrix?.total_posts || 0} posts across ${res.matrix?.pillars?.length || 0} pillars`, 'success');
-                  render();
-                } catch (err) { toast('Matrix build failed: ' + err.message, 'error'); }
-              }
-            }, 'Matrix'),
-            h('button', {
-              className: 'btn btn-sm',
-              style: { background: '#7c3aed', color: 'white', border: 'none' },
-              onclick: async () => {
-                toast('Analyzing hooks...', 'info');
-                try {
-                  const res = await api('/api/hooks/analyze', { method: 'POST' });
-                  state.hookAnalysis = res;
-                  toast(`Hooks analyzed: avg ${res.average_score}% | Best: ${res.best_hook?.grade || '?'}`, 'success');
-                  render();
-                } catch (err) { toast('Hook analysis failed: ' + err.message, 'error'); }
-              }
-            }, 'Hooks'),
-            h('button', {
-              className: 'btn btn-sm',
-              style: { background: '#dc2626', color: 'white', border: 'none' },
-              onclick: async () => {
-                toast('Setting up weekly series templates...', 'info');
-                try {
-                  const res = await api('/api/series-templates/setup', { method: 'POST' });
-                  state.seriesTemplates = res.templates;
-                  toast(`${res.templates?.series?.length || 0} weekly series created!`, 'success');
-                  render();
-                } catch (err) { toast('Series setup failed: ' + err.message, 'error'); }
-              }
-            }, 'Series'),
-            h('button', {
-              className: 'btn btn-sm',
-              style: { background: '#0891b2', color: 'white', border: 'none' },
-              onclick: async () => {
-                toast('Building auto calendar...', 'info');
-                try {
-                  const res = await api('/api/calendar/auto-build', { method: 'POST' });
-                  toast(`Week plan built! ${res.sources?.series_available || 0} series, ${res.sources?.matrix_posts_available || 0} matrix posts`, 'success');
-                  loadData();
-                } catch (err) { toast('Auto calendar failed: ' + err.message, 'error'); }
-              }
-            }, 'Auto Cal'),
-            h('button', {
-              className: 'btn btn-sm',
-              style: { background: '#7c3aed', color: 'white', border: 'none' },
-              onclick: async () => {
-                toast('Optimizing LinkedIn profile...', 'info');
-                try {
-                  const res = await api('/api/profile-optimizer', { method: 'POST', body: { name: 'Fardeen', headline: 'Legal Marketing', about: 'We build systems that generate signed cases for law firms.' } });
-                  state._profileOptimizer = res.profile;
-                  toast('Profile optimized! Check recommendations.', 'success');
-                  render();
-                } catch (err) { toast('Profile optimizer failed: ' + err.message, 'error'); }
-              }
-            }, 'Profile'),
-            h('button', {
-              className: 'btn btn-sm',
-              style: { background: '#dc2626', color: 'white', border: 'none' },
-              onclick: async () => {
-                toast('Creating lead magnet funnel...', 'info');
-                try {
-                  const res = await api('/api/lead-magnet-funnel', { method: 'POST', body: { topic: 'Google Ads audit for law firms', type: 'audit', audience: 'PI and family law firm owners spending $3K-$15K/month on ads' } });
-                  toast(`Funnel created: ${res.funnel?.funnel_name?.slice(0, 50)}`, 'success');
-                  loadData();
-                } catch (err) { toast('Funnel creation failed: ' + err.message, 'error'); }
-              }
-            }, 'Funnel'),
-            h('button', {
-              className: 'btn btn-sm',
-              style: { background: '#059669', color: 'white', border: 'none' },
-              onclick: async () => {
-                try {
-                  const res = await fetch(API + '/api/calendar/export', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ format: 'csv' }) });
-                  const blob = await res.blob();
-                  const url = URL.createObjectURL(blob);
-                  const a = document.createElement('a'); a.href = url; a.download = 'content-calendar.csv'; a.click();
-                  URL.revokeObjectURL(url);
-                  toast('Calendar exported!', 'success');
-                } catch (err) { toast('Export failed: ' + err.message, 'error'); }
-              }
-            }, 'Export Cal'),
-            h('button', {
-              className: 'btn btn-sm',
-              style: { background: '#2563eb', color: 'white', border: 'none' },
-              onclick: async () => {
-                toast('Generating content pillars...', 'info');
-                try {
-                  const res = await api('/api/content-pillars/generate', { method: 'POST', body: {} });
-                  state.contentPillars = res;
-                  toast(`${res.pillars?.length || 0} strategic pillars created!`, 'success');
-                  render();
-                } catch (err) { toast('Pillars failed: ' + err.message, 'error'); }
-              }
-            }, 'Pillars'),
-            h('button', {
-              className: 'btn btn-sm',
-              style: { background: '#dc2626', color: 'white', border: 'none' },
-              onclick: async () => {
-                toast('Analyzing competitors...', 'info');
-                try {
-                  const res = await api('/api/competitor-analysis', { method: 'POST' });
-                  toast(`Found ${res.content_gaps?.length || 0} gaps to exploit!`, 'success');
-                  loadData();
-                } catch (err) { toast('Analysis failed: ' + err.message, 'error'); }
-              }
-            }, 'Spy'),
-            h('button', {
-              className: 'btn btn-sm',
-              style: { background: '#d97706', color: 'white', border: 'none' },
-              onclick: async () => {
-                toast('Finding trending angles...', 'info');
-                try {
-                  const res = await api('/api/trending-angles', { method: 'POST' });
-                  const hot = (res.trending_angles || []).filter(a => a.urgency === 'high');
-                  toast(`${res.trending_angles?.length || 0} angles found (${hot.length} high urgency)!`, 'success');
-                } catch (err) { toast('Trending failed: ' + err.message, 'error'); }
-              }
-            }, 'Trends'),
-            h('button', {
-              className: 'btn btn-sm',
-              style: { background: '#0ea5e9', color: 'white', border: 'none' },
-              onclick: async () => {
-                toast('Smart scheduling next 7 days...', 'info');
-                try {
-                  const res = await api('/api/smart-schedule', { method: 'POST', body: { days: 7 } });
-                  toast(`Scheduled ${res.total_scheduled} posts! ${res.unscheduled_remaining} remaining.`, 'success');
-                } catch (err) { toast('Schedule failed: ' + err.message, 'error'); }
-              }
-            }, 'Schedule'),
-            h('button', {
-              className: 'btn btn-sm',
-              style: { background: '#059669', color: 'white', border: 'none' },
-              onclick: async () => {
-                toast('Batch generating 5 LinkedIn posts...', 'info');
-                try {
-                  const res = await api('/api/batch-generate', { method: 'POST', body: { count: 5, format: 'linkedin' } });
-                  toast(`Generated ${res.generated} posts (${res.failed} failed)`, res.generated > 0 ? 'success' : 'error');
-                  loadData();
-                } catch (err) { toast('Batch generate failed: ' + err.message, 'error'); }
-              }
-            }, 'Batch 5'),
-            h('button', {
-              className: 'btn btn-sm',
-              style: { background: '#6366f1', color: 'white', border: 'none' },
-              onclick: async () => {
-                toast('Analyzing content DNA...', 'info');
-                try {
-                  const res = await api('/api/content-dna', { method: 'POST' });
-                  state.contentDna = res;
-                  toast(`DNA extracted! Formula: "${(res.formula || '').slice(0, 50)}..."`, 'success');
-                  render();
-                } catch (err) { toast('DNA analysis failed: ' + err.message, 'error'); }
-              }
-            }, 'DNA'),
-            h('button', {
-              className: 'btn btn-sm',
-              style: { background: '#0d9488', color: 'white', border: 'none' },
-              onclick: async () => {
-                toast('Generating topic clusters...', 'info');
-                try {
-                  const res = await api('/api/topic-clusters', { method: 'POST' });
-                  state.topicClusters = res;
-                  toast(`${res.clusters?.length || 0} topic clusters created!`, 'success');
-                  render();
-                } catch (err) { toast('Clusters failed: ' + err.message, 'error'); }
-              }
-            }, 'Clusters'),
-            h('button', {
-              className: 'btn btn-sm',
-              style: { background: '#1d9bf0', color: 'white', border: 'none' },
-              onclick: async () => {
-                toast('Generating DM scripts...', 'info');
-                try {
-                  const res = await api('/api/dm-scripts', { method: 'POST' });
-                  toast('DM scripts generated!', 'success');
-                  loadData();
-                } catch (err) { toast('DM scripts failed: ' + err.message, 'error'); }
-              }
-            }, 'DM Scripts'),
-            h('button', {
-              className: 'btn btn-sm',
-              style: { background: '#7c3aed', color: 'white', border: 'none' },
-              onclick: async () => {
-                toast('Building reply strategy...', 'info');
-                try {
-                  const res = await api('/api/reply-strategy', { method: 'POST' });
-                  state.replyStrategy = res;
-                  toast(`Reply strategy: ${res.target_accounts?.length || 0} target accounts`, 'success');
-                  render();
-                } catch (err) { toast('Reply strategy failed: ' + err.message, 'error'); }
-              }
-            }, 'Replies'),
-            h('button', {
-              className: 'btn btn-sm',
-              style: { background: '#0891b2', color: 'white', border: 'none' },
-              onclick: async () => {
-                toast('Optimizing bios...', 'info');
-                try {
-                  const res = await api('/api/bio-optimizer', { method: 'POST' });
-                  toast('Bio optimized! X bio + LinkedIn headline ready', 'success');
-                } catch (err) { toast('Bio optimizer failed: ' + err.message, 'error'); }
-              }
-            }, 'Bio'),
-            h('button', {
-              className: 'btn btn-sm',
-              style: { background: '#ea580c', color: 'white', border: 'none' },
-              onclick: async () => {
-                toast('Building comment strategy...', 'info');
-                try {
-                  const res = await api('/api/comment-strategy', { method: 'POST' });
-                  state.commentStrategy = res;
-                  toast(`Comment strategy: ${res.daily_targets?.length || 0} target accounts`, 'success');
-                  render();
-                } catch (err) { toast('Comment strategy failed: ' + err.message, 'error'); }
-              }
-            }, 'Comments'),
-            h('button', {
-              className: 'btn btn-sm',
-              style: { background: '#4f46e5', color: 'white', border: 'none' },
-              onclick: async () => {
-                toast('Compiling newsletter...', 'info');
-                try {
-                  const res = await api('/api/newsletter-compiler', { method: 'POST' });
-                  toast(`Newsletter: "${res.subject_line}" — ${res.estimated_read_time}`, 'success');
-                  loadData();
-                } catch (err) { toast('Newsletter failed: ' + err.message, 'error'); }
-              }
-            }, 'Newsletter'),
-            h('button', {
-              className: 'btn btn-sm',
-              style: { background: '#059669', color: 'white', border: 'none' },
-              onclick: async () => {
-                toast('Finding recyclable content...', 'info');
-                try {
-                  const res = await api('/api/content-recycler', { method: 'POST' });
-                  state.contentRecycler = res;
-                  toast(`${res.suggestions?.length || 0} pieces ready to recycle!`, 'success');
-                  render();
-                } catch (err) { toast('Recycler failed: ' + err.message, 'error'); }
-              }
-            }, 'Recycle'),
-            h('button', {
-              className: 'btn btn-sm',
-              style: { background: '#dc2626', color: 'white', border: 'none' },
-              onclick: async () => {
-                toast('Getting engagement plan...', 'info');
-                try {
-                  const res = await api('/api/engagement-booster', { method: 'POST' });
-                  toast(`Focus: ${res.todays_focus}`, 'success');
-                } catch (err) { toast('Engagement plan failed: ' + err.message, 'error'); }
-              }
-            }, 'Engage'),
-            h('button', {
-              className: 'btn btn-sm',
-              style: { background: '#2563eb', color: 'white', border: 'none' },
-              onclick: async () => {
-                toast('Building distribution plan...', 'info');
-                try {
-                  const res = await api('/api/distribution-engine', { method: 'POST' });
-                  state.distributionEngine = res;
-                  toast(`Distribution: ${res.total_touchpoints || 0} touchpoints across 7 days`, 'success');
-                  render();
-                } catch (err) { toast('Distribution failed: ' + err.message, 'error'); }
-              }
-            }, 'Distrib'),
-            h('button', {
-              className: 'btn btn-sm',
-              style: { background: '#7c3aed', color: 'white', border: 'none' },
-              onclick: async () => {
-                toast('Generating growth playbook...', 'info');
-                try {
-                  const res = await api('/api/growth-playbook', { method: 'POST' });
-                  state.growthPlaybook = res;
-                  toast('90-day growth playbook created!', 'success');
-                  render();
-                } catch (err) { toast('Playbook failed: ' + err.message, 'error'); }
-              }
-            }, 'Playbook'),
-            h('button', {
-              className: 'btn btn-sm',
-              style: { background: '#059669', color: 'white', border: 'none' },
-              onclick: async () => {
-                toast('Generating social proof assets...', 'info');
-                try {
-                  const res = await api('/api/social-proof-engine', { method: 'POST' });
-                  toast(`${res.testimonial_posts?.length || 0} testimonial posts + ${res.proof_stats?.length || 0} proof stats`, 'success');
-                  loadData();
-                } catch (err) { toast('Social proof failed: ' + err.message, 'error'); }
-              }
-            }, 'Proof'),
-            h('button', {
-              className: 'btn btn-sm',
-              style: { background: '#ea580c', color: 'white', border: 'none' },
-              onclick: async () => {
-                toast('Analyzing funnel health...', 'info');
-                try {
-                  const res = await api('/api/funnel-analyzer', { method: 'POST' });
-                  state.funnelAnalysis = res;
-                  toast(`Funnel: ${res.funnel_health} — Bottleneck: ${res.bottleneck?.stage || 'none'}`, 'success');
-                  render();
-                } catch (err) { toast('Funnel analysis failed: ' + err.message, 'error'); }
-              }
-            }, 'Funnel'),
-            h('button', {
-              className: 'btn btn-sm',
-              style: { background: '#0d9488', color: 'white', border: 'none' },
-              onclick: async () => {
-                toast('Building weekly action plan...', 'info');
-                try {
-                  const res = await api('/api/weekly-action-plan', { method: 'POST' });
-                  state.weeklyActionPlan = res;
-                  toast(`Week plan: ${res.week_theme}`, 'success');
-                  render();
-                } catch (err) { toast('Action plan failed: ' + err.message, 'error'); }
-              }
-            }, 'Plan'),
-            h('button', {
-              className: 'btn btn-sm',
-              style: { background: '#6366f1', color: 'white', border: 'none' },
-              onclick: async () => {
-                toast('Auto-repurposing top content...', 'info');
-                try {
-                  const res = await api('/api/auto-repurpose', { method: 'POST' });
-                  toast(`${res.count || 0} pieces repurposed into 6 formats each!`, 'success');
-                  loadData();
-                } catch (err) { toast('Auto-repurpose failed: ' + err.message, 'error'); }
-              }
-            }, 'Repurpose'),
-            h('button', {
-              className: 'btn btn-sm',
-              style: { background: '#be185d', color: 'white', border: 'none' },
-              onclick: async () => {
-                toast('Generating lead magnet...', 'info');
-                try {
-                  const res = await api('/api/lead-magnet-generator', { method: 'POST', body: { type: 'checklist' } });
-                  toast(`Lead magnet: "${res.title}"`, 'success');
-                  loadData();
-                } catch (err) { toast('Lead magnet failed: ' + err.message, 'error'); }
-              }
-            }, 'Magnet'),
-            h('button', {
-              className: 'btn btn-sm',
-              style: { background: '#dc2626', color: 'white', border: 'none' },
-              onclick: async () => {
-                toast('Analyzing trends...', 'info');
-                try {
-                  const res = await api('/api/trends-analyzer', { method: 'POST' });
-                  state.trendsAnalysis = res;
-                  toast(`${res.emerging_trends?.length || 0} emerging trends found!`, 'success');
-                  render();
-                } catch (err) { toast('Trends failed: ' + err.message, 'error'); }
-              }
-            }, 'Trends'),
-            h('button', {
-              className: 'btn btn-sm',
-              style: { background: '#1e40af', color: 'white', border: 'none' },
-              onclick: async () => {
-                toast('Generating intelligence briefing...', 'info');
-                try {
-                  const res = await api('/api/content-intelligence', { method: 'POST' });
-                  state.contentIntelligence = res;
-                  toast('Intelligence briefing ready!', 'success');
-                  render();
-                } catch (err) { toast('Intelligence failed: ' + err.message, 'error'); }
-              }
-            }, 'Intel'),
-            h('button', {
-              className: 'btn btn-sm',
-              style: { background: '#9333ea', color: 'white', border: 'none' },
-              onclick: async () => {
-                toast('Optimizing conversion path...', 'info');
-                try {
-                  const res = await api('/api/conversion-optimizer', { method: 'POST' });
-                  state.conversionOptimizer = res;
-                  toast(`Conversion score: ${res.conversion_score}/100`, 'success');
-                  render();
-                } catch (err) { toast('Conversion optimizer failed: ' + err.message, 'error'); }
-              }
-            }, 'Convert'),
-            h('button', {
-              className: 'btn btn-sm',
-              style: { background: '#059669', color: 'white', border: 'none' },
-              onclick: async () => {
-                toast('Running content audit...', 'info');
-                try {
-                  const res = await api('/api/content-audit', { method: 'POST' });
-                  const recs = res.recommendations || [];
-                  toast(`Audit: ${res.total_content} items, ${res.approval_rate}% approved. ${recs[0] || 'Looking good!'}`, 'success');
-                } catch (err) { toast('Audit failed: ' + err.message, 'error'); }
-              }
-            }, 'Audit'),
-            h('button', { className: 'btn btn-outline btn-sm', style: { color: '#7c2d12', borderColor: '#7c2d12' }, onclick: async () => {
-              toast('Building content matrix...', 'info');
-              try {
-                const res = await api('/api/content-matrix-generator', { method: 'POST' });
-                state.contentMatrix = res;
-                toast(`Matrix: ${res.total_post_ideas || 0} post ideas across ${res.pillars?.length || 0} pillars!`, 'success');
-                render();
-              } catch (err) { toast('Matrix failed: ' + err.message, 'error'); }
-            }}, 'Matrix'),
-            h('button', { className: 'btn btn-outline btn-sm', style: { color: '#0369a1', borderColor: '#0369a1' }, onclick: async () => {
-              toast('Building drafting strategy...', 'info');
-              try {
-                const res = await api('/api/drafting-strategy', { method: 'POST' });
-                state.draftingStrategy = res;
-                toast(`Drafting: ${res.target_accounts?.length || 0} target accounts identified!`, 'success');
-                render();
-              } catch (err) { toast('Drafting failed: ' + err.message, 'error'); }
-            }}, 'Draft'),
-            h('button', { className: 'btn btn-outline btn-sm', style: { color: '#059669', borderColor: '#059669' }, onclick: async () => {
-              toast('Building golden hour plan...', 'info');
-              try {
-                const res = await api('/api/golden-hour', { method: 'POST' });
-                toast(`Golden Hour: ${res.minute_by_minute?.length || 6} time blocks planned!`, 'success');
-              } catch (err) { toast('Golden hour failed: ' + err.message, 'error'); }
-            }}, 'Golden'),
-            h('button', { className: 'btn btn-outline btn-sm', style: { color: '#dc2626', borderColor: '#dc2626' }, onclick: async () => {
-              toast('Measuring velocity...', 'info');
-              try {
-                const res = await api('/api/content-velocity', { method: 'POST' });
-                state.contentVelocity = res;
-                toast(`Velocity: ${res.production?.daily_rate}/day — Bottleneck: ${res.speed?.bottleneck}`, 'success');
-                render();
-              } catch (err) { toast('Velocity failed: ' + err.message, 'error'); }
-            }}, 'Velocity'),
-            h('button', { className: 'btn btn-outline btn-sm', style: { color: '#7c3aed', borderColor: '#7c3aed' }, onclick: async () => {
-              toast('Planning next 5 posts...', 'info');
-              try {
-                const res = await api('/api/pillar-rotator', { method: 'POST' });
-                state.pillarRotator = res;
-                toast(`Next 5: ${res.next_5_posts?.map(p => p.pillar).join(', ')}`, 'success');
-                render();
-              } catch (err) { toast('Rotator failed: ' + err.message, 'error'); }
-            }}, 'Rotate'),
-            h('button', { className: 'btn btn-outline btn-sm', style: { color: '#0891b2', borderColor: '#0891b2' }, onclick: async () => {
-              toast('Generating weekly report...', 'info');
-              try {
-                const res = await api('/api/weekly-content-report', { method: 'POST' });
-                state.weeklyReport = res;
-                toast(`Grade: ${res.grade} — ${res.headline?.slice(0, 60)}`, 'success');
-                render();
-              } catch (err) { toast('Report failed: ' + err.message, 'error'); }
-            }}, 'Report'),
-            h('button', { className: 'btn btn-outline btn-sm', style: { color: '#ca8a04', borderColor: '#ca8a04' }, onclick: async () => {
-              toast('Building saved replies...', 'info');
-              try {
-                const res = await api('/api/saved-replies', { method: 'POST' });
-                state.savedReplies = res;
-                toast(`${res.replies?.length || 0} reply templates created!`, 'success');
-                render();
-              } catch (err) { toast('Replies failed: ' + err.message, 'error'); }
-            }}, 'Replies'),
-            h('button', { className: 'btn btn-outline btn-sm', style: { color: '#be123c', borderColor: '#be123c' }, onclick: async () => {
-              toast('Analyzing competitors...', 'info');
-              try {
-                const res = await api('/api/competitive-intel', { method: 'POST' });
-                state.competitiveIntel = res;
-                toast(`Intel: ${res.gaps_we_can_fill?.length || 0} gaps, ${res.threat_level} threat`, 'success');
-                render();
-              } catch (err) { toast('Intel failed: ' + err.message, 'error'); }
-            }}, 'Compete'),
-            h('button', { className: 'btn btn-outline btn-sm', style: { color: '#0e7490', borderColor: '#0e7490' }, onclick: async () => {
-              toast('Scoring content...', 'info');
-              try {
-                const res = await api('/api/content-scoring', { method: 'POST' });
-                state.contentScoring = res;
-                toast(`Avg: ${res.avg_score} — ${res.distribution?.excellent || 0} excellent, ${res.distribution?.needs_work || 0} need work`, 'success');
-                render();
-              } catch (err) { toast('Scoring failed: ' + err.message, 'error'); }
-            }}, 'Score'),
-            h('button', { className: 'btn btn-outline btn-sm', style: { color: '#4338ca', borderColor: '#4338ca' }, onclick: async () => {
-              toast('Building schedule...', 'info');
-              try {
-                const res = await api('/api/post-scheduler', { method: 'POST' });
-                state.postScheduler = res;
-                toast(`Schedule: ${res.weekly_schedule?.length || 0} slots planned`, 'success');
-                render();
-              } catch (err) { toast('Schedule failed: ' + err.message, 'error'); }
-            }}, 'Schedule'),
-            h('button', { className: 'btn btn-outline btn-sm', style: { color: '#ea580c', borderColor: '#ea580c' }, onclick: async () => {
-              toast('Hunting trends...', 'info');
-              try {
-                const res = await api('/api/trend-hijacker', { method: 'POST' });
-                state.trendHijacker = res;
-                toast(`Trends: ${res.trends?.length || 0} hijackable topics`, 'success');
-                render();
-              } catch (err) { toast('Trends failed: ' + err.message, 'error'); }
-            }}, 'Hijack'),
-            h('button', { className: 'btn btn-outline btn-sm', style: { color: '#4f46e5', borderColor: '#4f46e5' }, onclick: async () => {
-              toast('Refining ICP...', 'info');
-              try {
-                const res = await api('/api/icp-refiner', { method: 'POST' });
-                state.icpRefined = res;
-                toast(`ICP: ${res.primary_icp?.title || 'refined'} — ${res.primary_icp?.firm_size || ''}`, 'success');
-                render();
-              } catch (err) { toast('ICP failed: ' + err.message, 'error'); }
-            }}, 'ICP'),
-            h('button', { className: 'btn btn-outline btn-sm', style: { color: '#15803d', borderColor: '#15803d' }, onclick: async () => {
-              toast('Calculating ROI...', 'info');
-              try {
-                const res = await api('/api/content-roi', { method: 'POST' });
-                state.contentRoi = res;
-                toast(`ROI: ${res.roi_percentage}% — ${res.recommendation?.slice(0, 50)}`, 'success');
-                render();
-              } catch (err) { toast('ROI failed: ' + err.message, 'error'); }
-            }}, 'ROI'),
-            h('button', { className: 'btn btn-outline btn-sm', style: { color: '#9333ea', borderColor: '#9333ea' }, onclick: async () => {
-              toast('Analyzing wins/losses...', 'info');
-              try {
-                const res = await api('/api/win-loss-analysis', { method: 'POST' });
-                state.winLossAnalysis = res;
-                toast(`Wins: ${res.total_wins} | Rate: ${res.win_rate}`, 'success');
-                render();
-              } catch (err) { toast('Win/loss failed: ' + err.message, 'error'); }
-            }}, 'Win/Loss'),
-            h('button', { className: 'btn btn-outline btn-sm', style: { color: '#059669', borderColor: '#059669' }, onclick: async () => {
-              toast('Finding quick wins...', 'info');
-              try {
-                const res = await api('/api/quick-wins', { method: 'POST' });
-                state.quickWins = res;
-                toast(`Wins: ${res.quick_wins?.length || 0} found — ${res.one_thing_today?.slice(0, 50)}`, 'success');
-                render();
-              } catch (err) { toast('Quick wins failed: ' + err.message, 'error'); }
-            }}, 'Wins'),
-            h('button', { className: 'btn btn-outline btn-sm', style: { color: '#7c2d12', borderColor: '#7c2d12' }, onclick: async () => {
-              toast('Scanning social signals...', 'info');
-              try {
-                const res = await api('/api/social-listening', { method: 'POST' });
-                state.socialListening = res;
-                toast(`Listening: ${res.total_signals} signals, ${res.dominant_sentiment} sentiment`, 'success');
-                render();
-              } catch (err) { toast('Listening failed: ' + err.message, 'error'); }
-            }}, 'Listen'),
-            h('button', { className: 'btn btn-outline btn-sm', style: { color: '#6d28d9', borderColor: '#6d28d9' }, onclick: async () => {
-              toast('Building authority plan...', 'info');
-              try {
-                const res = await api('/api/authority-builder', { method: 'POST' });
-                state.authorityBuilder = res;
-                toast(`Authority: ${res.current_stage || 'plan built'} — 30 days mapped`, 'success');
-                render();
-              } catch (err) { toast('Authority failed: ' + err.message, 'error'); }
-            }}, 'Authority'),
-            h('button', { className: 'btn btn-outline btn-sm', style: { color: '#4f46e5', borderColor: '#4f46e5' }, onclick: async () => {
-              toast('Generating daily briefing...', 'info');
-              try {
-                const res = await api('/api/daily-briefing', { method: 'POST' });
-                state.dailyBriefing = res;
-                toast(res.greeting?.slice(0, 60) || 'Briefing ready!', 'success');
-                render();
-              } catch (err) { toast('Briefing failed: ' + err.message, 'error'); }
-            }}, 'Brief'),
-            h('button', { className: 'btn btn-outline btn-sm', style: { color: '#0369a1', borderColor: '#0369a1' }, onclick: async () => {
-              toast('Building AI calendar...', 'info');
-              try {
-                const res = await api('/api/content-calendar-ai', { method: 'POST' });
-                state.contentCalendarAi = res;
-                toast(`Calendar: ${res.total_posts || 0} posts planned for 2 weeks`, 'success');
-                render();
-              } catch (err) { toast('Calendar failed: ' + err.message, 'error'); }
-            }}, 'Cal AI'),
-            h('button', { className: 'btn btn-outline btn-sm', style: { color: '#dc2626', borderColor: '#dc2626' }, onclick: async () => {
-              toast('Archiving old content...', 'info');
-              try {
-                const res = await api('/api/content-archive', { method: 'POST' });
-                toast(`Archived: ${res.archived_count} old items, ${res.remaining} remaining`, 'success');
-                loadData();
-              } catch (err) { toast('Archive failed: ' + err.message, 'error'); }
-            }}, 'Archive'),
-            h('button', { className: 'btn btn-outline btn-sm', onclick: async () => {
-              toast('Scoring engagement...', 'info');
-              try {
-                const res = await api('/api/engagement-scorer', { method: 'POST' });
-                state.engagementScorer = res;
-                toast(`Scored ${res.total_scored} items, avg: ${res.avg_score}`, 'success');
-                render();
-              } catch (err) { toast('Scoring failed: ' + err.message, 'error'); }
-            }}, 'Eng Score'),
-            h('button', { className: 'btn btn-outline btn-sm', onclick: async () => {
-              toast('Generating hook bank...', 'info');
-              try {
-                const res = await api('/api/hook-bank', { method: 'POST' });
-                state.hookBank = res;
-                toast(`Hook bank: ${res.total_hooks || 0} hooks in ${Object.keys(res.categories || {}).length} categories`, 'success');
-                render();
-              } catch (err) { toast('Hook bank failed: ' + err.message, 'error'); }
-            }}, 'Hooks'),
-            h('button', { className: 'btn btn-outline btn-sm', onclick: async () => {
-              toast('Planning content series...', 'info');
-              try {
-                const res = await api('/api/content-series-planner', { method: 'POST' });
-                state.contentSeriesPlanner = res;
-                toast(`Series: ${(res.series || []).length} planned`, 'success');
-                render();
-              } catch (err) { toast('Series failed: ' + err.message, 'error'); }
-            }}, 'Series'),
-            h('button', { className: 'btn btn-outline btn-sm', onclick: async () => {
-              toast('Finding content gaps...', 'info');
-              try {
-                const res = await api('/api/content-gap-finder', { method: 'POST' });
-                state.contentGapFinder = res;
-                toast(`Coverage: ${res.coverage_score}%, ${(res.topic_gaps || []).length} gaps found`, 'success');
-                render();
-              } catch (err) { toast('Gap finder failed: ' + err.message, 'error'); }
-            }}, 'Gaps'),
-            h('button', { className: 'btn btn-outline btn-sm', onclick: async () => {
-              toast('Running benchmarks...', 'info');
-              try {
-                const res = await api('/api/performance-benchmarks', { method: 'POST' });
-                state.performanceBenchmarks = res;
-                toast(`Grade: ${res.overall_grade}`, 'success');
-                render();
-              } catch (err) { toast('Benchmarks failed: ' + err.message, 'error'); }
-            }}, 'Bench'),
-            h('button', { className: 'btn btn-outline btn-sm', style: { color: '#059669', borderColor: '#059669' }, onclick: async () => {
-              toast('Batch generating 7 posts...', 'info');
-              try {
-                const res = await api('/api/batch-generate', { method: 'POST', body: { count: 7 } });
-                toast(`Generated ${res.successes}/${res.requested} posts`, res.successes > 0 ? 'success' : 'error');
-                loadData();
-              } catch (err) { toast('Batch gen failed: ' + err.message, 'error'); }
-            }}, 'Batch 7'),
-            h('button', { className: 'btn btn-outline btn-sm', onclick: async () => {
-              toast('Analyzing flywheel...', 'info');
-              try {
-                const res = await api('/api/flywheel-analyzer', { method: 'POST' });
-                state.flywheelAnalyzer = res;
-                toast(`Flywheel: ${res.flywheel_velocity}/100 (${res.momentum})`, 'success');
-                render();
-              } catch (err) { toast('Flywheel failed: ' + err.message, 'error'); }
-            }}, 'Flywheel'),
-            h('button', { className: 'btn btn-outline btn-sm', onclick: async () => {
-              toast('Building newsletter...', 'info');
-              try {
-                const res = await api('/api/newsletter-builder', { method: 'POST' });
-                toast(`Newsletter: "${(res.subject_line || '').slice(0, 40)}"`, 'success');
-                loadData();
-              } catch (err) { toast('Newsletter failed: ' + err.message, 'error'); }
-            }}, 'Newslettr'),
-            h('button', { className: 'btn btn-outline btn-sm', onclick: async () => {
-              toast('Scanning recyclable content...', 'info');
-              try {
-                const res = await api('/api/content-recycler-scan', { method: 'POST' });
-                state.contentRecyclerScan = res;
-                toast(`Found ${res.total_recyclable} recyclable items`, 'success');
-                render();
-              } catch (err) { toast('Recycler failed: ' + err.message, 'error'); }
-            }}, 'Recycle'),
-            h('button', { className: 'btn btn-outline btn-sm', onclick: async () => {
-              toast('Analyzing content DNA...', 'info');
-              try {
-                const res = await api('/api/content-dna-analyzer', { method: 'POST' });
-                state.contentDnaAnalyzer = res;
-                toast(`DNA: ${res.dominant_hook} hooks, ${res.optimal_length?.split('(')[0] || ''} optimal`, 'success');
-                render();
-              } catch (err) { toast('DNA failed: ' + err.message, 'error'); }
-            }}, 'DNA'),
-            h('button', { className: 'btn btn-outline btn-sm', onclick: async () => {
-              toast('Scheduling content...', 'info');
-              try {
-                const res = await api('/api/smart-scheduler', { method: 'POST' });
-                state.smartScheduler = res;
-                toast(`Scheduled ${res.total_scheduled} posts across ${(res.platforms_covered || []).length} platforms`, 'success');
-                render();
-              } catch (err) { toast('Scheduler failed: ' + err.message, 'error'); }
-            }}, 'Schedule'),
-            h('button', { className: 'btn btn-outline btn-sm', style: { color: state.contentSystemHealthV2?.grade === 'A' ? '#059669' : '#dc2626', borderColor: state.contentSystemHealthV2?.grade === 'A' ? '#059669' : '#dc2626' }, onclick: async () => {
-              toast('Checking system health...', 'info');
-              try {
-                const res = await api('/api/content-system-health', { method: 'POST' });
-                state.contentSystemHealthV2 = res;
-                toast(`Health: ${res.grade} (${res.overall_score}/100)`, res.grade === 'A' || res.grade === 'B' ? 'success' : 'error');
-                render();
-              } catch (err) { toast('Health check failed: ' + err.message, 'error'); }
-            }}, 'Health'),
-            h('button', { className: 'btn btn-outline btn-sm', style: { color: '#059669', borderColor: '#059669' }, onclick: async () => {
-              toast('Calculating campaign ROI...', 'info');
-              try {
-                const res = await api('/api/campaign-roi', { method: 'POST' });
-                state.campaignRoi = res;
-                toast(`ROI: ${res.financial?.roi_percentage || 0}%, ROAS: ${res.financial?.roas || 0}x`, 'success');
-                render();
-              } catch (err) { toast('ROI calc failed: ' + err.message, 'error'); }
-            }}, 'ROI'),
-            h('button', { className: 'btn btn-outline btn-sm', onclick: async () => {
-              toast('Scoring leads...', 'info');
-              try {
-                const res = await api('/api/lead-scorer', { method: 'POST' });
-                state.leadScorer = res;
-                toast(`${res.total_leads} leads: ${res.hot_leads} hot, ${res.warm_leads} warm`, 'success');
-                render();
-              } catch (err) { toast('Lead scoring failed: ' + err.message, 'error'); }
-            }}, 'Leads'),
-            h('button', { className: 'btn btn-outline btn-sm', onclick: async () => {
-              toast('Calculating content cost...', 'info');
-              try {
-                const res = await api('/api/content-cost-calculator', { method: 'POST' });
-                state.contentCostCalculator = res;
-                toast(`Cost: $${res.per_piece?.cost || 0}/piece, ROI: ${res.revenue?.roi_percentage || 0}%`, 'success');
-                render();
-              } catch (err) { toast('Cost calc failed: ' + err.message, 'error'); }
-            }}, 'Cost'),
-            h('button', { className: 'btn btn-outline btn-sm', style: { color: '#7c3aed', borderColor: '#7c3aed' }, onclick: async () => {
-              toast('Syncing publish queue...', 'info');
-              try {
-                const res = await api('/api/auto-publish-queue');
-                state.autoPublishQueue = res;
-                toast(`${res.total} items in publish queue`, 'success');
-                render();
-              } catch (err) { toast('Queue sync failed: ' + err.message, 'error'); }
-            }}, 'Queue'),
-            h('button', { className: 'btn btn-outline btn-sm', style: { color: '#f59e0b', borderColor: '#f59e0b' }, onclick: async () => {
-              toast('Checking alerts...', 'info');
-              try {
-                const res = await api('/api/engagement-alerts');
-                state.engagementAlerts = res;
-                toast(`${res.triggered?.length || 0} alerts triggered`, res.triggered?.length ? 'info' : 'success');
-                render();
-              } catch (err) { toast('Alerts check failed: ' + err.message, 'error'); }
-            }}, 'Alerts'),
-            h('button', { className: 'btn btn-outline btn-sm', onclick: async () => {
-              toast('Loading tags...', 'info');
-              try {
-                const res = await api('/api/content-tags');
-                state.contentTags = res;
-                toast(`${res.total_tags} tags in use`, 'success');
-                render();
-              } catch (err) { toast('Tags load failed: ' + err.message, 'error'); }
-            }}, 'Tags'),
-            h('button', { className: 'btn btn-outline btn-sm', style: { color: '#059669', borderColor: '#059669' }, onclick: async () => {
-              toast('Scanning content freshness...', 'info');
-              try {
-                const res = await api('/api/content-freshness-scan', { method: 'POST' });
-                state.contentFreshness = res;
-                toast(`Freshness: ${res.freshness_score}% (${res.stale} stale, ${res.aging} aging)`, res.freshness_score >= 70 ? 'success' : 'error');
-                render();
-              } catch (err) { toast('Freshness scan failed: ' + err.message, 'error'); }
-            }}, 'Fresh'),
-            h('button', { className: 'btn btn-outline btn-sm', style: { color: '#6366f1', borderColor: '#6366f1' }, onclick: async () => {
-              toast('Aggregating platform analytics...', 'info');
-              try {
-                const res = await api('/api/platform-analytics', { method: 'POST' });
-                state.platformAnalyticsAgg = res;
-                toast(`${res.totals?.total_impressions || 0} impressions, best: ${res.totals?.best_platform}`, 'success');
-                render();
-              } catch (err) { toast('Analytics failed: ' + err.message, 'error'); }
-            }}, 'Analytics'),
-            h('button', { className: 'btn btn-outline btn-sm', onclick: async () => {
-              toast('Analyzing post lengths...', 'info');
-              try {
-                const res = await api('/api/post-length-analyzer', { method: 'POST' });
-                state.postLengthAnalyzer = res;
-                toast(`${res.total_analyzed} posts analyzed across ${Object.keys(res.by_format || {}).length} formats`, 'success');
-                render();
-              } catch (err) { toast('Length analysis failed: ' + err.message, 'error'); }
-            }}, 'Lengths'),
-            h('button', { className: 'btn btn-outline btn-sm', style: { color: '#059669', borderColor: '#059669' }, onclick: async () => {
-              toast('Checking content velocity...', 'info');
-              try {
-                const res = await api('/api/content-velocity-tracker', { method: 'POST' });
-                state.contentVelocityTracker = res;
-                toast(`Velocity: ${res.velocity_score}/100 (${res.trend})`, 'success');
-                render();
-              } catch (err) { toast('Velocity check failed: ' + err.message, 'error'); }
-            }}, 'Velocity'),
-            h('button', { className: 'btn btn-outline btn-sm', onclick: async () => {
-              toast('Building queue...', 'info');
-              try {
-                const res = await api('/api/content-queue-manager', { method: 'POST' });
-                state.contentQueueManager = res;
-                toast(`${res.total_queued} queued (${res.high_priority} high priority)`, 'success');
-                render();
-              } catch (err) { toast('Queue build failed: ' + err.message, 'error'); }
-            }}, 'Queue'),
-            h('button', { className: 'btn btn-outline btn-sm', style: { color: '#7c3aed', borderColor: '#7c3aed' }, onclick: async () => {
-              toast('Scoring distribution...', 'info');
-              try {
-                const res = await api('/api/distribution-scorecard', { method: 'POST' });
-                state.distributionScorecard = res;
-                toast(`Distribution: ${res.grade} (${res.overall_score}/100)`, res.grade === 'A' || res.grade === 'B' ? 'success' : 'error');
-                render();
-              } catch (err) { toast('Distribution score failed: ' + err.message, 'error'); }
-            }}, 'Distrib'),
-            h('button', { className: 'btn btn-outline btn-sm', style: { color: '#10b981', borderColor: '#10b981' }, onclick: async () => {
-              toast('Building conversion funnel...', 'info');
-              try {
-                const res = await api('/api/conversion-funnel-viz', { method: 'POST' });
-                state.conversionFunnelViz = res;
-                toast(`Funnel: ${res.stages?.length} stages, bottleneck: ${res.bottleneck?.stage}`, 'success');
-                render();
-              } catch (err) { toast('Funnel failed: ' + err.message, 'error'); }
-            }}, 'Funnel'),
-            h('button', { className: 'btn btn-outline btn-sm', onclick: async () => {
-              toast('Generating weekly report...', 'info');
-              try {
-                const res = await api('/api/weekly-growth-report', { method: 'POST' });
-                state.weeklyGrowthReport = res;
-                toast(`Week: ${res.content?.created} created, ${res.content?.trend} trend`, 'success');
-                render();
-              } catch (err) { toast('Report failed: ' + err.message, 'error'); }
-            }}, 'Weekly'),
-            h('button', { className: 'btn btn-outline btn-sm', style: { color: '#6366f1', borderColor: '#6366f1' }, onclick: async () => {
-              toast('Calculating content ROI...', 'info');
-              try {
-                const res = await api('/api/content-roi-detail', { method: 'POST' });
-                state.contentRoiDetail = res;
-                toast(`ROI: ${res.summary?.overall_roi}% ($${res.summary?.total_revenue} revenue)`, res.summary?.overall_roi >= 0 ? 'success' : 'error');
-                render();
-              } catch (err) { toast('ROI calc failed: ' + err.message, 'error'); }
-            }}, 'ROI+'),
-            h('button', { className: 'btn btn-outline btn-sm', style: { color: '#f59e0b', borderColor: '#f59e0b' }, onclick: async () => {
-              toast('Running quality audit...', 'info');
-              try {
-                const res = await api('/api/content-quality-audit', { method: 'POST' });
-                state.contentQualityAudit = res;
-                toast(`Audit: ${res.grade} (${res.average_score}/100), ${res.issues_found} issues`, res.grade === 'A' || res.grade === 'B' ? 'success' : 'error');
-                render();
-              } catch (err) { toast('Audit failed: ' + err.message, 'error'); }
-            }}, 'Audit'),
-            h('button', { className: 'btn btn-outline btn-sm', onclick: async () => {
-              toast('Building pipeline board...', 'info');
-              try {
-                const res = await api('/api/pipeline-board', { method: 'POST' });
-                state.pipelineBoard = res;
-                toast(`Pipeline: ${res.summary?.total_in_pipeline} items, bottleneck: ${res.summary?.bottleneck}`, 'success');
-                render();
-              } catch (err) { toast('Pipeline failed: ' + err.message, 'error'); }
-            }}, 'Pipeline'),
-            h('button', { className: 'btn btn-outline btn-sm', style: { color: '#6366f1', borderColor: '#6366f1' }, onclick: async () => {
-              toast('Building engagement heatmap...', 'info');
-              try {
-                const res = await api('/api/engagement-heatmap', { method: 'POST' });
-                state.engagementHeatmap = res;
-                toast(`Best time: ${res.best_time}`, 'success');
-                render();
-              } catch (err) { toast('Heatmap failed: ' + err.message, 'error'); }
-            }}, 'Heatmap'),
-            h('button', { className: 'btn btn-ghost btn-sm', onclick: async () => {
-              toast('Scanning supply chain...', 'info');
-              try {
-                const res = await api('/api/content-supply-chain', { method: 'POST' });
-                state.contentSupplyChain = res;
-                toast(`Bottleneck: ${res.bottleneck || 'None'}`, 'success');
-                render();
-              } catch (err) { toast('Supply chain failed: ' + err.message, 'error'); }
-            }}, 'Supply Chain'),
-            h('button', { className: 'btn btn-ghost btn-sm', onclick: async () => {
-              toast('Detecting viral content...', 'info');
-              try {
-                const res = await api('/api/viral-detector', { method: 'POST' });
-                state.viralDetector = res;
-                toast(`${res.total_candidates} candidates found`, 'success');
-                render();
-              } catch (err) { toast('Viral detect failed: ' + err.message, 'error'); }
-            }}, 'Viral Detect'),
-            h('button', { className: 'btn btn-ghost btn-sm', onclick: async () => {
-              toast('Checking cannibalisation...', 'info');
-              try {
-                const res = await api('/api/cannibalisation-check', { method: 'POST' });
-                state.cannibalisationCheck = res;
-                toast(`${res.total_conflicts} conflicts found`, 'success');
-                render();
-              } catch (err) { toast('Cannibal check failed: ' + err.message, 'error'); }
-            }}, 'Cannibal Check'),
-            h('button', { className: 'btn btn-ghost btn-sm', onclick: async () => {
-              toast('Analyzing headlines...', 'info');
-              try {
-                const res = await api('/api/headline-analyzer', { method: 'POST' });
-                state.headlineAnalyzer = res;
-                toast(`Avg headline score: ${res.avg_score}/100`, 'success');
-                render();
-              } catch (err) { toast('Headline analysis failed: ' + err.message, 'error'); }
-            }}, 'Headlines'),
-            h('button', { className: 'btn btn-ghost btn-sm', onclick: async () => {
-              toast('Scanning performance tiers...', 'info');
-              try {
-                const res = await api('/api/content-performance-tiers', { method: 'POST' });
-                state.contentPerformanceTiers = res;
-                toast(`S-tier: ${res.tier_counts.S}, Avg: ${res.avg_score}`, 'success');
-                render();
-              } catch (err) { toast('Tier scan failed: ' + err.message, 'error'); }
-            }}, 'Perf Tiers'),
-            h('button', { className: 'btn btn-ghost btn-sm', onclick: async () => {
-              toast('Building cluster map...', 'info');
-              try {
-                const res = await api('/api/content-cluster-map', { method: 'POST' });
-                state.contentClusterMap = res;
-                toast(`${res.total_clusters} clusters found`, 'success');
-                render();
-              } catch (err) { toast('Cluster map failed: ' + err.message, 'error'); }
-            }}, 'Clusters'),
-            h('button', { className: 'btn btn-ghost btn-sm', onclick: async () => {
-              toast('Checking compliance...', 'info');
-              try {
-                const res = await api('/api/content-compliance-checker', { method: 'POST' });
-                state.contentComplianceChecker = res;
-                toast(`${res.compliance_rate}% compliant`, 'success');
-                render();
-              } catch (err) { toast('Compliance check failed: ' + err.message, 'error'); }
-            }}, 'Compliance'),
-            h('button', { className: 'btn btn-ghost btn-sm', onclick: async () => {
-              toast('Finding competitor gaps...', 'info');
-              try {
-                const res = await api('/api/competitor-gap-finder', { method: 'POST' });
-                state.competitorGapFinder = res;
-                toast(`${res.total_gaps} gaps found`, 'success');
-                render();
-              } catch (err) { toast('Gap finder failed: ' + err.message, 'error'); }
-            }}, 'Comp Gaps'),
-            h('button', { className: 'btn btn-ghost btn-sm', onclick: async () => {
-              toast('Scoring recency...', 'info');
-              try {
-                const res = await api('/api/content-recency-score', { method: 'POST' });
-                state.contentRecencyScore = res;
-                toast(`Freshness Grade: ${res.grade}`, 'success');
-                render();
-              } catch (err) { toast('Recency score failed: ' + err.message, 'error'); }
-            }}, 'Freshness'),
-            h('button', { className: 'btn btn-ghost btn-sm', onclick: async () => {
-              toast('Building weekly scorecard...', 'info');
-              try {
-                const res = await api('/api/weekly-content-scorecard', { method: 'POST' });
-                state.weeklyContentScorecard = res;
-                toast(`Weekly Grade: ${res.grade} (${res.total_score}/100)`, 'success');
-                render();
-              } catch (err) { toast('Scorecard failed: ' + err.message, 'error'); }
-            }}, 'Scorecard'),
-            h('button', { className: 'btn btn-ghost btn-sm', onclick: async () => {
-              toast('Scoring readability...', 'info');
-              try {
-                const res = await api('/api/content-readability-scorer', { method: 'POST' });
-                state.contentReadabilityScorer = res;
-                toast(`Avg readability: ${res.avg_readability}/100`, 'success');
-                render();
-              } catch (err) { toast('Readability failed: ' + err.message, 'error'); }
-            }}, 'Readability'),
-            h('button', { className: 'btn btn-ghost btn-sm', onclick: async () => {
-              toast('Forecasting engagement...', 'info');
-              try {
-                const res = await api('/api/engagement-forecast', { method: 'POST' });
-                state.engagementForecast = res;
-                toast(`7d forecast: ${res.predicted_7d_total} engagements`, 'success');
-                render();
-              } catch (err) { toast('Forecast failed: ' + err.message, 'error'); }
-            }}, 'Forecast'),
-            h('button', { className: 'btn btn-ghost btn-sm', onclick: async () => {
-              toast('Calculating impact score...', 'info');
-              try {
-                const res = await api('/api/content-impact-score', { method: 'POST' });
-                state.contentImpactScore = res;
-                toast(`Impact: ${res.grade} (${res.impact_score}/100)`, 'success');
-                render();
-              } catch (err) { toast('Impact score failed: ' + err.message, 'error'); }
-            }}, 'Impact'),
-            h('button', { className: 'btn btn-ghost btn-sm', onclick: async () => {
-              toast('Checking brand voice...', 'info');
-              try {
-                const res = await api('/api/brand-voice-consistency', { method: 'POST' });
-                state.brandVoiceConsistency = res;
-                toast(`${res.avg_consistency}% consistent`, 'success');
-                render();
-              } catch (err) { toast('Brand voice failed: ' + err.message, 'error'); }
-            }}, 'Brand Voice'),
-            h('button', { className: 'btn btn-ghost btn-sm', onclick: async () => {
-              toast('Tracking topic momentum...', 'info');
-              try {
-                const res = await api('/api/topic-momentum-tracker', { method: 'POST' });
-                state.topicMomentum = res;
-                toast(`${res.rising} rising, ${res.falling} falling topics`, 'success');
-                render();
-              } catch (err) { toast('Momentum failed: ' + err.message, 'error'); }
-            }}, 'Momentum'),
-            h('button', { className: 'btn btn-ghost btn-sm', onclick: () => { state.page = 'content'; render(); } }, 'View Content')
-          )
+          h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)' } }, 'CONTENT MACHINE')
         ),
+        renderContentActions(),
         h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '12px' } },
           h('div', { className: 'card', style: { textAlign: 'center', padding: '14px', cursor: 'pointer' }, onclick: () => { state.page = 'triggers'; render(); } },
             h('div', { style: { fontSize: '22px', fontWeight: '700', color: 'var(--blue)', fontFamily: "'Fraunces', serif" } }, String(state.triggers.filter(t => t.status === 'pending').length)),
@@ -4359,6 +3523,14 @@ function renderDashboardPage() {
         )
       );
     })(),
+    h('div', { style: { textAlign: 'center', padding: '8px 0', margin: '4px 0 8px' } },
+      h('button', {
+        className: 'btn btn-ghost btn-sm',
+        style: { fontSize: '12px', color: 'var(--gray-500)', padding: '4px 16px' },
+        onclick: () => { state.showDashWidgets = state.showDashWidgets === false ? true : false; render(); }
+      }, state.showDashWidgets === false ? 'Show Dashboard Widgets ▼' : 'Hide Dashboard Widgets ▲')
+    ),
+    ...(state.showDashWidgets !== false ? [
     // Content Pillar Plan
     state.pillarPlan?.pillars?.length > 0 ? h('div', { style: { marginBottom: '20px' } },
       h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
@@ -7259,6 +6431,7 @@ function renderDashboardPage() {
           )
         )
       : null,
+    ] : []),
     // System health indicator
     h('div', { className: 'card', style: { padding: '14px 20px', marginBottom: '20px', display: 'flex', gap: '20px', flexWrap: 'wrap', alignItems: 'center' } },
       h('div', { style: { fontSize: '11px', fontWeight: '700', color: 'var(--gray-500)', textTransform: 'uppercase', letterSpacing: '0.5px' } }, 'System Health'),
@@ -7406,275 +6579,114 @@ function renderContentCard(content) {
             : null
         )
       ),
-      h('div', { style: { display: 'flex', gap: '6px', alignItems: 'center', flexShrink: '0' } },
-        Object.values(content.formats).some(f => f.content && f.status === 'review')
-          ? h('button', {
-              className: 'btn btn-success btn-sm',
-              onclick: () => approveFormat(content.id, null),
-              title: 'Approve all formats'
-            }, h('span', { innerHTML: icons.check, style: { width: '14px', height: '14px' } }), ' All')
-          : null,
-        content.blog_keyword && !content.formats?.blog?.content
-          ? h('button', {
-              className: 'btn btn-outline btn-sm',
-              onclick: () => regenerateFormat(content.id, 'blog'),
-              title: `Generate blog for: ${content.blog_keyword}`
-            }, '+ Blog')
-          : null,
-        content.youtube_topic && !content.formats?.youtube_script?.content
-          ? h('button', {
-              className: 'btn btn-outline btn-sm',
-              onclick: () => regenerateFormat(content.id, 'youtube_script'),
-              title: `Generate script for: ${content.youtube_topic}`
-            }, '+ YouTube')
-          : null,
-        !content.formats?.lead_magnet?.content
-          ? h('button', {
-              className: 'btn btn-outline btn-sm',
-              onclick: () => regenerateFormat(content.id, 'lead_magnet'),
-              title: content.lead_magnet_topic ? `Generate lead magnet: ${content.lead_magnet_topic}` : 'Generate lead magnet'
-            }, '+ Lead Magnet')
-          : null,
-        !content.formats?.newsletter?.content
-          ? h('button', {
-              className: 'btn btn-outline btn-sm',
-              onclick: () => regenerateFormat(content.id, 'newsletter'),
-              title: 'Generate newsletter deep dive'
-            }, '+ Newsletter')
-          : null,
-        !content.formats?.case_study?.content
-          ? h('button', {
-              className: 'btn btn-outline btn-sm',
-              onclick: () => regenerateFormat(content.id, 'case_study'),
-              title: 'Generate mini case study'
-            }, '+ Case Study')
-          : null,
-        // Repurpose All — generate all missing formats from the best available source
-        (() => {
-          const allFmts = ['linkedin', 'x_single', 'x_thread', 'short_video', 'carousel', 'blog', 'newsletter', 'lead_magnet', 'youtube_script'];
-          const existing = Object.entries(content.formats || {}).filter(([,v]) => v?.content).length;
-          const missing = allFmts.length - existing;
-          if (existing > 0 && missing > 0) {
-            return h('button', {
-              className: 'btn btn-outline btn-sm',
-              style: { color: '#7c3aed', borderColor: '#7c3aed', fontSize: '11px' },
-              title: `Generate ${missing} missing formats from existing content`,
-              onclick: async () => {
-                toast(`Generating ${missing} missing formats...`, 'info');
-                try {
-                  const res = await api(`/api/content/${content.id}/repurpose-all`, { method: 'POST' });
-                  toast(`Repurposing ${res.total} formats from ${res.source}! Results in ~60s.`, 'success');
-                  setTimeout(() => loadData(), 30000);
-                } catch (err) { toast('Repurpose failed: ' + err.message, 'error'); }
-              }
-            }, `+ All (${missing})`);
-          }
-          return null;
-        })(),
-        h('button', {
-          className: 'btn btn-outline btn-sm',
-          style: { color: '#8B5CF6', borderColor: '#8B5CF6' },
-          onclick: async (e) => {
-            e.stopPropagation();
-            const key = `sim-${content.id}`;
-            if (state._simData?.[content.id]) {
-              state._simOpen = state._simOpen === key ? null : key;
-              render();
-              return;
+      (() => {
+        // Compact action toolbar — primary actions visible, rest in expandable groups
+        const hasReview = Object.values(content.formats).some(f => f.content && f.status === 'review');
+        const hasContent = Object.values(content.formats || {}).some(f => f.content);
+        const hasApproved = Object.values(content.formats || {}).some(f => f.content && f.status === 'approved');
+        const allFmts = ['linkedin', 'x_single', 'x_thread', 'short_video', 'carousel', 'blog', 'newsletter', 'lead_magnet', 'youtube_script'];
+        const existing = Object.entries(content.formats || {}).filter(([,v]) => v?.content).length;
+        const missing = allFmts.length - existing;
+        const genKey = `gen-${content.id}`;
+        const actKey = `act-${content.id}`;
+        if (!state._cardMenus) state._cardMenus = {};
+
+        function cardBtn(label, color, onclickFn) {
+          return h('button', {
+            className: 'btn btn-outline btn-sm',
+            style: { color, borderColor: color, fontSize: '11px' },
+            onclick: (e) => { e.stopPropagation(); onclickFn(); }
+          }, label);
+        }
+
+        async function cardAction(label, endpoint, method, successMsg) {
+          toast(`${label}...`, 'info');
+          try {
+            const res = await api(`/api/content/${content.id}/${endpoint}`, { method: method || 'POST' });
+            toast(typeof successMsg === 'function' ? successMsg(res) : (successMsg || 'Done!'), 'success');
+            loadData();
+          } catch (err) { toast(`${label} failed: ${err.message}`, 'error'); }
+        }
+
+        return h('div', { style: { display: 'flex', gap: '6px', alignItems: 'center', flexShrink: '0', flexWrap: 'wrap' } },
+          // Primary: Approve All
+          hasReview ? h('button', {
+            className: 'btn btn-success btn-sm',
+            onclick: () => approveFormat(content.id, null),
+            title: 'Approve all formats'
+          }, h('span', { innerHTML: icons.check, style: { width: '14px', height: '14px' } }), ' All') : null,
+          // Generate dropdown toggle
+          missing > 0 ? h('button', {
+            className: 'btn btn-outline btn-sm',
+            style: { color: '#7c3aed', borderColor: '#7c3aed', fontSize: '11px', background: state._cardMenus[genKey] ? '#f5f3ff' : 'transparent' },
+            onclick: (e) => { e.stopPropagation(); state._cardMenus[genKey] = !state._cardMenus[genKey]; state._cardMenus[actKey] = false; render(); }
+          }, `Generate + (${missing})`) : null,
+          // Actions dropdown toggle
+          hasContent ? h('button', {
+            className: 'btn btn-outline btn-sm',
+            style: { fontSize: '11px', background: state._cardMenus[actKey] ? '#eff6ff' : 'transparent' },
+            onclick: (e) => { e.stopPropagation(); state._cardMenus[actKey] = !state._cardMenus[actKey]; state._cardMenus[genKey] = false; render(); }
+          }, 'Actions \u25BE') : null,
+          // Distribute (keep visible — key workflow)
+          hasApproved ? h('button', {
+            className: 'btn btn-outline btn-sm',
+            style: { color: '#059669', borderColor: '#059669', fontSize: '11px' },
+            onclick: async (e) => {
+              e.stopPropagation();
+              const key = `dist-pkg-${content.id}`;
+              if (state._distOpen === key) { state._distOpen = null; render(); return; }
+              try {
+                state.distributionPackage = await api(`/api/content/${content.id}/distribute`);
+                state._distOpen = key;
+                render();
+              } catch (err) { toast('Distribute failed: ' + err.message, 'error'); }
             }
-            try {
-              const sim = await api(`/api/simulate/${content.id}`);
-              if (!state._simData) state._simData = {};
-              state._simData[content.id] = sim;
-              state._simOpen = key;
-              render();
-            } catch (err) { toast('Simulate failed: ' + err.message, 'error'); }
-          }
-        }, 'Simulate'),
-        // Distribute button — show copy-ready distribution package
-        Object.values(content.formats || {}).some(f => f.content && f.status === 'approved')
-          ? h('button', {
-              className: 'btn btn-outline btn-sm',
-              style: { color: '#059669', borderColor: '#059669' },
-              onclick: async (e) => {
-                e.stopPropagation();
-                const key = `dist-pkg-${content.id}`;
-                if (state._distOpen === key) { state._distOpen = null; render(); return; }
-                try {
-                  state.distributionPackage = await api(`/api/content/${content.id}/distribute`);
-                  state._distOpen = key;
-                  render();
-                } catch (err) { toast('Distribute failed: ' + err.message, 'error'); }
-              }
-            }, 'Distribute')
-          : null,
-        // DM Sequence button
-        Object.values(content.formats || {}).some(f => f.content)
-          ? h('button', {
-              className: 'btn btn-outline btn-sm',
-              style: { color: '#6366f1', borderColor: '#6366f1', fontSize: '11px' },
-              onclick: async (e) => {
-                e.stopPropagation();
-                toast('Generating DM sequence...', 'info');
-                try {
-                  const res = await api(`/api/content/${content.id}/generate-dm-sequence`, { method: 'POST' });
-                  toast(`DM pipeline "${res.pipeline?.sequence_name}" created with ${res.pipeline?.messages?.length || 0} messages`, 'success');
-                  loadData();
-                } catch (err) { toast('DM generation failed: ' + err.message, 'error'); }
-              }
-            }, 'DM Seq')
-          : null,
-        // Amplify button — create paid ad versions
-        Object.values(content.formats || {}).some(f => f.content)
-          ? h('button', {
-              className: 'btn btn-outline btn-sm',
-              style: { color: '#dc2626', borderColor: '#dc2626', fontSize: '11px' },
-              onclick: async (e) => {
-                e.stopPropagation();
-                toast('Creating paid ad versions...', 'info');
-                try {
-                  const res = await api(`/api/content/${content.id}/amplify`, { method: 'POST' });
-                  toast('Paid ad copy + targeting created!', 'success');
-                  loadData();
-                } catch (err) { toast('Amplify failed: ' + err.message, 'error'); }
-              }
-            }, 'Amplify')
-          : null,
-        // Build Funnel button — create landing page + email sequence
-        (content.formats?.lead_magnet?.content || content.formats?.blog?.content)
-          ? h('button', {
-              className: 'btn btn-outline btn-sm',
-              style: { color: '#059669', borderColor: '#059669', fontSize: '11px' },
-              onclick: async (e) => {
-                e.stopPropagation();
-                toast('Building lead funnel...', 'info');
-                try {
-                  const res = await api(`/api/content/${content.id}/build-funnel`, { method: 'POST' });
-                  toast(`Funnel "${res.funnel?.funnel_name}" created!`, 'success');
-                  loadData();
-                } catch (err) { toast('Funnel build failed: ' + err.message, 'error'); }
-              }
-            }, 'Funnel')
-          : null,
-        // Distribution Plan button
-        Object.values(content.formats || {}).some(f => f.content)
-          ? h('button', {
-              className: 'btn btn-outline btn-sm',
-              style: { color: '#0891b2', borderColor: '#0891b2', fontSize: '11px' },
-              onclick: async (e) => {
-                e.stopPropagation();
-                toast('Creating distribution plan...', 'info');
-                try {
-                  const res = await api(`/api/content/${content.id}/distribution-plan`, { method: 'POST' });
-                  toast(`7-day plan created with ${res.plan?.plan?.length || 0} days`, 'success');
-                  loadData();
-                } catch (err) { toast('Plan failed: ' + err.message, 'error'); }
-              }
-            }, 'Dist Plan')
-          : null,
-        // YouTube Pipeline button
-        Object.values(content.formats || {}).some(f => f.content)
-          ? h('button', {
-              className: 'btn btn-outline btn-sm',
-              style: { color: '#dc2626', borderColor: '#dc2626', fontSize: '11px', background: '#fef2f2' },
-              onclick: async (e) => {
-                e.stopPropagation();
-                toast('Building YouTube pipeline...', 'info');
-                try {
-                  const res = await api(`/api/content/${content.id}/youtube-pipeline`, { method: 'POST' });
-                  toast(`YouTube pipeline created: ${res.pipeline?.script?.title || 'Done'}`, 'success');
-                  loadData();
-                } catch (err) { toast('YouTube pipeline failed: ' + err.message, 'error'); }
-              }
-            }, 'YT Pipeline')
-          : null,
-        // Carousel Slides button
-        (content.formats?.linkedin?.content || content.formats?.blog?.content)
-          ? h('button', {
-              className: 'btn btn-outline btn-sm',
-              style: { color: '#c2410c', borderColor: '#c2410c', fontSize: '11px' },
-              onclick: async (e) => {
-                e.stopPropagation();
-                toast('Generating carousel slides...', 'info');
-                try {
-                  const res = await api(`/api/content/${content.id}/carousel-slides`, { method: 'POST' });
-                  toast(`${res.carousel?.slide_count || res.carousel?.slides?.length || 0}-slide carousel created!`, 'success');
-                  loadData();
-                } catch (err) { toast('Carousel failed: ' + err.message, 'error'); }
-              }
-            }, 'Carousel')
-          : null,
-        // Shorts button
-        (content.formats?.youtube_script?.content || content.formats?.blog?.content || content.formats?.linkedin?.content)
-          ? h('button', {
-              className: 'btn btn-outline btn-sm',
-              style: { color: '#7c3aed', borderColor: '#7c3aed', fontSize: '11px' },
-              onclick: async (e) => {
-                e.stopPropagation();
-                toast('Generating YouTube Shorts...', 'info');
-                try {
-                  const res = await api(`/api/content/${content.id}/generate-shorts`, { method: 'POST' });
-                  toast(`${res.shorts?.length || 0} YouTube Shorts created!`, 'success');
-                } catch (err) { toast('Shorts failed: ' + err.message, 'error'); }
-              }
-            }, 'Shorts')
-          : null,
-        // Zero-Click button
-        (content.formats?.linkedin?.content || content.formats?.blog?.content)
-          ? h('button', {
-              className: 'btn btn-outline btn-sm',
-              style: { color: '#059669', borderColor: '#059669', fontSize: '11px' },
-              onclick: async (e) => {
-                e.stopPropagation();
-                toast('Creating zero-click version...', 'info');
-                try {
-                  const res = await api(`/api/content/${content.id}/zero-click`, { method: 'POST' });
-                  toast('Zero-click post created (8x more reach)', 'success');
-                } catch (err) { toast('Zero-click failed: ' + err.message, 'error'); }
-              }
-            }, '0-Click')
-          : null,
-        // Comment-DM CTA button
-        content.formats?.linkedin?.content
-          ? h('button', {
-              className: 'btn btn-outline btn-sm',
-              style: { color: '#2563eb', borderColor: '#2563eb', fontSize: '11px' },
-              onclick: async (e) => {
-                e.stopPropagation();
-                toast('Generating comment-DM CTAs...', 'info');
-                try {
-                  const res = await api(`/api/content/${content.id}/comment-dm-cta`, { method: 'POST' });
-                  toast(`${res.cta_variants?.length || 0} CTA variants + DM sequences created`, 'success');
-                } catch (err) { toast('CTA gen failed: ' + err.message, 'error'); }
-              }
-            }, 'DM CTA')
-          : null,
-        // Atomize-20 button
-        (content.formats?.blog?.content || content.formats?.linkedin?.content)
-          ? h('button', {
-              className: 'btn btn-outline btn-sm',
-              style: { color: '#d97706', borderColor: '#d97706', fontSize: '11px' },
-              onclick: async (e) => {
-                e.stopPropagation();
-                toast('Atomizing into 15-20 derivatives...', 'info');
-                try {
-                  const res = await api(`/api/content/${content.id}/atomize-20`, { method: 'POST' });
-                  toast(`${res.atomization?.total_pieces || res.atomization?.derivatives?.length || 0} derivatives created over ${res.atomization?.coverage_weeks || '?'} weeks!`, 'success');
-                  loadData();
-                } catch (err) { toast('Atomize failed: ' + err.message, 'error'); }
-              }
-            }, 'Atomize')
-          : null,
-        content.trigger_url
-          ? h('a', {
-              href: content.trigger_url,
-              target: '_blank',
-              rel: 'noopener',
-              className: 'btn btn-ghost btn-sm btn-icon',
-              title: 'View source'
-            }, h('span', { innerHTML: icons.link, style: { width: '16px', height: '16px' } }))
-          : null
-      )
+          }, 'Distribute') : null,
+          // Source link
+          content.trigger_url ? h('a', {
+            href: content.trigger_url, target: '_blank', rel: 'noopener',
+            className: 'btn btn-ghost btn-sm btn-icon', title: 'View source'
+          }, h('span', { innerHTML: icons.link, style: { width: '16px', height: '16px' } })) : null,
+          // Generate expansion panel
+          state._cardMenus[genKey] ? h('div', { style: { width: '100%', display: 'flex', gap: '4px', flexWrap: 'wrap', paddingTop: '4px', borderTop: '1px solid var(--gray-200)' } },
+            content.blog_keyword && !content.formats?.blog?.content ? cardBtn('+ Blog', '#2563eb', () => regenerateFormat(content.id, 'blog')) : null,
+            content.youtube_topic && !content.formats?.youtube_script?.content ? cardBtn('+ YouTube', '#dc2626', () => regenerateFormat(content.id, 'youtube_script')) : null,
+            !content.formats?.lead_magnet?.content ? cardBtn('+ Lead Magnet', '#059669', () => regenerateFormat(content.id, 'lead_magnet')) : null,
+            !content.formats?.newsletter?.content ? cardBtn('+ Newsletter', '#0891b2', () => regenerateFormat(content.id, 'newsletter')) : null,
+            !content.formats?.case_study?.content ? cardBtn('+ Case Study', '#d97706', () => regenerateFormat(content.id, 'case_study')) : null,
+            existing > 0 && missing > 0 ? cardBtn(`+ All (${missing})`, '#7c3aed', async () => {
+              toast(`Generating ${missing} missing formats...`, 'info');
+              try { const res = await api(`/api/content/${content.id}/repurpose-all`, { method: 'POST' }); toast(`Repurposing ${res.total} formats!`, 'success'); setTimeout(loadData, 30000); }
+              catch (err) { toast('Repurpose failed: ' + err.message, 'error'); }
+            }) : null
+          ) : null,
+          // Actions expansion panel
+          state._cardMenus[actKey] ? h('div', { style: { width: '100%', display: 'flex', gap: '4px', flexWrap: 'wrap', paddingTop: '4px', borderTop: '1px solid var(--gray-200)' } },
+            cardBtn('Simulate', '#8B5CF6', async () => {
+              const key = `sim-${content.id}`;
+              if (state._simData?.[content.id]) { state._simOpen = state._simOpen === key ? null : key; render(); return; }
+              try { const sim = await api(`/api/simulate/${content.id}`); if (!state._simData) state._simData = {}; state._simData[content.id] = sim; state._simOpen = key; render(); }
+              catch (err) { toast('Simulate failed: ' + err.message, 'error'); }
+            }),
+            cardBtn('DM Seq', '#6366f1', () => cardAction('Generating DM sequence', 'generate-dm-sequence', 'POST', r => `DM pipeline created with ${r.pipeline?.messages?.length || 0} messages`)),
+            cardBtn('Amplify', '#dc2626', () => cardAction('Creating paid ads', 'amplify', 'POST', 'Paid ad copy + targeting created!')),
+            (content.formats?.lead_magnet?.content || content.formats?.blog?.content)
+              ? cardBtn('Funnel', '#059669', () => cardAction('Building lead funnel', 'build-funnel', 'POST', r => `Funnel "${r.funnel?.funnel_name}" created!`)) : null,
+            cardBtn('Dist Plan', '#0891b2', () => cardAction('Creating distribution plan', 'distribution-plan', 'POST', r => `7-day plan with ${r.plan?.plan?.length || 0} days`)),
+            cardBtn('YT Pipeline', '#dc2626', () => cardAction('Building YouTube pipeline', 'youtube-pipeline', 'POST', r => `YouTube pipeline: ${r.pipeline?.script?.title || 'Done'}`)),
+            (content.formats?.linkedin?.content || content.formats?.blog?.content)
+              ? cardBtn('Carousel', '#c2410c', () => cardAction('Generating carousel', 'carousel-slides', 'POST', r => `${r.carousel?.slide_count || r.carousel?.slides?.length || 0}-slide carousel created!`)) : null,
+            (content.formats?.youtube_script?.content || content.formats?.blog?.content || content.formats?.linkedin?.content)
+              ? cardBtn('Shorts', '#7c3aed', () => cardAction('Generating Shorts', 'generate-shorts', 'POST', r => `${r.shorts?.length || 0} YouTube Shorts created!`)) : null,
+            (content.formats?.linkedin?.content || content.formats?.blog?.content)
+              ? cardBtn('0-Click', '#059669', () => cardAction('Creating zero-click version', 'zero-click', 'POST', 'Zero-click post created!')) : null,
+            content.formats?.linkedin?.content
+              ? cardBtn('DM CTA', '#2563eb', () => cardAction('Generating CTAs', 'comment-dm-cta', 'POST', r => `${r.cta_variants?.length || 0} CTA variants created`)) : null,
+            (content.formats?.blog?.content || content.formats?.linkedin?.content)
+              ? cardBtn('Atomize', '#d97706', () => cardAction('Atomizing content', 'atomize-20', 'POST', r => `${r.atomization?.total_pieces || r.atomization?.derivatives?.length || 0} derivatives created!`)) : null
+          ) : null
+        );
+      })()
     ),
     // Simulation panel
     state._simOpen === `sim-${content.id}` && state._simData?.[content.id] ? (() => {
@@ -8156,7 +7168,7 @@ function renderFormatContent(content, formatKey, fmt) {
                   onmouseout: (e) => { e.currentTarget.style.background = 'transparent'; }
                 }, labels[d]);
               }),
-              h('div', { style: { borderTop: '1px solid var(--gray-150)', margin: '4px 0' } }),
+              h('div', { style: { borderTop: '1px solid var(--gray-200)', margin: '4px 0' } }),
               h('div', { style: { padding: '4px 12px 2px', fontSize: '10px', color: 'var(--gray-400)', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Create New Piece'),
               ...['new-angle', 'different-audience', 'expand', 'simplify'].map(mode => {
                 const labels = { 'new-angle': 'Fresh Angle', 'different-audience': 'Different Audience', 'expand': 'Expand & Deepen', 'simplify': 'Make Viral' };
@@ -9193,7 +8205,7 @@ function renderContentPage() {
                 ...publishQueue.slice(0, 20).map(item => {
                   const fmtLabels = { linkedin: 'LinkedIn', x_single: 'Tweet', x_thread: 'Thread', blog: 'Blog', youtube_script: 'YouTube', newsletter: 'Newsletter', lead_magnet: 'Lead Magnet', short_video: 'Video Script', carousel: 'Carousel', poll: 'Poll', quote_cards: 'Quote Cards', stat_graphic: 'Stat Graphic', hot_take: 'Hot Take', before_after: 'Before/After', listicle: 'Listicle' };
                   const preview = (item.content || '').slice(0, 120).replace(/\n/g, ' ');
-                  return h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 12px', background: 'var(--white)', borderRadius: '8px', border: '1px solid var(--gray-150)' } },
+                  return h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 12px', background: 'var(--white)', borderRadius: '8px', border: '1px solid var(--gray-200)' } },
                     h('span', { className: 'badge badge-blue', style: { fontSize: '10px', flexShrink: '0' } }, fmtLabels[item.format] || item.format),
                     h('span', { style: { fontSize: '12px', color: 'var(--gray-600)', flex: '1', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } },
                       h('strong', {}, item.trigger_title.slice(0, 50)),
@@ -9250,72 +8262,83 @@ function renderContentPage() {
         oninput: (e) => { state.searchQuery = e.target.value; render(); }
       })
     ),
-    // Format filter pills
-    h('div', { style: { display: 'flex', gap: '6px', marginBottom: '4px', flexWrap: 'wrap' } },
-      ...['all', 'linkedin', 'x_single', 'x_thread', 'blog', 'youtube_script', 'newsletter', 'lead_magnet', 'short_video', 'carousel'].map(f => {
-        const count = f === 'all' ? state.content.length : state.content.filter(c => c.formats && c.formats[f]).length;
-        if (f !== 'all' && count === 0) return null;
-        const labels = { all: 'All Formats', linkedin: 'LinkedIn', x_single: 'Tweet', x_thread: 'Thread', blog: 'Blog', youtube_script: 'YouTube', newsletter: 'Newsletter', lead_magnet: 'Lead Magnet', short_video: 'Video', carousel: 'Carousel' };
-        return h('span', {
-          className: `filter-chip ${state.filter.format === f ? 'active' : ''}`,
-          style: { fontSize: '11px' },
-          onclick: () => { state.filter.format = f; render(); }
-        }, `${labels[f] || f} (${count})`);
-      })
-    ),
-    // Advanced filters row: source, quality, date
-    h('div', { style: { display: 'flex', gap: '8px', marginBottom: '8px', alignItems: 'center', flexWrap: 'wrap' } },
-      h('select', {
-        style: { fontSize: '12px', padding: '4px 8px', borderRadius: '6px', border: '1px solid var(--gray-200)', background: 'var(--card-bg)', color: 'var(--gray-600)' },
-        value: state.filter.source || 'all',
-        onchange: (e) => { state.filter.source = e.target.value; render(); }
-      },
-        h('option', { value: 'all' }, 'All Sources'),
-        ...Object.keys(state.stats?.triggers?.by_source || {}).map(src =>
-          h('option', { value: src }, sourceLabel(src))
-        )
-      ),
-      h('select', {
-        style: { fontSize: '12px', padding: '4px 8px', borderRadius: '6px', border: '1px solid var(--gray-200)', background: 'var(--card-bg)', color: 'var(--gray-600)' },
-        value: state.filter.quality || 'all',
-        onchange: (e) => { state.filter.quality = e.target.value; render(); }
-      },
-        h('option', { value: 'all' }, 'Any Quality'),
-        h('option', { value: '80' }, 'Excellent (80+)'),
-        h('option', { value: '60' }, 'Good (60+)'),
-        h('option', { value: '40' }, 'Fair (40+)'),
-        h('option', { value: '0-40' }, 'Weak (<40)')
-      ),
-      h('select', {
-        style: { fontSize: '12px', padding: '4px 8px', borderRadius: '6px', border: '1px solid var(--gray-200)', background: 'var(--card-bg)', color: 'var(--gray-600)' },
-        value: state.filter.dateRange || 'all',
-        onchange: (e) => { state.filter.dateRange = e.target.value; render(); }
-      },
-        h('option', { value: 'all' }, 'Any Date'),
-        h('option', { value: '1' }, 'Today'),
-        h('option', { value: '7' }, 'This Week'),
-        h('option', { value: '30' }, 'This Month'),
-        h('option', { value: '90' }, 'Last 3 Months')
-      ),
-      h('select', {
-        style: { fontSize: '12px', padding: '4px 8px', borderRadius: '6px', border: '1px solid var(--gray-200)', background: 'var(--card-bg)', color: 'var(--gray-600)' },
-        value: state.filter.sort || 'newest',
-        onchange: (e) => { state.filter.sort = e.target.value; render(); }
-      },
-        h('option', { value: 'newest' }, 'Newest First'),
-        h('option', { value: 'oldest' }, 'Oldest First'),
-        h('option', { value: 'quality-high' }, 'Quality: High to Low'),
-        h('option', { value: 'quality-low' }, 'Quality: Low to High'),
-        h('option', { value: 'predicted' }, 'Predicted Performance')
-      ),
-      (state.filter.source !== 'all' || state.filter.quality !== 'all' || state.filter.dateRange !== 'all')
-        ? h('span', {
-            style: { fontSize: '11px', color: 'var(--blue)', cursor: 'pointer', textDecoration: 'underline' },
-            onclick: () => { state.filter.source = 'all'; state.filter.quality = 'all'; state.filter.dateRange = 'all'; render(); }
-          }, 'Clear filters')
-        : null,
-      h('span', { style: { fontSize: '12px', color: 'var(--gray-400)', marginLeft: 'auto' } }, `${filtered.length} results`)
-    ),
+    // Compact filter row: format + advanced filters collapsible
+    (() => {
+      const activeFilterCount = [state.filter.format !== 'all', state.filter.source !== 'all', state.filter.quality !== 'all', state.filter.dateRange !== 'all'].filter(Boolean).length;
+      return h('div', { style: { marginBottom: '8px' } },
+        h('div', { style: { display: 'flex', gap: '8px', alignItems: 'center', marginBottom: state._showAdvFilters ? '8px' : '0' } },
+          h('button', {
+            className: 'btn btn-sm btn-ghost',
+            style: { fontSize: '11px', padding: '4px 10px', color: state._showAdvFilters ? 'var(--blue)' : 'var(--gray-500)' },
+            onclick: () => { state._showAdvFilters = !state._showAdvFilters; render(); }
+          }, state._showAdvFilters ? 'Less Filters' : 'More Filters', activeFilterCount > 0 ? ` (${activeFilterCount})` : ''),
+          h('select', {
+            className: 'filter-select',
+            value: state.filter.sort || 'newest',
+            onchange: (e) => { state.filter.sort = e.target.value; render(); }
+          },
+            h('option', { value: 'newest' }, 'Newest First'),
+            h('option', { value: 'oldest' }, 'Oldest First'),
+            h('option', { value: 'quality-high' }, 'Quality: High \u2192 Low'),
+            h('option', { value: 'quality-low' }, 'Quality: Low \u2192 High'),
+            h('option', { value: 'predicted' }, 'Predicted Performance')
+          ),
+          (activeFilterCount > 0)
+            ? h('span', {
+                style: { fontSize: '11px', color: 'var(--blue)', cursor: 'pointer', textDecoration: 'underline' },
+                onclick: () => { state.filter.format = 'all'; state.filter.source = 'all'; state.filter.quality = 'all'; state.filter.dateRange = 'all'; render(); }
+              }, 'Clear all')
+            : null,
+          h('span', { style: { fontSize: '12px', color: 'var(--gray-400)', marginLeft: 'auto' } }, `${filtered.length} results`)
+        ),
+        state._showAdvFilters ? h('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '8px' } },
+          ...['all', 'linkedin', 'x_single', 'x_thread', 'blog', 'youtube_script', 'newsletter', 'lead_magnet', 'short_video', 'carousel'].map(f => {
+            const count = f === 'all' ? state.content.length : state.content.filter(c => c.formats && c.formats[f]).length;
+            if (f !== 'all' && count === 0) return null;
+            const labels = { all: 'All Formats', linkedin: 'LinkedIn', x_single: 'Tweet', x_thread: 'Thread', blog: 'Blog', youtube_script: 'YouTube', newsletter: 'Newsletter', lead_magnet: 'Lead Magnet', short_video: 'Video', carousel: 'Carousel' };
+            return h('span', {
+              className: `filter-chip ${state.filter.format === f ? 'active' : ''}`,
+              style: { fontSize: '11px' },
+              onclick: () => { state.filter.format = f; render(); }
+            }, `${labels[f] || f} (${count})`);
+          })
+        ) : null,
+        state._showAdvFilters ? h('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap' } },
+          h('select', {
+            className: 'filter-select',
+            value: state.filter.source || 'all',
+            onchange: (e) => { state.filter.source = e.target.value; render(); }
+          },
+            h('option', { value: 'all' }, 'All Sources'),
+            ...Object.keys(state.stats?.triggers?.by_source || {}).map(src =>
+              h('option', { value: src }, sourceLabel(src))
+            )
+          ),
+          h('select', {
+            className: 'filter-select',
+            value: state.filter.quality || 'all',
+            onchange: (e) => { state.filter.quality = e.target.value; render(); }
+          },
+            h('option', { value: 'all' }, 'Any Quality'),
+            h('option', { value: '80' }, 'Excellent (80+)'),
+            h('option', { value: '60' }, 'Good (60+)'),
+            h('option', { value: '40' }, 'Fair (40+)'),
+            h('option', { value: '0-40' }, 'Weak (<40)')
+          ),
+          h('select', {
+            className: 'filter-select',
+            value: state.filter.dateRange || 'all',
+            onchange: (e) => { state.filter.dateRange = e.target.value; render(); }
+          },
+            h('option', { value: 'all' }, 'Any Date'),
+            h('option', { value: '1' }, 'Today'),
+            h('option', { value: '7' }, 'This Week'),
+            h('option', { value: '30' }, 'This Month'),
+            h('option', { value: '90' }, 'Last 3 Months')
+          )
+        ) : null
+      );
+    })(),
     // Bulk action bar
     hasSelected
       ? h('div', { className: 'bulk-bar' },
@@ -9795,7 +8818,7 @@ function renderAnalyticsPage() {
                     style: {
                       width: '100%', minHeight: '2px',
                       height: `${Math.max((d.count / maxCount) * 80, 2)}px`,
-                      background: d.count > 0 ? 'var(--blue)' : 'var(--gray-150)',
+                      background: d.count > 0 ? 'var(--blue)' : 'var(--gray-200)',
                       borderRadius: '2px 2px 0 0'
                     }
                   }),
@@ -10014,7 +9037,8 @@ function renderTriggersPage() {
         oninput: (e) => { state.searchQuery = e.target.value; render(); }
       }),
       h('select', {
-        style: { fontSize: '12px', padding: '4px 8px', borderRadius: '6px', border: '1px solid var(--gray-200)', background: 'var(--card-bg)', color: 'var(--gray-600)', marginLeft: '8px' },
+        className: 'filter-select',
+        style: { marginLeft: '8px' },
         value: state.filter.triggerSort || 'score',
         onchange: (e) => { state.filter.triggerSort = e.target.value; render(); }
       },
@@ -10084,7 +9108,7 @@ function renderTriggersPage() {
       for (const t of state.triggers.filter(t => t.status === 'pending')) {
         sourceCounts[t.source] = (sourceCounts[t.source] || 0) + 1;
       }
-      return h('div', { style: { display: 'flex', gap: '8px', marginBottom: '8px', alignItems: 'center', padding: '8px 12px', background: 'var(--gray-50)', border: '1px solid var(--gray-150)', borderRadius: '8px', fontSize: '12px', flexWrap: 'wrap' } },
+      return h('div', { style: { display: 'flex', gap: '8px', marginBottom: '8px', alignItems: 'center', padding: '8px 12px', background: 'var(--gray-50)', border: '1px solid var(--gray-200)', borderRadius: '8px', fontSize: '12px', flexWrap: 'wrap' } },
         h('span', { style: { fontWeight: '600', color: 'var(--gray-500)', marginRight: '4px' } }, 'Sources:'),
         ...sources.map(src => {
           const cnt = sourceCounts[src] || 0;

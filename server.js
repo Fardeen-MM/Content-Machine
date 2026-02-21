@@ -18114,6 +18114,377 @@ Content: ${firstContent.substring(0, 2000)}`;
       return json(res, readJSON('engagement-heatmap.json') || { by_hour: {}, by_day: {}, best_time: 'Unknown' });
     }
 
+    // ========== BATCH 79: Audience Intelligence & Growth Automation ==========
+
+    // --- Audience Overlap Analyzer ---
+    // Analyze overlap between platforms to optimize cross-posting strategy
+    if (method === 'POST' && pathname === '/api/audience-overlap') {
+      const engagement = readJSON('engagement-tracker.json');
+      const engList = Array.isArray(engagement) ? engagement : [];
+      const conversions = readJSON('conversion-tracker.json');
+      const convEvents = Array.isArray(conversions) ? conversions : (conversions?.events || []);
+
+      const platforms = ['linkedin', 'x', 'instagram', 'youtube', 'tiktok', 'newsletter'];
+      const platformUsers = {};
+      for (const p of platforms) platformUsers[p] = new Set();
+
+      for (const e of engList) {
+        if (e.platform && e.user_id) platformUsers[e.platform]?.add(e.user_id);
+        if (e.platform && e.email) platformUsers[e.platform]?.add(e.email);
+      }
+      for (const e of convEvents) {
+        if (e.platform && e.email) platformUsers[e.platform]?.add(e.email);
+      }
+
+      const overlap = {};
+      for (const p1 of platforms) {
+        for (const p2 of platforms) {
+          if (p1 >= p2) continue;
+          const s1 = platformUsers[p1];
+          const s2 = platformUsers[p2];
+          const common = [...s1].filter(u => s2.has(u)).length;
+          const total = new Set([...s1, ...s2]).size;
+          overlap[`${p1}_${p2}`] = {
+            platforms: [p1, p2],
+            common,
+            total_unique: total,
+            overlap_pct: total > 0 ? Math.round((common / total) * 100) : 0
+          };
+        }
+      }
+
+      const report = {
+        platform_sizes: Object.fromEntries(platforms.map(p => [p, platformUsers[p].size])),
+        overlaps: overlap,
+        total_unique_across_all: new Set(platforms.flatMap(p => [...platformUsers[p]])).size,
+        recommendations: [],
+        generated_at: new Date().toISOString()
+      };
+
+      const lowOverlap = Object.values(overlap).filter(o => o.overlap_pct < 10 && o.total_unique > 0);
+      if (lowOverlap.length) report.recommendations.push(`Low overlap between ${lowOverlap.map(o => o.platforms.join('/')).join(', ')} — good for reach diversification`);
+      if (report.total_unique_across_all === 0) report.recommendations.push('No tracked users yet — add engagement tracking with user identifiers');
+
+      writeJSON('audience-overlap.json', report);
+      return json(res, report);
+    }
+    if (method === 'GET' && pathname === '/api/audience-overlap') {
+      return json(res, readJSON('audience-overlap.json') || { platform_sizes: {}, overlaps: {} });
+    }
+
+    // --- Viral Content Detector ---
+    // Identify content that has gone or is going viral based on engagement velocity
+    if (method === 'POST' && pathname === '/api/viral-detector') {
+      const engagement = readJSON('engagement-tracker.json');
+      const engList = Array.isArray(engagement) ? engagement : [];
+      const content = readJSON('content.json');
+
+      const viralThreshold = 2.5;
+      const candidates = [];
+
+      for (const c of content) {
+        const eng = engList.filter(e => e.content_id === c.id);
+        if (eng.length === 0) continue;
+
+        const totalImpressions = eng.reduce((s, e) => s + (e.impressions || 0), 0);
+        const totalEngagements = eng.reduce((s, e) => s + (e.engagements || e.engagement_rate || 0), 0);
+        const engRate = totalImpressions > 0 ? (totalEngagements / totalImpressions) * 100 : 0;
+
+        const ageHours = (Date.now() - new Date(c.generated_at || 0).getTime()) / (60 * 60 * 1000);
+        const velocity = ageHours > 0 ? totalImpressions / ageHours : 0;
+
+        if (engRate > viralThreshold || velocity > 50) {
+          candidates.push({
+            id: c.id,
+            title: c.trigger_title || 'Untitled',
+            impressions: totalImpressions,
+            engagements: totalEngagements,
+            engagement_rate: Math.round(engRate * 100) / 100,
+            velocity: Math.round(velocity),
+            age_hours: Math.round(ageHours),
+            viral_score: Math.min(100, Math.round(engRate * 10 + velocity / 5)),
+            status: engRate > 5 ? 'viral' : engRate > viralThreshold ? 'trending' : 'rising'
+          });
+        }
+      }
+
+      candidates.sort((a, b) => b.viral_score - a.viral_score);
+
+      const report = {
+        viral: candidates.filter(c => c.status === 'viral'),
+        trending: candidates.filter(c => c.status === 'trending'),
+        rising: candidates.filter(c => c.status === 'rising'),
+        total_candidates: candidates.length,
+        generated_at: new Date().toISOString()
+      };
+
+      writeJSON('viral-detector.json', report);
+      return json(res, report);
+    }
+    if (method === 'GET' && pathname === '/api/viral-detector') {
+      return json(res, readJSON('viral-detector.json') || { viral: [], trending: [], rising: [], total_candidates: 0 });
+    }
+
+    // --- Content Cannibalisation Checker ---
+    // Detect content pieces competing for the same keywords/topics
+    if (method === 'POST' && pathname === '/api/cannibalisation-check') {
+      const content = readJSON('content.json');
+      const clusters = {};
+
+      for (const c of content) {
+        const title = (c.trigger_title || '').toLowerCase();
+        const words = title.split(/\s+/).filter(w => w.length > 4);
+
+        for (const word of words) {
+          if (!clusters[word]) clusters[word] = [];
+          clusters[word].push({ id: c.id, title: c.trigger_title || 'Untitled' });
+        }
+      }
+
+      const conflicts = Object.entries(clusters)
+        .filter(([, items]) => items.length >= 3)
+        .map(([keyword, items]) => ({
+          keyword,
+          count: items.length,
+          content: items.slice(0, 5),
+          severity: items.length >= 5 ? 'high' : items.length >= 3 ? 'medium' : 'low'
+        }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 20);
+
+      const report = {
+        total_conflicts: conflicts.length,
+        high_severity: conflicts.filter(c => c.severity === 'high').length,
+        conflicts,
+        recommendations: [],
+        generated_at: new Date().toISOString()
+      };
+
+      if (conflicts.length > 5) report.recommendations.push(`${conflicts.length} keyword overlaps detected — consolidate or differentiate topics`);
+      if (report.high_severity > 0) report.recommendations.push(`${report.high_severity} high-severity conflicts — these keywords have 5+ competing pieces`);
+
+      writeJSON('cannibalisation-check.json', report);
+      return json(res, report);
+    }
+    if (method === 'GET' && pathname === '/api/cannibalisation-check') {
+      return json(res, readJSON('cannibalisation-check.json') || { total_conflicts: 0, conflicts: [] });
+    }
+
+    // --- Content Engagement Predictor ---
+    // Predict engagement based on content characteristics
+    if (method === 'POST' && pathname === '/api/engagement-predictor') {
+      const content = readJSON('content.json');
+      const engagement = readJSON('engagement-tracker.json');
+      const engList = Array.isArray(engagement) ? engagement : [];
+
+      const predictions = content.slice(0, 50).map(c => {
+        const fmts = c.formats || {};
+        const formatCount = Object.keys(fmts).length;
+        const firstContent = typeof Object.values(fmts)[0] === 'string' ? Object.values(fmts)[0] : '';
+        const wordCount = firstContent.split(/\s+/).filter(Boolean).length;
+        const hasQuestion = firstContent.includes('?');
+        const hasNumber = /\d/.test(firstContent);
+        const hasEmoji = /[\u{1F600}-\u{1F64F}]/u.test(firstContent);
+
+        let score = 40;
+        if (wordCount >= 50 && wordCount <= 200) score += 15;
+        if (hasQuestion) score += 10;
+        if (hasNumber) score += 8;
+        if (formatCount >= 5) score += 10;
+        if (firstContent.toLowerCase().includes('how to')) score += 7;
+        if (firstContent.toLowerCase().includes('mistake')) score += 5;
+        if (firstContent.toLowerCase().includes('secret')) score += 5;
+
+        const actual = engList.find(e => e.content_id === c.id);
+        score = Math.min(100, score);
+
+        return {
+          id: c.id,
+          title: c.trigger_title || 'Untitled',
+          predicted_score: score,
+          predicted_tier: score >= 75 ? 'high' : score >= 50 ? 'medium' : 'low',
+          signals: {
+            word_count: wordCount,
+            has_question: hasQuestion,
+            has_numbers: hasNumber,
+            format_count: formatCount
+          },
+          actual_engagement: actual?.engagement_rate || null
+        };
+      });
+
+      const report = {
+        total_predicted: predictions.length,
+        high_potential: predictions.filter(p => p.predicted_tier === 'high').length,
+        medium_potential: predictions.filter(p => p.predicted_tier === 'medium').length,
+        low_potential: predictions.filter(p => p.predicted_tier === 'low').length,
+        predictions: predictions.sort((a, b) => b.predicted_score - a.predicted_score),
+        avg_score: predictions.length ? Math.round(predictions.reduce((s, p) => s + p.predicted_score, 0) / predictions.length) : 0,
+        generated_at: new Date().toISOString()
+      };
+
+      writeJSON('engagement-predictor.json', report);
+      return json(res, report);
+    }
+    if (method === 'GET' && pathname === '/api/engagement-predictor') {
+      return json(res, readJSON('engagement-predictor.json') || { predictions: [], total_predicted: 0 });
+    }
+
+    // --- Content Mix Optimizer ---
+    // Recommend ideal content format mix based on performance data
+    if (method === 'POST' && pathname === '/api/content-mix-optimizer') {
+      const content = readJSON('content.json');
+      const engagement = readJSON('engagement-tracker.json');
+      const engList = Array.isArray(engagement) ? engagement : [];
+
+      const formatStats = {};
+      for (const c of content) {
+        const fmts = c.formats || {};
+        for (const fmt of Object.keys(fmts)) {
+          if (!formatStats[fmt]) formatStats[fmt] = { count: 0, total_engagement: 0, engagements: 0 };
+          formatStats[fmt].count++;
+          const eng = engList.find(e => e.content_id === c.id && (e.format === fmt || !e.format));
+          if (eng) {
+            formatStats[fmt].total_engagement += eng.engagement_rate || 0;
+            formatStats[fmt].engagements++;
+          }
+        }
+      }
+
+      const formats = Object.entries(formatStats).map(([fmt, stats]) => ({
+        format: fmt,
+        current_count: stats.count,
+        current_pct: content.length > 0 ? Math.round((stats.count / content.length) * 100) : 0,
+        avg_engagement: stats.engagements > 0 ? Math.round(stats.total_engagement / stats.engagements * 100) / 100 : 0,
+        recommendation: stats.count < 5 ? 'increase' : stats.count > 30 ? 'maintain or reduce' : 'maintain'
+      })).sort((a, b) => b.avg_engagement - a.avg_engagement);
+
+      const idealMix = {
+        linkedin: 25, x_single: 20, short_video: 15, carousel: 10,
+        x_thread: 10, blog: 5, newsletter: 5, instagram: 5, other: 5
+      };
+
+      const report = {
+        current_mix: formats,
+        ideal_mix: idealMix,
+        total_formats: formats.length,
+        top_performing: formats.slice(0, 3).map(f => f.format),
+        underrepresented: formats.filter(f => f.current_count < 3).map(f => f.format),
+        recommendations: [],
+        generated_at: new Date().toISOString()
+      };
+
+      const underRep = report.underrepresented;
+      if (underRep.length) report.recommendations.push(`Underrepresented formats: ${underRep.join(', ')} — create more`);
+      if (formats.length < 5) report.recommendations.push('Low format diversity — expand to at least 5 different formats');
+
+      writeJSON('content-mix-optimizer.json', report);
+      return json(res, report);
+    }
+    if (method === 'GET' && pathname === '/api/content-mix-optimizer') {
+      return json(res, readJSON('content-mix-optimizer.json') || { current_mix: [], ideal_mix: {} });
+    }
+
+    // --- Evergreen Content Identifier ---
+    // Find content suitable for evergreen (always-relevant) promotion
+    if (method === 'POST' && pathname === '/api/evergreen-identifier') {
+      const content = readJSON('content.json');
+
+      const timeKeywords = ['today', 'this week', 'this month', 'yesterday', 'just', 'breaking', 'new study', 'recently', 'latest', '2024', '2025'];
+      const evergreenKeywords = ['how to', 'guide', 'tips', 'mistakes', 'checklist', 'template', 'strategy', 'fundamentals', 'basics', 'always', 'never', 'best practices'];
+
+      const results = content.map(c => {
+        const fmts = c.formats || {};
+        const firstContent = typeof Object.values(fmts)[0] === 'string' ? Object.values(fmts)[0] : '';
+        const combined = ((c.trigger_title || '') + ' ' + firstContent).toLowerCase();
+
+        let evergreenScore = 50;
+        for (const kw of timeKeywords) {
+          if (combined.includes(kw)) evergreenScore -= 10;
+        }
+        for (const kw of evergreenKeywords) {
+          if (combined.includes(kw)) evergreenScore += 10;
+        }
+        evergreenScore = Math.max(0, Math.min(100, evergreenScore));
+
+        return {
+          id: c.id,
+          title: c.trigger_title || 'Untitled',
+          evergreen_score: evergreenScore,
+          is_evergreen: evergreenScore >= 60,
+          category: evergreenScore >= 80 ? 'highly_evergreen' : evergreenScore >= 60 ? 'evergreen' : evergreenScore >= 40 ? 'semi_evergreen' : 'time_sensitive'
+        };
+      });
+
+      const report = {
+        total_analyzed: results.length,
+        highly_evergreen: results.filter(r => r.category === 'highly_evergreen').length,
+        evergreen: results.filter(r => r.category === 'evergreen').length,
+        semi_evergreen: results.filter(r => r.category === 'semi_evergreen').length,
+        time_sensitive: results.filter(r => r.category === 'time_sensitive').length,
+        top_evergreen: results.filter(r => r.is_evergreen).sort((a, b) => b.evergreen_score - a.evergreen_score).slice(0, 15),
+        avg_score: results.length ? Math.round(results.reduce((s, r) => s + r.evergreen_score, 0) / results.length) : 0,
+        generated_at: new Date().toISOString()
+      };
+
+      writeJSON('evergreen-identifier.json', report);
+      return json(res, report);
+    }
+    if (method === 'GET' && pathname === '/api/evergreen-identifier') {
+      return json(res, readJSON('evergreen-identifier.json') || { total_analyzed: 0, top_evergreen: [] });
+    }
+
+    // --- Content Supply Chain Dashboard ---
+    // End-to-end view of content production pipeline efficiency
+    if (method === 'POST' && pathname === '/api/content-supply-chain') {
+      const content = readJSON('content.json');
+      const published = readJSON('published.json') || [];
+      const triggers = readJSON('trigger-queue.json') || [];
+      const triggerList = Array.isArray(triggers) ? triggers : (triggers?.triggers || []);
+
+      const pendingTriggers = triggerList.filter(t => t.status === 'pending').length;
+      const totalGenerated = content.length;
+      const inReview = content.filter(c => c.status === 'review').length;
+      const approved = content.filter(c => c.status === 'approved').length;
+      const totalPublished = published.length;
+
+      const stages = [
+        { name: 'Ideas (Triggers)', count: pendingTriggers, capacity: 100, utilization: Math.min(100, pendingTriggers) },
+        { name: 'Generation', count: totalGenerated, capacity: 50, utilization: Math.min(100, Math.round((totalGenerated / 50) * 100)) },
+        { name: 'Review', count: inReview, capacity: 20, utilization: Math.min(100, Math.round((inReview / 20) * 100)) },
+        { name: 'Approved', count: approved, capacity: 15, utilization: Math.min(100, Math.round((approved / 15) * 100)) },
+        { name: 'Published', count: totalPublished, capacity: 30, utilization: Math.min(100, Math.round((totalPublished / 30) * 100)) }
+      ];
+
+      const bottleneckStage = stages.reduce((worst, stage) => {
+        return stage.utilization > worst.utilization ? stage : worst;
+      }, stages[0]);
+
+      const report = {
+        stages,
+        total_in_system: pendingTriggers + totalGenerated + totalPublished,
+        bottleneck: bottleneckStage.name,
+        efficiency: stages.length ? Math.round(stages.reduce((s, st) => s + st.utilization, 0) / stages.length) : 0,
+        throughput: {
+          triggers_per_day: Math.round(pendingTriggers / 7 * 10) / 10,
+          content_per_day: Math.round(totalGenerated / 7 * 10) / 10,
+          published_per_day: Math.round(totalPublished / 7 * 10) / 10
+        },
+        recommendations: [],
+        generated_at: new Date().toISOString()
+      };
+
+      if (inReview > 10) report.recommendations.push(`${inReview} items stuck in review — process or auto-approve older items`);
+      if (approved > 10 && totalPublished < 5) report.recommendations.push('Many approved but few published — increase publishing cadence');
+      if (pendingTriggers > 50) report.recommendations.push('Large trigger backlog — generate content or prune old triggers');
+
+      writeJSON('content-supply-chain.json', report);
+      return json(res, report);
+    }
+    if (method === 'GET' && pathname === '/api/content-supply-chain') {
+      return json(res, readJSON('content-supply-chain.json') || { stages: [], bottleneck: 'Unknown' });
+    }
+
     // --- Static file serving ---
 
     // Serve dashboard

@@ -1,0 +1,33 @@
+{
+  "overall_score": 34,
+  "grade": "D",
+  "dimensions": {
+    "pipeline": {
+      "score": 100,
+      "label": "Pipeline Health"
+    },
+    "distribution": {
+      "score": 7,
+      "label": "Distribution"
+    },
+    "engagement": {
+      "score": 10,
+      "label": "Engagement"
+    },
+    "conversion": {
+      "score": 30,
+      "label": "Conversion"
+    },
+    "authority": {
+      "score": 22,
+      "label": "Authority"
+    }
+  },
+  "issues": [
+    "Publish more content — low distribution rate",
+    "Start tracking engagement on published posts",
+    "Collect social proof and testimonials"
+  ],
+  "next_action": "Publish more content — low distribution rate",
+  "generated_at": "2026-02-21T14:35:25.566Z"
+}

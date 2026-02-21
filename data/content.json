@@ -2094,7 +2094,14 @@
         "rewrite_suggestion": "I analyzed 23 law firm intake processes last month.\n\nHere's what shocked me: 73% treat a $4K PPC lead exactly like a $400 organic caller.\n\nIt's costing them six figures.\n\n(The math below shows why this matters to your revenue.)",
         "graded_at": "2026-02-21T07:26:40.607Z"
       }
-    }
+    },
+    "cross_posts": [
+      {
+        "platform": "linkedin",
+        "post_url": "https://linkedin.com/post/123",
+        "posted_at": "2026-02-21T14:35:25.488Z"
+      }
+    ]
   },
   {
     "id": "602f738cf8a9e190",

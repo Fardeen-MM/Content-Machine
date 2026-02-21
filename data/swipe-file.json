@@ -58,5 +58,29 @@
     ],
     "notes": "Auto-saved from approved linkedin content",
     "created_at": "2026-02-21T01:11:03.746Z"
+  },
+  {
+    "id": "8deccb6b6bb26b1c",
+    "category": "hook",
+    "title": "Data-driven LinkedIn hook",
+    "content": "We analyzed 47 law firm Google Ads accounts. 73% had the same 5 mistakes.",
+    "source": "Our own content",
+    "platform": "linkedin",
+    "why_great": "Uses specific numbers to create authority",
+    "tags": [],
+    "used_count": 0,
+    "created_at": "2026-02-21T14:35:25.465Z"
+  },
+  {
+    "id": "fefd202bd3b7285e",
+    "category": "cta",
+    "title": "Comment AUDIT below — I'll send you the free check",
+    "content": "Comment AUDIT below — I'll send you the free checklist",
+    "source": null,
+    "platform": null,
+    "why_great": "Simple keyword trigger CTA",
+    "tags": [],
+    "used_count": 0,
+    "created_at": "2026-02-21T14:37:37.275Z"
   }
 ]

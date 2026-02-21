@@ -15797,6 +15797,339 @@ Make messages feel personal and genuine. Never salesy. Always provide value firs
       return json(res, readJSON('content-recycler-scan.json', null));
     }
 
+    // ============================================================
+    // Batch 72: Content DNA, Swipe File, Cross-Post Tracker,
+    //           Content Brief, Competitor Tracker, Smart Scheduler,
+    //           Content Health Dashboard
+    // ============================================================
+
+    // POST /api/content-dna-analyzer — Analyze patterns in best-performing content
+    if (method === 'POST' && pathname === '/api/content-dna-analyzer') {
+      const content = readJSON('content.json', []);
+      const published = readJSON('published.json', []);
+      const tracker = readJSON('engagement-tracker.json', []);
+
+      // Analyze format distribution
+      const formatDist = {};
+      const topicWords = {};
+      const lengthBuckets = { short: 0, medium: 0, long: 0 };
+      const hookPatterns = {};
+
+      for (const item of content) {
+        for (const [fmt, data] of Object.entries(item.formats || {})) {
+          formatDist[fmt] = (formatDist[fmt] || 0) + 1;
+          const text = typeof data?.content === 'string' ? data.content : '';
+          if (text.length > 0) {
+            if (text.length < 500) lengthBuckets.short++;
+            else if (text.length < 1500) lengthBuckets.medium++;
+            else lengthBuckets.long++;
+
+            // Analyze hook pattern
+            const firstLine = text.split('\n')[0] || '';
+            if (firstLine.includes('?')) hookPatterns.question = (hookPatterns.question || 0) + 1;
+            else if (/^\d/.test(firstLine)) hookPatterns.number = (hookPatterns.number || 0) + 1;
+            else if (firstLine.length < 50) hookPatterns.short_bold = (hookPatterns.short_bold || 0) + 1;
+            else hookPatterns.statement = (hookPatterns.statement || 0) + 1;
+          }
+        }
+        // Extract topic words
+        const words = (item.trigger_title || '').toLowerCase().split(/\W+/).filter(w => w.length > 3);
+        for (const w of words) { topicWords[w] = (topicWords[w] || 0) + 1; }
+      }
+
+      // Best performing by engagement
+      const engByContent = {};
+      for (const e of tracker) {
+        if (!engByContent[e.content_id]) engByContent[e.content_id] = { total: 0, entries: 0 };
+        engByContent[e.content_id].total += e.engagement_rate || 0;
+        engByContent[e.content_id].entries++;
+      }
+      const topPerformers = Object.entries(engByContent)
+        .map(([id, data]) => ({ id, avg_rate: Math.round(data.total / data.entries * 100) / 100 }))
+        .sort((a, b) => b.avg_rate - a.avg_rate)
+        .slice(0, 5);
+
+      const topWords = Object.entries(topicWords).sort((a, b) => b[1] - a[1]).slice(0, 15).map(([w, c]) => ({ word: w, count: c }));
+
+      const result = {
+        total_content: content.length,
+        format_distribution: formatDist,
+        length_distribution: lengthBuckets,
+        hook_patterns: hookPatterns,
+        top_topic_words: topWords,
+        top_performers: topPerformers,
+        optimal_length: lengthBuckets.medium >= lengthBuckets.short && lengthBuckets.medium >= lengthBuckets.long ? 'medium (500-1500 chars)' : lengthBuckets.long >= lengthBuckets.short ? 'long (1500+ chars)' : 'short (under 500 chars)',
+        dominant_hook: Object.entries(hookPatterns).sort((a, b) => b[1] - a[1])[0]?.[0] || 'unknown',
+        generated_at: now()
+      };
+      writeJSON('content-dna-analyzer.json', result);
+      return json(res, { ok: true, ...result });
+    }
+
+    // GET /api/content-dna-analyzer
+    if (method === 'GET' && pathname === '/api/content-dna-analyzer') {
+      return json(res, readJSON('content-dna-analyzer.json', null));
+    }
+
+    // POST /api/swipe-file — Save a great content example
+    if (method === 'POST' && pathname === '/api/swipe-file') {
+      const body = await parseBody(req);
+      const { category, title, content, source, platform, why_great, tags } = body || {};
+      if (!content) return json(res, { error: 'content required' }, 400);
+
+      const swipes = readJSON('swipe-file.json', []);
+      const entry = {
+        id: generateId(),
+        category: category || 'general', // 'hook', 'cta', 'story', 'data', 'carousel', 'thread', 'email', 'ad_copy'
+        title: title || (content || '').slice(0, 50),
+        content,
+        source: source || null,
+        platform: platform || null,
+        why_great: why_great || null,
+        tags: Array.isArray(tags) ? tags : [],
+        used_count: 0,
+        created_at: now()
+      };
+      swipes.push(entry);
+      writeJSON('swipe-file.json', swipes);
+      return json(res, { ok: true, entry });
+    }
+
+    // GET /api/swipe-file
+    if (method === 'GET' && pathname === '/api/swipe-file') {
+      const swipes = readJSON('swipe-file.json', []);
+      const byCategory = {};
+      for (const s of swipes) { byCategory[s.category] = (byCategory[s.category] || 0) + 1; }
+      return json(res, { total: swipes.length, by_category: byCategory, swipes: swipes.slice(-30).reverse() });
+    }
+
+    // POST /api/cross-post-tracker — Track content posted to platforms
+    if (method === 'POST' && pathname === '/api/cross-post-tracker') {
+      const body = await parseBody(req);
+      const { content_id, platform, post_url, posted_at } = body || {};
+      if (!content_id || !platform) return json(res, { error: 'content_id and platform required' }, 400);
+
+      const tracker = readJSON('cross-post-tracker.json', []);
+      const entry = {
+        id: generateId(),
+        content_id,
+        platform,
+        post_url: post_url || null,
+        posted_at: posted_at || now(),
+        logged_at: now()
+      };
+      tracker.push(entry);
+      writeJSON('cross-post-tracker.json', tracker);
+
+      // Update content with cross-post info
+      const content = readJSON('content.json', []);
+      const item = content.find(c => c.id === content_id);
+      if (item) {
+        if (!item.cross_posts) item.cross_posts = [];
+        item.cross_posts.push({ platform, post_url, posted_at: entry.posted_at });
+        writeJSON('content.json', content);
+      }
+
+      return json(res, { ok: true, entry });
+    }
+
+    // GET /api/cross-post-tracker
+    if (method === 'GET' && pathname === '/api/cross-post-tracker') {
+      const tracker = readJSON('cross-post-tracker.json', []);
+      const byPlatform = {};
+      const byContent = {};
+      for (const e of tracker) {
+        byPlatform[e.platform] = (byPlatform[e.platform] || 0) + 1;
+        byContent[e.content_id] = (byContent[e.content_id] || 0) + 1;
+      }
+      const multiPosted = Object.entries(byContent).filter(([, c]) => c >= 2).length;
+      return json(res, { total_posts: tracker.length, by_platform: byPlatform, multi_posted: multiPosted, recent: tracker.slice(-20).reverse() });
+    }
+
+    // POST /api/content/:id/brief-generate — Generate a content brief
+    const briefGen2Match = pathname.match(/^\/api\/content\/([a-f0-9]+)\/brief-generate$/);
+    if (briefGen2Match && method === 'POST') {
+      const id = briefGen2Match[1];
+      const content = readJSON('content.json', []);
+      const item = content.find(c => c.id === id);
+      if (!item) return json(res, { error: 'Content not found' }, 404);
+
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+      const result = await callClaude({
+        model: HAIKU,
+        system: 'You are a content strategist creating briefs for writers at a legal marketing agency. Return JSON only.',
+        prompt: `Create a detailed content brief for: "${item.trigger_title}"
+
+Return COMPACT JSON:
+{
+  "title": "working title",
+  "format": "best format for this topic",
+  "target_audience": "who this is for",
+  "goal": "what this should achieve",
+  "key_points": ["point 1", "point 2", "point 3"],
+  "tone": "professional yet conversational",
+  "hook_options": ["hook 1", "hook 2"],
+  "cta": "desired action",
+  "word_count": "800-1200",
+  "seo_keywords": ["keyword 1", "keyword 2"],
+  "references": "what to research",
+  "do_not": ["avoid 1", "avoid 2"]
+}`,
+        maxTokens: 1500
+      });
+      const parsed = parseJsonResponse(result);
+      if (!parsed) return json(res, { error: 'Failed to generate brief', raw_preview: (result || '').slice(0, 200) }, 500);
+
+      const idx = content.findIndex(c => c.id === id);
+      if (idx >= 0) {
+        content[idx].brief = { ...parsed, generated_at: now() };
+        writeJSON('content.json', content);
+      }
+      return json(res, { ok: true, content_id: id, ...parsed });
+    }
+
+    // POST /api/competitor-content-tracker — Track competitor content
+    if (method === 'POST' && pathname === '/api/competitor-content-tracker') {
+      const body = await parseBody(req);
+      const { competitor_name, platform, content_type, topic, url, notes } = body || {};
+      if (!competitor_name) return json(res, { error: 'competitor_name required' }, 400);
+
+      const tracker = readJSON('competitor-content-tracker.json', []);
+      const entry = {
+        id: generateId(),
+        competitor_name,
+        platform: platform || 'linkedin',
+        content_type: content_type || 'post',
+        topic: topic || null,
+        url: url || null,
+        notes: notes || null,
+        logged_at: now()
+      };
+      tracker.push(entry);
+      writeJSON('competitor-content-tracker.json', tracker);
+      return json(res, { ok: true, entry });
+    }
+
+    // GET /api/competitor-content-tracker
+    if (method === 'GET' && pathname === '/api/competitor-content-tracker') {
+      const tracker = readJSON('competitor-content-tracker.json', []);
+      const byCompetitor = {};
+      for (const e of tracker) {
+        if (!byCompetitor[e.competitor_name]) byCompetitor[e.competitor_name] = { posts: 0, platforms: new Set() };
+        byCompetitor[e.competitor_name].posts++;
+        byCompetitor[e.competitor_name].platforms.add(e.platform);
+      }
+      const competitors = Object.entries(byCompetitor).map(([name, data]) => ({ name, posts: data.posts, platforms: [...data.platforms] }));
+      return json(res, { total_tracked: tracker.length, competitors, recent: tracker.slice(-20).reverse() });
+    }
+
+    // POST /api/smart-scheduler — Auto-schedule content based on optimal times
+    if (method === 'POST' && pathname === '/api/smart-scheduler') {
+      const content = readJSON('content.json', []);
+      const approved = content.filter(c => c.status === 'approved');
+      const tracker = readJSON('engagement-tracker.json', []);
+      const crossPosts = readJSON('cross-post-tracker.json', []);
+
+      if (approved.length === 0) return json(res, { error: 'No approved content to schedule' }, 400);
+
+      // Optimal times by platform (industry benchmarks for B2B legal)
+      const optimalTimes = {
+        linkedin: { days: ['Tuesday', 'Wednesday', 'Thursday'], times: ['8:00 AM', '10:00 AM', '12:00 PM'] },
+        x: { days: ['Monday', 'Wednesday', 'Friday'], times: ['9:00 AM', '12:00 PM', '5:00 PM'] },
+        instagram: { days: ['Monday', 'Thursday'], times: ['11:00 AM', '1:00 PM'] },
+        youtube: { days: ['Tuesday', 'Thursday'], times: ['2:00 PM', '4:00 PM'] },
+        email: { days: ['Tuesday', 'Thursday'], times: ['8:00 AM', '10:00 AM'] }
+      };
+
+      // Create schedule for next 7 days
+      const schedule = [];
+      const today = new Date();
+      const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      let contentIdx = 0;
+
+      for (let d = 1; d <= 7; d++) {
+        const date = new Date(today);
+        date.setDate(today.getDate() + d);
+        const dayName = dayNames[date.getDay()];
+        const dateStr = date.toISOString().split('T')[0];
+
+        for (const [platform, opt] of Object.entries(optimalTimes)) {
+          if (opt.days.includes(dayName) && contentIdx < approved.length) {
+            const time = opt.times[Math.floor(Math.random() * opt.times.length)];
+            schedule.push({
+              content_id: approved[contentIdx].id,
+              title: approved[contentIdx].trigger_title,
+              platform,
+              date: dateStr,
+              day: dayName,
+              time,
+              status: 'scheduled'
+            });
+            contentIdx++;
+            if (contentIdx >= approved.length) contentIdx = 0;
+          }
+        }
+      }
+
+      const result = { total_scheduled: schedule.length, schedule, platforms_covered: [...new Set(schedule.map(s => s.platform))], generated_at: now() };
+      writeJSON('smart-scheduler.json', result);
+      return json(res, { ok: true, ...result });
+    }
+
+    // GET /api/smart-scheduler
+    if (method === 'GET' && pathname === '/api/smart-scheduler') {
+      return json(res, readJSON('smart-scheduler.json', null));
+    }
+
+    // POST /api/content-system-health — Overall content system health score
+    if (method === 'POST' && pathname === '/api/content-system-health') {
+      const content = readJSON('content.json', []);
+      const published = readJSON('published.json', []);
+      const triggers = readJSON('trigger-queue.json', []);
+      const tracker = readJSON('engagement-tracker.json', []);
+      const conversions = readJSON('conversion-tracker.json', []);
+      const proofs = readJSON('social-proof-collector.json', []);
+
+      // Score each dimension (0-100)
+      const pipeline = Math.min(100, (triggers.filter(t => t.status === 'pending').length >= 50 ? 30 : triggers.filter(t => t.status === 'pending').length * 0.6) + (content.length >= 20 ? 40 : content.length * 2) + (content.filter(c => c.status === 'approved').length >= 5 ? 30 : content.filter(c => c.status === 'approved').length * 6));
+      const distribution = Math.min(100, (published.length >= 10 ? 50 : published.length * 5) + (content.length > 0 ? Math.min(50, published.length / content.length * 100) : 0));
+      const engagement = Math.min(100, tracker.length * 10);
+      const conversion = Math.min(100, conversions.length * 15);
+      const authority = Math.min(100, proofs.length * 20 + published.length * 2);
+
+      const overall = Math.round((pipeline + distribution + engagement + conversion + authority) / 5);
+      const grade = overall >= 80 ? 'A' : overall >= 60 ? 'B' : overall >= 40 ? 'C' : 'D';
+
+      const issues = [];
+      if (pipeline < 50) issues.push('Pipeline needs more triggers and content generation');
+      if (distribution < 50) issues.push('Publish more content — low distribution rate');
+      if (engagement < 30) issues.push('Start tracking engagement on published posts');
+      if (conversion < 30) issues.push('Add CTAs and track conversions');
+      if (authority < 30) issues.push('Collect social proof and testimonials');
+
+      const result = {
+        overall_score: overall,
+        grade,
+        dimensions: {
+          pipeline: { score: Math.round(pipeline), label: 'Pipeline Health' },
+          distribution: { score: Math.round(distribution), label: 'Distribution' },
+          engagement: { score: Math.round(engagement), label: 'Engagement' },
+          conversion: { score: Math.round(conversion), label: 'Conversion' },
+          authority: { score: Math.round(authority), label: 'Authority' }
+        },
+        issues,
+        next_action: issues[0] || 'System is healthy — keep going',
+        generated_at: now()
+      };
+      writeJSON('content-system-health-v2.json', result);
+      return json(res, { ok: true, ...result });
+    }
+
+    // GET /api/content-system-health-v2
+    if (method === 'GET' && pathname === '/api/content-system-health-v2') {
+      return json(res, readJSON('content-system-health-v2.json', null));
+    }
+
     // --- Static file serving ---
 
     // Serve dashboard

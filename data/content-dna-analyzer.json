@@ -1,0 +1,115 @@
+{
+  "total_content": 41,
+  "format_distribution": {
+    "linkedin": 35,
+    "x_single": 33,
+    "x_thread": 32,
+    "short_video": 26,
+    "carousel": 7,
+    "hot_take": 13,
+    "poll": 7,
+    "quote_cards": 11,
+    "stat_graphic": 11,
+    "before_after": 11,
+    "listicle": 6,
+    "blog": 3,
+    "youtube_script": 3,
+    "lead_magnet": 3,
+    "linkedin_post": 6,
+    "linkedin_hooks": 5,
+    "x_hooks": 5,
+    "short_video_script": 5,
+    "linkedin_carousel": 5,
+    "linkedin_poll": 5,
+    "listicle_post": 5,
+    "image_prompt": 5,
+    "blog_keyword": 5,
+    "youtube_topic": 5,
+    "lead_magnet_topic": 5,
+    "linkedin_cta": 5,
+    "x_cta": 5,
+    "x_thread_optimized": 1
+  },
+  "length_distribution": {
+    "short": 28,
+    "medium": 56,
+    "long": 12
+  },
+  "hook_patterns": {
+    "statement": 69,
+    "short_bold": 12,
+    "number": 3,
+    "question": 12
+  },
+  "top_topic_words": [
+    {
+      "word": "firm",
+      "count": 14
+    },
+    {
+      "word": "google",
+      "count": 10
+    },
+    {
+      "word": "month",
+      "count": 9
+    },
+    {
+      "word": "cases",
+      "count": 7
+    },
+    {
+      "word": "marketing",
+      "count": 7
+    },
+    {
+      "word": "spent",
+      "count": 6
+    },
+    {
+      "word": "call",
+      "count": 6
+    },
+    {
+      "word": "insight",
+      "count": 6
+    },
+    {
+      "word": "from",
+      "count": 4
+    },
+    {
+      "word": "legal",
+      "count": 4
+    },
+    {
+      "word": "more",
+      "count": 4
+    },
+    {
+      "word": "intake",
+      "count": 4
+    },
+    {
+      "word": "team",
+      "count": 4
+    },
+    {
+      "word": "with",
+      "count": 4
+    },
+    {
+      "word": "your",
+      "count": 4
+    }
+  ],
+  "top_performers": [
+    {
+      "id": "4aa23b276fa5218b",
+      "avg_rate": 2.72
+    }
+  ],
+  "optimal_length": "medium (500-1500 chars)",
+  "dominant_hook": "statement",
+  "generated_at": "2026-02-21T14:35:25.436Z"
+}

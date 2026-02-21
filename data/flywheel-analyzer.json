@@ -1,0 +1,36 @@
+{
+  "flywheel_velocity": 54,
+  "stages": {
+    "creation": {
+      "total": 41,
+      "rate": 0,
+      "approved": 5
+    },
+    "distribution": {
+      "published": 1,
+      "publish_rate": 2
+    },
+    "engagement": {
+      "total_entries": 1,
+      "total_likes": 45,
+      "total_comments": 12,
+      "total_shares": 8,
+      "avg_rate": 2.72
+    },
+    "conversion": {
+      "total": 2,
+      "total_value": 3000,
+      "types": {
+        "cta_click": 1,
+        "booking": 1
+      }
+    }
+  },
+  "bottleneck": {
+    "stage": "distribution",
+    "score_pct": 2,
+    "fix": "Publish more approved content"
+  },
+  "momentum": "building",
+  "generated_at": "2026-02-21T14:31:50.345Z"
+}

@@ -1601,6 +1601,13 @@ const state = {
   contentGapFinder: null,
   audienceGrowthTracker: null,
   performanceBenchmarks: null,
+  // Batch 71: Flywheel, Topic Authority, Social Proof, Newsletter, DM Sequences, Recycler
+  flywheelAnalyzer: null,
+  topicAuthority: null,
+  socialProofCollector: null,
+  newsletterBuilder: [],
+  dmSequenceBuilder: [],
+  contentRecyclerScan: null,
 };
 
 // --- API Calls ---
@@ -1626,7 +1633,7 @@ async function loadData() {
   state.loading = true;
   render();
   try {
-    const [content, triggers, stats, calendar, monthCal, settings, memory, performance, perfAnalytics, meetings, meetingStats, clients, allActions, chatMessages, healthData, inspirations, pestering, pesteringStages, insights, deals, published, series, predictions, playbooks, ctaLibrary, trending, funnel, publishTracker, leadMagnets, contentHealth, scheduleOptimize, templates, dmSequences, hooks, pillarPlan, contentLeads, autopilot, scheduleQueue, engagementDashboard, contentBriefs, workflowPipeline, personas, calendarWeek, benchmarkReport, contentIdeas, socialProof, roiReport, audienceGrowth, contentThemes, distributionPlans, dmPipelines, competitorsTracked, dripCampaigns, autoResponses, expiringContent, amplifications, leadFunnels, calendarInsights, weeklyDigest, splitTests, workflowRules, youtubePipelines, carousels, contentMatrix, ctaStrategy, seriesTemplates, contentBank, engagementPlaybook, atomizations, platformRules, emailSequences, weeklyContentPlan, repurposeChains, lmFunnels, perfReport, contentPillars, compAnalyses, nurtureCampaigns, authorityPlan, flywheelData, velocityData, audienceSegments, contentDna, topicClusters, voiceProfiles, dmScriptsData, replyStrategyData, systemHealthData, contentRecyclerData, commentStrategyData, newslettersData, distributionEngineData, socialProofEngineData, advancedAnalyticsData, growthPlaybookData, genLeadMagnetsData, funnelAnalysisData, autoRepurposeData, weeklyActionPlanData, trendsAnalysisData, authorityScoreData, contentIntelData, conversionOptData, contentMatrixData, draftingStrategyData, zeroClickBankData, contentVelocityData, pillarRotatorData, savedRepliesData, audienceBuilderData, weeklyReportData, competitiveIntelData, contentScoringData, postSchedulerData, trendHijackerData, leadMagnetFunnelsData, outboundSequencesData, icpRefinedData, winLossData, contentRoiData, contentExperimentsData, socialListeningData, authorityBuilderData, quickWinsData, contentCalendarAiData, dailyBriefingData, engagementTrackerData, commentToDmData, contentSeriesPlannerData, hookBankData, engagementScorerData, conversionTrackerData, contentGapFinderData, audienceGrowthTrackerData, performanceBenchmarksData] = await Promise.all([
+    const [content, triggers, stats, calendar, monthCal, settings, memory, performance, perfAnalytics, meetings, meetingStats, clients, allActions, chatMessages, healthData, inspirations, pestering, pesteringStages, insights, deals, published, series, predictions, playbooks, ctaLibrary, trending, funnel, publishTracker, leadMagnets, contentHealth, scheduleOptimize, templates, dmSequences, hooks, pillarPlan, contentLeads, autopilot, scheduleQueue, engagementDashboard, contentBriefs, workflowPipeline, personas, calendarWeek, benchmarkReport, contentIdeas, socialProof, roiReport, audienceGrowth, contentThemes, distributionPlans, dmPipelines, competitorsTracked, dripCampaigns, autoResponses, expiringContent, amplifications, leadFunnels, calendarInsights, weeklyDigest, splitTests, workflowRules, youtubePipelines, carousels, contentMatrix, ctaStrategy, seriesTemplates, contentBank, engagementPlaybook, atomizations, platformRules, emailSequences, weeklyContentPlan, repurposeChains, lmFunnels, perfReport, contentPillars, compAnalyses, nurtureCampaigns, authorityPlan, flywheelData, velocityData, audienceSegments, contentDna, topicClusters, voiceProfiles, dmScriptsData, replyStrategyData, systemHealthData, contentRecyclerData, commentStrategyData, newslettersData, distributionEngineData, socialProofEngineData, advancedAnalyticsData, growthPlaybookData, genLeadMagnetsData, funnelAnalysisData, autoRepurposeData, weeklyActionPlanData, trendsAnalysisData, authorityScoreData, contentIntelData, conversionOptData, contentMatrixData, draftingStrategyData, zeroClickBankData, contentVelocityData, pillarRotatorData, savedRepliesData, audienceBuilderData, weeklyReportData, competitiveIntelData, contentScoringData, postSchedulerData, trendHijackerData, leadMagnetFunnelsData, outboundSequencesData, icpRefinedData, winLossData, contentRoiData, contentExperimentsData, socialListeningData, authorityBuilderData, quickWinsData, contentCalendarAiData, dailyBriefingData, engagementTrackerData, commentToDmData, contentSeriesPlannerData, hookBankData, engagementScorerData, conversionTrackerData, contentGapFinderData, audienceGrowthTrackerData, performanceBenchmarksData, flywheelAnalyzerData, topicAuthorityData, socialProofCollectorData, newsletterBuilderData, dmSequenceBuilderData, contentRecyclerScanData] = await Promise.all([
       api('/api/content'),
       api('/api/triggers'),
       api('/api/stats'),
@@ -1761,7 +1768,13 @@ async function loadData() {
       api('/api/conversion-tracker').catch(() => null),
       api('/api/content-gap-finder').catch(() => null),
       api('/api/audience-growth-tracker').catch(() => null),
-      api('/api/performance-benchmarks').catch(() => null)
+      api('/api/performance-benchmarks').catch(() => null),
+      api('/api/flywheel-analyzer').catch(() => null),
+      api('/api/topic-authority-mapper').catch(() => null),
+      api('/api/social-proof-collector').catch(() => null),
+      api('/api/newsletter-builder').catch(() => []),
+      api('/api/dm-sequence-builder').catch(() => []),
+      api('/api/content-recycler-scan').catch(() => null)
     ]);
     state.content = content;
     state.triggers = triggers;
@@ -1898,6 +1911,12 @@ async function loadData() {
     state.contentGapFinder = contentGapFinderData;
     state.audienceGrowthTracker = audienceGrowthTrackerData;
     state.performanceBenchmarks = performanceBenchmarksData;
+    state.flywheelAnalyzer = flywheelAnalyzerData;
+    state.topicAuthority = topicAuthorityData;
+    state.socialProofCollector = socialProofCollectorData;
+    state.newsletterBuilder = newsletterBuilderData || [];
+    state.dmSequenceBuilder = dmSequenceBuilderData || [];
+    state.contentRecyclerScan = contentRecyclerScanData;
   } catch (err) {
     console.error('Failed to load data:', err);
     toast('Failed to load data', 'error');
@@ -3739,6 +3758,32 @@ function renderDashboardPage() {
                 loadData();
               } catch (err) { toast('Batch gen failed: ' + err.message, 'error'); }
             }}, 'Batch 7'),
+            h('button', { className: 'btn btn-outline btn-sm', onclick: async () => {
+              toast('Analyzing flywheel...', 'info');
+              try {
+                const res = await api('/api/flywheel-analyzer', { method: 'POST' });
+                state.flywheelAnalyzer = res;
+                toast(`Flywheel: ${res.flywheel_velocity}/100 (${res.momentum})`, 'success');
+                render();
+              } catch (err) { toast('Flywheel failed: ' + err.message, 'error'); }
+            }}, 'Flywheel'),
+            h('button', { className: 'btn btn-outline btn-sm', onclick: async () => {
+              toast('Building newsletter...', 'info');
+              try {
+                const res = await api('/api/newsletter-builder', { method: 'POST' });
+                toast(`Newsletter: "${(res.subject_line || '').slice(0, 40)}"`, 'success');
+                loadData();
+              } catch (err) { toast('Newsletter failed: ' + err.message, 'error'); }
+            }}, 'Newslettr'),
+            h('button', { className: 'btn btn-outline btn-sm', onclick: async () => {
+              toast('Scanning recyclable content...', 'info');
+              try {
+                const res = await api('/api/content-recycler-scan', { method: 'POST' });
+                state.contentRecyclerScan = res;
+                toast(`Found ${res.total_recyclable} recyclable items`, 'success');
+                render();
+              } catch (err) { toast('Recycler failed: ' + err.message, 'error'); }
+            }}, 'Recycle'),
             h('button', { className: 'btn btn-ghost btn-sm', onclick: () => { state.page = 'content'; render(); } }, 'View Content')
           )
         ),
@@ -5117,6 +5162,95 @@ function renderDashboardPage() {
             h('div', { style: { textAlign: 'right' } },
               h('div', { style: { fontWeight: '700' } }, `${(data.current_followers || 0).toLocaleString()} followers`),
               h('div', { style: { color: data.total_growth > 0 ? '#059669' : 'var(--gray-500)', fontSize: '9px' } }, data.total_growth > 0 ? `+${data.total_growth} growth` : 'tracking')
+            )
+          )
+        )
+      )
+    ) : null,
+
+    // Flywheel Analyzer (Batch 71)
+    state.flywheelAnalyzer?.flywheel_velocity != null ? h('div', { style: { marginBottom: '20px', padding: '12px', background: 'linear-gradient(135deg, #f0fdf4, #eff6ff)', borderRadius: 'var(--radius)', border: '1px solid #bbf7d0' } },
+      h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
+        h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)' } }, 'FLYWHEEL'),
+        h('div', { style: { fontSize: '20px', fontWeight: '700', color: state.flywheelAnalyzer.momentum === 'strong' ? '#059669' : state.flywheelAnalyzer.momentum === 'building' ? '#d97706' : '#dc2626' } }, `${state.flywheelAnalyzer.flywheel_velocity}/100`)
+      ),
+      h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px', marginBottom: '6px' } },
+        ...['creation', 'distribution', 'engagement', 'conversion'].map(stage => {
+          const data = state.flywheelAnalyzer.stages?.[stage] || {};
+          const isBottleneck = state.flywheelAnalyzer.bottleneck?.stage === stage;
+          return h('div', { style: { padding: '6px', background: isBottleneck ? '#fee2e2' : 'white', borderRadius: 'var(--radius-sm)', border: `1px solid ${isBottleneck ? '#fca5a5' : 'var(--gray-200)'}`, fontSize: '10px', textAlign: 'center' } },
+            h('div', { style: { fontWeight: '700', color: isBottleneck ? '#dc2626' : 'var(--navy)', textTransform: 'capitalize' } }, stage),
+            h('div', { style: { color: 'var(--gray-500)' } }, stage === 'creation' ? `${data.total || 0} items` : stage === 'distribution' ? `${data.publish_rate || 0}%` : stage === 'engagement' ? `${data.avg_rate || 0}%` : `${data.total || 0}`)
+          );
+        })
+      ),
+      state.flywheelAnalyzer.bottleneck ? h('div', { style: { fontSize: '10px', color: '#dc2626', fontWeight: '600' } }, `Fix: ${state.flywheelAnalyzer.bottleneck.fix}`) : null
+    ) : null,
+
+    // Social Proof (Batch 71)
+    state.socialProofCollector?.total ? h('div', { style: { marginBottom: '20px' } },
+      h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
+        h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)' } }, 'SOCIAL PROOF'),
+        h('div', { style: { fontSize: '12px', fontWeight: '700', padding: '2px 8px', borderRadius: '8px', background: '#d1fae5', color: '#059669' } }, `${state.socialProofCollector.total} items`)
+      ),
+      h('div', { style: { display: 'grid', gap: '4px' } },
+        ...(state.socialProofCollector.proofs || []).slice(0, 3).map(p =>
+          h('div', { style: { padding: '8px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px' } },
+            h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: '2px' } },
+              h('span', { style: { fontWeight: '700', color: 'var(--navy)' } }, p.client_name || 'Anonymous'),
+              h('span', { style: { padding: '1px 6px', borderRadius: '8px', background: '#ede9fe', color: '#7c3aed', fontSize: '9px' } }, p.type)
+            ),
+            h('div', { style: { color: 'var(--gray-600)' } }, (p.content || '').slice(0, 80)),
+            p.result_metric ? h('div', { style: { color: '#059669', fontWeight: '600', marginTop: '2px' } }, p.result_metric) : null
+          )
+        )
+      )
+    ) : null,
+
+    // Newsletter Builder (Batch 71)
+    state.newsletterBuilder?.length ? h('div', { style: { marginBottom: '20px' } },
+      h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
+        h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)' } }, 'NEWSLETTERS'),
+        h('div', { style: { fontSize: '12px', fontWeight: '700', padding: '2px 8px', borderRadius: '8px', background: '#dbeafe', color: '#2563eb' } }, `${state.newsletterBuilder.length} drafts`)
+      ),
+      h('div', { style: { display: 'grid', gap: '3px' } },
+        ...state.newsletterBuilder.slice(-3).reverse().map(n =>
+          h('div', { style: { padding: '6px 10px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px', display: 'flex', justifyContent: 'space-between' } },
+            h('span', { style: { fontWeight: '600', color: 'var(--navy)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '200px' } }, n.subject_line || 'Untitled'),
+            h('span', { style: { color: 'var(--gray-500)' } }, n.estimated_read_time || '')
+          )
+        )
+      )
+    ) : null,
+
+    // DM Sequences (Batch 71)
+    state.dmSequenceBuilder?.length ? h('div', { style: { marginBottom: '20px' } },
+      h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
+        h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)' } }, 'DM SEQUENCES'),
+        h('div', { style: { fontSize: '12px', fontWeight: '700', padding: '2px 8px', borderRadius: '8px', background: '#ede9fe', color: '#7c3aed' } }, `${state.dmSequenceBuilder.length} active`)
+      ),
+      h('div', { style: { display: 'grid', gap: '3px' } },
+        ...state.dmSequenceBuilder.slice(-3).reverse().map(s =>
+          h('div', { style: { padding: '6px 10px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px' } },
+            h('div', { style: { fontWeight: '600', color: 'var(--navy)' } }, s.sequence_name || s.trigger || 'Untitled'),
+            h('div', { style: { color: 'var(--gray-500)' } }, `${(s.steps || []).length} steps | ${s.platform || 'linkedin'}`)
+          )
+        )
+      )
+    ) : null,
+
+    // Content Recycler (Batch 71)
+    state.contentRecyclerScan?.total_recyclable ? h('div', { style: { marginBottom: '20px' } },
+      h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
+        h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)' } }, 'RECYCLABLE'),
+        h('div', { style: { fontSize: '12px', fontWeight: '700', padding: '2px 8px', borderRadius: '8px', background: '#fef3c7', color: '#d97706' } }, `${state.contentRecyclerScan.total_recyclable} items`)
+      ),
+      h('div', { style: { display: 'grid', gap: '3px' } },
+        ...(state.contentRecyclerScan.items || []).slice(0, 5).map(r =>
+          h('div', { style: { padding: '5px 10px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px' } },
+            h('div', { style: { display: 'flex', justifyContent: 'space-between' } },
+              h('span', { style: { fontWeight: '600', color: 'var(--navy)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '180px' } }, (r.title || '').slice(0, 35)),
+              h('span', { style: { padding: '1px 6px', borderRadius: '8px', background: r.recycle_type === 'high_performer_repost' ? '#d1fae5' : '#fef3c7', color: r.recycle_type === 'high_performer_repost' ? '#059669' : '#d97706', fontSize: '9px' } }, r.recycle_type?.replace(/_/g, ' ') || '')
             )
           )
         )
@@ -7159,6 +7293,20 @@ function renderFormatContent(content, formatKey, fmt) {
             } catch (err) { toast('Viral score failed: ' + err.message, 'error'); }
           }
         }, 'Viral')
+        : null,
+      // Carousel button (Batch 71)
+      typeof text === 'string' && text.length >= 100 ? h('button', {
+          className: 'btn btn-outline btn-sm',
+          style: { color: '#d97706', borderColor: '#d97706', fontSize: '11px' },
+          onclick: async () => {
+            toast('Generating carousel slides...', 'info');
+            try {
+              const res = await api(`/api/content/${content.id}/carousel-generate`, { method: 'POST' });
+              toast(`Carousel: ${res.total_slides || 0} slides created`, 'success');
+              loadData();
+            } catch (err) { toast('Carousel failed: ' + err.message, 'error'); }
+          }
+        }, 'Slides')
         : null,
       // A/B Variants button (Batch 70)
       typeof text === 'string' && text.length >= 50 ? h('button', {

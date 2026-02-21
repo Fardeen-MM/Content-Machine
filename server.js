@@ -15461,6 +15461,342 @@ Make each feel native to its platform. LinkedIn should have line breaks and stor
       return json(res, readJSON('performance-benchmarks.json', null));
     }
 
+    // ============================================================
+    // Batch 71: Flywheel Analyzer, Topic Authority, Social Proof,
+    //           Carousel Generator, Newsletter Builder,
+    //           DM Sequence Builder, Content Recycler
+    // ============================================================
+
+    // POST /api/flywheel-analyzer — Analyze the content→engagement→leads cycle
+    if (method === 'POST' && pathname === '/api/flywheel-analyzer') {
+      const content = readJSON('content.json', []);
+      const published = readJSON('published.json', []);
+      const tracker = readJSON('engagement-tracker.json', []);
+      const conversions = readJSON('conversion-tracker.json', []);
+      const triggers = readJSON('trigger-queue.json', []);
+
+      // Flywheel stages
+      const creation = { total: content.length, rate: 0, approved: content.filter(c => c.status === 'approved').length };
+      const distribution = { published: published.length, publish_rate: content.length > 0 ? Math.round(published.length / content.length * 100) : 0 };
+      const engagement = {
+        total_entries: tracker.length,
+        total_likes: tracker.reduce((s, e) => s + (e.likes || 0), 0),
+        total_comments: tracker.reduce((s, e) => s + (e.comments || 0), 0),
+        total_shares: tracker.reduce((s, e) => s + (e.shares || 0), 0),
+        avg_rate: tracker.length > 0 ? Math.round(tracker.reduce((s, e) => s + (e.engagement_rate || 0), 0) / tracker.length * 100) / 100 : 0
+      };
+      const conversion = {
+        total: conversions.length,
+        total_value: conversions.reduce((s, c) => s + (c.value || 0), 0),
+        types: {}
+      };
+      for (const c of conversions) { conversion.types[c.conversion_type] = (conversion.types[c.conversion_type] || 0) + 1; }
+
+      // Calculate flywheel velocity (0-100)
+      const creationScore = Math.min(30, content.length * 2);
+      const distScore = Math.min(25, distribution.publish_rate / 4);
+      const engScore = Math.min(25, engagement.avg_rate * 5);
+      const convScore = Math.min(20, conversions.length * 5);
+      const velocity = Math.round(creationScore + distScore + engScore + convScore);
+
+      // Identify bottleneck
+      const scores = { creation: creationScore / 30, distribution: distScore / 25, engagement: engScore / 25, conversion: convScore / 20 };
+      const bottleneck = Object.entries(scores).sort((a, b) => a[1] - b[1])[0];
+
+      const result = {
+        flywheel_velocity: velocity,
+        stages: { creation, distribution, engagement, conversion },
+        bottleneck: { stage: bottleneck[0], score_pct: Math.round(bottleneck[1] * 100), fix: bottleneck[0] === 'creation' ? 'Generate more content from triggers' : bottleneck[0] === 'distribution' ? 'Publish more approved content' : bottleneck[0] === 'engagement' ? 'Log engagement data and optimize posts' : 'Add CTAs and track conversions' },
+        momentum: velocity >= 70 ? 'strong' : velocity >= 40 ? 'building' : 'stalled',
+        generated_at: now()
+      };
+      writeJSON('flywheel-analyzer.json', result);
+      return json(res, { ok: true, ...result });
+    }
+
+    // GET /api/flywheel-analyzer
+    if (method === 'GET' && pathname === '/api/flywheel-analyzer') {
+      return json(res, readJSON('flywheel-analyzer.json', null));
+    }
+
+    // POST /api/topic-authority-mapper — Map topics you're building authority in
+    if (method === 'POST' && pathname === '/api/topic-authority-mapper') {
+      const content = readJSON('content.json', []);
+      const published = readJSON('published.json', []);
+      const triggers = readJSON('trigger-queue.json', []);
+
+      // Extract topic keywords from all content
+      const topicCounts = {};
+      const allItems = [...content, ...published];
+      for (const item of allItems) {
+        const text = (item.trigger_title || item.title || '').toLowerCase();
+        const keywords = ['seo', 'ppc', 'google ads', 'web design', 'intake', 'branding', 'social media', 'email', 'content marketing', 'reviews', 'referral', 'ai', 'analytics', 'conversion', 'lead gen', 'retention', 'video', 'call tracking', 'landing page', 'crm', 'automation', 'reputation'];
+        for (const kw of keywords) {
+          if (text.includes(kw)) topicCounts[kw] = (topicCounts[kw] || 0) + 1;
+        }
+      }
+
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+      const result = await callClaude({
+        model: HAIKU,
+        system: 'You are a content strategist analyzing topic authority for a legal marketing agency. Return JSON only.',
+        prompt: `Analyze topic authority based on content volume and identify opportunities.
+
+Content by topic: ${JSON.stringify(topicCounts)}
+Total content: ${allItems.length} pieces
+Pending triggers: ${triggers.filter(t => t.status === 'pending').length}
+
+Return COMPACT JSON:
+{
+  "authority_topics": [{ "topic": "...", "pieces": 5, "authority_level": "expert|growing|emerging", "next_step": "what to write next" }],
+  "gap_topics": [{ "topic": "...", "opportunity": "why this matters", "suggested_series": "3-part series idea" }],
+  "strategy": "1-paragraph strategy recommendation"
+}
+Include top 5 authority topics and top 5 gap topics.`,
+        maxTokens: 2000
+      });
+      const parsed = parseJsonResponse(result);
+      if (!parsed) return json(res, { error: 'Failed to map authority', raw_preview: (result || '').slice(0, 200) }, 500);
+
+      const mapped = { ...parsed, topic_volume: topicCounts, total_content: allItems.length, generated_at: now() };
+      writeJSON('topic-authority-mapper.json', mapped);
+      return json(res, { ok: true, ...mapped });
+    }
+
+    // GET /api/topic-authority-mapper
+    if (method === 'GET' && pathname === '/api/topic-authority-mapper') {
+      return json(res, readJSON('topic-authority-mapper.json', null));
+    }
+
+    // POST /api/social-proof-collector — Add a testimonial/case result
+    if (method === 'POST' && pathname === '/api/social-proof-collector') {
+      const body = await parseBody(req);
+      const { type, client_name, content, result_metric, platform, source_url } = body || {};
+      if (!type || !content) return json(res, { error: 'type and content required' }, 400);
+
+      const proofs = readJSON('social-proof-collector.json', []);
+      const entry = {
+        id: generateId(),
+        type, // 'testimonial', 'case_result', 'review', 'stat', 'before_after'
+        client_name: client_name || 'Anonymous',
+        content,
+        result_metric: result_metric || null,
+        platform: platform || null,
+        source_url: source_url || null,
+        used_count: 0,
+        created_at: now()
+      };
+      proofs.push(entry);
+      writeJSON('social-proof-collector.json', proofs);
+      return json(res, { ok: true, entry });
+    }
+
+    // GET /api/social-proof-collector
+    if (method === 'GET' && pathname === '/api/social-proof-collector') {
+      const proofs = readJSON('social-proof-collector.json', []);
+      const byType = {};
+      for (const p of proofs) { byType[p.type] = (byType[p.type] || 0) + 1; }
+      return json(res, { total: proofs.length, by_type: byType, proofs: proofs.slice(-20).reverse() });
+    }
+
+    // POST /api/content/:id/carousel-generate — Generate carousel slides from content
+    const carouselGenMatch = pathname.match(/^\/api\/content\/([a-f0-9]+)\/carousel-generate$/);
+    if (carouselGenMatch && method === 'POST') {
+      const id = carouselGenMatch[1];
+      const content = readJSON('content.json', []);
+      const item = content.find(c => c.id === id);
+      if (!item) return json(res, { error: 'Content not found' }, 404);
+
+      const formats = item.formats || {};
+      let sourceText = '';
+      for (const [, v] of Object.entries(formats)) {
+        const t = typeof v?.content === 'string' ? v.content : '';
+        if (t.length > sourceText.length) sourceText = t;
+      }
+      if (!sourceText || sourceText.length < 100) return json(res, { error: 'Need content with 100+ chars' }, 400);
+
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+      const result = await callClaude({
+        model: HAIKU,
+        system: 'You are a carousel content designer for LinkedIn and Instagram. Return JSON only.',
+        prompt: `Create a 7-10 slide carousel from this content.
+
+Source: ${sourceText.slice(0, 2500)}
+Topic: ${item.trigger_title}
+
+Return COMPACT JSON:
+{
+  "title_slide": { "headline": "big bold text", "subheadline": "smaller context" },
+  "slides": [
+    { "slide": 1, "headline": "bold point", "body": "supporting text (2-3 lines max)", "visual_note": "suggested visual element" }
+  ],
+  "cta_slide": { "headline": "CTA headline", "cta": "action text", "url_placeholder": "[link]" },
+  "total_slides": 8,
+  "best_platform": "linkedin|instagram"
+}
+Keep each slide scannable — max 30 words per slide. Headlines under 8 words.`,
+        maxTokens: 2000
+      });
+      const parsed = parseJsonResponse(result);
+      if (!parsed || !parsed.slides) return json(res, { error: 'Failed to generate carousel', raw_preview: (result || '').slice(0, 200) }, 500);
+
+      const idx = content.findIndex(c => c.id === id);
+      if (idx >= 0) {
+        content[idx].carousel = { ...parsed, generated_at: now() };
+        writeJSON('content.json', content);
+      }
+      return json(res, { ok: true, content_id: id, ...parsed });
+    }
+
+    // POST /api/newsletter-builder — Build a newsletter from recent approved content
+    if (method === 'POST' && pathname === '/api/newsletter-builder') {
+      const content = readJSON('content.json', []);
+      const approved = content.filter(c => c.status === 'approved' || c.status === 'published').slice(-10);
+
+      if (approved.length === 0) return json(res, { error: 'No approved content to build newsletter from' }, 400);
+
+      const topics = approved.map(c => `- ${c.trigger_title}`).join('\n');
+
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+      const result = await callClaude({
+        model: HAIKU,
+        system: 'You are a newsletter writer for a legal marketing agency. Write engaging, practical newsletters. Return JSON only.',
+        prompt: `Build a newsletter issue from these recent topics:
+
+${topics}
+
+Return COMPACT JSON:
+{
+  "subject_line": "email subject (under 60 chars, curiosity-driven)",
+  "preview_text": "preview snippet (under 100 chars)",
+  "sections": [
+    { "title": "section headline", "body": "2-3 paragraphs of content", "cta": "action text" }
+  ],
+  "ps_line": "P.S. one-liner with a soft CTA",
+  "estimated_read_time": "3 min"
+}
+Write 3-4 sections. Newsletter should feel personal and valuable, not salesy. Total read time: 3-5 minutes.`,
+        maxTokens: 2500
+      });
+      const parsed = parseJsonResponse(result);
+      if (!parsed || !parsed.sections) return json(res, { error: 'Failed to build newsletter', raw_preview: (result || '').slice(0, 200) }, 500);
+
+      const newsletters = readJSON('newsletter-builder.json', []);
+      const issue = { id: generateId(), ...parsed, source_content: approved.map(c => c.id), status: 'draft', created_at: now() };
+      newsletters.push(issue);
+      writeJSON('newsletter-builder.json', newsletters);
+      return json(res, { ok: true, ...issue });
+    }
+
+    // GET /api/newsletter-builder
+    if (method === 'GET' && pathname === '/api/newsletter-builder') {
+      return json(res, readJSON('newsletter-builder.json', []));
+    }
+
+    // POST /api/dm-sequence-builder — Create multi-step DM sequences
+    if (method === 'POST' && pathname === '/api/dm-sequence-builder') {
+      const body = await parseBody(req);
+      const { trigger_type, platform } = body || {};
+
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+      const result = await callClaude({
+        model: HAIKU,
+        system: 'You are a DM sequence expert for B2B service businesses. Create non-spammy, value-first sequences. Return JSON only.',
+        prompt: `Create a 5-step DM sequence for a legal marketing agency targeting law firm owners.
+
+Trigger: ${trigger_type || 'comment on post'}
+Platform: ${platform || 'linkedin'}
+
+Return COMPACT JSON:
+{
+  "sequence_name": "descriptive name",
+  "trigger": "${trigger_type || 'comment on post'}",
+  "platform": "${platform || 'linkedin'}",
+  "steps": [
+    { "step": 1, "delay": "immediately", "message": "full DM text (keep natural, no copy-paste feel)", "goal": "what this step achieves", "if_reply": "what to do if they respond" }
+  ],
+  "rules": ["rule 1 for not being spammy"],
+  "expected_conversion": "X% of conversations become calls"
+}
+Make messages feel personal and genuine. Never salesy. Always provide value first.`,
+        maxTokens: 2000
+      });
+      const parsed = parseJsonResponse(result);
+      if (!parsed || !parsed.steps) return json(res, { error: 'Failed to build DM sequence', raw_preview: (result || '').slice(0, 200) }, 500);
+
+      const sequences = readJSON('dm-sequence-builder.json', []);
+      const seq = { id: generateId(), ...parsed, active: true, conversations: 0, replies: 0, created_at: now() };
+      sequences.push(seq);
+      writeJSON('dm-sequence-builder.json', sequences);
+      return json(res, { ok: true, ...seq });
+    }
+
+    // GET /api/dm-sequence-builder
+    if (method === 'GET' && pathname === '/api/dm-sequence-builder') {
+      return json(res, readJSON('dm-sequence-builder.json', []));
+    }
+
+    // POST /api/content-recycler-scan — Find old content that can be refreshed/reposted
+    if (method === 'POST' && pathname === '/api/content-recycler-scan') {
+      const content = readJSON('content.json', []);
+      const published = readJSON('published.json', []);
+      const tracker = readJSON('engagement-tracker.json', []);
+
+      const now_date = new Date();
+      const recyclable = [];
+
+      // Find published content older than 14 days
+      for (const item of published) {
+        const pubDate = new Date(item.published_at || item.created_at);
+        const daysSince = Math.floor((now_date - pubDate) / 86400000);
+        if (daysSince >= 14) {
+          // Check engagement
+          const engagement = tracker.filter(e => e.content_id === item.id);
+          const avgRate = engagement.length > 0 ? engagement.reduce((s, e) => s + (e.engagement_rate || 0), 0) / engagement.length : 0;
+
+          recyclable.push({
+            content_id: item.id || item.content_id,
+            title: item.title || item.trigger_title,
+            days_since_published: daysSince,
+            original_engagement_rate: Math.round(avgRate * 100) / 100,
+            recycle_type: avgRate > 3 ? 'high_performer_repost' : daysSince > 30 ? 'refresh_and_repost' : 'angle_change',
+            suggestion: avgRate > 3 ? 'Repost with minor hook change — this performed well' : daysSince > 30 ? 'Update stats/examples and repost' : 'Change the angle or format and repost'
+          });
+        }
+      }
+
+      // Also check approved but unpublished content older than 7 days
+      for (const item of content.filter(c => c.status === 'approved')) {
+        const created = new Date(item.created_at);
+        const daysSince = Math.floor((now_date - created) / 86400000);
+        if (daysSince >= 7) {
+          recyclable.push({
+            content_id: item.id,
+            title: item.trigger_title,
+            days_since_created: daysSince,
+            recycle_type: 'stale_approved',
+            suggestion: 'Publish or refresh — this has been sitting approved for ' + daysSince + ' days'
+          });
+        }
+      }
+
+      const result = {
+        total_recyclable: recyclable.length,
+        by_type: {},
+        items: recyclable.sort((a, b) => (b.days_since_published || b.days_since_created || 0) - (a.days_since_published || a.days_since_created || 0)),
+        generated_at: now()
+      };
+      for (const r of recyclable) { result.by_type[r.recycle_type] = (result.by_type[r.recycle_type] || 0) + 1; }
+
+      writeJSON('content-recycler-scan.json', result);
+      return json(res, { ok: true, ...result });
+    }
+
+    // GET /api/content-recycler-scan
+    if (method === 'GET' && pathname === '/api/content-recycler-scan') {
+      return json(res, readJSON('content-recycler-scan.json', null));
+    }
+
     // --- Static file serving ---
 
     // Serve dashboard

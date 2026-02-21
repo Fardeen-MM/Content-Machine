@@ -70,5 +70,75 @@
     "downloads": 0,
     "leads_converted": 0,
     "created_at": "2026-02-21T07:17:30.228Z"
+  },
+  {
+    "id": "e382cde9c598c27b",
+    "funnel_name": "The Google Ads Waste Audit — For Law Firms Hemorrhaging Money on Clicks",
+    "lead_magnet": {
+      "title": "The $4K/Month Google Ads Leak Checklist: 23 Mistakes PI and Family Law Firms Make (And How to Fix Them in 48 Hours)",
+      "format": "PDF checklist",
+      "description": "A brutally honest, line-by-line audit checklist that exposes the exact 23 configuration mistakes we see in 73% of law firm Google Ads accounts — plus the 3-minute fix for each one. No fluff. No theory. Just the shit that's actually costing you $4K-$12K per month in wasted ad spend.",
+      "key_sections": [
+        "The Call Tracking Audit (5 checks: is CallRail configured? Are you tracking by source? Can you see ring time vs. voicemail rate? Are you measuring conversion value? Do you know your cost-per-signed-case?)",
+        "The Campaign Structure Checklist (7 checks: separate PI campaigns from family law? Are you bidding on your own name? Do you have location-specific ad groups? Are you using phrase match or exact? Are you excluding keywords that don't convert? Do you have separate budgets by case type? Are you testing responsive search ads?)",
+        "The Landing Page Killer (5 checks: does it load in under 3 seconds on mobile? Do you have a live chat or click-to-call within 2 seconds? Does it answer the first question (can you handle my case type)? Is the CTA a phone number, not 'contact us'? Can someone book a call or start intake in under 60 seconds?)",
+        "The Conversion Tracking Breakdown (3 checks: are you tracking phone calls as conversions? Are you tracking form submissions? Do you know which campaigns produce actual signed cases vs. tire-kickers?)",
+        "The Bid Strategy Trap (2 checks: are you on Target CPA or Maximize Conversions? Do you know your actual target cost-per-signed-case for PI vs. family law?)",
+        "Quick Wins: 3 fixes you can implement Monday morning that typically save $800-$2,400/month immediately"
+      ]
+    },
+    "landing_page": {
+      "headline": "Stop Wasting $4K/Month on Google Ads Mistakes",
+      "subheadline": "23-point checklist reveals exactly which ads aren't converting — fix them in 48 hours, recover $2,400-$8,000/month in wasted spend",
+      "bullet_points": [
+        "Find the exact 4-5 mistakes eating your entire ad budget (most firms find $2,400-$12,000/month in waste)",
+        "See which of your campaigns are producing actual signed cases vs. cheap clicks that go nowhere",
+        "Get the 3-minute fixes for each mistake — no complex strategy, no months of waiting for results",
+        "Know your real cost-per-signed-case by practice area (PI vs. family law spend differently — most firms don't know the difference)",
+        "Audit your landing page, call tracking, and bid strategy in one sitting (takes 45 minutes)"
+      ],
+      "social_proof": "Based on audits of 47 law firm Google Ads accounts spending $3K-$25K/month (we found the same 5 mistakes in 73% of them)",
+      "cta_button_text": "Get the Checklist (Free PDF)"
+    },
+    "email_followup": [
+      {
+        "delay_hours": 0,
+        "subject": "Your Google Ads Checklist (Plus: The #1 Mistake We See)",
+        "purpose": "deliver checklist + immediate pattern recognition (don't make them wait for value)",
+        "content_preview": "Here's your checklist. But before you dive in — the single mistake we see in 67% of law firm accounts: they're not separating PI from family law campaigns. Same budget, different client types, completely different conversion values. A $200 click in PI might be a $4,800 case. A $200 click in family law might be a $1,200 retainer. If you're bidding the same, you're losing money. Check section 2 of the checklist for the 3-minute fix.",
+        "cta": "Download and open the PDF (bookmark section 2)"
+      },
+      {
+        "delay_hours": 24,
+        "subject": "The $2,400/Month Leak You Probably Have (Section 4 of the Checklist)",
+        "purpose": "expand on one high-impact mistake with numbers so specific they feel personal",
+        "content_preview": "90 calls from Google Ads. 34 go to voicemail. 22 ring for 30+ seconds — only 9 people wait. That's 47 of 90 calls (52%) wasted. At $89 per call average, that's $4,183/month in the trash. Most firms don't track this because CallRail isn't set up right. Section 4 of your checklist walks through the 5 questions that expose this exact leak. We fixed this for a PI firm last quarter. They recovered $2,800/month just by answering faster (added a $200/month overflow service). No new ad budget. Just speed.",
+        "cta": "Open your checklist → Section 4 → Do the CallRail audit right now"
+      },
+      {
+        "delay_hours": 72,
+        "subject": "How a 3-Attorney PI Firm Found $6,200/Month in Wasted Spend (Real Numbers)",
+        "purpose": "social proof via case pattern + clear booking CTA without being pushy",
+        "content_preview": "Worked with a 3-attorney PI firm doing $180K/month revenue. Google Ads budget: $12,000/month. When we audited, here's what we found: (1) Landing page took 5 seconds to load on mobile — 40% of traffic bounced immediately. (2) Call tracking wasn't configured right — they thought they had 120 conversions/month, actually had 34 signed cases. (3) They were bidding on their own branded terms (paying $145/click for their own name). (4) No separate budget for family law cases (lower value, same bid). When we fixed those 4 things, the same $12K/month produced 28 signed cases instead of 8. That's $6,200 in recovered efficiency just from the checklist audit. Takes about 2 hours to find your specific leaks. Takes about 48 hours to fix them. Do you want to walk through what yours looks like?",
+        "cta": "Book a 20-minute call to audit your account"
+      }
+    ],
+    "promotion_posts": {
+      "linkedin": "We audited 47 law firm Google Ads accounts last quarter.\n\n73% had the same 5 mistakes.\n\n67% of them had no idea how much money was leaking.\n\nOne PI firm was spending $12K/month and getting 8 signed cases. Same budget, after the audit: 28 signed cases.\n\nThe difference wasn't more money. It was:\n\n- Call tracking configured wrong (they couldn't see which campaigns converted)\n- Landing page took 5 seconds to load (bounced 40% of traffic)\n- Bidding on branded terms they owned (paying $145/click for their own name)\n- No separate budgets for PI vs. family law (different case values, same bid)\n\nIf you're spending $3K-$15K/month on Google Ads, you probably have 3-4 of these right now.\n\nI built a checklist that walks through all 23 mistakes we see, with the exact 3-minute fix for each one.\n\nDownload it. Takes 45 minutes to audit your account. Usually finds $2,400-$8,000/month in recoverable waste.\n\nLink in the first comment.",
+      "x_tweet": "67% of law firms we audit are wasting $4K+/month on Google Ads and have no idea why. CallRail isn't set up. Landing pages take 5 seconds to load. They're bidding on their own name. Separate checklist: 23 mistakes + the fix for each. DM for the link."
+    },
+    "metrics_to_track": [
+      "Landing page conversion rate (target: 18-25% of visitors download)",
+      "Email open rate on sequence (target: 45%+ on email 1, 35%+ on email 2, 28%+ on email 3)",
+      "Click-through rate on 'book a call' CTA (target: 8-12% of email 3 opens)",
+      "Actual call bookings from email sequence (target: 1 booking per 20-25 downloads)",
+      "Cost per qualified lead (should be $0 — it's free — but track CAC if you run paid promotion)",
+      "PDF completion rate (what % actually open the checklist and scroll to section 4+)",
+      "Follow-on consulting engagements from this funnel (ultimate metric: does it produce paying clients)"
+    ],
+    "status": "draft",
+    "downloads": 0,
+    "leads_converted": 0,
+    "created_at": "2026-02-21T13:53:56.070Z"
   }
 ]

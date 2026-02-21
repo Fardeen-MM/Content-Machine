@@ -13639,6 +13639,260 @@ Return COMPACT JSON:
       return json(res, readJSON('weekly-content-report.json', null));
     }
 
+    // ========== BATCH 65: Competitive Intelligence, Hashtag Strategy, Content Scoring, Post Scheduler, Trend Hijacker, Lead Magnet Funnel, Outbound Sequences ==========
+
+    // POST /api/competitive-intel — Analyze competitor content strategies from scraped data
+    if (method === 'POST' && pathname === '/api/competitive-intel') {
+      const triggers = readJSON('trigger-queue.json', []);
+      const competitorTriggers = triggers.filter(t => t.source === 'competitors' || t.competitive_angle);
+
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+      const result = await callClaude({
+        model: HAIKU,
+        system: 'You are a competitive intelligence analyst for a legal marketing agency. Analyze competitor content to find gaps, opportunities, and counter-positioning strategies. Return JSON only.',
+        prompt: `Analyze these competitor content signals and create a competitive intelligence report.
+
+Competitor signals (${competitorTriggers.length} total): ${JSON.stringify(competitorTriggers.slice(0, 15).map(t => ({ title: t.title, source: t.source_name, url: t.url })))}
+
+Return COMPACT JSON:
+{
+  "competitors_analyzed": 0,
+  "their_focus": ["topic 1", "topic 2", "topic 3"],
+  "gaps_we_can_fill": ["gap 1 they're missing", "gap 2"],
+  "counter_positions": [
+    { "their_claim": "what they say", "our_angle": "how we counter" }
+  ],
+  "content_to_create": [
+    { "title": "post title idea", "angle": "unique angle", "urgency": "high|medium|low" }
+  ],
+  "threat_level": "low|medium|high"
+}`,
+        maxTokens: 2500
+      });
+      const parsed = parseJsonResponse(result);
+      const intel = { ...(parsed || {}), generated_at: now() };
+      writeJSON('competitive-intel.json', intel);
+      return json(res, { ok: true, ...intel });
+    }
+
+    // GET /api/competitive-intel
+    if (method === 'GET' && pathname === '/api/competitive-intel') {
+      return json(res, readJSON('competitive-intel.json', null));
+    }
+
+    // POST /api/hashtag-strategy — Generate platform-specific hashtag strategies
+    if (method === 'POST' && pathname === '/api/hashtag-strategy') {
+      const body = await parseBody(req);
+      const platform = body.platform || 'linkedin';
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+      const result = await callClaude({
+        model: HAIKU,
+        system: `You are a ${platform} hashtag and discoverability expert. Create hashtag strategies that maximize reach without looking spammy. Return JSON only.`,
+        prompt: `Create a hashtag strategy for a legal marketing agency on ${platform}.
+
+Return COMPACT JSON:
+{
+  "primary_hashtags": ["3-5 high-volume niche hashtags"],
+  "secondary_hashtags": ["3-5 medium-volume specific hashtags"],
+  "branded_hashtag": "one unique branded hashtag",
+  "rules": ["rule 1", "rule 2"],
+  "per_post_count": 0,
+  "placement": "where in the post to put hashtags",
+  "avoid": ["hashtags to never use"]
+}`,
+        maxTokens: 1500
+      });
+      const parsed = parseJsonResponse(result);
+      return json(res, { ok: true, platform, ...parsed });
+    }
+
+    // POST /api/content-scoring — Score all content with composite quality metric
+    if (method === 'POST' && pathname === '/api/content-scoring') {
+      const content = readJSON('content.json', []);
+      const approved = content.filter(c => c.status === 'approved' || c.status === 'published');
+
+      const scored = approved.map(item => {
+        let score = 50;
+        const formats = item.formats || {};
+        const formatCount = Object.keys(formats).length;
+        score += Math.min(formatCount * 2, 20);
+
+        const liText = typeof formats.linkedin_post === 'string' ? formats.linkedin_post : formats.linkedin_post?.content || '';
+        if (liText.length >= 1300 && liText.length <= 2000) score += 10;
+        if (liText.split('\n').filter(l => l.trim()).length >= 5) score += 5;
+        const hook = liText.split('\n')[0] || '';
+        if (hook.length > 0 && hook.length <= 210) score += 5;
+        if (/\d/.test(hook)) score += 3;
+        if (item.reviews) score += 7;
+
+        return { id: item.id, title: item.title?.slice(0, 60), score: Math.min(score, 100), formats: formatCount };
+      }).sort((a, b) => b.score - a.score);
+
+      const result = {
+        total_scored: scored.length,
+        avg_score: scored.length > 0 ? parseFloat((scored.reduce((s, i) => s + i.score, 0) / scored.length).toFixed(1)) : 0,
+        top_5: scored.slice(0, 5),
+        bottom_5: scored.slice(-5).reverse(),
+        distribution: {
+          excellent: scored.filter(s => s.score >= 80).length,
+          good: scored.filter(s => s.score >= 60 && s.score < 80).length,
+          needs_work: scored.filter(s => s.score < 60).length
+        },
+        generated_at: now()
+      };
+      writeJSON('content-scoring.json', result);
+      return json(res, { ok: true, ...result });
+    }
+
+    // GET /api/content-scoring
+    if (method === 'GET' && pathname === '/api/content-scoring') {
+      return json(res, readJSON('content-scoring.json', null));
+    }
+
+    // POST /api/post-scheduler — AI-powered optimal posting schedule builder
+    if (method === 'POST' && pathname === '/api/post-scheduler') {
+      const published = readJSON('published.json', []);
+      const contentBank = readJSON('content-bank.json', { log: [] });
+
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+      const result = await callClaude({
+        model: HAIKU,
+        system: 'You are a social media scheduling expert. Build an optimal weekly posting schedule based on platform algorithms and audience behavior. Return JSON only.',
+        prompt: `Build a weekly posting schedule for a legal marketing agency.
+
+Published so far: ${published.length} posts
+Content bank log: ${(contentBank.log || []).length} entries
+
+Return COMPACT JSON:
+{
+  "weekly_schedule": [
+    { "day": "Monday", "time": "8:30 AM ET", "platform": "LinkedIn", "type": "teaching", "reason": "short reason" }
+  ],
+  "posting_frequency": { "linkedin": 0, "x": 0, "email": 0 },
+  "best_times": { "linkedin": "time", "x": "time" },
+  "avoid_times": ["time to avoid"],
+  "cadence_rule": "one rule for consistency"
+}`,
+        maxTokens: 2000
+      });
+      const parsed = parseJsonResponse(result);
+      const schedule = { ...(parsed || {}), generated_at: now() };
+      writeJSON('post-scheduler.json', schedule);
+      return json(res, { ok: true, ...schedule });
+    }
+
+    // GET /api/post-scheduler
+    if (method === 'GET' && pathname === '/api/post-scheduler') {
+      return json(res, readJSON('post-scheduler.json', null));
+    }
+
+    // POST /api/trend-hijacker — Find and create content around trending topics in your niche
+    if (method === 'POST' && pathname === '/api/trend-hijacker') {
+      const triggers = readJSON('trigger-queue.json', []);
+      const recent = triggers.filter(t => {
+        const age = Date.now() - new Date(t.added_at || t.scraped_at).getTime();
+        return age < 3 * 86400000;
+      }).slice(0, 20);
+
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+      const result = await callClaude({
+        model: HAIKU,
+        system: 'You are a trend-jacking expert. Identify trending topics and create angles for a legal marketing agency to ride the wave. Speed matters — trends die fast. Return JSON only.',
+        prompt: `Find hijackable trends from these recent signals and create content angles.
+
+Recent signals (last 3 days): ${JSON.stringify(recent.map(t => ({ title: t.title, source: t.source })))}
+
+Return COMPACT JSON:
+{
+  "trends": [
+    { "topic": "trending topic", "source": "where it's trending", "our_angle": "how to connect to legal marketing", "hook": "opening line", "urgency": "hours|days" }
+  ],
+  "best_opportunity": "which trend has highest ROI",
+  "speed_required": "how fast we need to post"
+}`,
+        maxTokens: 2000
+      });
+      const parsed = parseJsonResponse(result);
+      const trends = { ...(parsed || {}), generated_at: now() };
+      writeJSON('trend-hijacker.json', trends);
+      return json(res, { ok: true, ...trends });
+    }
+
+    // GET /api/trend-hijacker
+    if (method === 'GET' && pathname === '/api/trend-hijacker') {
+      return json(res, readJSON('trend-hijacker.json', null));
+    }
+
+    // POST /api/lead-magnet-funnel — Design a complete lead magnet funnel with landing page copy
+    if (method === 'POST' && pathname === '/api/lead-magnet-funnel') {
+      const body = await parseBody(req);
+      const topic = body.topic || 'law firm marketing ROI';
+      const { callClaude, parseJsonResponse, SONNET } = require('./lib/claude');
+      const result = await callClaude({
+        model: SONNET,
+        system: 'You are a conversion funnel architect. Design complete lead magnet funnels that convert cold traffic into booked calls. Return JSON only.',
+        prompt: `Design a lead magnet funnel for topic: "${topic.slice(0, 200)}"
+
+Return JSON:
+{
+  "lead_magnet": { "title": "name", "type": "checklist|calculator|audit|template", "hook": "why someone downloads this" },
+  "landing_page": { "headline": "H1", "subhead": "supporting text", "bullet_points": ["b1", "b2", "b3"], "cta_text": "button text" },
+  "thank_you_page": { "next_step": "what happens after download", "upsell": "immediate next offer" },
+  "email_sequence": [
+    { "day": 0, "subject": "subject line", "purpose": "what this email does" }
+  ],
+  "expected_conversion": { "landing_page": "X%", "email_open": "X%", "call_booked": "X%" }
+}`,
+        maxTokens: 3000
+      });
+      const parsed = parseJsonResponse(result);
+      const funnel = { topic, ...(parsed || {}), generated_at: now() };
+      const existing = readJSON('lead-magnet-funnels.json', []);
+      existing.push(funnel);
+      writeJSON('lead-magnet-funnels.json', existing);
+      return json(res, { ok: true, ...funnel });
+    }
+
+    // GET /api/lead-magnet-funnels
+    if (method === 'GET' && pathname === '/api/lead-magnet-funnels') {
+      return json(res, readJSON('lead-magnet-funnels.json', []));
+    }
+
+    // POST /api/outbound-sequence — Generate cold outbound email/DM sequences
+    if (method === 'POST' && pathname === '/api/outbound-sequence') {
+      const body = await parseBody(req);
+      const target = body.target || 'managing partners at mid-size law firms';
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+      const result = await callClaude({
+        model: HAIKU,
+        system: 'You are an outbound sales sequence expert for B2B services. Create multi-touch sequences that feel personal and valuable, not spammy. Return JSON only.',
+        prompt: `Create a 5-touch outbound sequence targeting: "${target.slice(0, 200)}"
+
+Return COMPACT JSON:
+{
+  "target": "who this targets",
+  "channel": "email|linkedin|multi",
+  "sequence": [
+    { "touch": 1, "day": 0, "channel": "email|linkedin", "subject": "subject or opener", "message": "message text (under 80 words)", "goal": "what we want them to do" }
+  ],
+  "personalization_fields": ["field to customize"],
+  "expected_reply_rate": "X%"
+}`,
+        maxTokens: 2500
+      });
+      const parsed = parseJsonResponse(result);
+      const sequence = { ...(parsed || {}), generated_at: now() };
+      const existing = readJSON('outbound-sequences.json', []);
+      existing.push(sequence);
+      writeJSON('outbound-sequences.json', existing);
+      return json(res, { ok: true, ...sequence });
+    }
+
+    // GET /api/outbound-sequences
+    if (method === 'GET' && pathname === '/api/outbound-sequences') {
+      return json(res, readJSON('outbound-sequences.json', []));
+    }
+
     // --- Static file serving ---
 
     // Serve dashboard

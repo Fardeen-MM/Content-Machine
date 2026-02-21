@@ -18934,6 +18934,426 @@ Content: ${firstContent.substring(0, 2000)}`;
       return json(res, readJSON('content-performance-tiers.json') || { total_scored: 0, tier_counts: {}, top_performers: [] });
     }
 
+    // --- Content Compliance Checker ---
+    // Check content for brand compliance, legal disclaimers, and formatting standards
+    if (method === 'POST' && pathname === '/api/content-compliance-checker') {
+      const content = readJSON('content.json');
+      const issues = [];
+
+      const disclaimerPatterns = ['not legal advice', 'disclaimer', 'results may vary', 'no guarantee', 'past results'];
+      const bannedPhrases = ['guaranteed results', '100% success', 'we promise', 'never fail', 'always win'];
+
+      for (const c of content) {
+        const formats = c.formats || {};
+        const contentIssues = [];
+
+        for (const [fmt, fmtData] of Object.entries(formats)) {
+          const text = typeof fmtData === 'string' ? fmtData : (typeof fmtData?.content === 'string' ? fmtData.content : '');
+          const lower = text.toLowerCase();
+
+          // Check for banned phrases
+          for (const phrase of bannedPhrases) {
+            if (lower.includes(phrase)) contentIssues.push({ type: 'banned_phrase', format: fmt, phrase, severity: 'high' });
+          }
+
+          // Check for missing disclaimer in long content
+          if (['blog', 'newsletter', 'case_study', 'lead_magnet'].includes(fmt)) {
+            const hasDisclaimer = disclaimerPatterns.some(d => lower.includes(d));
+            if (!hasDisclaimer && text.length > 500) contentIssues.push({ type: 'missing_disclaimer', format: fmt, severity: 'medium' });
+          }
+
+          // Check for excessive caps
+          const capsWords = text.split(/\s+/).filter(w => w.length > 3 && w === w.toUpperCase()).length;
+          if (capsWords > 3) contentIssues.push({ type: 'excessive_caps', format: fmt, caps_count: capsWords, severity: 'low' });
+
+          // Check for URL formatting
+          const urlCount = (text.match(/https?:\/\//g) || []).length;
+          if (urlCount > 3) contentIssues.push({ type: 'too_many_urls', format: fmt, url_count: urlCount, severity: 'low' });
+        }
+
+        if (contentIssues.length > 0) {
+          issues.push({
+            id: c.id,
+            title: c.trigger_title || c.title || 'Untitled',
+            issues: contentIssues,
+            issue_count: contentIssues.length,
+            highest_severity: contentIssues.some(i => i.severity === 'high') ? 'high' : contentIssues.some(i => i.severity === 'medium') ? 'medium' : 'low'
+          });
+        }
+      }
+
+      issues.sort((a, b) => {
+        const sev = { high: 3, medium: 2, low: 1 };
+        return (sev[b.highest_severity] || 0) - (sev[a.highest_severity] || 0);
+      });
+
+      const report = {
+        total_checked: content.length,
+        compliant: content.length - issues.length,
+        non_compliant: issues.length,
+        high_severity: issues.filter(i => i.highest_severity === 'high').length,
+        medium_severity: issues.filter(i => i.highest_severity === 'medium').length,
+        issues: issues.slice(0, 30),
+        compliance_rate: content.length > 0 ? Math.round(((content.length - issues.length) / content.length) * 100) : 100,
+        generated_at: new Date().toISOString()
+      };
+
+      writeJSON('content-compliance-checker.json', report);
+      return json(res, report);
+    }
+    if (method === 'GET' && pathname === '/api/content-compliance-checker') {
+      return json(res, readJSON('content-compliance-checker.json') || { total_checked: 0, compliant: 0, issues: [] });
+    }
+
+    // --- Cross-Platform Scheduler ---
+    // Optimal posting schedule considering platform-specific best times
+    if (method === 'POST' && pathname === '/api/cross-platform-scheduler') {
+      const content = readJSON('content.json');
+      const approved = content.filter(c => c.status === 'approved');
+
+      const platformBestTimes = {
+        linkedin: [{ day: 'Tue', hour: 9 }, { day: 'Wed', hour: 10 }, { day: 'Thu', hour: 8 }],
+        x: [{ day: 'Mon', hour: 12 }, { day: 'Wed', hour: 9 }, { day: 'Fri', hour: 14 }],
+        instagram: [{ day: 'Tue', hour: 11 }, { day: 'Thu', hour: 13 }, { day: 'Sat', hour: 10 }],
+        youtube: [{ day: 'Fri', hour: 15 }, { day: 'Sat', hour: 11 }],
+        newsletter: [{ day: 'Tue', hour: 7 }, { day: 'Thu', hour: 7 }],
+        blog: [{ day: 'Mon', hour: 9 }, { day: 'Wed', hour: 10 }, { day: 'Fri', hour: 9 }]
+      };
+
+      const schedule = [];
+      const now = new Date();
+      const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+      for (const c of approved.slice(0, 20)) {
+        const formats = Object.keys(c.formats || {});
+        for (const fmt of formats.slice(0, 3)) {
+          const platform = fmt.startsWith('x_') ? 'x' : fmt === 'linkedin' ? 'linkedin' : fmt === 'blog' ? 'blog' : fmt === 'newsletter' ? 'newsletter' : fmt === 'short_video' ? 'instagram' : null;
+          if (!platform) continue;
+
+          const bestTimes = platformBestTimes[platform] || [{ day: 'Mon', hour: 9 }];
+          const bestTime = bestTimes[schedule.length % bestTimes.length];
+          const targetDay = dayNames.indexOf(bestTime.day);
+          const daysUntil = (targetDay - now.getDay() + 7) % 7 || 7;
+          const schedDate = new Date(now.getTime() + daysUntil * 86400000);
+          schedDate.setHours(bestTime.hour, 0, 0, 0);
+
+          schedule.push({
+            content_id: c.id,
+            title: c.trigger_title || c.title || 'Untitled',
+            format: fmt,
+            platform,
+            scheduled_for: schedDate.toISOString(),
+            day: bestTime.day,
+            hour: bestTime.hour,
+            reason: `Optimal ${platform} time`
+          });
+        }
+      }
+
+      schedule.sort((a, b) => new Date(a.scheduled_for) - new Date(b.scheduled_for));
+      const report = {
+        total_scheduled: schedule.length,
+        by_platform: schedule.reduce((acc, s) => { acc[s.platform] = (acc[s.platform] || 0) + 1; return acc; }, {}),
+        schedule: schedule.slice(0, 50),
+        next_post: schedule[0] || null,
+        generated_at: new Date().toISOString()
+      };
+
+      writeJSON('cross-platform-scheduler.json', report);
+      return json(res, report);
+    }
+    if (method === 'GET' && pathname === '/api/cross-platform-scheduler') {
+      return json(res, readJSON('cross-platform-scheduler.json') || { total_scheduled: 0, schedule: [] });
+    }
+
+    // --- Content Lifespan Estimator ---
+    // Estimate how long content will remain relevant based on topic and format
+    if (method === 'POST' && pathname === '/api/content-lifespan-estimator') {
+      const content = readJSON('content.json');
+      const items = [];
+
+      const formatLifespan = {
+        blog: 365, newsletter: 30, case_study: 180, lead_magnet: 270,
+        linkedin: 3, x_single: 1, x_thread: 2, short_video: 7,
+        carousel: 5, poll: 2, quote_cards: 14, stat_graphic: 30,
+        hot_take: 1, before_after: 14, listicle: 30, youtube_script: 90
+      };
+
+      const timeSensitiveKeywords = ['2025', '2026', 'new', 'just', 'breaking', 'update', 'today', 'this week', 'this month', 'latest'];
+      const evergreenKeywords = ['how to', 'guide', 'tips', 'best practices', 'checklist', 'template', 'strategy', 'fundamentals'];
+
+      for (const c of content) {
+        const title = (c.trigger_title || c.title || '').toLowerCase();
+        const formats = Object.keys(c.formats || {});
+        const maxLifespan = Math.max(...formats.map(f => formatLifespan[f] || 7));
+
+        let modifier = 1.0;
+        if (timeSensitiveKeywords.some(k => title.includes(k))) modifier *= 0.5;
+        if (evergreenKeywords.some(k => title.includes(k))) modifier *= 2.0;
+
+        const estimatedDays = Math.round(maxLifespan * modifier);
+        const created = new Date(c.created_at || c.generated_at || 0).getTime();
+        const ageDays = Math.round((Date.now() - created) / 86400000);
+        const remainingDays = Math.max(0, estimatedDays - ageDays);
+        const healthPct = estimatedDays > 0 ? Math.round((remainingDays / estimatedDays) * 100) : 0;
+
+        items.push({
+          id: c.id,
+          title: c.trigger_title || c.title || 'Untitled',
+          estimated_lifespan_days: estimatedDays,
+          age_days: ageDays,
+          remaining_days: remainingDays,
+          health_pct: healthPct,
+          status: healthPct > 50 ? 'healthy' : healthPct > 20 ? 'aging' : healthPct > 0 ? 'expiring' : 'expired',
+          format_count: formats.length,
+          best_format_lifespan: maxLifespan
+        });
+      }
+
+      items.sort((a, b) => a.remaining_days - b.remaining_days);
+      const report = {
+        total_analyzed: items.length,
+        healthy: items.filter(i => i.status === 'healthy').length,
+        aging: items.filter(i => i.status === 'aging').length,
+        expiring: items.filter(i => i.status === 'expiring').length,
+        expired: items.filter(i => i.status === 'expired').length,
+        items: items.slice(0, 50),
+        avg_lifespan_days: items.length > 0 ? Math.round(items.reduce((s, i) => s + i.estimated_lifespan_days, 0) / items.length) : 0,
+        generated_at: new Date().toISOString()
+      };
+
+      writeJSON('content-lifespan-estimator.json', report);
+      return json(res, report);
+    }
+    if (method === 'GET' && pathname === '/api/content-lifespan-estimator') {
+      return json(res, readJSON('content-lifespan-estimator.json') || { total_analyzed: 0, items: [] });
+    }
+
+    // --- Competitor Gap Finder ---
+    // Find topics competitors cover that we haven't addressed yet
+    if (method === 'POST' && pathname === '/api/competitor-gap-finder') {
+      const content = readJSON('content.json');
+      const triggers = readJSON('trigger-queue.json');
+      const trigList = Array.isArray(triggers) ? triggers : [];
+
+      const competitorTriggers = trigList.filter(t => t.source === 'competitor');
+      const ourTitles = content.map(c => (c.trigger_title || c.title || '').toLowerCase());
+      const ourKeywords = new Set();
+      for (const title of ourTitles) {
+        title.split(/\s+/).filter(w => w.length > 3).forEach(w => ourKeywords.add(w));
+      }
+
+      const gaps = [];
+      for (const ct of competitorTriggers) {
+        const title = (ct.title || '').toLowerCase();
+        const words = title.split(/\s+/).filter(w => w.length > 3);
+        const covered = words.filter(w => ourKeywords.has(w)).length;
+        const coveragePct = words.length > 0 ? Math.round((covered / words.length) * 100) : 0;
+
+        if (coveragePct < 40) {
+          gaps.push({
+            competitor_title: ct.title,
+            source: ct.url || ct.source_url || '',
+            coverage_pct: coveragePct,
+            uncovered_keywords: words.filter(w => !ourKeywords.has(w)).slice(0, 5),
+            priority: coveragePct < 10 ? 'high' : coveragePct < 25 ? 'medium' : 'low',
+            competitor: ct.source_detail || 'Unknown'
+          });
+        }
+      }
+
+      gaps.sort((a, b) => a.coverage_pct - b.coverage_pct);
+      const report = {
+        total_competitor_topics: competitorTriggers.length,
+        total_gaps: gaps.length,
+        high_priority: gaps.filter(g => g.priority === 'high').length,
+        gaps: gaps.slice(0, 30),
+        coverage_overview: {
+          well_covered: competitorTriggers.length - gaps.length,
+          gaps: gaps.length,
+          coverage_rate: competitorTriggers.length > 0 ? Math.round(((competitorTriggers.length - gaps.length) / competitorTriggers.length) * 100) : 100
+        },
+        generated_at: new Date().toISOString()
+      };
+
+      writeJSON('competitor-gap-finder.json', report);
+      return json(res, report);
+    }
+    if (method === 'GET' && pathname === '/api/competitor-gap-finder') {
+      return json(res, readJSON('competitor-gap-finder.json') || { total_gaps: 0, gaps: [] });
+    }
+
+    // --- Content Recency Score ---
+    // Score content library freshness and identify staleness risks
+    if (method === 'POST' && pathname === '/api/content-recency-score') {
+      const content = readJSON('content.json');
+      const now = Date.now();
+      const dayMs = 86400000;
+
+      let totalRecency = 0;
+      const buckets = { fresh: 0, recent: 0, aging: 0, stale: 0, archive: 0 };
+      const items = [];
+
+      for (const c of content) {
+        const created = new Date(c.created_at || c.generated_at || 0).getTime();
+        const ageDays = Math.round((now - created) / dayMs);
+
+        let recencyScore;
+        let bucket;
+        if (ageDays <= 3) { recencyScore = 100; bucket = 'fresh'; }
+        else if (ageDays <= 7) { recencyScore = 80; bucket = 'recent'; }
+        else if (ageDays <= 14) { recencyScore = 60; bucket = 'aging'; }
+        else if (ageDays <= 30) { recencyScore = 40; bucket = 'stale'; }
+        else { recencyScore = 20; bucket = 'archive'; }
+
+        buckets[bucket]++;
+        totalRecency += recencyScore;
+
+        items.push({
+          id: c.id,
+          title: c.trigger_title || c.title || 'Untitled',
+          age_days: ageDays,
+          recency_score: recencyScore,
+          bucket,
+          status: c.status || 'draft'
+        });
+      }
+
+      items.sort((a, b) => a.recency_score - b.recency_score);
+      const avgRecency = items.length > 0 ? Math.round(totalRecency / items.length) : 0;
+      const grade = avgRecency >= 80 ? 'A' : avgRecency >= 60 ? 'B' : avgRecency >= 40 ? 'C' : avgRecency >= 20 ? 'D' : 'F';
+
+      const report = {
+        total_content: items.length,
+        avg_recency_score: avgRecency,
+        grade,
+        buckets,
+        stalest_content: items.slice(0, 10),
+        freshest_content: items.slice(-5).reverse(),
+        recommendations: [],
+        generated_at: new Date().toISOString()
+      };
+
+      if (buckets.stale + buckets.archive > items.length * 0.3) report.recommendations.push('Over 30% of content is stale — increase production or refresh old content');
+      if (buckets.fresh === 0) report.recommendations.push('No fresh content in the last 3 days — generate new content');
+
+      writeJSON('content-recency-score.json', report);
+      return json(res, report);
+    }
+    if (method === 'GET' && pathname === '/api/content-recency-score') {
+      return json(res, readJSON('content-recency-score.json') || { total_content: 0, avg_recency_score: 0, grade: 'F' });
+    }
+
+    // --- Campaign Performance Tracker ---
+    // Track performance of content campaigns across platforms
+    if (method === 'POST' && pathname === '/api/campaign-performance-tracker') {
+      const body = await parseBody(req);
+      const raw = readJSON('campaign-performance-tracker.json');
+      const data = (raw && raw.campaigns) ? raw : { campaigns: [] };
+
+      if (body.action === 'create') {
+        const campaign = {
+          id: generateId(),
+          name: body.name || 'Untitled Campaign',
+          goal: body.goal || 'awareness',
+          platforms: body.platforms || ['linkedin'],
+          content_ids: body.content_ids || [],
+          start_date: body.start_date || new Date().toISOString(),
+          end_date: body.end_date || null,
+          status: 'active',
+          metrics: { impressions: 0, engagements: 0, clicks: 0, conversions: 0, spend: 0 },
+          created_at: new Date().toISOString()
+        };
+        data.campaigns.push(campaign);
+        writeJSON('campaign-performance-tracker.json', data);
+        return json(res, campaign);
+      }
+
+      if (body.action === 'update_metrics' && body.campaign_id) {
+        const campaign = data.campaigns.find(c => c.id === body.campaign_id);
+        if (campaign) {
+          if (body.metrics) Object.assign(campaign.metrics, body.metrics);
+          writeJSON('campaign-performance-tracker.json', data);
+          return json(res, campaign);
+        }
+        return json(res, { error: 'Campaign not found' }, 404);
+      }
+
+      // Default: return summary
+      const activeCampaigns = data.campaigns.filter(c => c.status === 'active');
+      const totalSpend = data.campaigns.reduce((s, c) => s + (c.metrics.spend || 0), 0);
+      const totalConversions = data.campaigns.reduce((s, c) => s + (c.metrics.conversions || 0), 0);
+
+      const summary = {
+        total_campaigns: data.campaigns.length,
+        active: activeCampaigns.length,
+        total_spend: totalSpend,
+        total_conversions: totalConversions,
+        cost_per_conversion: totalConversions > 0 ? Math.round((totalSpend / totalConversions) * 100) / 100 : 0,
+        campaigns: data.campaigns.slice(0, 20),
+        generated_at: new Date().toISOString()
+      };
+
+      return json(res, summary);
+    }
+    if (method === 'GET' && pathname === '/api/campaign-performance-tracker') {
+      const raw = readJSON('campaign-performance-tracker.json');
+      return json(res, (raw && raw.campaigns) ? raw : { campaigns: [], total_campaigns: 0 });
+    }
+
+    // --- Content Dependency Map ---
+    // Map relationships between content pieces (series, pillar→cluster, before→after)
+    if (method === 'POST' && pathname === '/api/content-dependency-map') {
+      const content = readJSON('content.json');
+      const nodes = [];
+      const edges = [];
+      const titleIndex = {};
+
+      for (const c of content) {
+        const title = c.trigger_title || c.title || 'Untitled';
+        nodes.push({ id: c.id, title, status: c.status || 'draft', format_count: Object.keys(c.formats || {}).length });
+        titleIndex[c.id] = title.toLowerCase();
+      }
+
+      // Find related content by keyword overlap
+      for (let i = 0; i < nodes.length; i++) {
+        const wordsA = titleIndex[nodes[i].id].split(/\s+/).filter(w => w.length > 4);
+        for (let j = i + 1; j < nodes.length; j++) {
+          const wordsB = titleIndex[nodes[j].id].split(/\s+/).filter(w => w.length > 4);
+          const common = wordsA.filter(w => wordsB.includes(w));
+          if (common.length >= 2) {
+            edges.push({
+              from: nodes[i].id,
+              to: nodes[j].id,
+              relationship: 'keyword_overlap',
+              shared_keywords: common.slice(0, 5),
+              strength: common.length
+            });
+          }
+        }
+      }
+
+      edges.sort((a, b) => b.strength - a.strength);
+      const report = {
+        total_nodes: nodes.length,
+        total_edges: edges.length,
+        nodes,
+        edges: edges.slice(0, 50),
+        most_connected: nodes.map(n => ({
+          ...n,
+          connections: edges.filter(e => e.from === n.id || e.to === n.id).length
+        })).sort((a, b) => b.connections - a.connections).slice(0, 10),
+        orphans: nodes.filter(n => !edges.some(e => e.from === n.id || e.to === n.id)).length,
+        generated_at: new Date().toISOString()
+      };
+
+      writeJSON('content-dependency-map.json', report);
+      return json(res, report);
+    }
+    if (method === 'GET' && pathname === '/api/content-dependency-map') {
+      return json(res, readJSON('content-dependency-map.json') || { total_nodes: 0, total_edges: 0, nodes: [], edges: [] });
+    }
+
     // --- Static file serving ---
 
     // Serve dashboard

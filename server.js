@@ -1343,6 +1343,41 @@ async function handleRequest(req, res) {
       return json(res, { ok: true, batch_id: batchId });
     }
 
+    // POST /api/generate-week — generate a full week of content (5 pieces, auto-scheduled)
+    if (pathname === '/api/generate-week' && method === 'POST') {
+      if (!process.env.ANTHROPIC_API_KEY) {
+        return json(res, { error: 'ANTHROPIC_API_KEY not configured' }, 500);
+      }
+      const batchId = generateId();
+      _batchProgress[batchId] = { total: 5, completed: 0, errors: 0, results: [], status: 'starting', type: 'week' };
+      setImmediate(async () => {
+        try {
+          const { runDaily } = require('./generator/run-daily');
+          _batchProgress[batchId].status = 'running';
+          // Generate 5 content pieces from top triggers
+          const result = await runDaily({ count: 5, includeBlog: true, includeYouTube: false });
+          const generated = result || [];
+          _batchProgress[batchId].completed = generated.length;
+          _batchProgress[batchId].results = generated.map(r => r.id);
+          // Auto-schedule each to the next weekday
+          let scheduled = 0;
+          for (const item of generated) {
+            const slot = autoScheduleContent(item);
+            if (slot) scheduled++;
+          }
+          _batchProgress[batchId].scheduled = scheduled;
+          _batchProgress[batchId].status = 'done';
+          console.log(`[generate-week] Generated ${generated.length} pieces, scheduled ${scheduled}`);
+        } catch (err) {
+          _batchProgress[batchId].status = 'error';
+          _batchProgress[batchId].error = err.message;
+          console.error('[generate-week] Error:', err.message);
+        }
+        setTimeout(() => { delete _batchProgress[batchId]; }, 30 * 60 * 1000);
+      });
+      return json(res, { ok: true, batch_id: batchId });
+    }
+
     // GET /api/generate-batch/:id — check batch generation progress
     if (pathname.startsWith('/api/generate-batch/') && method === 'GET') {
       const batchId = pathname.split('/').pop();
@@ -2157,6 +2192,47 @@ async function handleRequest(req, res) {
       if (memory.hook_preferences.length > 50) memory.hook_preferences = memory.hook_preferences.slice(-50);
       writeJSON('memory.json', memory);
       return json(res, { ok: true, new_content: content[idx].formats[body.format].content });
+    }
+
+    // POST /api/content/:id/repurpose — repurpose content to a different format
+    const repurposeMatch = pathname.match(/^\/api\/content\/([a-f0-9]+)\/repurpose$/);
+    if (repurposeMatch && method === 'POST') {
+      const content = readJSON('content.json');
+      const idx = content.findIndex(c => c.id === repurposeMatch[1]);
+      if (idx === -1) return json(res, { error: 'Not found' }, 404);
+      const body = await parseBody(req);
+      if (!body.source_format || !body.target_format) return json(res, { error: 'source_format and target_format required' }, 400);
+      const sourceContent = content[idx].formats[body.source_format]?.content;
+      if (!sourceContent) return json(res, { error: 'Source format has no content' }, 400);
+      // Check if target already has content
+      if (content[idx].formats[body.target_format]?.content && !body.overwrite) {
+        return json(res, { error: 'Target format already has content. Set overwrite: true to replace.' }, 400);
+      }
+      json(res, { ok: true, status: 'generating' });
+      // Generate in background
+      setImmediate(async () => {
+        try {
+          const { repurposeContent } = require('./lib/claude');
+          const { buildSystemPromptWithMemory } = require('./generator/content-writer');
+          const system = buildSystemPromptWithMemory();
+          const result = await repurposeContent(sourceContent, body.source_format, body.target_format, system);
+          const freshContent = readJSON('content.json');
+          const freshIdx = freshContent.findIndex(c => c.id === repurposeMatch[1]);
+          if (freshIdx !== -1) {
+            if (!freshContent[freshIdx].formats[body.target_format]) {
+              freshContent[freshIdx].formats[body.target_format] = { content: null, status: 'review', edited: false };
+            }
+            freshContent[freshIdx].formats[body.target_format].content = result;
+            freshContent[freshIdx].formats[body.target_format].status = 'review';
+            freshContent[freshIdx].formats[body.target_format].repurposed_from = body.source_format;
+            writeJSON('content.json', freshContent);
+            console.log(`[repurpose] ${repurposeMatch[1]}: ${body.source_format} → ${body.target_format}`);
+          }
+        } catch (err) {
+          console.error(`[repurpose] Error: ${err.message}`);
+        }
+      });
+      return;
     }
 
     // POST /api/quality-check — quality check content

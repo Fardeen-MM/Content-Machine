@@ -2563,6 +2563,40 @@ function renderDashboardPage() {
                 state._scraping = false; render();
               }
             }, state._scraping ? 'Scraping...' : 'Scrape Now'),
+            h('button', {
+              className: 'btn btn-primary btn-sm',
+              disabled: state._generatingWeek,
+              onclick: async () => {
+                state._generatingWeek = true; render();
+                toast('Generating a full week of content...', 'info');
+                try {
+                  const res = await api('/api/generate-week', { method: 'POST' });
+                  if (res.batch_id) {
+                    state._weekBatchId = res.batch_id;
+                    // Poll for completion
+                    const poll = setInterval(async () => {
+                      try {
+                        const prog = await api(`/api/generate-batch/${res.batch_id}`);
+                        if (prog.status === 'done') {
+                          clearInterval(poll);
+                          state._generatingWeek = false;
+                          toast(`Week generated! ${prog.completed} pieces, ${prog.scheduled || 0} auto-scheduled`, 'success');
+                          await loadData();
+                        } else if (prog.status === 'error') {
+                          clearInterval(poll);
+                          state._generatingWeek = false;
+                          toast('Generation failed: ' + (prog.error || 'unknown'), 'error');
+                          render();
+                        }
+                      } catch (e) {}
+                    }, 5000);
+                  }
+                } catch (err) {
+                  toast('Failed: ' + err.message, 'error');
+                  state._generatingWeek = false; render();
+                }
+              }
+            }, state._generatingWeek ? 'Generating...' : 'Generate Week'),
             h('button', { className: 'btn btn-ghost btn-sm', onclick: () => { state.page = 'content'; render(); } }, 'View Content')
           )
         ),
@@ -3250,6 +3284,42 @@ function renderFormatContent(content, formatKey, fmt) {
                   onmouseout: (e) => { e.currentTarget.style.background = 'transparent'; },
                   title: descs[mode]
                 }, labels[mode]);
+              })
+            )
+          : null
+      ) : null,
+      // Repurpose dropdown
+      typeof text === 'string' ? h('div', { style: { position: 'relative', display: 'inline-block' } },
+        h('button', {
+          className: 'btn btn-outline btn-sm',
+          style: { color: '#059669', borderColor: '#059669' },
+          onclick: (e) => {
+            e.stopPropagation();
+            const key = `repurpose-${content.id}-${formatKey}`;
+            state._repurposeOpen = state._repurposeOpen === key ? null : key;
+            render();
+          }
+        }, 'Repurpose'),
+        state._repurposeOpen === `repurpose-${content.id}-${formatKey}`
+          ? h('div', { style: { position: 'absolute', bottom: '100%', left: '0', background: 'white', border: '1px solid var(--gray-200)', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', padding: '4px', zIndex: '100', minWidth: '180px', marginBottom: '4px' } },
+              h('div', { style: { padding: '4px 12px 2px', fontSize: '10px', color: 'var(--gray-400)', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Repurpose To'),
+              ...['linkedin', 'x_single', 'x_thread', 'carousel', 'short_video', 'hot_take', 'blog', 'newsletter', 'poll'].filter(f => f !== formatKey).map(target => {
+                const labels = { linkedin: 'LinkedIn Post', x_single: 'Tweet', x_thread: 'X Thread', carousel: 'Carousel', short_video: 'Video Script', hot_take: 'Hot Take', blog: 'Blog Post', newsletter: 'Newsletter', poll: 'Poll' };
+                const hasContent = content.formats[target]?.content;
+                return h('div', {
+                  style: { padding: '6px 12px', fontSize: '12px', cursor: 'pointer', borderRadius: '4px', whiteSpace: 'nowrap', display: 'flex', justifyContent: 'space-between', gap: '8px' },
+                  onclick: async () => {
+                    state._repurposeOpen = null; render();
+                    toast(`Repurposing to ${labels[target]}...`, 'info');
+                    try {
+                      await api(`/api/content/${content.id}/repurpose`, { method: 'POST', body: { source_format: formatKey, target_format: target, overwrite: true } });
+                      toast('Repurposing started! Refresh in a few seconds.', 'success');
+                      setTimeout(() => loadData(), 5000);
+                    } catch (err) { toast('Repurpose failed: ' + err.message, 'error'); }
+                  },
+                  onmouseover: (e) => { e.currentTarget.style.background = 'var(--gray-50)'; },
+                  onmouseout: (e) => { e.currentTarget.style.background = 'transparent'; }
+                }, labels[target], hasContent ? h('span', { style: { fontSize: '9px', color: '#059669' } }, 'has') : null);
               })
             )
           : null
@@ -4531,6 +4601,52 @@ function renderCalendarPage() {
         }, 'Today')
       )
     ),
+
+    // Week at a glance (current week)
+    (() => {
+      const today = new Date();
+      const dayOfWeek = today.getDay();
+      const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+      const weekDays = [];
+      for (let i = 0; i < 7; i++) {
+        const d = new Date(today);
+        d.setDate(today.getDate() + mondayOffset + i);
+        weekDays.push(d.toISOString().split('T')[0]);
+      }
+      const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+      const platforms = ['linkedin', 'x', 'video', 'blog', 'email', 'youtube'];
+      return h('div', { className: 'card', style: { padding: '16px 20px', marginBottom: '20px' } },
+        h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)', marginBottom: '10px' } }, 'THIS WEEK AT A GLANCE'),
+        h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '8px' } },
+          ...weekDays.map((date, i) => {
+            const dayData = cal.days?.find(d => d.date === date);
+            const isToday = date === today.toISOString().split('T')[0];
+            const slots = dayData?.slots || {};
+            const filledSlots = Object.entries(slots).filter(([, v]) => v);
+            return h('div', { style: {
+              padding: '10px', borderRadius: '10px', textAlign: 'center',
+              border: isToday ? '2px solid var(--blue)' : '1px solid var(--gray-200)',
+              background: isToday ? 'rgba(37,99,235,0.04)' : 'white',
+              cursor: 'pointer'
+            }, onclick: () => { state.calendarSelectedDay = date; render(); } },
+              h('div', { style: { fontSize: '11px', fontWeight: '600', color: isToday ? 'var(--blue)' : 'var(--gray-500)' } }, dayNames[i]),
+              h('div', { style: { fontSize: '16px', fontWeight: '700', color: 'var(--navy)', fontFamily: "'Fraunces', serif" } }, date.slice(8)),
+              h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '2px', justifyContent: 'center', marginTop: '6px', minHeight: '20px' } },
+                ...filledSlots.slice(0, 3).map(([slotKey]) => {
+                  const platform = slotKey.split('_')[0];
+                  const colors = { linkedin: '#0077B5', x: '#1DA1F2', video: '#EF4444', blog: '#10B981', email: '#8B5CF6', youtube: '#FF0000' };
+                  return h('div', {
+                    style: { width: '8px', height: '8px', borderRadius: '50%', background: colors[platform] || '#94a3b8' },
+                    title: `${platformLabels[platform] || platform}: ${slots[slotKey]?.title || ''}`
+                  });
+                }),
+                filledSlots.length === 0 ? h('div', { style: { fontSize: '9px', color: 'var(--gray-300)' } }, 'empty') : null
+              )
+            );
+          })
+        )
+      );
+    })(),
 
     // Month grid
     h('div', { className: 'cal-grid' },

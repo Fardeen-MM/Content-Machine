@@ -962,12 +962,13 @@ h1, h2, h3, h4 { font-family: 'Fraunces', serif; }
 /* Toast */
 .toast-container {
   position: fixed;
-  bottom: 24px;
+  bottom: 90px;
   right: 24px;
   z-index: 200;
   display: flex;
   flex-direction: column-reverse;
   gap: 8px;
+  max-width: 360px;
 }
 
 .toast {
@@ -1096,7 +1097,37 @@ h1, h2, h3, h4 { font-family: 'Fraunces', serif; }
   animation: spin 0.6s linear infinite;
 }
 
+/* Section headers */
+.section-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--navy);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+/* Clickable card — subtle lift on hover */
+.card-clickable {
+  cursor: pointer;
+  transition: var(--transition);
+}
+.card-clickable:hover {
+  box-shadow: var(--shadow);
+  transform: translateY(-1px);
+}
+
+/* Smooth page transitions */
+.page-content {
+  animation: fadeIn 0.15s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 @keyframes spin { to { transform: rotate(360deg); } }
+@keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
 
 /* Empty state */
 .empty-state {
@@ -1776,6 +1807,22 @@ function toggleSection(id) {
 }
 function isOpen(id) { return !state.collapsedSections[id]; }
 
+function renderEmpty(icon, title, subtitle, action) {
+  return h('div', { style: { textAlign: 'center', padding: '60px 20px', color: 'var(--gray-400)' } },
+    h('div', { style: { fontSize: '36px', marginBottom: '12px', opacity: 0.4 } }, icon || '\uD83D\uDCED'),
+    h('div', { style: { fontSize: '16px', fontWeight: '600', color: 'var(--gray-500)', marginBottom: '4px' } }, title || 'Nothing here yet'),
+    subtitle ? h('div', { style: { fontSize: '13px', color: 'var(--gray-400)', maxWidth: '300px', margin: '0 auto' } }, subtitle) : null,
+    action ? h('div', { style: { marginTop: '16px' } }, action) : null
+  );
+}
+
+function renderPageLoading() {
+  return h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px', gap: '12px' } },
+    h('div', { className: 'spinner', style: { width: '20px', height: '20px' } }),
+    h('div', { style: { fontSize: '13px', color: 'var(--gray-400)' } }, 'Loading page data...')
+  );
+}
+
 function renderCollapsible(id, title, badge, children) {
   const open = isOpen(id);
   return h('div', { className: 'widget-group' },
@@ -1821,445 +1868,133 @@ async function api(path, options = {}) {
   return res.json();
 }
 
+
+// --- Smart Page Data Loading ---
+// Only load what the current page needs (instead of 265 calls)
+const pageDataMap = {
+  dashboard: [
+    ['healthData', '/api/health', { summary: {}, clients: [] }],
+    ['deals', '/api/deals', []],
+    ['meetings', '/api/meetings', []],
+    ['pestering', '/api/pestering', []],
+    ['pesteringStages', '/api/pestering/stages', {}],
+    ['insights', '/api/insights', []],
+    ['autopilot', '/api/autopilot/status', { enabled: false, settings: {}, today: {}, recent_log: [] }],
+    ['published', '/api/published', []],
+    ['funnel', '/api/funnel', { funnel: [], queue: {}, totals: {} }],
+    ['meetingStats', '/api/meetings/stats', {}],
+  ],
+  content: [
+    ['series', '/api/series', []],
+    ['published', '/api/published', []],
+  ],
+  triggers: [],
+  calendar: 'dynamic',
+  analytics: [
+    ['performance', '/api/performance', []],
+    ['perfAnalytics', '/api/analytics/performance', null],
+    ['funnel', '/api/funnel', { funnel: [], queue: {}, totals: {} }],
+    ['trending', '/api/trending', { trending_topics: [], trending_phrases: [], categories: {}, source_velocity: {} }],
+  ],
+  meetings: [
+    ['meetings', '/api/meetings', []],
+    ['meetingStats', '/api/meetings/stats', {}],
+  ],
+  clients: [
+    ['clients', '/api/clients', []],
+    ['healthData', '/api/health', { summary: {}, clients: [] }],
+  ],
+  actions: [],
+  pipeline: [
+    ['deals', '/api/deals', []],
+    ['clients', '/api/clients', []],
+    ['healthData', '/api/health', { summary: {}, clients: [] }],
+  ],
+  pestering: [
+    ['pestering', '/api/pestering', []],
+    ['pesteringStages', '/api/pestering/stages', {}],
+    ['clients', '/api/clients', []],
+  ],
+  insights: [
+    ['insights', '/api/insights', []],
+  ],
+  deals: [
+    ['deals', '/api/deals', []],
+  ],
+  performance: [
+    ['performance', '/api/performance', []],
+    ['perfAnalytics', '/api/analytics/performance', null],
+  ],
+  series: [
+    ['series', '/api/series', []],
+    ['seriesTemplates', '/api/series-templates', null],
+  ],
+  playbooks: [
+    ['playbooks', '/api/playbooks', {}],
+  ],
+  'publish-tracker': [
+    ['publishTracker', '/api/publish-tracker', { items: [], platforms: [] }],
+    ['published', '/api/published', []],
+  ],
+  settings: [
+    ['settings', '/api/settings', {}],
+  ],
+  memory: [
+    ['memory', '/api/memory', { approved_examples: [], style_notes: [] }],
+  ],
+  inspirations: [
+    ['inspirations', '/api/inspirations', []],
+  ],
+  chat: [
+    ['chatMessages', '/api/chat/messages', []],
+  ],
+  'save-url': [],
+};
+
+function getPageEndpoints(page) {
+  if (page === 'calendar') {
+    return [
+      ['calendar', '/api/calendar', null],
+      ['monthCalendar', '/api/calendar?month=' + state.calendarMonth, null],
+      ['series', '/api/series', []],
+      ['calendarWeek', '/api/calendar/week', null],
+      ['seriesTemplates', '/api/series-templates', null],
+    ];
+  }
+  const endpoints = pageDataMap[page];
+  return Array.isArray(endpoints) ? endpoints : [];
+}
+
+async function loadPageData(page) {
+  const endpoints = getPageEndpoints(page);
+  if (endpoints.length === 0) return;
+  const results = await Promise.all(
+    endpoints.map(([key, path, fallback]) => api(path).catch(() => fallback))
+  );
+  endpoints.forEach(([key], i) => { state[key] = results[i]; });
+}
+
+
 async function loadData() {
   state.loading = true;
   render();
   try {
-    const [content, triggers, stats, calendar, monthCal, settings, memory, performance, perfAnalytics, meetings, meetingStats, clients, allActions, chatMessages, healthData, inspirations, pestering, pesteringStages, insights, deals, published, series, predictions, playbooks, ctaLibrary, trending, funnel, publishTracker, leadMagnets, contentHealth, scheduleOptimize, templates, dmSequences, hooks, pillarPlan, contentLeads, autopilot, scheduleQueue, engagementDashboard, contentBriefs, workflowPipeline, personas, calendarWeek, benchmarkReport, contentIdeas, socialProof, roiReport, audienceGrowth, contentThemes, distributionPlans, dmPipelines, competitorsTracked, dripCampaigns, autoResponses, expiringContent, amplifications, leadFunnels, calendarInsights, weeklyDigest, splitTests, workflowRules, youtubePipelines, carousels, contentMatrix, ctaStrategy, seriesTemplates, contentBank, engagementPlaybook, atomizations, platformRules, emailSequences, weeklyContentPlan, repurposeChains, lmFunnels, perfReport, contentPillars, compAnalyses, nurtureCampaigns, authorityPlan, flywheelData, velocityData, audienceSegments, contentDna, topicClusters, voiceProfiles, dmScriptsData, replyStrategyData, systemHealthData, contentRecyclerData, commentStrategyData, newslettersData, distributionEngineData, socialProofEngineData, advancedAnalyticsData, growthPlaybookData, genLeadMagnetsData, funnelAnalysisData, autoRepurposeData, weeklyActionPlanData, trendsAnalysisData, authorityScoreData, contentIntelData, conversionOptData, contentMatrixData, draftingStrategyData, zeroClickBankData, contentVelocityData, pillarRotatorData, savedRepliesData, audienceBuilderData, weeklyReportData, competitiveIntelData, contentScoringData, postSchedulerData, trendHijackerData, leadMagnetFunnelsData, outboundSequencesData, icpRefinedData, winLossData, contentRoiData, contentExperimentsData, socialListeningData, authorityBuilderData, quickWinsData, contentCalendarAiData, dailyBriefingData, engagementTrackerData, commentToDmData, contentSeriesPlannerData, hookBankData, engagementScorerData, conversionTrackerData, contentGapFinderData, audienceGrowthTrackerData, performanceBenchmarksData, flywheelAnalyzerData, topicAuthorityData, socialProofCollectorData, newsletterBuilderData, dmSequenceBuilderData, contentRecyclerScanData, contentDnaAnalyzerData, swipeFileData, crossPostTrackerData, smartSchedulerData, contentSystemHealthV2Data, competitorContentTrackerData, revenueAttributionData, pipelineValueTrackerData, contentCostCalculatorData, leadScorerData, retargetingBuilderData, campaignRoiData, monthlyContentReportData, approvalWorkflowData, autoPublishQueueData, contentTemplateLibraryData, engagementAlertsData, contentTagsData, contentFreshnessData, leadMagnetPerfData, collabBoardData, platformAnalyticsAggData, postLengthData, pillarHealthData, distScorecardData, contentVelocityTrackerData, competitorBenchData, contentQueueData, personaMatchData, ctaPerfData, leadNurtureData, convFunnelVizData, contentRoiDetailData, weeklyGrowthData, pipelineBoardData, contentQualityAuditData, calendarHeatmapData, contentGoalsData, abTestDashData, engagementHeatmapData, audienceOverlapData, viralDetectorData, cannibalisationCheckData, engagementPredictorData, contentMixOptimizerData, evergreenIdentifierData, contentSupplyChainData, contentDecayTrackerData, headlineAnalyzerData, contentClusterMapData, audienceSentimentPulseData, contentWorkflowAutomationsData, platformRateLimiterData, contentPerformanceTiersData, contentComplianceCheckerData, crossPlatformSchedulerData, contentLifespanEstimatorData, competitorGapFinderData, contentRecencyScoreData, campaignPerfTrackerData, contentDependencyMapData, engagementForecastData, contentReadabilityScorerData, audienceGrowthPredictorData, contentRepurposeTrackerData, socialProofAggregatorData, weeklyContentScorecardData, contentFormatPerfData, topicMomentumData, contentProductionVelocityData, brandVoiceConsistencyData, audiencePersonaInsightsData, contentCalendarOptimizerData, contentImpactScoreData] = await Promise.all([
+    // Core data (always needed for nav badges and basic stats)
+    const [content, triggers, stats, allActions] = await Promise.all([
       api('/api/content'),
       api('/api/triggers'),
       api('/api/stats'),
-      api('/api/calendar'),
-      api(`/api/calendar?month=${state.calendarMonth}`).catch(() => null),
-      api('/api/settings').catch(() => ({})),
-      api('/api/memory').catch(() => ({ approved_examples: [], style_notes: [] })),
-      api('/api/performance').catch(() => []),
-      api('/api/analytics/performance').catch(() => null),
-      api('/api/meetings').catch(() => []),
-      api('/api/meetings/stats').catch(() => ({})),
-      api('/api/clients').catch(() => []),
       api('/api/actions').catch(() => []),
-      api('/api/chat/messages').catch(() => []),
-      api('/api/health').catch(() => ({ summary: {}, clients: [] })),
-      api('/api/inspirations').catch(() => []),
-      api('/api/pestering').catch(() => []),
-      api('/api/pestering/stages').catch(() => ({})),
-      api('/api/insights').catch(() => []),
-      api('/api/deals').catch(() => []),
-      api('/api/published').catch(() => []),
-      api('/api/series').catch(() => []),
-      api('/api/predictions').catch(() => ({ predictions: [], has_enough_data: false })),
-      api('/api/playbooks').catch(() => ({})),
-      api('/api/cta-library').catch(() => ({})),
-      api('/api/trending').catch(() => ({ trending_topics: [], trending_phrases: [], categories: {}, source_velocity: {} })),
-      api('/api/funnel').catch(() => ({ funnel: [], queue: {}, totals: {} })),
-      api('/api/publish-tracker').catch(() => ({ items: [], platforms: [] })),
-      api('/api/lead-magnets').catch(() => []),
-      api('/api/content-health').catch(() => null),
-      api('/api/schedule/optimize').catch(() => null),
-      api('/api/templates').catch(() => []),
-      api('/api/dm-sequences').catch(() => []),
-      api('/api/hooks').catch(() => []),
-      api('/api/pillars').catch(() => null),
-      api('/api/leads').catch(() => []),
-      api('/api/autopilot/status').catch(() => ({ enabled: false, settings: {}, today: {}, recent_log: [] })),
-      api('/api/schedule-queue').catch(() => []),
-      api('/api/engagement/dashboard').catch(() => null),
-      api('/api/content-briefs').catch(() => []),
-      api('/api/workflow/pipeline').catch(() => null),
-      api('/api/personas').catch(() => []),
-      api('/api/calendar/week').catch(() => null),
-      api('/api/benchmarks/report').catch(() => null),
-      api('/api/ideas').catch(() => []),
-      api('/api/social-proof').catch(() => []),
-      api('/api/roi/report').catch(() => null),
-      api('/api/audience/growth').catch(() => null),
-      api('/api/themes').catch(() => null),
-      api('/api/distribution-plans').catch(() => []),
-      api('/api/dm-pipelines').catch(() => []),
-      api('/api/competitors/tracked').catch(() => []),
-      api('/api/drip-campaigns').catch(() => []),
-      api('/api/auto-responses').catch(() => []),
-      api('/api/content/expiring').catch(() => null),
-      api('/api/amplifications').catch(() => []),
-      api('/api/lead-funnels').catch(() => []),
-      api('/api/calendar/insights').catch(() => null),
-      api('/api/analytics/weekly-digest').catch(() => null),
-      api('/api/split-tests').catch(() => []),
-      api('/api/workflow/rules').catch(() => null),
-      api('/api/youtube/pipelines').catch(() => []),
-      api('/api/carousels').catch(() => []),
-      api('/api/content-matrix').catch(() => null),
-      api('/api/cta-strategy').catch(() => null),
-      api('/api/series-templates').catch(() => null),
-      api('/api/content-bank').catch(() => null),
-      api('/api/engagement-playbook').catch(() => null),
-      api('/api/atomizations').catch(() => []),
-      api('/api/platform-rules').catch(() => null),
-      api('/api/email-sequences').catch(() => []),
-      api('/api/weekly-content-plan').catch(() => null),
-      api('/api/repurpose-chains').catch(() => []),
-      api('/api/lead-magnet-funnels').catch(() => []),
-      api('/api/content-performance-report').catch(() => null),
-      api('/api/content-pillars').catch(() => null),
-      api('/api/competitor-analyses').catch(() => []),
-      api('/api/nurture-campaigns').catch(() => []),
-      api('/api/authority-plan').catch(() => null),
-      api('/api/content-flywheel', { method: 'POST' }).catch(() => null),
-      api('/api/content-velocity').catch(() => null),
-      api('/api/audience-segments').catch(() => null),
-      api('/api/content-dna').catch(() => null),
-      api('/api/topic-clusters').catch(() => null),
-      api('/api/voice-profiles').catch(() => []),
-      api('/api/dm-scripts').catch(() => []),
-      api('/api/reply-strategy').catch(() => null),
-      api('/api/content-system-health').catch(() => null),
-      api('/api/content-recycler').catch(() => null),
-      api('/api/comment-strategy').catch(() => null),
-      api('/api/newsletters').catch(() => []),
-      api('/api/distribution-engine').catch(() => null),
-      api('/api/social-proof-engine').catch(() => null),
-      api('/api/advanced-analytics').catch(() => null),
-      api('/api/growth-playbook').catch(() => null),
-      api('/api/generated-lead-magnets').catch(() => []),
-      api('/api/funnel-analysis').catch(() => null),
-      api('/api/auto-repurpose').catch(() => null),
-      api('/api/weekly-action-plan').catch(() => null),
-      api('/api/trends-analysis').catch(() => null),
-      api('/api/authority-score').catch(() => null),
-      api('/api/content-intelligence').catch(() => null),
-      api('/api/conversion-optimizer').catch(() => null),
-      api('/api/content-matrix-full').catch(() => null),
-      api('/api/drafting-strategy').catch(() => null),
-      api('/api/zero-click-bank').catch(() => null),
-      api('/api/content-velocity').catch(() => null),
-      api('/api/pillar-rotator').catch(() => null),
-      api('/api/saved-replies').catch(() => null),
-      api('/api/audience-builder').catch(() => null),
-      api('/api/weekly-content-report').catch(() => null),
-      api('/api/competitive-intel').catch(() => null),
-      api('/api/content-scoring').catch(() => null),
-      api('/api/post-scheduler').catch(() => null),
-      api('/api/trend-hijacker').catch(() => null),
-      api('/api/lead-magnet-funnels').catch(() => []),
-      api('/api/outbound-sequences').catch(() => []),
-      api('/api/icp-refiner').catch(() => null),
-      api('/api/win-loss-analysis').catch(() => null),
-      api('/api/content-roi').catch(() => null),
-      api('/api/content-experiments').catch(() => null),
-      api('/api/social-listening').catch(() => null),
-      api('/api/authority-builder').catch(() => null),
-      api('/api/quick-wins').catch(() => null),
-      api('/api/content-calendar-ai').catch(() => null),
-      api('/api/daily-briefing').catch(() => null),
-      api('/api/engagement-tracker').catch(() => null),
-      api('/api/comment-to-dm').catch(() => []),
-      api('/api/content-series-planner').catch(() => null),
-      api('/api/hook-bank').catch(() => null),
-      api('/api/engagement-scorer').catch(() => null),
-      api('/api/conversion-tracker').catch(() => null),
-      api('/api/content-gap-finder').catch(() => null),
-      api('/api/audience-growth-tracker').catch(() => null),
-      api('/api/performance-benchmarks').catch(() => null),
-      api('/api/flywheel-analyzer').catch(() => null),
-      api('/api/topic-authority-mapper').catch(() => null),
-      api('/api/social-proof-collector').catch(() => null),
-      api('/api/newsletter-builder').catch(() => []),
-      api('/api/dm-sequence-builder').catch(() => []),
-      api('/api/content-recycler-scan').catch(() => null),
-      api('/api/content-dna-analyzer').catch(() => null),
-      api('/api/swipe-file').catch(() => null),
-      api('/api/cross-post-tracker').catch(() => null),
-      api('/api/smart-scheduler').catch(() => null),
-      api('/api/content-system-health-v2').catch(() => null),
-      api('/api/competitor-content-tracker').catch(() => null),
-      api('/api/revenue-attribution').catch(() => null),
-      api('/api/pipeline-value-tracker').catch(() => null),
-      api('/api/content-cost-calculator').catch(() => null),
-      api('/api/lead-scorer').catch(() => null),
-      api('/api/retargeting-builder').catch(() => null),
-      api('/api/campaign-roi').catch(() => null),
-      api('/api/monthly-content-report').catch(() => null),
-      api('/api/approval-workflow').catch(() => null),
-      api('/api/auto-publish-queue').catch(() => null),
-      api('/api/content-template-library').catch(() => null),
-      api('/api/engagement-alerts').catch(() => null),
-      api('/api/content-tags').catch(() => null),
-      api('/api/content-freshness-scan').catch(() => null),
-      api('/api/lead-magnet-performance').catch(() => null),
-      api('/api/collaboration-board').catch(() => null),
-      api('/api/platform-analytics').catch(() => null),
-      api('/api/post-length-analyzer').catch(() => null),
-      api('/api/pillar-health-check').catch(() => null),
-      api('/api/distribution-scorecard').catch(() => null),
-      api('/api/content-velocity-tracker').catch(() => null),
-      api('/api/competitor-benchmark').catch(() => null),
-      api('/api/content-queue-manager').catch(() => null),
-      api('/api/persona-content-match').catch(() => null),
-      api('/api/cta-performance').catch(() => null),
-      api('/api/lead-nurture-sequence').catch(() => null),
-      api('/api/conversion-funnel-viz').catch(() => null),
-      api('/api/content-roi-detail').catch(() => null),
-      api('/api/weekly-growth-report').catch(() => null),
-      api('/api/pipeline-board').catch(() => null),
-      api('/api/content-quality-audit').catch(() => null),
-      api('/api/calendar-heatmap').catch(() => null),
-      api('/api/content-goals').catch(() => null),
-      api('/api/ab-test-dashboard').catch(() => null),
-      api('/api/engagement-heatmap').catch(() => null),
-      api('/api/audience-overlap').catch(() => null),
-      api('/api/viral-detector').catch(() => null),
-      api('/api/cannibalisation-check').catch(() => null),
-      api('/api/engagement-predictor').catch(() => null),
-      api('/api/content-mix-optimizer').catch(() => null),
-      api('/api/evergreen-identifier').catch(() => null),
-      api('/api/content-supply-chain').catch(() => null),
-      api('/api/content-decay-tracker').catch(() => null),
-      api('/api/headline-analyzer').catch(() => null),
-      api('/api/content-cluster-map').catch(() => null),
-      api('/api/audience-sentiment-pulse').catch(() => null),
-      api('/api/content-workflow-automations').catch(() => null),
-      api('/api/platform-rate-limiter').catch(() => null),
-      api('/api/content-performance-tiers').catch(() => null),
-      api('/api/content-compliance-checker').catch(() => null),
-      api('/api/cross-platform-scheduler').catch(() => null),
-      api('/api/content-lifespan-estimator').catch(() => null),
-      api('/api/competitor-gap-finder').catch(() => null),
-      api('/api/content-recency-score').catch(() => null),
-      api('/api/campaign-performance-tracker').catch(() => null),
-      api('/api/content-dependency-map').catch(() => null),
-      api('/api/engagement-forecast').catch(() => null),
-      api('/api/content-readability-scorer').catch(() => null),
-      api('/api/audience-growth-predictor').catch(() => null),
-      api('/api/content-repurpose-tracker').catch(() => null),
-      api('/api/social-proof-aggregator').catch(() => null),
-      api('/api/weekly-content-scorecard').catch(() => null),
-      api('/api/content-format-performance').catch(() => null),
-      api('/api/topic-momentum-tracker').catch(() => null),
-      api('/api/content-production-velocity').catch(() => null),
-      api('/api/brand-voice-consistency').catch(() => null),
-      api('/api/audience-persona-insights').catch(() => null),
-      api('/api/content-calendar-optimizer').catch(() => null),
-      api('/api/content-impact-score').catch(() => null)
     ]);
     state.content = content;
     state.triggers = triggers;
     state.stats = stats;
-    state.calendar = calendar;
-    state.monthCalendar = monthCal;
-    state.settings = settings;
-    state.memory = memory;
-    state.performance = performance;
-    state.perfAnalytics = perfAnalytics;
-    state.meetings = meetings;
-    state.meetingStats = meetingStats;
-    state.clients = clients;
     state.allActions = allActions;
-    state.chatMessages = chatMessages;
-    state.healthData = healthData;
-    state.inspirations = inspirations;
-    state.pestering = pestering;
-    state.pesteringStages = pesteringStages;
-    state.insights = insights;
-    state.deals = deals;
-    state.published = published;
-    state.series = series;
-    state.predictions = predictions;
-    state.playbooks = playbooks;
-    state.ctaLibrary = ctaLibrary;
-    state.trending = trending;
-    state.funnel = funnel;
-    state.publishTracker = publishTracker;
-    state.leadMagnets = leadMagnets;
-    state.contentHealth = contentHealth;
-    state.scheduleOptimize = scheduleOptimize;
-    state.templates = templates;
-    state.dmSequences = dmSequences;
-    state.hooks = hooks;
-    state.pillarPlan = pillarPlan;
-    state.contentLeads = contentLeads;
-    state.autopilot = autopilot;
-    state.scheduleQueue = scheduleQueue;
-    state.engagementDashboard = engagementDashboard;
-    state.contentBriefs = contentBriefs;
-    state.workflowPipeline = workflowPipeline;
-    state.personas = personas;
-    state.calendarWeek = calendarWeek;
-    state.benchmarkReport = benchmarkReport;
-    state.contentIdeas = contentIdeas;
-    state.socialProof = socialProof;
-    state.roiReport = roiReport;
-    state.audienceGrowth = audienceGrowth;
-    state.contentThemes = contentThemes;
-    state.distributionPlans = distributionPlans;
-    state.dmPipelines = dmPipelines;
-    state.competitorsTracked = competitorsTracked;
-    state.dripCampaigns = dripCampaigns;
-    state.autoResponses = autoResponses;
-    state.expiringContent = expiringContent;
-    state.amplifications = amplifications;
-    state.leadFunnels = leadFunnels;
-    state.calendarInsights = calendarInsights;
-    state.weeklyDigest = weeklyDigest;
-    state.splitTests = splitTests;
-    state.workflowRules = workflowRules;
-    state.youtubePipelines = youtubePipelines;
-    state.carousels = carousels;
-    state.contentMatrix = contentMatrix;
-    state.ctaStrategy = ctaStrategy;
-    state.seriesTemplates = seriesTemplates;
-    state.contentBank = contentBank;
-    state.engagementPlaybook = engagementPlaybook;
-    state.atomizations = atomizations;
-    state.platformRules = platformRules;
-    state.emailSequences = emailSequences;
-    state.weeklyContentPlan = weeklyContentPlan;
-    state.repurposeChains = repurposeChains;
-    state.lmFunnels = lmFunnels;
-    state.perfReport = perfReport;
-    state.contentPillars = contentPillars;
-    state.compAnalyses = compAnalyses;
-    state.nurtureCampaigns = nurtureCampaigns;
-    state.authorityPlan = authorityPlan;
-    state.flywheelData = flywheelData;
-    state.velocityData = velocityData;
-    state.audienceSegments = audienceSegments;
-    state.contentDna = contentDna;
-    state.topicClusters = topicClusters;
-    state.voiceProfiles = voiceProfiles;
-    state.dmScripts = dmScriptsData;
-    state.replyStrategy = replyStrategyData;
-    state.systemHealth = systemHealthData;
-    state.contentRecycler = contentRecyclerData;
-    state.commentStrategy = commentStrategyData;
-    state.newsletters = newslettersData;
-    state.distributionEngine = distributionEngineData;
-    state.socialProofEngine = socialProofEngineData;
-    state.advancedAnalytics = advancedAnalyticsData;
-    state.growthPlaybook = growthPlaybookData;
-    state.generatedLeadMagnets = genLeadMagnetsData;
-    state.funnelAnalysis = funnelAnalysisData;
-    state.autoRepurpose = autoRepurposeData;
-    state.weeklyActionPlan = weeklyActionPlanData;
-    state.trendsAnalysis = trendsAnalysisData;
-    state.authorityScore = authorityScoreData;
-    state.contentIntelligence = contentIntelData;
-    state.conversionOptimizer = conversionOptData;
-    state.contentMatrix = contentMatrixData;
-    state.draftingStrategy = draftingStrategyData;
-    state.zeroClickBank = zeroClickBankData;
-    state.contentVelocity = contentVelocityData;
-    state.pillarRotator = pillarRotatorData;
-    state.savedReplies = savedRepliesData;
-    state.audienceBuilder = audienceBuilderData;
-    state.weeklyReport = weeklyReportData;
-    state.competitiveIntel = competitiveIntelData;
-    state.contentScoring = contentScoringData;
-    state.postScheduler = postSchedulerData;
-    state.trendHijacker = trendHijackerData;
-    state.leadMagnetFunnels = leadMagnetFunnelsData || [];
-    state.outboundSequences = outboundSequencesData || [];
-    state.icpRefined = icpRefinedData;
-    state.winLossAnalysis = winLossData;
-    state.contentRoi = contentRoiData;
-    state.contentExperiments = contentExperimentsData;
-    state.socialListening = socialListeningData;
-    state.authorityBuilder = authorityBuilderData;
-    state.quickWins = quickWinsData;
-    state.contentCalendarAi = contentCalendarAiData;
-    state.dailyBriefing = dailyBriefingData;
-    state.engagementTracker = engagementTrackerData;
-    state.commentToDm = commentToDmData || [];
-    state.contentSeriesPlanner = contentSeriesPlannerData;
-    state.hookBank = hookBankData;
-    state.engagementScorer = engagementScorerData;
-    state.conversionTracker = conversionTrackerData;
-    state.contentGapFinder = contentGapFinderData;
-    state.audienceGrowthTracker = audienceGrowthTrackerData;
-    state.performanceBenchmarks = performanceBenchmarksData;
-    state.flywheelAnalyzer = flywheelAnalyzerData;
-    state.topicAuthority = topicAuthorityData;
-    state.socialProofCollector = socialProofCollectorData;
-    state.newsletterBuilder = newsletterBuilderData || [];
-    state.dmSequenceBuilder = dmSequenceBuilderData || [];
-    state.contentRecyclerScan = contentRecyclerScanData;
-    state.contentDnaAnalyzer = contentDnaAnalyzerData;
-    state.swipeFile = swipeFileData;
-    state.crossPostTracker = crossPostTrackerData;
-    state.smartScheduler = smartSchedulerData;
-    state.contentSystemHealthV2 = contentSystemHealthV2Data;
-    state.competitorContentTracker = competitorContentTrackerData;
-    state.revenueAttribution = revenueAttributionData;
-    state.pipelineValueTracker = pipelineValueTrackerData;
-    state.contentCostCalculator = contentCostCalculatorData;
-    state.leadScorer = leadScorerData;
-    state.retargetingBuilder = retargetingBuilderData;
-    state.campaignRoi = campaignRoiData;
-    state.monthlyContentReport = monthlyContentReportData;
-    state.approvalWorkflow = approvalWorkflowData;
-    state.autoPublishQueue = autoPublishQueueData;
-    state.contentTemplateLibrary = contentTemplateLibraryData;
-    state.engagementAlerts = engagementAlertsData;
-    state.contentTags = contentTagsData;
-    state.contentFreshness = contentFreshnessData;
-    state.leadMagnetPerformance = leadMagnetPerfData;
-    state.collaborationBoard = collabBoardData;
-    state.platformAnalyticsAgg = platformAnalyticsAggData;
-    state.postLengthAnalyzer = postLengthData;
-    state.pillarHealthCheck = pillarHealthData;
-    state.distributionScorecard = distScorecardData;
-    state.contentVelocityTracker = contentVelocityTrackerData;
-    state.competitorBenchmark = competitorBenchData;
-    state.contentQueueManager = contentQueueData;
-    state.personaContentMatch = personaMatchData;
-    state.ctaPerformance = ctaPerfData;
-    state.leadNurtureSequence = leadNurtureData;
-    state.conversionFunnelViz = convFunnelVizData;
-    state.contentRoiDetail = contentRoiDetailData;
-    state.weeklyGrowthReport = weeklyGrowthData;
-    state.pipelineBoard = pipelineBoardData;
-    state.contentQualityAudit = contentQualityAuditData;
-    state.calendarHeatmap = calendarHeatmapData;
-    state.contentGoals = contentGoalsData;
-    state.abTestDashboard = abTestDashData;
-    state.engagementHeatmap = engagementHeatmapData;
-    state.audienceOverlap = audienceOverlapData;
-    state.viralDetector = viralDetectorData;
-    state.cannibalisationCheck = cannibalisationCheckData;
-    state.engagementPredictor = engagementPredictorData;
-    state.contentMixOptimizer = contentMixOptimizerData;
-    state.evergreenIdentifier = evergreenIdentifierData;
-    state.contentSupplyChain = contentSupplyChainData;
-    state.contentDecayTracker = contentDecayTrackerData;
-    state.headlineAnalyzer = headlineAnalyzerData;
-    state.contentClusterMap = contentClusterMapData;
-    state.audienceSentimentPulse = audienceSentimentPulseData;
-    state.contentWorkflowAutomations = contentWorkflowAutomationsData;
-    state.platformRateLimiter = platformRateLimiterData;
-    state.contentPerformanceTiers = contentPerformanceTiersData;
-    state.contentComplianceChecker = contentComplianceCheckerData;
-    state.crossPlatformScheduler = crossPlatformSchedulerData;
-    state.contentLifespanEstimator = contentLifespanEstimatorData;
-    state.competitorGapFinder = competitorGapFinderData;
-    state.contentRecencyScore = contentRecencyScoreData;
-    state.campaignPerfTracker = campaignPerfTrackerData;
-    state.contentDependencyMap = contentDependencyMapData;
-    state.engagementForecast = engagementForecastData;
-    state.contentReadabilityScorer = contentReadabilityScorerData;
-    state.audienceGrowthPredictor = audienceGrowthPredictorData;
-    state.contentRepurposeTracker = contentRepurposeTrackerData;
-    state.socialProofAggregator = socialProofAggregatorData;
-    state.weeklyContentScorecard = weeklyContentScorecardData;
-    state.contentFormatPerf = contentFormatPerfData;
-    state.topicMomentum = topicMomentumData;
-    state.contentProductionVelocity = contentProductionVelocityData;
-    state.brandVoiceConsistency = brandVoiceConsistencyData;
-    state.audiencePersonaInsights = audiencePersonaInsightsData;
-    state.contentCalendarOptimizer = contentCalendarOptimizerData;
-    state.contentImpactScore = contentImpactScoreData;
+    // Page-specific data
+    await loadPageData(state.page);
   } catch (err) {
     console.error('Failed to load data:', err);
-    toast('Failed to load data', 'error');
+    toast('Failed to load data \u2014 please refresh', 'error');
   }
   state.loading = false;
   state.lastRefreshed = new Date();
@@ -2907,45 +2642,48 @@ function h(tag, attrs = {}, ...children) {
 }
 
 function renderSidebar() {
-  const navGroups = [
-    { section: 'Overview', items: [
-      { id: 'dashboard', icon: icons.dashboard, label: 'Dashboard', key: '1' },
+  // Primary nav — the 7 pages you use daily
+  const primaryItems = [
+    { id: 'dashboard', icon: icons.dashboard, label: 'Dashboard', key: '1' },
+    { id: 'content', icon: icons.content, label: 'Content', key: 'C' },
+    { id: 'triggers', icon: icons.triggers, label: 'Triggers', key: 'T' },
+    { id: 'calendar', icon: icons.calendar, label: 'Calendar' },
+    { id: 'meetings', icon: icons.meetings, label: 'Meetings', key: '3' },
+    { id: 'clients', icon: icons.clients, label: 'Clients', key: '4' },
+    { id: 'analytics', icon: icons.analytics, label: 'Analytics' },
+  ];
+  // Secondary nav — everything else, collapsed by default
+  const secondaryGroups = [
+    { section: 'Pipeline', items: [
       { id: 'pipeline', icon: icons.pipeline, label: 'Pipeline', key: '2' },
+      { id: 'deals', icon: icons.deals, label: 'Deals', key: '8' },
+      { id: 'insights', icon: icons.insights, label: 'Insights', key: '7' },
     ]},
-    { section: 'CRM', items: [
-      { id: 'meetings', icon: icons.meetings, label: 'Meetings', key: '3' },
-      { id: 'clients', icon: icons.clients, label: 'Clients', key: '4' },
+    { section: 'Manage', items: [
       { id: 'actions', icon: icons.actions, label: 'Actions', key: '5' },
       { id: 'pestering', icon: icons.pestering, label: 'Follow-ups', key: '6' },
-      { id: 'deals', icon: icons.deals, label: 'Deals', key: '8' },
-    ]},
-    { section: 'Content', items: [
-      { id: 'content', icon: icons.content, label: 'Content', key: 'C' },
-      { id: 'triggers', icon: icons.triggers, label: 'Triggers', key: 'T' },
-      { id: 'calendar', icon: icons.calendar, label: 'Calendar' },
-      { id: 'analytics', icon: icons.analytics, label: 'Analytics' },
-      { id: 'playbooks', icon: icons.content, label: 'Playbooks', key: 'P' },
       { id: 'series', icon: icons.calendar, label: 'Series', key: 'S' },
       { id: 'publish-tracker', icon: icons.analytics, label: 'Publish Tracker' },
     ]},
-    { section: 'Intelligence', items: [
-      { id: 'insights', icon: icons.insights, label: 'Insights', key: '7' },
-      { id: 'performance', icon: icons.performance, label: 'Performance' },
-      { id: 'inspirations', icon: icons.triggers, label: 'Inspirations' },
-    ]},
     { section: 'Tools', items: [
-      { id: 'save-url', icon: icons.link, label: 'Save URL' },
+      { id: 'performance', icon: icons.performance, label: 'Performance' },
+      { id: 'playbooks', icon: icons.content, label: 'Playbooks', key: 'P' },
+      { id: 'inspirations', icon: icons.triggers, label: 'Inspirations' },
       { id: 'memory', icon: icons.brain, label: 'Memory' },
+      { id: 'save-url', icon: icons.link, label: 'Save URL' },
       { id: 'settings', icon: icons.settings, label: 'Settings', key: '9' },
     ]},
   ];
+  // Auto-expand the "More" section if current page is in it
+  const secondaryIds = secondaryGroups.flatMap(g => g.items.map(i => i.id));
+  const isSecondaryPage = secondaryIds.includes(state.page);
 
   function navItem(item) {
     const reviewCount = item.id === 'content' ? state.content.filter(c => c.status === 'review').length : 0;
     const actionCount = item.id === 'actions' ? (state.allActions || []).filter(a => a.status === 'open').length : 0;
     return h('div', {
       className: `nav-item ${state.page === item.id ? 'active' : ''}`,
-      onclick: () => { state.page = item.id; state.sidebarOpen = false; render(); }
+      onclick: () => { const prev = state.page; state.page = item.id; state.sidebarOpen = false; render(); if (prev !== item.id) { state._pageLoading = true; render(); loadPageData(item.id).then(() => { state._pageLoading = false; render(); }).catch(() => { state._pageLoading = false; render(); }); } }
     },
       h('span', { innerHTML: item.icon }),
       h('span', {}, item.label),
@@ -2974,21 +2712,26 @@ function renderSidebar() {
         'Ask the Brain'
       )
     ),
-    ...navGroups.flatMap(group => [
-      h('div', { className: 'nav-section', style: group.section === 'Overview' ? {} : { marginTop: '8px' } }, group.section),
+    ...primaryItems.map(navItem),
+    h('div', {
+      className: 'nav-section',
+      style: { marginTop: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', userSelect: 'none' },
+      onclick: () => { state._moreOpen = !state._moreOpen; render(); }
+    },
+      'More',
+      h('span', { style: { fontSize: '10px', opacity: 0.6, transition: 'transform 0.2s', transform: (state._moreOpen || isSecondaryPage) ? 'rotate(180deg)' : 'rotate(0)' } }, '\u25BC')
+    ),
+    ...((state._moreOpen || isSecondaryPage) ? secondaryGroups.flatMap(group => [
+      h('div', { style: { fontSize: '10px', textTransform: 'uppercase', letterSpacing: '1px', color: 'rgba(255,255,255,0.35)', padding: '6px 16px 2px', fontWeight: '600' } }, group.section),
       ...group.items.map(navItem)
-    ]),
+    ]) : []),
     h('div', { className: 'sidebar-footer' },
       h('button', {
         className: 'theme-toggle',
         onclick: () => { toggleDarkMode(); }
       }, state.darkMode ? 'Light Mode' : 'Dark Mode'),
-      h('div', { style: { fontSize: '11px', color: 'rgba(255,255,255,0.4)', marginTop: '10px' } },
-        'Keys: 1-9 navigate, C/T content',
-        h('br'),
-        'Esc to close modals',
-        h('br'),
-        'D to toggle dark mode'
+      h('div', { style: { fontSize: '11px', color: 'rgba(255,255,255,0.35)', marginTop: '10px', lineHeight: '1.5' } },
+        '? for shortcuts'
       )
     )
   );
@@ -3139,7 +2882,7 @@ function renderContentActions() {
   };
 
   const categories = [
-    { id: 'cm-generate', title: 'Generate & Publish', defaultOpen: true, buttons: [
+    { id: 'cm-generate', title: 'Generate & Publish', defaultOpen: false, buttons: [
       ab('Batch 5', '#059669', '/api/batch-generate', { body: { count: 5, format: 'linkedin' }, reload: true, successMsg: r => `Generated ${r.generated || r.successes || 0} posts` }),
       ab('Batch 7', '#059669', '/api/batch-generate', { body: { count: 7 }, reload: true, successMsg: r => `Generated ${r.successes || 0}/${r.requested || 7} posts` }),
       ab('Auto-Regen', '#d97706', '/api/content/auto-regen', { reload: true, successMsg: r => r.candidates > 0 ? `Regenerating ${r.candidates} items` : r.message || 'Done' }),
@@ -3321,12 +3064,19 @@ function renderContentActions() {
       }, 'Run Now') : null,
       h('button', { className: 'btn btn-ghost btn-sm', onclick: () => { state.page = 'content'; render(); } }, 'View Content')
     ),
-    // Categorized action groups
-    ...categories.map(cat =>
+    // Command panel toggle
+    h('div', { style: { textAlign: 'center', marginTop: '4px' } },
+      h('button', {
+        className: 'btn btn-ghost btn-sm',
+        style: { fontSize: '11px', color: 'var(--gray-500)', padding: '4px 12px' },
+        onclick: () => { state._commandPanel = !state._commandPanel; render(); }
+      }, state._commandPanel ? 'Hide Command Panel \u25B2' : 'Command Panel \u25BC')
+    ),
+    ...(state._commandPanel ? categories.map(cat =>
       renderCollapsible(cat.id, cat.title, cat.buttons.length,
         [h('div', { className: 'action-grid' }, ...cat.buttons)]
       )
-    )
+    ) : [])
   );
 }
 
@@ -3532,10 +3282,10 @@ function renderDashboardPage() {
       h('button', {
         className: 'btn btn-ghost btn-sm',
         style: { fontSize: '12px', color: 'var(--gray-500)', padding: '4px 16px' },
-        onclick: () => { state.showDashWidgets = state.showDashWidgets === false ? true : false; render(); }
-      }, state.showDashWidgets === false ? 'Show Dashboard Widgets ▼' : 'Hide Dashboard Widgets ▲')
+        onclick: () => { state.showDashWidgets = !state.showDashWidgets; render(); }
+      }, state.showDashWidgets ? 'Hide Intelligence Widgets \u25B2' : 'Show Intelligence Widgets \u25BC')
     ),
-    ...(state.showDashWidgets !== false ? [
+    ...(state.showDashWidgets ? [
     // Content Pillar Plan
     state.pillarPlan?.pillars?.length > 0 ? h('div', { style: { marginBottom: '20px' } },
       h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
@@ -6468,36 +6218,7 @@ function renderDashboardPage() {
         )
       )
     ),
-    // Quick links row
-    h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '12px' } },
-      h('div', { className: 'card', style: { padding: '14px', cursor: 'pointer', textAlign: 'center' }, onclick: () => { state.page = 'content'; render(); } },
-        h('div', { innerHTML: icons.content, style: { width: '20px', height: '20px', margin: '0 auto 6px', color: 'var(--blue)' } }),
-        h('div', { style: { fontSize: '12px', fontWeight: '600' } }, 'Content'),
-        h('div', { style: { fontSize: '11px', color: 'var(--gray-400)' } }, `${reviewContent} to review`)
-      ),
-      h('div', { className: 'card', style: { padding: '14px', cursor: 'pointer', textAlign: 'center' }, onclick: () => { state.page = 'insights'; render(); } },
-        h('div', { innerHTML: icons.insights, style: { width: '20px', height: '20px', margin: '0 auto 6px', color: 'var(--amber)' } }),
-        h('div', { style: { fontSize: '12px', fontWeight: '600' } }, 'Insights'),
-        h('div', { style: { fontSize: '11px', color: 'var(--gray-400)' } }, `${insights.length} learned`)
-      ),
-      h('div', { className: 'card', style: { padding: '14px', cursor: 'pointer', textAlign: 'center' }, onclick: () => { state.page = 'deals'; render(); } },
-        h('div', { innerHTML: icons.deals, style: { width: '20px', height: '20px', margin: '0 auto 6px', color: 'var(--green)' } }),
-        h('div', { style: { fontSize: '12px', fontWeight: '600' } }, 'Deals'),
-        h('div', { style: { fontSize: '11px', color: 'var(--gray-400)' } }, `${wonDeals.length} won`)
-      ),
-      h('div', { className: 'card', style: { padding: '14px', cursor: 'pointer', textAlign: 'center' }, onclick: async () => {
-        state.generatingBrief = true; render();
-        try {
-          await api('/api/daily-brief', { method: 'POST' });
-          toast('Brief sent to Telegram', 'success');
-        } catch (err) { toast('Brief failed', 'error'); }
-        state.generatingBrief = false; render();
-      } },
-        h('div', { innerHTML: icons.chat, style: { width: '20px', height: '20px', margin: '0 auto 6px', color: 'var(--purple)' } }),
-        h('div', { style: { fontSize: '12px', fontWeight: '600' } }, 'Send Brief'),
-        h('div', { style: { fontSize: '11px', color: 'var(--gray-400)' } }, 'Telegram now')
-      )
-    )
+    // Quick links row removed — nav handles page navigation now
   );
 }
 
@@ -9820,6 +9541,8 @@ function renderPerformancePage() {
     : [];
 
   return h('div', { className: 'page-content' },
+    // Empty state
+    !analytics && perf.length === 0 ? renderEmpty('\uD83D\uDCCA', 'No performance data yet', 'Track how your published content performs across platforms. Log impressions, clicks, and engagement below.') : null,
     // Summary stats
     analytics ? h('div', { className: 'perf-grid' },
       h('div', { className: 'perf-card' },
@@ -10256,7 +9979,8 @@ function renderSeriesPage() {
       )
     ),
     // Week view — show which series goes on which day
-    h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '8px', marginBottom: '24px' } },
+    series.length === 0 ? renderEmpty('\uD83D\uDCC5', 'No content series yet', 'Create recurring content series to maintain a consistent publishing schedule.') : null,
+    series.length > 0 ? h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '8px', marginBottom: '24px' } },
       ...days.map(day => {
         const daySeries = series.filter(s => s.day === day && s.active);
         return h('div', { style: { background: 'white', borderRadius: 'var(--radius-sm)', padding: '12px', border: '1px solid var(--gray-200)', minHeight: '80px' } },
@@ -10264,7 +9988,7 @@ function renderSeriesPage() {
           ...daySeries.map(s => h('div', { style: { fontSize: '12px', padding: '4px 8px', borderRadius: '6px', background: `${dayColors[day]}15`, color: dayColors[day], fontWeight: '600', marginBottom: '4px' } }, s.name))
         );
       })
-    ),
+    ) : null,
     // Series cards
     ...series.map(s => {
       const episodes = s.episodes || [];
@@ -12388,9 +12112,11 @@ function render() {
     renderSidebar(),
     h('div', { className: 'main-content' },
       renderTopbar(),
+      state._pageLoading ? h('div', { style: { height: '2px', background: 'linear-gradient(90deg, var(--blue), var(--purple), var(--blue))', backgroundSize: '200% 100%', animation: 'shimmer 1.5s infinite' } }) : null,
       state.loading
-        ? h('div', { style: { display: 'flex', justifyContent: 'center', padding: '60px' } },
-            h('div', { className: 'spinner', style: { width: '32px', height: '32px' } })
+        ? h('div', { style: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '80px 20px', gap: '16px' } },
+            h('div', { className: 'spinner', style: { width: '32px', height: '32px' } }),
+            h('div', { style: { fontSize: '13px', color: 'var(--gray-400)' } }, 'Loading...')
           )
         : state.page === 'chat' ? renderChatPage()
         : state.page === 'dashboard' ? renderDashboardPage()
@@ -12570,7 +12296,12 @@ function render() {
 // --- Init ---
 loadData();
 
-// Auto-refresh: 60s on dashboard, 120s on other pages (keeps data fresh everywhere)
+// Auto-refresh: reload core + current page data every 2 minutes
+setInterval(() => {
+  if (!state.loading && document.visibilityState === 'visible') {
+    loadData();
+  }
+}, 120000);
 setInterval(() => {
   if (!state.loading && document.visibilityState === 'visible') {
     loadData();

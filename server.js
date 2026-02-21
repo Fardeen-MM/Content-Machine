@@ -1046,6 +1046,63 @@ async function handleRequest(req, res) {
       });
     }
 
+    // GET /api/simulate/:id — detailed performance simulation for a content piece
+    const simMatch = pathname.match(/^\/api\/simulate\/([a-f0-9]+)$/);
+    if (simMatch && method === 'GET') {
+      const content = readJSON('content.json');
+      const item = content.find(c => c.id === simMatch[1]);
+      if (!item) return json(res, { error: 'Not found' }, 404);
+      const perfData = readJSON('performance.json');
+      const playbooks = readJSON('playbooks.json', {});
+      const formats = Object.entries(item.formats || {}).filter(([, f]) => f.content);
+      const simulation = {};
+      for (const [fmt] of formats) {
+        const pastPerf = perfData.filter(p => p.format === fmt);
+        const avgImpressions = pastPerf.length > 0 ? Math.round(pastPerf.reduce((s, p) => s + (p.impressions || 0), 0) / pastPerf.length) : null;
+        const avgEngagement = pastPerf.length > 0 ? Math.round(pastPerf.reduce((s, p) => s + (p.engagement || 0), 0) / pastPerf.length) : null;
+        const avgLeads = pastPerf.length > 0 ? (pastPerf.reduce((s, p) => s + (p.leads || 0), 0) / pastPerf.length).toFixed(1) : null;
+        // Content analysis
+        const text = typeof item.formats[fmt].content === 'string' ? item.formats[fmt].content : '';
+        const hasNumbers = /\$[\d,]+|\d+%|\d+x|\d+\/month|\d+ cases/.test(text);
+        const hasHook = text.length > 0 && (text.split('\n')[0] || '').length < 200;
+        const hasLineBreaks = (text.match(/\n\n/g) || []).length >= 3;
+        const hasCta = /comment|reply|dm|book|audit|free|checklist|link/i.test(text);
+        const charCount = text.length;
+        // Quality score
+        let qualityEstimate = 50;
+        if (hasNumbers) qualityEstimate += 10;
+        if (hasHook) qualityEstimate += 10;
+        if (hasLineBreaks) qualityEstimate += 5;
+        if (hasCta) qualityEstimate += 10;
+        // Platform-specific optimal length
+        const optimalLength = { linkedin: [800, 1300], x_single: [100, 280], x_thread: [5, 8], carousel: [5, 7], short_video: [200, 500], blog: [1500, 2500], hot_take: [30, 200] };
+        const [minLen, maxLen] = optimalLength[fmt] || [100, 2000];
+        const lengthScore = charCount >= minLen && charCount <= maxLen ? 'optimal' : charCount < minLen ? 'too_short' : 'too_long';
+        // Best posting time from playbook
+        const platformMap = { linkedin: 'linkedin', x_single: 'x_single', x_thread: 'x_thread', carousel: 'linkedin', poll: 'linkedin', blog: 'blog', youtube_script: 'youtube', short_video: 'youtube' };
+        const pbKey = platformMap[fmt] || fmt;
+        const bestTimes = playbooks[pbKey]?.algorithm?.posting_times || [];
+        simulation[fmt] = {
+          estimated_impressions: avgImpressions || (qualityEstimate > 60 ? '500-2000' : '200-800'),
+          estimated_engagement: avgEngagement || (qualityEstimate > 60 ? '50-200' : '10-50'),
+          estimated_leads: avgLeads || (hasCta ? '1-3' : '0-1'),
+          quality_estimate: qualityEstimate,
+          content_signals: { has_numbers: hasNumbers, has_hook: hasHook, has_line_breaks: hasLineBreaks, has_cta: hasCta },
+          length: { chars: charCount, status: lengthScore, optimal_range: `${minLen}-${maxLen}` },
+          best_posting_times: bestTimes.slice(0, 3),
+          data_points: pastPerf.length,
+          recommendations: [
+            !hasNumbers ? 'Add specific numbers ($, %, cases) — posts with data get 2x engagement' : null,
+            !hasCta ? 'Add a CTA — "comment [keyword]" or mention free audit' : null,
+            !hasLineBreaks && fmt === 'linkedin' ? 'Add more line breaks — one thought per line' : null,
+            lengthScore === 'too_short' ? `Too short (${charCount} chars) — aim for ${minLen}-${maxLen}` : null,
+            lengthScore === 'too_long' ? `Too long (${charCount} chars) — trim to ${minLen}-${maxLen}` : null
+          ].filter(Boolean)
+        };
+      }
+      return json(res, { content_id: item.id, title: item.trigger_title, simulation });
+    }
+
     // GET /api/analytics/insights — actionable insights and recommendations
     if (pathname === '/api/analytics/insights' && method === 'GET') {
       const content = readJSON('content.json');

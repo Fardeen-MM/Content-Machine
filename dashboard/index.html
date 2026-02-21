@@ -2896,6 +2896,26 @@ function renderContentCard(content) {
               title: 'Generate mini case study'
             }, '+ Case Study')
           : null,
+        h('button', {
+          className: 'btn btn-outline btn-sm',
+          style: { color: '#8B5CF6', borderColor: '#8B5CF6' },
+          onclick: async (e) => {
+            e.stopPropagation();
+            const key = `sim-${content.id}`;
+            if (state._simData?.[content.id]) {
+              state._simOpen = state._simOpen === key ? null : key;
+              render();
+              return;
+            }
+            try {
+              const sim = await api(`/api/simulate/${content.id}`);
+              if (!state._simData) state._simData = {};
+              state._simData[content.id] = sim;
+              state._simOpen = key;
+              render();
+            } catch (err) { toast('Simulate failed: ' + err.message, 'error'); }
+          }
+        }, 'Simulate'),
         content.trigger_url
           ? h('a', {
               href: content.trigger_url,
@@ -2907,6 +2927,49 @@ function renderContentCard(content) {
           : null
       )
     ),
+    // Simulation panel
+    state._simOpen === `sim-${content.id}` && state._simData?.[content.id] ? (() => {
+      const sim = state._simData[content.id].simulation || {};
+      return h('div', { style: { padding: '12px 20px', background: 'linear-gradient(135deg, #f5f3ff, #eff6ff)', borderBottom: '1px solid #c4b5fd' } },
+        h('div', { style: { fontSize: '12px', fontWeight: '700', color: '#7c3aed', textTransform: 'uppercase', marginBottom: '8px' } }, 'Performance Simulation'),
+        h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '10px' } },
+          ...Object.entries(sim).slice(0, 4).map(([fmt, data]) => {
+            const fmtLabels = { linkedin: 'LinkedIn', x_single: 'Tweet', x_thread: 'Thread', carousel: 'Carousel', blog: 'Blog', short_video: 'Video', hot_take: 'Hot Take', poll: 'Poll', newsletter: 'Newsletter' };
+            return h('div', { style: { background: 'white', borderRadius: '8px', padding: '10px 12px', border: '1px solid #e2e8f0' } },
+              h('div', { style: { fontSize: '12px', fontWeight: '600', color: 'var(--navy)', marginBottom: '6px' } }, fmtLabels[fmt] || fmt),
+              h('div', { style: { fontSize: '11px', display: 'flex', flexDirection: 'column', gap: '3px' } },
+                h('div', { style: { display: 'flex', justifyContent: 'space-between' } },
+                  h('span', { style: { color: '#64748b' } }, 'Est. reach:'),
+                  h('span', { style: { fontWeight: '600' } }, String(data.estimated_impressions))
+                ),
+                h('div', { style: { display: 'flex', justifyContent: 'space-between' } },
+                  h('span', { style: { color: '#64748b' } }, 'Est. engagement:'),
+                  h('span', { style: { fontWeight: '600' } }, String(data.estimated_engagement))
+                ),
+                h('div', { style: { display: 'flex', justifyContent: 'space-between' } },
+                  h('span', { style: { color: '#64748b' } }, 'Est. leads:'),
+                  h('span', { style: { fontWeight: '600', color: '#059669' } }, String(data.estimated_leads))
+                ),
+                h('div', { style: { display: 'flex', justifyContent: 'space-between' } },
+                  h('span', { style: { color: '#64748b' } }, 'Quality:'),
+                  h('span', { style: { fontWeight: '600', color: data.quality_estimate >= 60 ? '#059669' : '#d97706' } }, `${data.quality_estimate}/100`)
+                ),
+                h('div', { style: { display: 'flex', justifyContent: 'space-between' } },
+                  h('span', { style: { color: '#64748b' } }, 'Length:'),
+                  h('span', { style: { fontWeight: '600', color: data.length?.status === 'optimal' ? '#059669' : '#d97706' } }, data.length?.status || '?')
+                )
+              ),
+              data.recommendations?.length > 0 ? h('div', { style: { marginTop: '6px', borderTop: '1px solid #f1f5f9', paddingTop: '6px' } },
+                ...data.recommendations.map(r =>
+                  h('div', { style: { fontSize: '10px', color: '#d97706', marginBottom: '2px' } }, '\u26A0 ' + r)
+                )
+              ) : h('div', { style: { marginTop: '6px', fontSize: '10px', color: '#059669' } }, '\u2713 Content looks good')
+            );
+          })
+        ),
+        h('button', { style: { marginTop: '6px', fontSize: '10px', color: '#7c3aed', background: 'none', border: 'none', cursor: 'pointer' }, onclick: () => { state._simOpen = null; render(); } }, 'Close simulation')
+      );
+    })() : null,
     // Metadata row
     h('div', { className: 'content-meta-row' },
       h('div', { className: 'meta-item' },

@@ -1,0 +1,17 @@
+{
+  "rules": [
+    {
+      "id": "5ab2134c6ea5b2fd",
+      "name": "Auto-publish approved content",
+      "trigger": "content_approved",
+      "conditions": [],
+      "actions": [
+        "publish"
+      ],
+      "enabled": true,
+      "executions": 0,
+      "created_at": "2026-02-21T18:32:55.455Z"
+    }
+  ],
+  "execution_log": []
+}

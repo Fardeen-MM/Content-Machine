@@ -1,10 +1,10 @@
 {
   "topic_coverage": {
-    "google ads": 6,
+    "google ads": 9,
     "web design": 1,
-    "ai": 4,
+    "ai": 9,
     "intake": 4,
-    "conversion": 1,
+    "conversion": 2,
     "seo": 2,
     "referral": 1,
     "ppc": 1,
@@ -28,17 +28,17 @@
     "automation"
   ],
   "format_coverage": {
-    "linkedin": 35,
-    "x_single": 33,
-    "x_thread": 32,
-    "short_video": 26,
-    "carousel": 7,
-    "hot_take": 13,
-    "poll": 7,
-    "quote_cards": 11,
-    "stat_graphic": 11,
-    "before_after": 11,
-    "listicle": 6,
+    "linkedin": 55,
+    "x_single": 53,
+    "x_thread": 52,
+    "short_video": 46,
+    "carousel": 27,
+    "hot_take": 33,
+    "poll": 27,
+    "quote_cards": 31,
+    "stat_graphic": 31,
+    "before_after": 31,
+    "listicle": 26,
     "blog": 3,
     "youtube_script": 3,
     "lead_magnet": 3,
@@ -65,12 +65,12 @@
     "reddit": 121,
     "google-news": 1,
     "rss": 189,
-    "youtube": 75,
-    "hackernews": 41,
+    "youtube": 77,
+    "hackernews": 42,
     "competitor": 45,
     "content-ideas": 1
   },
-  "total_content": 41,
+  "total_content": 61,
   "total_published": 1,
   "coverage_score": 52,
   "recommendations": [
@@ -78,5 +78,5 @@
     "Good format diversity",
     "Pipeline is flowing"
   ],
-  "generated_at": "2026-02-21T14:27:18.092Z"
+  "generated_at": "2026-02-21T19:49:41.810Z"
 }

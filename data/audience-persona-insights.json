@@ -1,0 +1,70 @@
+{
+  "total_triggers_analyzed": 476,
+  "personas": [
+    {
+      "persona": "Managing Partner",
+      "trigger_count": 19,
+      "sample_topics": [
+        "When does internal linking logic start working against you at scale?",
+        "CRM Integrations Exist, Yet Sales Teams Still Manually Track Conversations",
+        "Should You Hire a Law Firm Business Consultant? 5 Questions to Ask First",
+        "DISCO Launches Scaled Agentic AI Tool for Large Discovery and Fact Investigation Matters",
+        "Steno Bolsters Its Leadership Team with Two Strategic Hires from InfoTrack and EvenUp"
+      ],
+      "engagement_level": "medium"
+    },
+    {
+      "persona": "Marketing Director",
+      "trigger_count": 19,
+      "sample_topics": [
+        "How do I build a \"Micro-Agency\" in a rural Indian village using my freelance skills to employ 10-20 local women?",
+        "Attribution issues when running paid crypto campaigns",
+        "Most influencer campaigns fail because there’s no conversion path. Agree or disagree?",
+        "Hiring freelancers vs. agency for website redesign + SEO - what's been your experience?",
+        "Why policy clarity is as Important as creative in paid search campaigns"
+      ],
+      "engagement_level": "medium"
+    },
+    {
+      "persona": "PI Attorney",
+      "trigger_count": 9,
+      "sample_topics": [
+        "Spent $5K/month on Google Ads for my PI firm and got 2 cases",
+        "Pre-Existing Conditions: A Barrier or Leverage Point for Personal Injury Compensation?",
+        "7 Common Causes of Car Accidents in Aventura and How to Avoid Them",
+        "Can AI Agents Settle PI Cases? Mighty Says They Can and Have, As It Launches Free, Direct-to-Consumer Platform To Resolve Accident Claims",
+        "Eve Launches &#8216;AI Workforce&#8217; to Reshape the PI Firm Org Chart: Not Replacing Lawyers, But Freeing them For Higher-Level Work"
+      ],
+      "engagement_level": "medium"
+    },
+    {
+      "persona": "Family Law",
+      "trigger_count": 4,
+      "sample_topics": [
+        "New Jersey - Likely filing for divorce. How important is it to have attorney in the county I'm filing in",
+        "How Smokeball&#39;s Case Management Automation Boosts Efficiency in Family Law - Smokeball",
+        "Why SEO for Divorce Lawyers is Important",
+        "Ask Attorney Jennifer B.: Technology in Family Law"
+      ],
+      "engagement_level": "low"
+    },
+    {
+      "persona": "Solo Practitioner",
+      "trigger_count": 2,
+      "sample_topics": [
+        "From 0 to $56 MRR as a solo dev — lessons learned building a mobile SaaS in fintech",
+        "Need Advice on Restarting My Digital Marketing Career in the UK After a 2-Year Gap"
+      ],
+      "engagement_level": "low"
+    },
+    {
+      "persona": "Criminal Defense",
+      "trigger_count": 0,
+      "sample_topics": [],
+      "engagement_level": "low"
+    }
+  ],
+  "dominant_persona": "Managing Partner",
+  "unmatched": 423,
+  "generated_at": "2026-02-21T19:49:38.449Z"
+}

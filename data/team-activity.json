@@ -1,6 +1,38 @@
 {
   "activities": [
     {
+      "id": "ca7ffb67ae6ddb44",
+      "user": "system",
+      "action": "unknown",
+      "target": "",
+      "details": "",
+      "timestamp": "2026-02-21T19:49:38.356Z"
+    },
+    {
+      "id": "4d20d7ca791c237d",
+      "user": "system",
+      "action": "unknown",
+      "target": "",
+      "details": "",
+      "timestamp": "2026-02-21T19:48:57.707Z"
+    },
+    {
+      "id": "3a4540e4d892a7f4",
+      "user": "system",
+      "action": "unknown",
+      "target": "",
+      "details": "",
+      "timestamp": "2026-02-21T19:22:40.748Z"
+    },
+    {
+      "id": "62c56a0bb7429a0d",
+      "user": "system",
+      "action": "unknown",
+      "target": "",
+      "details": "",
+      "timestamp": "2026-02-21T19:17:45.727Z"
+    },
+    {
       "id": "91f73e05c6658b19",
       "user": "fardeen",
       "action": "approved",
@@ -9,7 +41,7 @@
       "timestamp": "2026-02-21T17:29:07.782Z"
     }
   ],
-  "total": 1,
-  "today": 1,
-  "generated_at": "2026-02-21T17:29:07.783Z"
+  "total": 5,
+  "today": 5,
+  "generated_at": "2026-02-21T19:49:38.356Z"
 }

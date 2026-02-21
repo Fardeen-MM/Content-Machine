@@ -1,0 +1,380 @@
+{
+  "total_clusters": 9,
+  "total_clustered": 76,
+  "clusters": [
+    {
+      "cluster": "seo",
+      "piece_count": 17,
+      "pieces": [
+        {
+          "id": "dd33fd2be463cf5f",
+          "title": "Spent $5K/month on Google Ads for my PI firm and got 2 cases",
+          "status": "approved"
+        },
+        {
+          "id": "858d056a779d6",
+          "title": "We switched from Avvo to Google LSAs — 4x more cases at half the cost",
+          "status": "review"
+        },
+        {
+          "id": "6416c9f94e5c38",
+          "title": "Google just rolled out AI Overviews for legal queries — is SEO for lawyers dead?",
+          "status": "review"
+        },
+        {
+          "id": "a318e2a656b57",
+          "title": "Negative keywords saved my law firm client $3,200/month",
+          "status": "review"
+        },
+        {
+          "id": "201a738d779578",
+          "title": "Our Google Business Profile drives more calls than our website",
+          "status": "review"
+        },
+        {
+          "id": "be51be586030c8",
+          "title": "Should I invest in SEO or PPC first? Budget is $5K/month",
+          "status": "review"
+        },
+        {
+          "id": "91a4101fdf258",
+          "title": "How many Google reviews do we need to rank in the local pack?",
+          "status": "review"
+        },
+        {
+          "id": "3faa4a55c6ce96c6",
+          "title": "Spent $5K/month on Google Ads for my PI firm and got 2 cases",
+          "status": "review"
+        },
+        {
+          "id": "0e099f9e4c07ee56",
+          "title": "Spent $5K/month on Google Ads for my PI firm and got 2 cases",
+          "status": "review"
+        },
+        {
+          "id": "d55931c20bb5975b",
+          "title": "Spent $5K/month on Google Ads for my PI firm and got 2 cases",
+          "status": "review"
+        }
+      ],
+      "has_pillar": true,
+      "needs_more": 0
+    },
+    {
+      "cluster": "ppc",
+      "piece_count": 17,
+      "pieces": [
+        {
+          "id": "dd33fd2be463cf5f",
+          "title": "Spent $5K/month on Google Ads for my PI firm and got 2 cases",
+          "status": "approved"
+        },
+        {
+          "id": "4c20a864324032bb",
+          "title": "Just found out my marketing agency was running ads to the wrong zip codes for 6 months",
+          "status": "approved"
+        },
+        {
+          "id": "1d3caed24b1928",
+          "title": "Our intake team started texting leads within 30 seconds — conversion up 41%",
+          "status": "review"
+        },
+        {
+          "id": "54da56c7cf4c18",
+          "title": "Landing pages vs homepage for law firm ads — A/B test results",
+          "status": "review"
+        },
+        {
+          "id": "be51be586030c8",
+          "title": "Should I invest in SEO or PPC first? Budget is $5K/month",
+          "status": "review"
+        },
+        {
+          "id": "3faa4a55c6ce96c6",
+          "title": "Spent $5K/month on Google Ads for my PI firm and got 2 cases",
+          "status": "review"
+        },
+        {
+          "id": "0e099f9e4c07ee56",
+          "title": "Spent $5K/month on Google Ads for my PI firm and got 2 cases",
+          "status": "review"
+        },
+        {
+          "id": "d55931c20bb5975b",
+          "title": "Spent $5K/month on Google Ads for my PI firm and got 2 cases",
+          "status": "review"
+        },
+        {
+          "id": "7436b8ca438b2ed1",
+          "title": "Spent $5K/month on Google Ads for my PI firm and got 2 cases",
+          "status": "review"
+        },
+        {
+          "id": "657fd7635c61e6fc",
+          "title": "Call insight: We watched a firm generate 5,000 leads monthly on a $2-3K bu",
+          "status": "review"
+        }
+      ],
+      "has_pillar": true,
+      "needs_more": 0
+    },
+    {
+      "cluster": "intake",
+      "piece_count": 13,
+      "pieces": [
+        {
+          "id": "8dfa41e3fa145ba7",
+          "title": "Speed to lead is killing us — callers hang up after 30 seconds",
+          "status": "review"
+        },
+        {
+          "id": "1d3caed24b1928",
+          "title": "Our intake team started texting leads within 30 seconds — conversion up 41%",
+          "status": "review"
+        },
+        {
+          "id": "201a738d779578",
+          "title": "Our Google Business Profile drives more calls than our website",
+          "status": "review"
+        },
+        {
+          "id": "91939c91ddfbb997",
+          "title": "Speed to lead is killing us — callers hang up after 30 seconds",
+          "status": "review"
+        },
+        {
+          "id": "657fd7635c61e6fc",
+          "title": "Call insight: We watched a firm generate 5,000 leads monthly on a $2-3K bu",
+          "status": "review"
+        },
+        {
+          "id": "2a3227e1afa2fb78",
+          "title": "Call insight: The real opportunity in lead generation isn't getting more v",
+          "status": "review"
+        },
+        {
+          "id": "28ac7a9f58a263c6",
+          "title": "Call insight: Your intake team stops working at 5 PM. Your potential clien",
+          "status": "review"
+        },
+        {
+          "id": "8341e619808ae019",
+          "title": "Call insight: We keep meeting executive assistants secretly building sprea",
+          "status": "review"
+        },
+        {
+          "id": "ec092ef2822c6bc1",
+          "title": "Call insight: Your intake team is asking the same questions in the same or",
+          "status": "review"
+        },
+        {
+          "id": "602f738cf8a9e190",
+          "title": "Call insight: You're probably wasting 2-3 hours a day on intake conversati",
+          "status": "review"
+        }
+      ],
+      "has_pillar": true,
+      "needs_more": 0
+    },
+    {
+      "cluster": "ai",
+      "piece_count": 10,
+      "pieces": [
+        {
+          "id": "13497fe9d9ea6a2c",
+          "title": "National Law Review: AI is transforming how law firms acquire clients",
+          "status": "review"
+        },
+        {
+          "id": "6416c9f94e5c38",
+          "title": "Google just rolled out AI Overviews for legal queries — is SEO for lawyers dead?",
+          "status": "review"
+        },
+        {
+          "id": "593790db4b81f234",
+          "title": "Custom Legal Marketing Celebrates 21 Years as AI Redefines How Clients Find Lawyers - IndyStar",
+          "status": "review"
+        },
+        {
+          "id": "010490bde5781407",
+          "title": "Paralegal/Legal Assistant for Plaintiff's Employment Firm (CA)",
+          "status": "review"
+        },
+        {
+          "id": "2d1c57867cf2189d",
+          "title": "Marketing Agency Raises $100 Billion Dollars to Make iPhone Apps",
+          "status": "review"
+        },
+        {
+          "id": "15cd4fe4bf6f9b16",
+          "title": "Canadian Startup Clio Raises $250M for Legal Tech",
+          "status": "review"
+        },
+        {
+          "id": "c620397eb573dacb",
+          "title": "Legal Tech Startup Casetext (YC S13) Raises $7M Series A",
+          "status": "review"
+        },
+        {
+          "id": "25809eb561645d0d",
+          "title": "Thomson Reuters buys Casetext, an AI legal tech startup, for $650M in cash",
+          "status": "review"
+        },
+        {
+          "id": "d64ba39c4f8e539a",
+          "title": "Top LinkedIn Automation/Outreach Tools - tested so you don't have to",
+          "status": "review"
+        },
+        {
+          "id": "75f380d0e3a8ce07",
+          "title": "Got paid to fix a client's ads. turns out the ads werent the problem",
+          "status": "review"
+        }
+      ],
+      "has_pillar": true,
+      "needs_more": 0
+    },
+    {
+      "cluster": "strategy",
+      "piece_count": 7,
+      "pieces": [
+        {
+          "id": "7f77c159bb8ccf6a",
+          "title": "Fired my 3rd marketing agency this year — what am I doing wrong?",
+          "status": "review"
+        },
+        {
+          "id": "4c20a864324032bb",
+          "title": "Just found out my marketing agency was running ads to the wrong zip codes for 6 months",
+          "status": "approved"
+        },
+        {
+          "id": "4d214093372dfe2a",
+          "title": "Clio Legal Trends Report: 67% of firms don't track marketing ROI",
+          "status": "review"
+        },
+        {
+          "id": "be51be586030c8",
+          "title": "Should I invest in SEO or PPC first? Budget is $5K/month",
+          "status": "review"
+        },
+        {
+          "id": "5b24a722678acc8b",
+          "title": "Be a “Lazy” Lawyer: Expert Delegation Tips to Scale Your Revenue — with Cameron Herold",
+          "status": "review"
+        },
+        {
+          "id": "2d1c57867cf2189d",
+          "title": "Marketing Agency Raises $100 Billion Dollars to Make iPhone Apps",
+          "status": "review"
+        },
+        {
+          "id": "513a096e8f85b7e4",
+          "title": "I tracked every growth tactic I tried for 14 months. Here's the data on what actually converts vs. what just generates vanity metrics.",
+          "status": "review"
+        }
+      ],
+      "has_pillar": true,
+      "needs_more": 0
+    },
+    {
+      "cluster": "website",
+      "piece_count": 6,
+      "pieces": [
+        {
+          "id": "c4c23c4858e12fc8",
+          "title": "My web designer charges $300/mo and my site looks like it's from 2005",
+          "status": "review"
+        },
+        {
+          "id": "1d3caed24b1928",
+          "title": "Our intake team started texting leads within 30 seconds — conversion up 41%",
+          "status": "review"
+        },
+        {
+          "id": "54da56c7cf4c18",
+          "title": "Landing pages vs homepage for law firm ads — A/B test results",
+          "status": "review"
+        },
+        {
+          "id": "201a738d779578",
+          "title": "Our Google Business Profile drives more calls than our website",
+          "status": "review"
+        },
+        {
+          "id": "c666c4119c44e91a",
+          "title": "We analyzed 487 law firm websites: Here's why 73% are losing cases before the first call",
+          "status": "review"
+        },
+        {
+          "id": "5b9f0c694cd43836",
+          "title": "Landing Page Experience and Conversion Rates",
+          "status": "review"
+        }
+      ],
+      "has_pillar": true,
+      "needs_more": 0
+    },
+    {
+      "cluster": "social",
+      "piece_count": 3,
+      "pieces": [
+        {
+          "id": "6e4f84de57065",
+          "title": "Is TikTok worth it for a law firm? Seems unprofessional",
+          "status": "approved"
+        },
+        {
+          "id": "cd5aed55a7b30b72",
+          "title": "[Day 11] 30,000 Twitter impressions every single day with $0 ads. How I finally killed the friction that was ruining my SaaS.",
+          "status": "review"
+        },
+        {
+          "id": "d64ba39c4f8e539a",
+          "title": "Top LinkedIn Automation/Outreach Tools - tested so you don't have to",
+          "status": "review"
+        }
+      ],
+      "has_pillar": false,
+      "needs_more": 2
+    },
+    {
+      "cluster": "reviews",
+      "piece_count": 2,
+      "pieces": [
+        {
+          "id": "13497fe9d9ea6a2c",
+          "title": "National Law Review: AI is transforming how law firms acquire clients",
+          "status": "review"
+        },
+        {
+          "id": "91a4101fdf258",
+          "title": "How many Google reviews do we need to rank in the local pack?",
+          "status": "review"
+        }
+      ],
+      "has_pillar": false,
+      "needs_more": 3
+    },
+    {
+      "cluster": "content",
+      "piece_count": 1,
+      "pieces": [
+        {
+          "id": "90c0177e6b5dc8",
+          "title": "Video content gets 3x more engagement than text for professional services",
+          "status": "review"
+        }
+      ],
+      "has_pillar": false,
+      "needs_more": 4
+    }
+  ],
+  "unclustered": 20,
+  "gaps": [
+    "social",
+    "reviews",
+    "content"
+  ],
+  "generated_at": "2026-02-21T19:49:38.389Z"
+}

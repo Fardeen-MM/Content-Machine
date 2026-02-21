@@ -1,5 +1,5 @@
 {
-  "total_tests": 33,
+  "total_tests": 53,
   "high_confidence": 0,
   "tests": [
     {
@@ -524,8 +524,8 @@
     }
   ],
   "winning_formats": {
-    "linkedin": 27,
+    "linkedin": 47,
     "linkedin_post": 6
   },
-  "generated_at": "2026-02-21T17:30:03.261Z"
+  "generated_at": "2026-02-21T19:49:38.361Z"
 }

@@ -362,12 +362,12 @@
     }
   ],
   "summary": {
-    "total_pieces": 41,
-    "total_cost": 3125,
+    "total_pieces": 50,
+    "total_cost": 3811,
     "total_revenue": 5000,
-    "overall_roi": 60,
+    "overall_roi": 31,
     "profitable_pieces": 1,
-    "avg_roi": 60
+    "avg_roi": 31
   },
-  "generated_at": "2026-02-21T17:25:42.009Z"
+  "generated_at": "2026-02-21T19:49:38.347Z"
 }

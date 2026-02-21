@@ -1,0 +1,863 @@
+{
+  "total_nodes": 61,
+  "total_edges": 38,
+  "nodes": [
+    {
+      "id": "dd33fd2be463cf5f",
+      "title": "Spent $5K/month on Google Ads for my PI firm and got 2 cases",
+      "status": "approved",
+      "format_count": 4
+    },
+    {
+      "id": "c4c23c4858e12fc8",
+      "title": "My web designer charges $300/mo and my site looks like it's from 2005",
+      "status": "review",
+      "format_count": 4
+    },
+    {
+      "id": "7f77c159bb8ccf6a",
+      "title": "Fired my 3rd marketing agency this year — what am I doing wrong?",
+      "status": "review",
+      "format_count": 4
+    },
+    {
+      "id": "8dfa41e3fa145ba7",
+      "title": "Speed to lead is killing us — callers hang up after 30 seconds",
+      "status": "review",
+      "format_count": 4
+    },
+    {
+      "id": "4c20a864324032bb",
+      "title": "Just found out my marketing agency was running ads to the wrong zip codes for 6 months",
+      "status": "approved",
+      "format_count": 4
+    },
+    {
+      "id": "4d214093372dfe2a",
+      "title": "Clio Legal Trends Report: 67% of firms don't track marketing ROI",
+      "status": "review",
+      "format_count": 4
+    },
+    {
+      "id": "428fe56f109338c7",
+      "title": "ABA: Average PI firm spends $124K on marketing annually",
+      "status": "review",
+      "format_count": 4
+    },
+    {
+      "id": "13497fe9d9ea6a2c",
+      "title": "National Law Review: AI is transforming how law firms acquire clients",
+      "status": "review",
+      "format_count": 4
+    },
+    {
+      "id": "858d056a779d6",
+      "title": "We switched from Avvo to Google LSAs — 4x more cases at half the cost",
+      "status": "review",
+      "format_count": 4
+    },
+    {
+      "id": "1d3caed24b1928",
+      "title": "Our intake team started texting leads within 30 seconds — conversion up 41%",
+      "status": "review",
+      "format_count": 4
+    },
+    {
+      "id": "6416c9f94e5c38",
+      "title": "Google just rolled out AI Overviews for legal queries — is SEO for lawyers dead?",
+      "status": "review",
+      "format_count": 4
+    },
+    {
+      "id": "942509da1ea4f8",
+      "title": "Hired 3 marketing agencies in 2 years — all terrible. What am I doing wrong?",
+      "status": "approved",
+      "format_count": 7
+    },
+    {
+      "id": "a318e2a656b57",
+      "title": "Negative keywords saved my law firm client $3,200/month",
+      "status": "review",
+      "format_count": 4
+    },
+    {
+      "id": "54da56c7cf4c18",
+      "title": "Landing pages vs homepage for law firm ads — A/B test results",
+      "status": "review",
+      "format_count": 4
+    },
+    {
+      "id": "b27b9c8b72a638",
+      "title": "I built a $3M law firm in 4 years with zero referrals — here's every channel I used",
+      "status": "review",
+      "format_count": 4
+    },
+    {
+      "id": "201a738d779578",
+      "title": "Our Google Business Profile drives more calls than our website",
+      "status": "review",
+      "format_count": 4
+    },
+    {
+      "id": "be51be586030c8",
+      "title": "Should I invest in SEO or PPC first? Budget is $5K/month",
+      "status": "review",
+      "format_count": 4
+    },
+    {
+      "id": "91a4101fdf258",
+      "title": "How many Google reviews do we need to rank in the local pack?",
+      "status": "review",
+      "format_count": 4
+    },
+    {
+      "id": "90c0177e6b5dc8",
+      "title": "Video content gets 3x more engagement than text for professional services",
+      "status": "review",
+      "format_count": 4
+    },
+    {
+      "id": "6e4f84de57065",
+      "title": "Is TikTok worth it for a law firm? Seems unprofessional",
+      "status": "approved",
+      "format_count": 4
+    },
+    {
+      "id": "91939c91ddfbb997",
+      "title": "Speed to lead is killing us — callers hang up after 30 seconds",
+      "status": "review",
+      "format_count": 14
+    },
+    {
+      "id": "3faa4a55c6ce96c6",
+      "title": "Spent $5K/month on Google Ads for my PI firm and got 2 cases",
+      "status": "review",
+      "format_count": 11
+    },
+    {
+      "id": "0e099f9e4c07ee56",
+      "title": "Spent $5K/month on Google Ads for my PI firm and got 2 cases",
+      "status": "review",
+      "format_count": 11
+    },
+    {
+      "id": "d55931c20bb5975b",
+      "title": "Spent $5K/month on Google Ads for my PI firm and got 2 cases",
+      "status": "review",
+      "format_count": 11
+    },
+    {
+      "id": "7436b8ca438b2ed1",
+      "title": "Spent $5K/month on Google Ads for my PI firm and got 2 cases",
+      "status": "review",
+      "format_count": 14
+    },
+    {
+      "id": "593790db4b81f234",
+      "title": "Custom Legal Marketing Celebrates 21 Years as AI Redefines How Clients Find Lawyers - IndyStar",
+      "status": "review",
+      "format_count": 14
+    },
+    {
+      "id": "657fd7635c61e6fc",
+      "title": "Call insight: We watched a firm generate 5,000 leads monthly on a $2-3K bu",
+      "status": "review",
+      "format_count": 1
+    },
+    {
+      "id": "2a3227e1afa2fb78",
+      "title": "Call insight: The real opportunity in lead generation isn't getting more v",
+      "status": "review",
+      "format_count": 1
+    },
+    {
+      "id": "28ac7a9f58a263c6",
+      "title": "Call insight: Your intake team stops working at 5 PM. Your potential clien",
+      "status": "review",
+      "format_count": 1
+    },
+    {
+      "id": "8341e619808ae019",
+      "title": "Call insight: We keep meeting executive assistants secretly building sprea",
+      "status": "review",
+      "format_count": 1
+    },
+    {
+      "id": "ec092ef2822c6bc1",
+      "title": "Call insight: Your intake team is asking the same questions in the same or",
+      "status": "review",
+      "format_count": 1
+    },
+    {
+      "id": "602f738cf8a9e190",
+      "title": "Call insight: You're probably wasting 2-3 hours a day on intake conversati",
+      "status": "review",
+      "format_count": 1
+    },
+    {
+      "id": "84c5ceee86f4d356",
+      "title": "Doing the “Impossible”: Lawyer Who Grew His Revenue by 59% with Fewer Leads — with Eric Gros-Dubois",
+      "status": "review",
+      "format_count": 19
+    },
+    {
+      "id": "34f0159edc64e457",
+      "title": "Why Law Firm Marketing Costs Skyrocketed in 2025 (And What Comes Next)",
+      "status": "review",
+      "format_count": 19
+    },
+    {
+      "id": "5b24a722678acc8b",
+      "title": "Be a “Lazy” Lawyer: Expert Delegation Tips to Scale Your Revenue — with Cameron Herold",
+      "status": "review",
+      "format_count": 19
+    },
+    {
+      "id": "8ba52566277d9674",
+      "title": "1 month, 178k followers, 213M views, $500,000 Revenue",
+      "status": "review",
+      "format_count": 19
+    },
+    {
+      "id": "4aa23b276fa5218b",
+      "title": "Lessons Learned From 5,000 Days of Crisp — Episode 438",
+      "status": "published",
+      "format_count": 20
+    },
+    {
+      "id": "0290f613483e7695",
+      "title": "[Recycled] Spent $5K/month on Google Ads for my PI firm and got 2 cases",
+      "status": "review",
+      "format_count": 4
+    },
+    {
+      "id": "8314cf61a187cdb0",
+      "title": "For newer lawyers: an example of how to separate the wheat from the chaff",
+      "status": "review",
+      "format_count": 1
+    },
+    {
+      "id": "010490bde5781407",
+      "title": "Paralegal/Legal Assistant for Plaintiff's Employment Firm (CA)",
+      "status": "review",
+      "format_count": 1
+    },
+    {
+      "id": "17613aa38257031a",
+      "title": "Show HN: Stripe Specialist Team Scam – 50%+ deals",
+      "status": "approved",
+      "format_count": 2
+    },
+    {
+      "id": "2d1c57867cf2189d",
+      "title": "Marketing Agency Raises $100 Billion Dollars to Make iPhone Apps",
+      "status": "review",
+      "format_count": 11
+    },
+    {
+      "id": "c666c4119c44e91a",
+      "title": "We analyzed 487 law firm websites: Here's why 73% are losing cases before the first call",
+      "status": "review",
+      "format_count": 11
+    },
+    {
+      "id": "b101836de3a44ed9",
+      "title": "If Software Is Eating The World, Why Don't Coders Get Any Respect?",
+      "status": "review",
+      "format_count": 11
+    },
+    {
+      "id": "2d49f3a47f879cf7",
+      "title": "We hit 1,000 visitors and almost nobody was signing up. Here's what we changed and the results.",
+      "status": "review",
+      "format_count": 11
+    },
+    {
+      "id": "cd5aed55a7b30b72",
+      "title": "[Day 11] 30,000 Twitter impressions every single day with $0 ads. How I finally killed the friction that was ruining my SaaS.",
+      "status": "review",
+      "format_count": 11
+    },
+    {
+      "id": "15cd4fe4bf6f9b16",
+      "title": "Canadian Startup Clio Raises $250M for Legal Tech",
+      "status": "review",
+      "format_count": 11
+    },
+    {
+      "id": "a41c2ac2b295c538",
+      "title": "0 to 1,400+ signups in 3 months. Open source security tool. Here's what worked (and what didn't).",
+      "status": "review",
+      "format_count": 11
+    },
+    {
+      "id": "c620397eb573dacb",
+      "title": "Legal Tech Startup Casetext (YC S13) Raises $7M Series A",
+      "status": "review",
+      "format_count": 11
+    },
+    {
+      "id": "25809eb561645d0d",
+      "title": "Thomson Reuters buys Casetext, an AI legal tech startup, for $650M in cash",
+      "status": "review",
+      "format_count": 11
+    },
+    {
+      "id": "f89783d8dd354ea5",
+      "title": "Justin Kan confirms $10.5M in funding for his legal tech startup Atrium L",
+      "status": "review",
+      "format_count": 11
+    },
+    {
+      "id": "bf57ce881734c656",
+      "title": "From 0 to $56 MRR as a solo dev — lessons learned building a mobile SaaS in fintech",
+      "status": "review",
+      "format_count": 11
+    },
+    {
+      "id": "d909646e5debf56e",
+      "title": "Google Ads: Issue with tracking purchases through third party &amp; more",
+      "status": "review",
+      "format_count": 11
+    },
+    {
+      "id": "4add6462ca87fe85",
+      "title": "Performance dropped after launching new LP for google Ads",
+      "status": "review",
+      "format_count": 11
+    },
+    {
+      "id": "d64ba39c4f8e539a",
+      "title": "Top LinkedIn Automation/Outreach Tools - tested so you don't have to",
+      "status": "review",
+      "format_count": 11
+    },
+    {
+      "id": "513a096e8f85b7e4",
+      "title": "I tracked every growth tactic I tried for 14 months. Here's the data on what actually converts vs. what just generates vanity metrics.",
+      "status": "review",
+      "format_count": 11
+    },
+    {
+      "id": "75e110476877693b",
+      "title": "How I Generated $2,795 from 2,150 Organic Visitors",
+      "status": "review",
+      "format_count": 11
+    },
+    {
+      "id": "5b9f0c694cd43836",
+      "title": "Landing Page Experience and Conversion Rates",
+      "status": "review",
+      "format_count": 11
+    },
+    {
+      "id": "75f380d0e3a8ce07",
+      "title": "Got paid to fix a client's ads. turns out the ads werent the problem",
+      "status": "review",
+      "format_count": 11
+    },
+    {
+      "id": "5e6555b1ae727932",
+      "title": "Google ads",
+      "status": "review",
+      "format_count": 11
+    },
+    {
+      "id": "942bdcb1159acca7",
+      "title": "Running a US home service business remotely – scalable model or risky dependency?",
+      "status": "review",
+      "format_count": 11
+    }
+  ],
+  "edges": [
+    {
+      "from": "8dfa41e3fa145ba7",
+      "to": "91939c91ddfbb997",
+      "relationship": "keyword_overlap",
+      "shared_keywords": [
+        "speed",
+        "killing",
+        "callers",
+        "after",
+        "seconds"
+      ],
+      "strength": 5
+    },
+    {
+      "from": "dd33fd2be463cf5f",
+      "to": "3faa4a55c6ce96c6",
+      "relationship": "keyword_overlap",
+      "shared_keywords": [
+        "spent",
+        "$5k/month",
+        "google",
+        "cases"
+      ],
+      "strength": 4
+    },
+    {
+      "from": "dd33fd2be463cf5f",
+      "to": "0e099f9e4c07ee56",
+      "relationship": "keyword_overlap",
+      "shared_keywords": [
+        "spent",
+        "$5k/month",
+        "google",
+        "cases"
+      ],
+      "strength": 4
+    },
+    {
+      "from": "dd33fd2be463cf5f",
+      "to": "d55931c20bb5975b",
+      "relationship": "keyword_overlap",
+      "shared_keywords": [
+        "spent",
+        "$5k/month",
+        "google",
+        "cases"
+      ],
+      "strength": 4
+    },
+    {
+      "from": "dd33fd2be463cf5f",
+      "to": "7436b8ca438b2ed1",
+      "relationship": "keyword_overlap",
+      "shared_keywords": [
+        "spent",
+        "$5k/month",
+        "google",
+        "cases"
+      ],
+      "strength": 4
+    },
+    {
+      "from": "dd33fd2be463cf5f",
+      "to": "0290f613483e7695",
+      "relationship": "keyword_overlap",
+      "shared_keywords": [
+        "spent",
+        "$5k/month",
+        "google",
+        "cases"
+      ],
+      "strength": 4
+    },
+    {
+      "from": "3faa4a55c6ce96c6",
+      "to": "0e099f9e4c07ee56",
+      "relationship": "keyword_overlap",
+      "shared_keywords": [
+        "spent",
+        "$5k/month",
+        "google",
+        "cases"
+      ],
+      "strength": 4
+    },
+    {
+      "from": "3faa4a55c6ce96c6",
+      "to": "d55931c20bb5975b",
+      "relationship": "keyword_overlap",
+      "shared_keywords": [
+        "spent",
+        "$5k/month",
+        "google",
+        "cases"
+      ],
+      "strength": 4
+    },
+    {
+      "from": "3faa4a55c6ce96c6",
+      "to": "7436b8ca438b2ed1",
+      "relationship": "keyword_overlap",
+      "shared_keywords": [
+        "spent",
+        "$5k/month",
+        "google",
+        "cases"
+      ],
+      "strength": 4
+    },
+    {
+      "from": "3faa4a55c6ce96c6",
+      "to": "0290f613483e7695",
+      "relationship": "keyword_overlap",
+      "shared_keywords": [
+        "spent",
+        "$5k/month",
+        "google",
+        "cases"
+      ],
+      "strength": 4
+    },
+    {
+      "from": "0e099f9e4c07ee56",
+      "to": "d55931c20bb5975b",
+      "relationship": "keyword_overlap",
+      "shared_keywords": [
+        "spent",
+        "$5k/month",
+        "google",
+        "cases"
+      ],
+      "strength": 4
+    },
+    {
+      "from": "0e099f9e4c07ee56",
+      "to": "7436b8ca438b2ed1",
+      "relationship": "keyword_overlap",
+      "shared_keywords": [
+        "spent",
+        "$5k/month",
+        "google",
+        "cases"
+      ],
+      "strength": 4
+    },
+    {
+      "from": "0e099f9e4c07ee56",
+      "to": "0290f613483e7695",
+      "relationship": "keyword_overlap",
+      "shared_keywords": [
+        "spent",
+        "$5k/month",
+        "google",
+        "cases"
+      ],
+      "strength": 4
+    },
+    {
+      "from": "d55931c20bb5975b",
+      "to": "7436b8ca438b2ed1",
+      "relationship": "keyword_overlap",
+      "shared_keywords": [
+        "spent",
+        "$5k/month",
+        "google",
+        "cases"
+      ],
+      "strength": 4
+    },
+    {
+      "from": "d55931c20bb5975b",
+      "to": "0290f613483e7695",
+      "relationship": "keyword_overlap",
+      "shared_keywords": [
+        "spent",
+        "$5k/month",
+        "google",
+        "cases"
+      ],
+      "strength": 4
+    },
+    {
+      "from": "7436b8ca438b2ed1",
+      "to": "0290f613483e7695",
+      "relationship": "keyword_overlap",
+      "shared_keywords": [
+        "spent",
+        "$5k/month",
+        "google",
+        "cases"
+      ],
+      "strength": 4
+    },
+    {
+      "from": "7f77c159bb8ccf6a",
+      "to": "942509da1ea4f8",
+      "relationship": "keyword_overlap",
+      "shared_keywords": [
+        "marketing",
+        "doing",
+        "wrong?"
+      ],
+      "strength": 3
+    },
+    {
+      "from": "15cd4fe4bf6f9b16",
+      "to": "c620397eb573dacb",
+      "relationship": "keyword_overlap",
+      "shared_keywords": [
+        "startup",
+        "raises",
+        "legal"
+      ],
+      "strength": 3
+    },
+    {
+      "from": "dd33fd2be463cf5f",
+      "to": "858d056a779d6",
+      "relationship": "keyword_overlap",
+      "shared_keywords": [
+        "google",
+        "cases"
+      ],
+      "strength": 2
+    },
+    {
+      "from": "7f77c159bb8ccf6a",
+      "to": "4c20a864324032bb",
+      "relationship": "keyword_overlap",
+      "shared_keywords": [
+        "marketing",
+        "agency"
+      ],
+      "strength": 2
+    },
+    {
+      "from": "7f77c159bb8ccf6a",
+      "to": "2d1c57867cf2189d",
+      "relationship": "keyword_overlap",
+      "shared_keywords": [
+        "marketing",
+        "agency"
+      ],
+      "strength": 2
+    },
+    {
+      "from": "4c20a864324032bb",
+      "to": "2d1c57867cf2189d",
+      "relationship": "keyword_overlap",
+      "shared_keywords": [
+        "marketing",
+        "agency"
+      ],
+      "strength": 2
+    },
+    {
+      "from": "4d214093372dfe2a",
+      "to": "593790db4b81f234",
+      "relationship": "keyword_overlap",
+      "shared_keywords": [
+        "legal",
+        "marketing"
+      ],
+      "strength": 2
+    },
+    {
+      "from": "858d056a779d6",
+      "to": "3faa4a55c6ce96c6",
+      "relationship": "keyword_overlap",
+      "shared_keywords": [
+        "google",
+        "cases"
+      ],
+      "strength": 2
+    },
+    {
+      "from": "858d056a779d6",
+      "to": "0e099f9e4c07ee56",
+      "relationship": "keyword_overlap",
+      "shared_keywords": [
+        "google",
+        "cases"
+      ],
+      "strength": 2
+    },
+    {
+      "from": "858d056a779d6",
+      "to": "d55931c20bb5975b",
+      "relationship": "keyword_overlap",
+      "shared_keywords": [
+        "google",
+        "cases"
+      ],
+      "strength": 2
+    },
+    {
+      "from": "858d056a779d6",
+      "to": "7436b8ca438b2ed1",
+      "relationship": "keyword_overlap",
+      "shared_keywords": [
+        "google",
+        "cases"
+      ],
+      "strength": 2
+    },
+    {
+      "from": "858d056a779d6",
+      "to": "0290f613483e7695",
+      "relationship": "keyword_overlap",
+      "shared_keywords": [
+        "google",
+        "cases"
+      ],
+      "strength": 2
+    },
+    {
+      "from": "6416c9f94e5c38",
+      "to": "593790db4b81f234",
+      "relationship": "keyword_overlap",
+      "shared_keywords": [
+        "legal",
+        "lawyers"
+      ],
+      "strength": 2
+    },
+    {
+      "from": "942509da1ea4f8",
+      "to": "593790db4b81f234",
+      "relationship": "keyword_overlap",
+      "shared_keywords": [
+        "marketing",
+        "years"
+      ],
+      "strength": 2
+    },
+    {
+      "from": "b27b9c8b72a638",
+      "to": "513a096e8f85b7e4",
+      "relationship": "keyword_overlap",
+      "shared_keywords": [
+        "here's",
+        "every"
+      ],
+      "strength": 2
+    },
+    {
+      "from": "28ac7a9f58a263c6",
+      "to": "ec092ef2822c6bc1",
+      "relationship": "keyword_overlap",
+      "shared_keywords": [
+        "insight:",
+        "intake"
+      ],
+      "strength": 2
+    },
+    {
+      "from": "28ac7a9f58a263c6",
+      "to": "602f738cf8a9e190",
+      "relationship": "keyword_overlap",
+      "shared_keywords": [
+        "insight:",
+        "intake"
+      ],
+      "strength": 2
+    },
+    {
+      "from": "ec092ef2822c6bc1",
+      "to": "602f738cf8a9e190",
+      "relationship": "keyword_overlap",
+      "shared_keywords": [
+        "insight:",
+        "intake"
+      ],
+      "strength": 2
+    },
+    {
+      "from": "4aa23b276fa5218b",
+      "to": "bf57ce881734c656",
+      "relationship": "keyword_overlap",
+      "shared_keywords": [
+        "lessons",
+        "learned"
+      ],
+      "strength": 2
+    },
+    {
+      "from": "15cd4fe4bf6f9b16",
+      "to": "f89783d8dd354ea5",
+      "relationship": "keyword_overlap",
+      "shared_keywords": [
+        "startup",
+        "legal"
+      ],
+      "strength": 2
+    },
+    {
+      "from": "a41c2ac2b295c538",
+      "to": "513a096e8f85b7e4",
+      "relationship": "keyword_overlap",
+      "shared_keywords": [
+        "months.",
+        "here's"
+      ],
+      "strength": 2
+    },
+    {
+      "from": "c620397eb573dacb",
+      "to": "f89783d8dd354ea5",
+      "relationship": "keyword_overlap",
+      "shared_keywords": [
+        "legal",
+        "startup"
+      ],
+      "strength": 2
+    }
+  ],
+  "most_connected": [
+    {
+      "id": "dd33fd2be463cf5f",
+      "title": "Spent $5K/month on Google Ads for my PI firm and got 2 cases",
+      "status": "approved",
+      "format_count": 4,
+      "connections": 6
+    },
+    {
+      "id": "858d056a779d6",
+      "title": "We switched from Avvo to Google LSAs — 4x more cases at half the cost",
+      "status": "review",
+      "format_count": 4,
+      "connections": 6
+    },
+    {
+      "id": "3faa4a55c6ce96c6",
+      "title": "Spent $5K/month on Google Ads for my PI firm and got 2 cases",
+      "status": "review",
+      "format_count": 11,
+      "connections": 6
+    },
+    {
+      "id": "0e099f9e4c07ee56",
+      "title": "Spent $5K/month on Google Ads for my PI firm and got 2 cases",
+      "status": "review",
+      "format_count": 11,
+      "connections": 6
+    },
+    {
+      "id": "d55931c20bb5975b",
+      "title": "Spent $5K/month on Google Ads for my PI firm and got 2 cases",
+      "status": "review",
+      "format_count": 11,
+      "connections": 6
+    },
+    {
+      "id": "7436b8ca438b2ed1",
+      "title": "Spent $5K/month on Google Ads for my PI firm and got 2 cases",
+      "status": "review",
+      "format_count": 14,
+      "connections": 6
+    },
+    {
+      "id": "0290f613483e7695",
+      "title": "[Recycled] Spent $5K/month on Google Ads for my PI firm and got 2 cases",
+      "status": "review",
+      "format_count": 4,
+      "connections": 6
+    },
+    {
+      "id": "7f77c159bb8ccf6a",
+      "title": "Fired my 3rd marketing agency this year — what am I doing wrong?",
+      "status": "review",
+      "format_count": 4,
+      "connections": 3
+    },
+    {
+      "id": "593790db4b81f234",
+      "title": "Custom Legal Marketing Celebrates 21 Years as AI Redefines How Clients Find Lawyers - IndyStar",
+      "status": "review",
+      "format_count": 14,
+      "connections": 3
+    },
+    {
+      "id": "4c20a864324032bb",
+      "title": "Just found out my marketing agency was running ads to the wrong zip codes for 6 months",
+      "status": "approved",
+      "format_count": 4,
+      "connections": 2
+    }
+  ],
+  "orphans": 34,
+  "generated_at": "2026-02-21T19:49:38.418Z"
+}

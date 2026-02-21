@@ -1,0 +1,32 @@
+{
+  "total_analyzed": 61,
+  "highly_evergreen": 0,
+  "evergreen": 3,
+  "semi_evergreen": 57,
+  "time_sensitive": 1,
+  "top_evergreen": [
+    {
+      "id": "5b24a722678acc8b",
+      "title": "Be a “Lazy” Lawyer: Expert Delegation Tips to Scale Your Revenue — with Cameron Herold",
+      "evergreen_score": 60,
+      "is_evergreen": true,
+      "category": "evergreen"
+    },
+    {
+      "id": "8ba52566277d9674",
+      "title": "1 month, 178k followers, 213M views, $500,000 Revenue",
+      "evergreen_score": 60,
+      "is_evergreen": true,
+      "category": "evergreen"
+    },
+    {
+      "id": "8314cf61a187cdb0",
+      "title": "For newer lawyers: an example of how to separate the wheat from the chaff",
+      "evergreen_score": 60,
+      "is_evergreen": true,
+      "category": "evergreen"
+    }
+  ],
+  "avg_score": 50,
+  "generated_at": "2026-02-21T19:49:38.377Z"
+}

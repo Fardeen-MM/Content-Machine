@@ -1,0 +1,94 @@
+{
+  "platforms": {
+    "linkedin": {
+      "posts_today": 1,
+      "posts_this_week": 1,
+      "daily_limit": 2,
+      "weekly_limit": 10,
+      "optimal_daily": 1,
+      "daily_remaining": 1,
+      "weekly_remaining": 9,
+      "status": "optimal",
+      "can_post": true
+    },
+    "x": {
+      "posts_today": 0,
+      "posts_this_week": 0,
+      "daily_limit": 5,
+      "weekly_limit": 25,
+      "optimal_daily": 3,
+      "daily_remaining": 5,
+      "weekly_remaining": 25,
+      "status": "under",
+      "can_post": true
+    },
+    "instagram": {
+      "posts_today": 0,
+      "posts_this_week": 0,
+      "daily_limit": 3,
+      "weekly_limit": 15,
+      "optimal_daily": 2,
+      "daily_remaining": 3,
+      "weekly_remaining": 15,
+      "status": "under",
+      "can_post": true
+    },
+    "youtube": {
+      "posts_today": 0,
+      "posts_this_week": 0,
+      "daily_limit": 1,
+      "weekly_limit": 3,
+      "optimal_daily": 0.5,
+      "daily_remaining": 1,
+      "weekly_remaining": 3,
+      "status": "under",
+      "can_post": true
+    },
+    "tiktok": {
+      "posts_today": 0,
+      "posts_this_week": 0,
+      "daily_limit": 3,
+      "weekly_limit": 15,
+      "optimal_daily": 2,
+      "daily_remaining": 3,
+      "weekly_remaining": 15,
+      "status": "under",
+      "can_post": true
+    },
+    "newsletter": {
+      "posts_today": 0,
+      "posts_this_week": 0,
+      "daily_limit": 1,
+      "weekly_limit": 2,
+      "optimal_daily": 0.3,
+      "daily_remaining": 1,
+      "weekly_remaining": 2,
+      "status": "under",
+      "can_post": true
+    },
+    "blog": {
+      "posts_today": 0,
+      "posts_this_week": 0,
+      "daily_limit": 2,
+      "weekly_limit": 7,
+      "optimal_daily": 1,
+      "daily_remaining": 2,
+      "weekly_remaining": 7,
+      "status": "under",
+      "can_post": true
+    }
+  },
+  "total_today": 1,
+  "total_week": 1,
+  "at_limit": [],
+  "can_post": [
+    "linkedin",
+    "x",
+    "instagram",
+    "youtube",
+    "tiktok",
+    "newsletter",
+    "blog"
+  ],
+  "generated_at": "2026-02-21T19:49:38.394Z"
+}

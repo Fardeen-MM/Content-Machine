@@ -1,0 +1,120 @@
+{
+  "total_topics": 14,
+  "rising": 0,
+  "falling": 14,
+  "topics": [
+    {
+      "topic": "google ads",
+      "total": 7,
+      "recent": 0,
+      "older": 7,
+      "momentum": -100,
+      "trend": "falling"
+    },
+    {
+      "topic": "marketing",
+      "total": 71,
+      "recent": 0,
+      "older": 71,
+      "momentum": -100,
+      "trend": "falling"
+    },
+    {
+      "topic": "ai",
+      "total": 137,
+      "recent": 0,
+      "older": 137,
+      "momentum": -100,
+      "trend": "falling"
+    },
+    {
+      "topic": "referrals",
+      "total": 2,
+      "recent": 0,
+      "older": 2,
+      "momentum": -100,
+      "trend": "falling"
+    },
+    {
+      "topic": "email",
+      "total": 12,
+      "recent": 0,
+      "older": 12,
+      "momentum": -100,
+      "trend": "falling"
+    },
+    {
+      "topic": "content",
+      "total": 20,
+      "recent": 0,
+      "older": 20,
+      "momentum": -100,
+      "trend": "falling"
+    },
+    {
+      "topic": "website",
+      "total": 13,
+      "recent": 0,
+      "older": 13,
+      "momentum": -100,
+      "trend": "falling"
+    },
+    {
+      "topic": "seo",
+      "total": 18,
+      "recent": 0,
+      "older": 18,
+      "momentum": -100,
+      "trend": "falling"
+    },
+    {
+      "topic": "automation",
+      "total": 21,
+      "recent": 0,
+      "older": 21,
+      "momentum": -100,
+      "trend": "falling"
+    },
+    {
+      "topic": "branding",
+      "total": 1,
+      "recent": 0,
+      "older": 1,
+      "momentum": -100,
+      "trend": "falling"
+    },
+    {
+      "topic": "intake",
+      "total": 5,
+      "recent": 0,
+      "older": 5,
+      "momentum": -100,
+      "trend": "falling"
+    },
+    {
+      "topic": "social media",
+      "total": 2,
+      "recent": 0,
+      "older": 2,
+      "momentum": -100,
+      "trend": "falling"
+    },
+    {
+      "topic": "video",
+      "total": 3,
+      "recent": 0,
+      "older": 3,
+      "momentum": -100,
+      "trend": "falling"
+    },
+    {
+      "topic": "reviews",
+      "total": 1,
+      "recent": 0,
+      "older": 1,
+      "momentum": -100,
+      "trend": "falling"
+    }
+  ],
+  "generated_at": "2026-02-21T19:49:38.437Z"
+}

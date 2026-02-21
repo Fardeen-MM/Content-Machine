@@ -1,8 +1,8 @@
 {
-  "total_audited": 41,
-  "average_score": 47,
-  "grade": "F",
-  "issues_found": 41,
+  "total_audited": 61,
+  "average_score": 50,
+  "grade": "D",
+  "issues_found": 61,
   "critical_issues": 30,
   "top_issues": [
     {
@@ -152,8 +152,8 @@
   ],
   "common_issues": {
     "Low format diversity": 9,
-    "Content too short": 36,
-    "No clear CTA detected": 41
+    "Content too short": 56,
+    "No clear CTA detected": 61
   },
-  "generated_at": "2026-02-21T17:29:53.993Z"
+  "generated_at": "2026-02-21T19:49:38.354Z"
 }

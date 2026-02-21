@@ -1,14 +1,14 @@
 {
   "production": {
-    "last_7_days": 38,
-    "last_30_days": 41,
+    "last_7_days": 57,
+    "last_30_days": 61,
     "published_30_days": 1,
-    "daily_rate": 1.4,
-    "weekly_rate": 9.5
+    "daily_rate": 2,
+    "weekly_rate": 14.2
   },
   "pipeline": {
-    "pending_triggers": 464,
-    "content_in_review": 35,
+    "pending_triggers": 452,
+    "content_in_review": 55,
     "approved_unpublished": 5,
     "total_published": 1
   },
@@ -21,5 +21,5 @@
     "weekly_published": 3,
     "on_track": false
   },
-  "generated_at": "2026-02-21T13:47:27.160Z"
+  "generated_at": "2026-02-21T19:49:38.567Z"
 }

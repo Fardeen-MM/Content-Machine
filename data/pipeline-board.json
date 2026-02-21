@@ -5,7 +5,7 @@
       "items": []
     },
     "review": {
-      "count": 35,
+      "count": 55,
       "items": [
         {
           "id": "c4c23c4858e12fc8",
@@ -17,13 +17,13 @@
           "id": "7f77c159bb8ccf6a",
           "title": "Fired my 3rd marketing agency this year — what am I doing wrong?",
           "format_count": 4,
-          "age_days": 6
+          "age_days": 7
         },
         {
           "id": "8dfa41e3fa145ba7",
           "title": "Speed to lead is killing us — callers hang up after 30 seconds",
           "format_count": 4,
-          "age_days": 7
+          "age_days": 8
         },
         {
           "id": "4d214093372dfe2a",
@@ -47,7 +47,7 @@
           "id": "858d056a779d6",
           "title": "We switched from Avvo to Google LSAs — 4x more cases at half the cost",
           "format_count": 4,
-          "age_days": 5
+          "age_days": 6
         },
         {
           "id": "1d3caed24b1928",
@@ -65,7 +65,7 @@
           "id": "a318e2a656b57",
           "title": "Negative keywords saved my law firm client $3,200/month",
           "format_count": 4,
-          "age_days": 5
+          "age_days": 6
         }
       ]
     },
@@ -124,11 +124,11 @@
     }
   },
   "summary": {
-    "total_in_pipeline": 41,
+    "total_in_pipeline": 61,
     "total_published": 1,
-    "avg_age_days": 2004,
+    "avg_age_days": 1347,
     "throughput_rate": 2,
     "bottleneck": "review"
   },
-  "generated_at": "2026-02-21T17:29:00.390Z"
+  "generated_at": "2026-02-21T19:49:38.351Z"
 }

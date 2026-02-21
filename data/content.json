@@ -2757,5 +2757,1724 @@
     },
     "created_at": "2026-02-21T08:12:03.088Z",
     "auto_generated": true
+  },
+  {
+    "id": "2d1c57867cf2189d",
+    "trigger_id": "hn-2604858",
+    "trigger_title": "Marketing Agency Raises $100 Billion Dollars to Make iPhone Apps",
+    "trigger_source": "hackernews",
+    "trigger_category": "DATA_POINT",
+    "trigger_url": "https://news.ycombinator.com/item?id=2604858",
+    "generated_at": "2026-02-21T19:17:45.057Z",
+    "status": "review",
+    "formats": {
+      "linkedin": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "x_single": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "x_thread": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "short_video": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "carousel": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "poll": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "quote_cards": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "stat_graphic": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "hot_take": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "before_after": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "listicle": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      }
+    },
+    "hook_variants": {
+      "linkedin": [],
+      "x": []
+    },
+    "image_prompt": null,
+    "image_url": null,
+    "blog_keyword": null,
+    "youtube_topic": null,
+    "lead_magnet_topic": null,
+    "blog_post": null,
+    "youtube_script": null,
+    "quality_score": {
+      "score": 0,
+      "max": 0,
+      "earned": 0,
+      "flags": []
+    },
+    "notes": "",
+    "quality_scores": {}
+  },
+  {
+    "id": "c666c4119c44e91a",
+    "trigger_id": "idea-336cde8123c2a405",
+    "trigger_title": "We analyzed 487 law firm websites: Here's why 73% are losing cases before the first call",
+    "trigger_source": "content-ideas",
+    "trigger_category": "data_point",
+    "generated_at": "2026-02-21T19:17:45.234Z",
+    "status": "review",
+    "formats": {
+      "linkedin": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "x_single": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "x_thread": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "short_video": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "carousel": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "poll": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "quote_cards": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "stat_graphic": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "hot_take": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "before_after": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "listicle": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      }
+    },
+    "hook_variants": {
+      "linkedin": [],
+      "x": []
+    },
+    "image_prompt": null,
+    "image_url": null,
+    "blog_keyword": null,
+    "youtube_topic": null,
+    "lead_magnet_topic": null,
+    "blog_post": null,
+    "youtube_script": null,
+    "quality_score": {
+      "score": 0,
+      "max": 0,
+      "earned": 0,
+      "flags": []
+    },
+    "notes": "",
+    "quality_scores": {}
+  },
+  {
+    "id": "b101836de3a44ed9",
+    "trigger_id": "hn-2919708",
+    "trigger_title": "If Software Is Eating The World, Why Don't Coders Get Any Respect?",
+    "trigger_source": "hackernews",
+    "trigger_category": "QUESTION",
+    "trigger_url": "https://news.ycombinator.com/item?id=2919708",
+    "generated_at": "2026-02-21T19:17:45.345Z",
+    "status": "review",
+    "formats": {
+      "linkedin": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "x_single": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "x_thread": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "short_video": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "carousel": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "poll": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "quote_cards": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "stat_graphic": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "hot_take": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "before_after": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "listicle": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      }
+    },
+    "hook_variants": {
+      "linkedin": [],
+      "x": []
+    },
+    "image_prompt": null,
+    "image_url": null,
+    "blog_keyword": null,
+    "youtube_topic": null,
+    "lead_magnet_topic": null,
+    "blog_post": null,
+    "youtube_script": null,
+    "quality_score": {
+      "score": 0,
+      "max": 0,
+      "earned": 0,
+      "flags": []
+    },
+    "notes": "",
+    "quality_scores": {}
+  },
+  {
+    "id": "2d49f3a47f879cf7",
+    "trigger_id": "reddit-1ra9ehp",
+    "trigger_title": "We hit 1,000 visitors and almost nobody was signing up. Here's what we changed and the results.",
+    "trigger_source": "reddit",
+    "trigger_category": "DATA_POINT",
+    "trigger_url": "https://reddit.com/r/SaaS/comments/1ra9ehp/we_hit_1000_visitors_and_almost_nobody_was/",
+    "generated_at": "2026-02-21T19:17:45.449Z",
+    "status": "review",
+    "formats": {
+      "linkedin": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "x_single": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "x_thread": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "short_video": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "carousel": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "poll": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "quote_cards": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "stat_graphic": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "hot_take": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "before_after": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "listicle": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      }
+    },
+    "hook_variants": {
+      "linkedin": [],
+      "x": []
+    },
+    "image_prompt": null,
+    "image_url": null,
+    "blog_keyword": null,
+    "youtube_topic": null,
+    "lead_magnet_topic": null,
+    "blog_post": null,
+    "youtube_script": null,
+    "quality_score": {
+      "score": 0,
+      "max": 0,
+      "earned": 0,
+      "flags": []
+    },
+    "notes": "",
+    "quality_scores": {}
+  },
+  {
+    "id": "cd5aed55a7b30b72",
+    "trigger_id": "reddit-1r9w56c",
+    "trigger_title": "[Day 11] 30,000 Twitter impressions every single day with $0 ads. How I finally killed the friction that was ruining my SaaS.",
+    "trigger_source": "reddit",
+    "trigger_category": "DATA_POINT",
+    "trigger_url": "https://reddit.com/r/EntrepreneurRideAlong/comments/1r9w56c/day_11_30000_twitter_impressions_every_single_day/",
+    "generated_at": "2026-02-21T19:17:45.542Z",
+    "status": "review",
+    "formats": {
+      "linkedin": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "x_single": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "x_thread": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "short_video": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "carousel": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "poll": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "quote_cards": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "stat_graphic": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "hot_take": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "before_after": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "listicle": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      }
+    },
+    "hook_variants": {
+      "linkedin": [],
+      "x": []
+    },
+    "image_prompt": null,
+    "image_url": null,
+    "blog_keyword": null,
+    "youtube_topic": null,
+    "lead_magnet_topic": null,
+    "blog_post": null,
+    "youtube_script": null,
+    "quality_score": {
+      "score": 0,
+      "max": 0,
+      "earned": 0,
+      "flags": []
+    },
+    "notes": "",
+    "quality_scores": {}
+  },
+  {
+    "id": "15cd4fe4bf6f9b16",
+    "trigger_id": "hn-20888141",
+    "trigger_title": "Canadian Startup Clio Raises $250M for Legal Tech",
+    "trigger_source": "hackernews",
+    "trigger_category": "DATA_POINT",
+    "trigger_url": "https://news.crunchbase.com/news/canadian-startup-clio-raises-250m-for-legal-tech-as-vertical-saas-continues-to-perform/",
+    "generated_at": "2026-02-21T19:22:40.070Z",
+    "status": "review",
+    "formats": {
+      "linkedin": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "x_single": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "x_thread": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "short_video": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "carousel": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "poll": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "quote_cards": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "stat_graphic": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "hot_take": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "before_after": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "listicle": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      }
+    },
+    "hook_variants": {
+      "linkedin": [],
+      "x": []
+    },
+    "image_prompt": null,
+    "image_url": null,
+    "blog_keyword": null,
+    "youtube_topic": null,
+    "lead_magnet_topic": null,
+    "blog_post": null,
+    "youtube_script": null,
+    "quality_score": {
+      "score": 0,
+      "max": 0,
+      "earned": 0,
+      "flags": []
+    },
+    "notes": "",
+    "quality_scores": {}
+  },
+  {
+    "id": "a41c2ac2b295c538",
+    "trigger_id": "reddit-1r9ua1w",
+    "trigger_title": "0 to 1,400+ signups in 3 months. Open source security tool. Here's what worked (and what didn't).",
+    "trigger_source": "reddit",
+    "trigger_category": "DATA_POINT",
+    "trigger_url": "https://reddit.com/r/GrowthHacking/comments/1r9ua1w/0_to_1400_signups_in_3_months_open_source/",
+    "generated_at": "2026-02-21T19:22:40.234Z",
+    "status": "review",
+    "formats": {
+      "linkedin": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "x_single": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "x_thread": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "short_video": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "carousel": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "poll": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "quote_cards": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "stat_graphic": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "hot_take": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "before_after": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "listicle": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      }
+    },
+    "hook_variants": {
+      "linkedin": [],
+      "x": []
+    },
+    "image_prompt": null,
+    "image_url": null,
+    "blog_keyword": null,
+    "youtube_topic": null,
+    "lead_magnet_topic": null,
+    "blog_post": null,
+    "youtube_script": null,
+    "quality_score": {
+      "score": 0,
+      "max": 0,
+      "earned": 0,
+      "flags": []
+    },
+    "notes": "",
+    "quality_scores": {}
+  },
+  {
+    "id": "c620397eb573dacb",
+    "trigger_id": "hn-8992309",
+    "trigger_title": "Legal Tech Startup Casetext (YC S13) Raises $7M Series A",
+    "trigger_source": "hackernews",
+    "trigger_category": "DATA_POINT",
+    "trigger_url": "http://techcrunch.com/2015/02/03/legal-tech-startup-casetext-raises-7-million-series-a-round-led-by-union-square-ventures/",
+    "generated_at": "2026-02-21T19:22:40.365Z",
+    "status": "review",
+    "formats": {
+      "linkedin": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "x_single": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "x_thread": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "short_video": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "carousel": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "poll": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "quote_cards": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "stat_graphic": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "hot_take": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "before_after": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "listicle": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      }
+    },
+    "hook_variants": {
+      "linkedin": [],
+      "x": []
+    },
+    "image_prompt": null,
+    "image_url": null,
+    "blog_keyword": null,
+    "youtube_topic": null,
+    "lead_magnet_topic": null,
+    "blog_post": null,
+    "youtube_script": null,
+    "quality_score": {
+      "score": 0,
+      "max": 0,
+      "earned": 0,
+      "flags": []
+    },
+    "notes": "",
+    "quality_scores": {}
+  },
+  {
+    "id": "25809eb561645d0d",
+    "trigger_id": "hn-36514992",
+    "trigger_title": "Thomson Reuters buys Casetext, an AI legal tech startup, for $650M in cash",
+    "trigger_source": "hackernews",
+    "trigger_category": "DATA_POINT",
+    "trigger_url": "https://techcrunch.com/2023/06/26/thomson-reuters-buys-casetext-an-ai-legal-tech-startup-for-650m-in-cash/",
+    "generated_at": "2026-02-21T19:22:40.459Z",
+    "status": "review",
+    "formats": {
+      "linkedin": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "x_single": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "x_thread": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "short_video": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "carousel": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "poll": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "quote_cards": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "stat_graphic": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "hot_take": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "before_after": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "listicle": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      }
+    },
+    "hook_variants": {
+      "linkedin": [],
+      "x": []
+    },
+    "image_prompt": null,
+    "image_url": null,
+    "blog_keyword": null,
+    "youtube_topic": null,
+    "lead_magnet_topic": null,
+    "blog_post": null,
+    "youtube_script": null,
+    "quality_score": {
+      "score": 0,
+      "max": 0,
+      "earned": 0,
+      "flags": []
+    },
+    "notes": "",
+    "quality_scores": {}
+  },
+  {
+    "id": "f89783d8dd354ea5",
+    "trigger_id": "hn-14563370",
+    "trigger_title": "Justin Kan confirms $10.5M in funding for his legal tech startup Atrium L",
+    "trigger_source": "hackernews",
+    "trigger_category": "DATA_POINT",
+    "trigger_url": "https://techcrunch.com/2017/06/15/justin-kan-atrium-lts-funding",
+    "generated_at": "2026-02-21T19:22:40.539Z",
+    "status": "review",
+    "formats": {
+      "linkedin": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "x_single": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "x_thread": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "short_video": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "carousel": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "poll": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "quote_cards": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "stat_graphic": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "hot_take": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "before_after": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "listicle": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      }
+    },
+    "hook_variants": {
+      "linkedin": [],
+      "x": []
+    },
+    "image_prompt": null,
+    "image_url": null,
+    "blog_keyword": null,
+    "youtube_topic": null,
+    "lead_magnet_topic": null,
+    "blog_post": null,
+    "youtube_script": null,
+    "quality_score": {
+      "score": 0,
+      "max": 0,
+      "earned": 0,
+      "flags": []
+    },
+    "notes": "",
+    "quality_scores": {}
+  },
+  {
+    "id": "bf57ce881734c656",
+    "trigger_id": "reddit-1ra8bx6",
+    "trigger_title": "From 0 to $56 MRR as a solo dev — lessons learned building a mobile SaaS in fintech",
+    "trigger_source": "reddit",
+    "trigger_category": "DATA_POINT",
+    "trigger_url": "https://reddit.com/r/SaaS/comments/1ra8bx6/from_0_to_56_mrr_as_a_solo_dev_lessons_learned/",
+    "generated_at": "2026-02-21T19:48:56.850Z",
+    "status": "review",
+    "formats": {
+      "linkedin": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "x_single": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "x_thread": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "short_video": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "carousel": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "poll": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "quote_cards": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "stat_graphic": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "hot_take": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "before_after": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "listicle": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      }
+    },
+    "hook_variants": {
+      "linkedin": [],
+      "x": []
+    },
+    "image_prompt": null,
+    "image_url": null,
+    "blog_keyword": null,
+    "youtube_topic": null,
+    "lead_magnet_topic": null,
+    "blog_post": null,
+    "youtube_script": null,
+    "quality_score": {
+      "score": 0,
+      "max": 0,
+      "earned": 0,
+      "flags": []
+    },
+    "notes": "",
+    "quality_scores": {}
+  },
+  {
+    "id": "d909646e5debf56e",
+    "trigger_id": "reddit-1raaey5",
+    "trigger_title": "Google Ads: Issue with tracking purchases through third party &amp; more",
+    "trigger_source": "reddit",
+    "trigger_category": "DATA_POINT",
+    "trigger_url": "https://reddit.com/r/PPC/comments/1raaey5/google_ads_issue_with_tracking_purchases_through/",
+    "generated_at": "2026-02-21T19:48:56.975Z",
+    "status": "review",
+    "formats": {
+      "linkedin": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "x_single": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "x_thread": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "short_video": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "carousel": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "poll": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "quote_cards": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "stat_graphic": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "hot_take": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "before_after": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "listicle": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      }
+    },
+    "hook_variants": {
+      "linkedin": [],
+      "x": []
+    },
+    "image_prompt": null,
+    "image_url": null,
+    "blog_keyword": null,
+    "youtube_topic": null,
+    "lead_magnet_topic": null,
+    "blog_post": null,
+    "youtube_script": null,
+    "quality_score": {
+      "score": 0,
+      "max": 0,
+      "earned": 0,
+      "flags": []
+    },
+    "notes": "",
+    "quality_scores": {}
+  },
+  {
+    "id": "4add6462ca87fe85",
+    "trigger_id": "reddit-1r9zu3l",
+    "trigger_title": "Performance dropped after launching new LP for google Ads",
+    "trigger_source": "reddit",
+    "trigger_category": "DATA_POINT",
+    "trigger_url": "https://reddit.com/r/PPC/comments/1r9zu3l/performance_dropped_after_launching_new_lp_for/",
+    "generated_at": "2026-02-21T19:48:57.082Z",
+    "status": "review",
+    "formats": {
+      "linkedin": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "x_single": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "x_thread": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "short_video": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "carousel": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "poll": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "quote_cards": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "stat_graphic": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "hot_take": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "before_after": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "listicle": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      }
+    },
+    "hook_variants": {
+      "linkedin": [],
+      "x": []
+    },
+    "image_prompt": null,
+    "image_url": null,
+    "blog_keyword": null,
+    "youtube_topic": null,
+    "lead_magnet_topic": null,
+    "blog_post": null,
+    "youtube_script": null,
+    "quality_score": {
+      "score": 0,
+      "max": 0,
+      "earned": 0,
+      "flags": []
+    },
+    "notes": "",
+    "quality_scores": {}
+  },
+  {
+    "id": "d64ba39c4f8e539a",
+    "trigger_id": "reddit-1ra0t8h",
+    "trigger_title": "Top LinkedIn Automation/Outreach Tools - tested so you don't have to",
+    "trigger_source": "reddit",
+    "trigger_category": "DATA_POINT",
+    "trigger_url": "https://reddit.com/r/socialmedia/comments/1ra0t8h/top_linkedin_automationoutreach_tools_tested_so/",
+    "generated_at": "2026-02-21T19:48:57.239Z",
+    "status": "review",
+    "formats": {
+      "linkedin": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "x_single": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "x_thread": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "short_video": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "carousel": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "poll": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "quote_cards": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "stat_graphic": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "hot_take": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "before_after": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "listicle": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      }
+    },
+    "hook_variants": {
+      "linkedin": [],
+      "x": []
+    },
+    "image_prompt": null,
+    "image_url": null,
+    "blog_keyword": null,
+    "youtube_topic": null,
+    "lead_magnet_topic": null,
+    "blog_post": null,
+    "youtube_script": null,
+    "quality_score": {
+      "score": 0,
+      "max": 0,
+      "earned": 0,
+      "flags": []
+    },
+    "notes": "",
+    "quality_scores": {}
+  },
+  {
+    "id": "513a096e8f85b7e4",
+    "trigger_id": "reddit-1ra4xzj",
+    "trigger_title": "I tracked every growth tactic I tried for 14 months. Here's the data on what actually converts vs. what just generates vanity metrics.",
+    "trigger_source": "reddit",
+    "trigger_category": "DATA_POINT",
+    "trigger_url": "https://reddit.com/r/GrowthHacking/comments/1ra4xzj/i_tracked_every_growth_tactic_i_tried_for_14/",
+    "generated_at": "2026-02-21T19:48:57.518Z",
+    "status": "review",
+    "formats": {
+      "linkedin": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "x_single": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "x_thread": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "short_video": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "carousel": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "poll": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "quote_cards": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "stat_graphic": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "hot_take": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "before_after": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "listicle": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      }
+    },
+    "hook_variants": {
+      "linkedin": [],
+      "x": []
+    },
+    "image_prompt": null,
+    "image_url": null,
+    "blog_keyword": null,
+    "youtube_topic": null,
+    "lead_magnet_topic": null,
+    "blog_post": null,
+    "youtube_script": null,
+    "quality_score": {
+      "score": 0,
+      "max": 0,
+      "earned": 0,
+      "flags": []
+    },
+    "notes": "",
+    "quality_scores": {}
+  },
+  {
+    "id": "75e110476877693b",
+    "trigger_id": "reddit-1r9xjcl",
+    "trigger_title": "How I Generated $2,795 from 2,150 Organic Visitors",
+    "trigger_source": "reddit",
+    "trigger_category": "DATA_POINT",
+    "trigger_url": "https://reddit.com/r/GrowthHacking/comments/1r9xjcl/how_i_generated_2795_from_2150_organic_visitors/",
+    "generated_at": "2026-02-21T19:49:37.813Z",
+    "status": "review",
+    "formats": {
+      "linkedin": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "x_single": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "x_thread": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "short_video": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "carousel": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "poll": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "quote_cards": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "stat_graphic": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "hot_take": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "before_after": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "listicle": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      }
+    },
+    "hook_variants": {
+      "linkedin": [],
+      "x": []
+    },
+    "image_prompt": null,
+    "image_url": null,
+    "blog_keyword": null,
+    "youtube_topic": null,
+    "lead_magnet_topic": null,
+    "blog_post": null,
+    "youtube_script": null,
+    "quality_score": {
+      "score": 0,
+      "max": 0,
+      "earned": 0,
+      "flags": []
+    },
+    "notes": "",
+    "quality_scores": {}
+  },
+  {
+    "id": "5b9f0c694cd43836",
+    "trigger_id": "reddit-1ra45se",
+    "trigger_title": "Landing Page Experience and Conversion Rates",
+    "trigger_source": "reddit",
+    "trigger_category": "DATA_POINT",
+    "trigger_url": "https://reddit.com/r/PPC/comments/1ra45se/landing_page_experience_and_conversion_rates/",
+    "generated_at": "2026-02-21T19:49:37.929Z",
+    "status": "review",
+    "formats": {
+      "linkedin": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "x_single": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "x_thread": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "short_video": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "carousel": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "poll": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "quote_cards": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "stat_graphic": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "hot_take": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "before_after": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "listicle": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      }
+    },
+    "hook_variants": {
+      "linkedin": [],
+      "x": []
+    },
+    "image_prompt": null,
+    "image_url": null,
+    "blog_keyword": null,
+    "youtube_topic": null,
+    "lead_magnet_topic": null,
+    "blog_post": null,
+    "youtube_script": null,
+    "quality_score": {
+      "score": 0,
+      "max": 0,
+      "earned": 0,
+      "flags": []
+    },
+    "notes": "",
+    "quality_scores": {}
+  },
+  {
+    "id": "75f380d0e3a8ce07",
+    "trigger_id": "reddit-1r9xmep",
+    "trigger_title": "Got paid to fix a client's ads. turns out the ads werent the problem",
+    "trigger_source": "reddit",
+    "trigger_category": "DATA_POINT",
+    "trigger_url": "https://reddit.com/r/PPC/comments/1r9xmep/got_paid_to_fix_a_clients_ads_turns_out_the_ads/",
+    "generated_at": "2026-02-21T19:49:38.013Z",
+    "status": "review",
+    "formats": {
+      "linkedin": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "x_single": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "x_thread": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "short_video": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "carousel": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "poll": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "quote_cards": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "stat_graphic": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "hot_take": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "before_after": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "listicle": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      }
+    },
+    "hook_variants": {
+      "linkedin": [],
+      "x": []
+    },
+    "image_prompt": null,
+    "image_url": null,
+    "blog_keyword": null,
+    "youtube_topic": null,
+    "lead_magnet_topic": null,
+    "blog_post": null,
+    "youtube_script": null,
+    "quality_score": {
+      "score": 0,
+      "max": 0,
+      "earned": 0,
+      "flags": []
+    },
+    "notes": "",
+    "quality_scores": {}
+  },
+  {
+    "id": "5e6555b1ae727932",
+    "trigger_id": "reddit-1r9k3j4",
+    "trigger_title": "Google ads",
+    "trigger_source": "reddit",
+    "trigger_category": "DATA_POINT",
+    "trigger_url": "https://reddit.com/r/adwords/comments/1r9k3j4/google_ads/",
+    "generated_at": "2026-02-21T19:49:38.110Z",
+    "status": "review",
+    "formats": {
+      "linkedin": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "x_single": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "x_thread": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "short_video": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "carousel": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "poll": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "quote_cards": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "stat_graphic": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "hot_take": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "before_after": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "listicle": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      }
+    },
+    "hook_variants": {
+      "linkedin": [],
+      "x": []
+    },
+    "image_prompt": null,
+    "image_url": null,
+    "blog_keyword": null,
+    "youtube_topic": null,
+    "lead_magnet_topic": null,
+    "blog_post": null,
+    "youtube_script": null,
+    "quality_score": {
+      "score": 0,
+      "max": 0,
+      "earned": 0,
+      "flags": []
+    },
+    "notes": "",
+    "quality_scores": {}
+  },
+  {
+    "id": "942bdcb1159acca7",
+    "trigger_id": "reddit-1r7xnhe",
+    "trigger_title": "Running a US home service business remotely – scalable model or risky dependency?",
+    "trigger_source": "reddit",
+    "trigger_category": "DATA_POINT",
+    "trigger_url": "https://reddit.com/r/LeadGeneration/comments/1r7xnhe/running_a_us_home_service_business_remotely/",
+    "generated_at": "2026-02-21T19:49:38.192Z",
+    "status": "review",
+    "formats": {
+      "linkedin": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "x_single": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "x_thread": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "short_video": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "carousel": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "poll": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "quote_cards": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "stat_graphic": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "hot_take": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "before_after": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "listicle": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      }
+    },
+    "hook_variants": {
+      "linkedin": [],
+      "x": []
+    },
+    "image_prompt": null,
+    "image_url": null,
+    "blog_keyword": null,
+    "youtube_topic": null,
+    "lead_magnet_topic": null,
+    "blog_post": null,
+    "youtube_script": null,
+    "quality_score": {
+      "score": 0,
+      "max": 0,
+      "earned": 0,
+      "flags": []
+    },
+    "notes": "",
+    "quality_scores": {}
   }
 ]

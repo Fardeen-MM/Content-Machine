@@ -1,0 +1,152 @@
+{
+  "platform_sizes": {
+    "linkedin": 0,
+    "x": 0,
+    "instagram": 0,
+    "youtube": 0,
+    "tiktok": 0,
+    "newsletter": 0
+  },
+  "overlaps": {
+    "linkedin_x": {
+      "platforms": [
+        "linkedin",
+        "x"
+      ],
+      "common": 0,
+      "total_unique": 0,
+      "overlap_pct": 0
+    },
+    "linkedin_youtube": {
+      "platforms": [
+        "linkedin",
+        "youtube"
+      ],
+      "common": 0,
+      "total_unique": 0,
+      "overlap_pct": 0
+    },
+    "linkedin_tiktok": {
+      "platforms": [
+        "linkedin",
+        "tiktok"
+      ],
+      "common": 0,
+      "total_unique": 0,
+      "overlap_pct": 0
+    },
+    "linkedin_newsletter": {
+      "platforms": [
+        "linkedin",
+        "newsletter"
+      ],
+      "common": 0,
+      "total_unique": 0,
+      "overlap_pct": 0
+    },
+    "x_youtube": {
+      "platforms": [
+        "x",
+        "youtube"
+      ],
+      "common": 0,
+      "total_unique": 0,
+      "overlap_pct": 0
+    },
+    "instagram_linkedin": {
+      "platforms": [
+        "instagram",
+        "linkedin"
+      ],
+      "common": 0,
+      "total_unique": 0,
+      "overlap_pct": 0
+    },
+    "instagram_x": {
+      "platforms": [
+        "instagram",
+        "x"
+      ],
+      "common": 0,
+      "total_unique": 0,
+      "overlap_pct": 0
+    },
+    "instagram_youtube": {
+      "platforms": [
+        "instagram",
+        "youtube"
+      ],
+      "common": 0,
+      "total_unique": 0,
+      "overlap_pct": 0
+    },
+    "instagram_tiktok": {
+      "platforms": [
+        "instagram",
+        "tiktok"
+      ],
+      "common": 0,
+      "total_unique": 0,
+      "overlap_pct": 0
+    },
+    "instagram_newsletter": {
+      "platforms": [
+        "instagram",
+        "newsletter"
+      ],
+      "common": 0,
+      "total_unique": 0,
+      "overlap_pct": 0
+    },
+    "tiktok_x": {
+      "platforms": [
+        "tiktok",
+        "x"
+      ],
+      "common": 0,
+      "total_unique": 0,
+      "overlap_pct": 0
+    },
+    "tiktok_youtube": {
+      "platforms": [
+        "tiktok",
+        "youtube"
+      ],
+      "common": 0,
+      "total_unique": 0,
+      "overlap_pct": 0
+    },
+    "newsletter_x": {
+      "platforms": [
+        "newsletter",
+        "x"
+      ],
+      "common": 0,
+      "total_unique": 0,
+      "overlap_pct": 0
+    },
+    "newsletter_youtube": {
+      "platforms": [
+        "newsletter",
+        "youtube"
+      ],
+      "common": 0,
+      "total_unique": 0,
+      "overlap_pct": 0
+    },
+    "newsletter_tiktok": {
+      "platforms": [
+        "newsletter",
+        "tiktok"
+      ],
+      "common": 0,
+      "total_unique": 0,
+      "overlap_pct": 0
+    }
+  },
+  "total_unique_across_all": 0,
+  "recommendations": [
+    "No tracked users yet — add engagement tracking with user identifiers"
+  ],
+  "generated_at": "2026-02-21T19:49:38.363Z"
+}

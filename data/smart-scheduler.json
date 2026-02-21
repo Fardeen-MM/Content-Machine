@@ -7,7 +7,7 @@
       "platform": "x",
       "date": "2026-02-23",
       "day": "Monday",
-      "time": "12:00 PM",
+      "time": "9:00 AM",
       "status": "scheduled"
     },
     {
@@ -25,7 +25,7 @@
       "platform": "linkedin",
       "date": "2026-02-24",
       "day": "Tuesday",
-      "time": "12:00 PM",
+      "time": "8:00 AM",
       "status": "scheduled"
     },
     {
@@ -34,7 +34,7 @@
       "platform": "youtube",
       "date": "2026-02-24",
       "day": "Tuesday",
-      "time": "4:00 PM",
+      "time": "2:00 PM",
       "status": "scheduled"
     },
     {
@@ -43,7 +43,7 @@
       "platform": "email",
       "date": "2026-02-24",
       "day": "Tuesday",
-      "time": "10:00 AM",
+      "time": "8:00 AM",
       "status": "scheduled"
     },
     {
@@ -52,7 +52,7 @@
       "platform": "linkedin",
       "date": "2026-02-25",
       "day": "Wednesday",
-      "time": "8:00 AM",
+      "time": "12:00 PM",
       "status": "scheduled"
     },
     {
@@ -61,7 +61,7 @@
       "platform": "x",
       "date": "2026-02-25",
       "day": "Wednesday",
-      "time": "5:00 PM",
+      "time": "12:00 PM",
       "status": "scheduled"
     },
     {
@@ -70,7 +70,7 @@
       "platform": "linkedin",
       "date": "2026-02-26",
       "day": "Thursday",
-      "time": "10:00 AM",
+      "time": "12:00 PM",
       "status": "scheduled"
     },
     {
@@ -117,5 +117,5 @@
     "youtube",
     "email"
   ],
-  "generated_at": "2026-02-21T14:35:25.537Z"
+  "generated_at": "2026-02-21T19:49:40.033Z"
 }

@@ -1,0 +1,36 @@
+{
+  "totals": {
+    "total_likes": 45,
+    "total_comments": 12,
+    "total_shares": 8,
+    "total_saves": 3,
+    "total_views": 0,
+    "total_impressions": 2500
+  },
+  "by_platform": {
+    "linkedin": {
+      "likes": 45,
+      "comments": 12,
+      "shares": 8,
+      "impressions": 2500,
+      "posts": 1
+    }
+  },
+  "proof_items": [
+    {
+      "type": "reach",
+      "value": "2500+ reached"
+    },
+    {
+      "type": "published",
+      "value": "1 published"
+    },
+    {
+      "type": "engagement",
+      "value": "45 likes"
+    }
+  ],
+  "engagement_rate": 2.6,
+  "total_published": 1,
+  "generated_at": "2026-02-21T19:49:38.429Z"
+}

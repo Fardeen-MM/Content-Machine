@@ -1,0 +1,176 @@
+{
+  "total_analyzed": 61,
+  "avg_consistency": 52,
+  "on_brand": 18,
+  "off_brand": 43,
+  "tone_breakdown": {
+    "professional": 9,
+    "casual": 22,
+    "neutral": 30
+  },
+  "top_consistent": [
+    {
+      "id": "dd33fd2be463cf5f",
+      "title": "Spent $5K/month on Google Ads for my PI firm and got 2 cases",
+      "consistency_score": 90,
+      "detected_tone": "professional",
+      "brand_mentions": 3,
+      "on_brand": true
+    },
+    {
+      "id": "c4c23c4858e12fc8",
+      "title": "My web designer charges $300/mo and my site looks like it's from 2005",
+      "consistency_score": 90,
+      "detected_tone": "professional",
+      "brand_mentions": 3,
+      "on_brand": true
+    },
+    {
+      "id": "6e4f84de57065",
+      "title": "Is TikTok worth it for a law firm? Seems unprofessional",
+      "consistency_score": 90,
+      "detected_tone": "professional",
+      "brand_mentions": 3,
+      "on_brand": true
+    },
+    {
+      "id": "8314cf61a187cdb0",
+      "title": "For newer lawyers: an example of how to separate the wheat from the chaff",
+      "consistency_score": 90,
+      "detected_tone": "professional",
+      "brand_mentions": 3,
+      "on_brand": true
+    },
+    {
+      "id": "4d214093372dfe2a",
+      "title": "Clio Legal Trends Report: 67% of firms don't track marketing ROI",
+      "consistency_score": 80,
+      "detected_tone": "casual",
+      "brand_mentions": 4,
+      "on_brand": true
+    },
+    {
+      "id": "858d056a779d6",
+      "title": "We switched from Avvo to Google LSAs — 4x more cases at half the cost",
+      "consistency_score": 80,
+      "detected_tone": "casual",
+      "brand_mentions": 4,
+      "on_brand": true
+    },
+    {
+      "id": "b27b9c8b72a638",
+      "title": "I built a $3M law firm in 4 years with zero referrals — here's every channel I used",
+      "consistency_score": 80,
+      "detected_tone": "professional",
+      "brand_mentions": 2,
+      "on_brand": true
+    },
+    {
+      "id": "6416c9f94e5c38",
+      "title": "Google just rolled out AI Overviews for legal queries — is SEO for lawyers dead?",
+      "consistency_score": 70,
+      "detected_tone": "professional",
+      "brand_mentions": 1,
+      "on_brand": true
+    },
+    {
+      "id": "201a738d779578",
+      "title": "Our Google Business Profile drives more calls than our website",
+      "consistency_score": 70,
+      "detected_tone": "professional",
+      "brand_mentions": 1,
+      "on_brand": true
+    },
+    {
+      "id": "593790db4b81f234",
+      "title": "Custom Legal Marketing Celebrates 21 Years as AI Redefines How Clients Find Lawyers - IndyStar",
+      "consistency_score": 70,
+      "detected_tone": "casual",
+      "brand_mentions": 3,
+      "on_brand": true
+    }
+  ],
+  "least_consistent": [
+    {
+      "id": "942bdcb1159acca7",
+      "title": "Running a US home service business remotely – scalable model or risky dependency?",
+      "consistency_score": 40,
+      "detected_tone": "neutral",
+      "brand_mentions": 0,
+      "on_brand": false
+    },
+    {
+      "id": "5e6555b1ae727932",
+      "title": "Google ads",
+      "consistency_score": 40,
+      "detected_tone": "neutral",
+      "brand_mentions": 0,
+      "on_brand": false
+    },
+    {
+      "id": "75f380d0e3a8ce07",
+      "title": "Got paid to fix a client's ads. turns out the ads werent the problem",
+      "consistency_score": 40,
+      "detected_tone": "neutral",
+      "brand_mentions": 0,
+      "on_brand": false
+    },
+    {
+      "id": "5b9f0c694cd43836",
+      "title": "Landing Page Experience and Conversion Rates",
+      "consistency_score": 40,
+      "detected_tone": "neutral",
+      "brand_mentions": 0,
+      "on_brand": false
+    },
+    {
+      "id": "75e110476877693b",
+      "title": "How I Generated $2,795 from 2,150 Organic Visitors",
+      "consistency_score": 40,
+      "detected_tone": "neutral",
+      "brand_mentions": 0,
+      "on_brand": false
+    },
+    {
+      "id": "513a096e8f85b7e4",
+      "title": "I tracked every growth tactic I tried for 14 months. Here's the data on what actually converts vs. what just generates vanity metrics.",
+      "consistency_score": 40,
+      "detected_tone": "neutral",
+      "brand_mentions": 0,
+      "on_brand": false
+    },
+    {
+      "id": "d64ba39c4f8e539a",
+      "title": "Top LinkedIn Automation/Outreach Tools - tested so you don't have to",
+      "consistency_score": 40,
+      "detected_tone": "neutral",
+      "brand_mentions": 0,
+      "on_brand": false
+    },
+    {
+      "id": "4add6462ca87fe85",
+      "title": "Performance dropped after launching new LP for google Ads",
+      "consistency_score": 40,
+      "detected_tone": "neutral",
+      "brand_mentions": 0,
+      "on_brand": false
+    },
+    {
+      "id": "d909646e5debf56e",
+      "title": "Google Ads: Issue with tracking purchases through third party &amp; more",
+      "consistency_score": 40,
+      "detected_tone": "neutral",
+      "brand_mentions": 0,
+      "on_brand": false
+    },
+    {
+      "id": "bf57ce881734c656",
+      "title": "From 0 to $56 MRR as a solo dev — lessons learned building a mobile SaaS in fintech",
+      "consistency_score": 40,
+      "detected_tone": "neutral",
+      "brand_mentions": 0,
+      "on_brand": false
+    }
+  ],
+  "generated_at": "2026-02-21T19:49:38.443Z"
+}

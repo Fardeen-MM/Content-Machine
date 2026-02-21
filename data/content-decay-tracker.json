@@ -1,0 +1,80 @@
+{
+  "total_tracked": 7,
+  "needs_refresh": 0,
+  "needs_retire": 0,
+  "needs_boost": 0,
+  "items": [
+    {
+      "id": "7f77c159bb8ccf6a",
+      "title": "Fired my 3rd marketing agency this year — what am I doing wrong?",
+      "age_days": 7,
+      "decay_rate": 0,
+      "recent_engagement": 0,
+      "older_engagement": 0,
+      "action": "monitor",
+      "status": "review"
+    },
+    {
+      "id": "8dfa41e3fa145ba7",
+      "title": "Speed to lead is killing us — callers hang up after 30 seconds",
+      "age_days": 8,
+      "decay_rate": 0,
+      "recent_engagement": 0,
+      "older_engagement": 0,
+      "action": "monitor",
+      "status": "review"
+    },
+    {
+      "id": "4d214093372dfe2a",
+      "title": "Clio Legal Trends Report: 67% of firms don't track marketing ROI",
+      "age_days": 7,
+      "decay_rate": 0,
+      "recent_engagement": 0,
+      "older_engagement": 0,
+      "action": "monitor",
+      "status": "review"
+    },
+    {
+      "id": "428fe56f109338c7",
+      "title": "ABA: Average PI firm spends $124K on marketing annually",
+      "age_days": 7,
+      "decay_rate": 0,
+      "recent_engagement": 0,
+      "older_engagement": 0,
+      "action": "monitor",
+      "status": "review"
+    },
+    {
+      "id": "13497fe9d9ea6a2c",
+      "title": "National Law Review: AI is transforming how law firms acquire clients",
+      "age_days": 8,
+      "decay_rate": 0,
+      "recent_engagement": 0,
+      "older_engagement": 0,
+      "action": "monitor",
+      "status": "review"
+    },
+    {
+      "id": "b27b9c8b72a638",
+      "title": "I built a $3M law firm in 4 years with zero referrals — here's every channel I used",
+      "age_days": 7,
+      "decay_rate": 0,
+      "recent_engagement": 0,
+      "older_engagement": 0,
+      "action": "monitor",
+      "status": "review"
+    },
+    {
+      "id": "6e4f84de57065",
+      "title": "Is TikTok worth it for a law firm? Seems unprofessional",
+      "age_days": 7,
+      "decay_rate": 0,
+      "recent_engagement": 0,
+      "older_engagement": 0,
+      "action": "monitor",
+      "status": "approved"
+    }
+  ],
+  "avg_decay_rate": 0,
+  "generated_at": "2026-02-21T19:49:38.384Z"
+}

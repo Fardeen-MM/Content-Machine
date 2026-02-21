@@ -1,21 +1,21 @@
 {
-  "total_content": 41,
+  "total_content": 61,
   "total_published": 1,
   "total_conversions": 2,
   "cost_breakdown": {
-    "labor": 3075,
+    "labor": 4575,
     "tools": 50,
-    "total": 3125
+    "total": 4625
   },
   "per_piece": {
-    "cost": 76.22,
-    "cost_per_published": 3125,
+    "cost": 75.82,
+    "cost_per_published": 4625,
     "hours": 0.5
   },
   "revenue": {
     "attributed": 5000,
-    "roi_percentage": 60,
+    "roi_percentage": 8,
     "break_even_pieces": 1
   },
-  "generated_at": "2026-02-21T14:39:46.093Z"
+  "generated_at": "2026-02-21T19:49:38.457Z"
 }

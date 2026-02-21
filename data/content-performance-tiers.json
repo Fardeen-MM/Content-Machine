@@ -1,0 +1,225 @@
+{
+  "total_scored": 61,
+  "tier_counts": {
+    "S": 1,
+    "A": 0,
+    "B": 0,
+    "C": 8,
+    "D": 43,
+    "F": 9
+  },
+  "avg_score": 28,
+  "top_performers": [
+    {
+      "id": "4aa23b276fa5218b",
+      "title": "Lessons Learned From 5,000 Days of Crisp — Episode 438",
+      "score": 95,
+      "tier": "S",
+      "format_count": 20,
+      "total_engagement": 45,
+      "total_impressions": 2500,
+      "status": "published"
+    },
+    {
+      "id": "942509da1ea4f8",
+      "title": "Hired 3 marketing agencies in 2 years — all terrible. What am I doing wrong?",
+      "score": 41,
+      "tier": "C",
+      "format_count": 7,
+      "total_engagement": 0,
+      "total_impressions": 0,
+      "status": "approved"
+    },
+    {
+      "id": "91939c91ddfbb997",
+      "title": "Speed to lead is killing us — callers hang up after 30 seconds",
+      "score": 40,
+      "tier": "C",
+      "format_count": 14,
+      "total_engagement": 0,
+      "total_impressions": 0,
+      "status": "review"
+    },
+    {
+      "id": "7436b8ca438b2ed1",
+      "title": "Spent $5K/month on Google Ads for my PI firm and got 2 cases",
+      "score": 40,
+      "tier": "C",
+      "format_count": 14,
+      "total_engagement": 0,
+      "total_impressions": 0,
+      "status": "review"
+    },
+    {
+      "id": "593790db4b81f234",
+      "title": "Custom Legal Marketing Celebrates 21 Years as AI Redefines How Clients Find Lawyers - IndyStar",
+      "score": 40,
+      "tier": "C",
+      "format_count": 14,
+      "total_engagement": 0,
+      "total_impressions": 0,
+      "status": "review"
+    },
+    {
+      "id": "84c5ceee86f4d356",
+      "title": "Doing the “Impossible”: Lawyer Who Grew His Revenue by 59% with Fewer Leads — with Eric Gros-Dubois",
+      "score": 40,
+      "tier": "C",
+      "format_count": 19,
+      "total_engagement": 0,
+      "total_impressions": 0,
+      "status": "review"
+    },
+    {
+      "id": "34f0159edc64e457",
+      "title": "Why Law Firm Marketing Costs Skyrocketed in 2025 (And What Comes Next)",
+      "score": 40,
+      "tier": "C",
+      "format_count": 19,
+      "total_engagement": 0,
+      "total_impressions": 0,
+      "status": "review"
+    },
+    {
+      "id": "5b24a722678acc8b",
+      "title": "Be a “Lazy” Lawyer: Expert Delegation Tips to Scale Your Revenue — with Cameron Herold",
+      "score": 40,
+      "tier": "C",
+      "format_count": 19,
+      "total_engagement": 0,
+      "total_impressions": 0,
+      "status": "review"
+    },
+    {
+      "id": "8ba52566277d9674",
+      "title": "1 month, 178k followers, 213M views, $500,000 Revenue",
+      "score": 40,
+      "tier": "C",
+      "format_count": 19,
+      "total_engagement": 0,
+      "total_impressions": 0,
+      "status": "review"
+    },
+    {
+      "id": "dd33fd2be463cf5f",
+      "title": "Spent $5K/month on Google Ads for my PI firm and got 2 cases",
+      "score": 32,
+      "tier": "D",
+      "format_count": 4,
+      "total_engagement": 0,
+      "total_impressions": 0,
+      "status": "approved"
+    }
+  ],
+  "bottom_performers": [
+    {
+      "id": "010490bde5781407",
+      "title": "Paralegal/Legal Assistant for Plaintiff's Employment Firm (CA)",
+      "score": 13,
+      "tier": "F",
+      "format_count": 1,
+      "total_engagement": 0,
+      "total_impressions": 0,
+      "status": "review"
+    },
+    {
+      "id": "8314cf61a187cdb0",
+      "title": "For newer lawyers: an example of how to separate the wheat from the chaff",
+      "score": 13,
+      "tier": "F",
+      "format_count": 1,
+      "total_engagement": 0,
+      "total_impressions": 0,
+      "status": "review"
+    },
+    {
+      "id": "602f738cf8a9e190",
+      "title": "Call insight: You're probably wasting 2-3 hours a day on intake conversati",
+      "score": 13,
+      "tier": "F",
+      "format_count": 1,
+      "total_engagement": 0,
+      "total_impressions": 0,
+      "status": "review"
+    },
+    {
+      "id": "ec092ef2822c6bc1",
+      "title": "Call insight: Your intake team is asking the same questions in the same or",
+      "score": 13,
+      "tier": "F",
+      "format_count": 1,
+      "total_engagement": 0,
+      "total_impressions": 0,
+      "status": "review"
+    },
+    {
+      "id": "8341e619808ae019",
+      "title": "Call insight: We keep meeting executive assistants secretly building sprea",
+      "score": 13,
+      "tier": "F",
+      "format_count": 1,
+      "total_engagement": 0,
+      "total_impressions": 0,
+      "status": "review"
+    },
+    {
+      "id": "28ac7a9f58a263c6",
+      "title": "Call insight: Your intake team stops working at 5 PM. Your potential clien",
+      "score": 13,
+      "tier": "F",
+      "format_count": 1,
+      "total_engagement": 0,
+      "total_impressions": 0,
+      "status": "review"
+    },
+    {
+      "id": "2a3227e1afa2fb78",
+      "title": "Call insight: The real opportunity in lead generation isn't getting more v",
+      "score": 13,
+      "tier": "F",
+      "format_count": 1,
+      "total_engagement": 0,
+      "total_impressions": 0,
+      "status": "review"
+    },
+    {
+      "id": "657fd7635c61e6fc",
+      "title": "Call insight: We watched a firm generate 5,000 leads monthly on a $2-3K bu",
+      "score": 13,
+      "tier": "F",
+      "format_count": 1,
+      "total_engagement": 0,
+      "total_impressions": 0,
+      "status": "review"
+    },
+    {
+      "id": "17613aa38257031a",
+      "title": "Show HN: Stripe Specialist Team Scam – 50%+ deals",
+      "score": 16,
+      "tier": "F",
+      "format_count": 2,
+      "total_engagement": 0,
+      "total_impressions": 0,
+      "status": "approved"
+    },
+    {
+      "id": "0290f613483e7695",
+      "title": "[Recycled] Spent $5K/month on Google Ads for my PI firm and got 2 cases",
+      "score": 22,
+      "tier": "D",
+      "format_count": 4,
+      "total_engagement": 0,
+      "total_impressions": 0,
+      "status": "review"
+    }
+  ],
+  "tier_distribution": {
+    "S": 2,
+    "A": 0,
+    "B": 0,
+    "C": 13,
+    "D": 70,
+    "F": 15
+  },
+  "generated_at": "2026-02-21T19:49:38.397Z"
+}

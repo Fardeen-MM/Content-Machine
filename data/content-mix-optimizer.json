@@ -1,0 +1,224 @@
+{
+  "current_mix": [
+    {
+      "format": "x_single",
+      "current_count": 53,
+      "current_pct": 87,
+      "avg_engagement": 2.72,
+      "recommendation": "maintain or reduce"
+    },
+    {
+      "format": "x_thread",
+      "current_count": 52,
+      "current_pct": 85,
+      "avg_engagement": 2.72,
+      "recommendation": "maintain or reduce"
+    },
+    {
+      "format": "hot_take",
+      "current_count": 33,
+      "current_pct": 54,
+      "avg_engagement": 2.72,
+      "recommendation": "maintain or reduce"
+    },
+    {
+      "format": "quote_cards",
+      "current_count": 31,
+      "current_pct": 51,
+      "avg_engagement": 2.72,
+      "recommendation": "maintain or reduce"
+    },
+    {
+      "format": "stat_graphic",
+      "current_count": 31,
+      "current_pct": 51,
+      "avg_engagement": 2.72,
+      "recommendation": "maintain or reduce"
+    },
+    {
+      "format": "before_after",
+      "current_count": 31,
+      "current_pct": 51,
+      "avg_engagement": 2.72,
+      "recommendation": "maintain or reduce"
+    },
+    {
+      "format": "linkedin_post",
+      "current_count": 6,
+      "current_pct": 10,
+      "avg_engagement": 2.72,
+      "recommendation": "maintain"
+    },
+    {
+      "format": "linkedin_hooks",
+      "current_count": 5,
+      "current_pct": 8,
+      "avg_engagement": 2.72,
+      "recommendation": "maintain"
+    },
+    {
+      "format": "x_hooks",
+      "current_count": 5,
+      "current_pct": 8,
+      "avg_engagement": 2.72,
+      "recommendation": "maintain"
+    },
+    {
+      "format": "short_video_script",
+      "current_count": 5,
+      "current_pct": 8,
+      "avg_engagement": 2.72,
+      "recommendation": "maintain"
+    },
+    {
+      "format": "linkedin_carousel",
+      "current_count": 5,
+      "current_pct": 8,
+      "avg_engagement": 2.72,
+      "recommendation": "maintain"
+    },
+    {
+      "format": "linkedin_poll",
+      "current_count": 5,
+      "current_pct": 8,
+      "avg_engagement": 2.72,
+      "recommendation": "maintain"
+    },
+    {
+      "format": "listicle_post",
+      "current_count": 5,
+      "current_pct": 8,
+      "avg_engagement": 2.72,
+      "recommendation": "maintain"
+    },
+    {
+      "format": "image_prompt",
+      "current_count": 5,
+      "current_pct": 8,
+      "avg_engagement": 2.72,
+      "recommendation": "maintain"
+    },
+    {
+      "format": "blog_keyword",
+      "current_count": 5,
+      "current_pct": 8,
+      "avg_engagement": 2.72,
+      "recommendation": "maintain"
+    },
+    {
+      "format": "youtube_topic",
+      "current_count": 5,
+      "current_pct": 8,
+      "avg_engagement": 2.72,
+      "recommendation": "maintain"
+    },
+    {
+      "format": "lead_magnet_topic",
+      "current_count": 5,
+      "current_pct": 8,
+      "avg_engagement": 2.72,
+      "recommendation": "maintain"
+    },
+    {
+      "format": "linkedin_cta",
+      "current_count": 5,
+      "current_pct": 8,
+      "avg_engagement": 2.72,
+      "recommendation": "maintain"
+    },
+    {
+      "format": "x_cta",
+      "current_count": 5,
+      "current_pct": 8,
+      "avg_engagement": 2.72,
+      "recommendation": "maintain"
+    },
+    {
+      "format": "x_thread_optimized",
+      "current_count": 1,
+      "current_pct": 2,
+      "avg_engagement": 2.72,
+      "recommendation": "increase"
+    },
+    {
+      "format": "linkedin",
+      "current_count": 55,
+      "current_pct": 90,
+      "avg_engagement": 0,
+      "recommendation": "maintain or reduce"
+    },
+    {
+      "format": "short_video",
+      "current_count": 46,
+      "current_pct": 75,
+      "avg_engagement": 0,
+      "recommendation": "maintain or reduce"
+    },
+    {
+      "format": "carousel",
+      "current_count": 27,
+      "current_pct": 44,
+      "avg_engagement": 0,
+      "recommendation": "maintain"
+    },
+    {
+      "format": "poll",
+      "current_count": 27,
+      "current_pct": 44,
+      "avg_engagement": 0,
+      "recommendation": "maintain"
+    },
+    {
+      "format": "listicle",
+      "current_count": 26,
+      "current_pct": 43,
+      "avg_engagement": 0,
+      "recommendation": "maintain"
+    },
+    {
+      "format": "blog",
+      "current_count": 3,
+      "current_pct": 5,
+      "avg_engagement": 0,
+      "recommendation": "increase"
+    },
+    {
+      "format": "youtube_script",
+      "current_count": 3,
+      "current_pct": 5,
+      "avg_engagement": 0,
+      "recommendation": "increase"
+    },
+    {
+      "format": "lead_magnet",
+      "current_count": 3,
+      "current_pct": 5,
+      "avg_engagement": 0,
+      "recommendation": "increase"
+    }
+  ],
+  "ideal_mix": {
+    "linkedin": 25,
+    "x_single": 20,
+    "short_video": 15,
+    "carousel": 10,
+    "x_thread": 10,
+    "blog": 5,
+    "newsletter": 5,
+    "instagram": 5,
+    "other": 5
+  },
+  "total_formats": 28,
+  "top_performing": [
+    "x_single",
+    "x_thread",
+    "hot_take"
+  ],
+  "underrepresented": [
+    "x_thread_optimized"
+  ],
+  "recommendations": [
+    "Underrepresented formats: x_thread_optimized — create more"
+  ],
+  "generated_at": "2026-02-21T19:49:38.375Z"
+}

@@ -1,0 +1,260 @@
+{
+  "total_formats": 28,
+  "formats": [
+    {
+      "format": "linkedin",
+      "count": 55,
+      "published": 0,
+      "total_engagement": 45,
+      "total_impressions": 2500,
+      "avg_engagement": 0.82,
+      "engagement_rate": 1.8
+    },
+    {
+      "format": "x_single",
+      "count": 53,
+      "published": 1,
+      "total_engagement": 0,
+      "total_impressions": 0,
+      "avg_engagement": 0,
+      "engagement_rate": 0
+    },
+    {
+      "format": "x_thread",
+      "count": 52,
+      "published": 1,
+      "total_engagement": 0,
+      "total_impressions": 0,
+      "avg_engagement": 0,
+      "engagement_rate": 0
+    },
+    {
+      "format": "short_video",
+      "count": 46,
+      "published": 0,
+      "total_engagement": 0,
+      "total_impressions": 0,
+      "avg_engagement": 0,
+      "engagement_rate": 0
+    },
+    {
+      "format": "carousel",
+      "count": 27,
+      "published": 0,
+      "total_engagement": 0,
+      "total_impressions": 0,
+      "avg_engagement": 0,
+      "engagement_rate": 0
+    },
+    {
+      "format": "hot_take",
+      "count": 33,
+      "published": 1,
+      "total_engagement": 0,
+      "total_impressions": 0,
+      "avg_engagement": 0,
+      "engagement_rate": 0
+    },
+    {
+      "format": "poll",
+      "count": 27,
+      "published": 0,
+      "total_engagement": 0,
+      "total_impressions": 0,
+      "avg_engagement": 0,
+      "engagement_rate": 0
+    },
+    {
+      "format": "quote_cards",
+      "count": 31,
+      "published": 1,
+      "total_engagement": 0,
+      "total_impressions": 0,
+      "avg_engagement": 0,
+      "engagement_rate": 0
+    },
+    {
+      "format": "stat_graphic",
+      "count": 31,
+      "published": 1,
+      "total_engagement": 0,
+      "total_impressions": 0,
+      "avg_engagement": 0,
+      "engagement_rate": 0
+    },
+    {
+      "format": "before_after",
+      "count": 31,
+      "published": 1,
+      "total_engagement": 0,
+      "total_impressions": 0,
+      "avg_engagement": 0,
+      "engagement_rate": 0
+    },
+    {
+      "format": "listicle",
+      "count": 26,
+      "published": 0,
+      "total_engagement": 0,
+      "total_impressions": 0,
+      "avg_engagement": 0,
+      "engagement_rate": 0
+    },
+    {
+      "format": "blog",
+      "count": 3,
+      "published": 0,
+      "total_engagement": 0,
+      "total_impressions": 0,
+      "avg_engagement": 0,
+      "engagement_rate": 0
+    },
+    {
+      "format": "youtube_script",
+      "count": 3,
+      "published": 0,
+      "total_engagement": 0,
+      "total_impressions": 0,
+      "avg_engagement": 0,
+      "engagement_rate": 0
+    },
+    {
+      "format": "lead_magnet",
+      "count": 3,
+      "published": 0,
+      "total_engagement": 0,
+      "total_impressions": 0,
+      "avg_engagement": 0,
+      "engagement_rate": 0
+    },
+    {
+      "format": "linkedin_post",
+      "count": 6,
+      "published": 1,
+      "total_engagement": 0,
+      "total_impressions": 0,
+      "avg_engagement": 0,
+      "engagement_rate": 0
+    },
+    {
+      "format": "linkedin_hooks",
+      "count": 5,
+      "published": 1,
+      "total_engagement": 0,
+      "total_impressions": 0,
+      "avg_engagement": 0,
+      "engagement_rate": 0
+    },
+    {
+      "format": "x_hooks",
+      "count": 5,
+      "published": 1,
+      "total_engagement": 0,
+      "total_impressions": 0,
+      "avg_engagement": 0,
+      "engagement_rate": 0
+    },
+    {
+      "format": "short_video_script",
+      "count": 5,
+      "published": 1,
+      "total_engagement": 0,
+      "total_impressions": 0,
+      "avg_engagement": 0,
+      "engagement_rate": 0
+    },
+    {
+      "format": "linkedin_carousel",
+      "count": 5,
+      "published": 1,
+      "total_engagement": 0,
+      "total_impressions": 0,
+      "avg_engagement": 0,
+      "engagement_rate": 0
+    },
+    {
+      "format": "linkedin_poll",
+      "count": 5,
+      "published": 1,
+      "total_engagement": 0,
+      "total_impressions": 0,
+      "avg_engagement": 0,
+      "engagement_rate": 0
+    },
+    {
+      "format": "listicle_post",
+      "count": 5,
+      "published": 1,
+      "total_engagement": 0,
+      "total_impressions": 0,
+      "avg_engagement": 0,
+      "engagement_rate": 0
+    },
+    {
+      "format": "image_prompt",
+      "count": 5,
+      "published": 1,
+      "total_engagement": 0,
+      "total_impressions": 0,
+      "avg_engagement": 0,
+      "engagement_rate": 0
+    },
+    {
+      "format": "blog_keyword",
+      "count": 5,
+      "published": 1,
+      "total_engagement": 0,
+      "total_impressions": 0,
+      "avg_engagement": 0,
+      "engagement_rate": 0
+    },
+    {
+      "format": "youtube_topic",
+      "count": 5,
+      "published": 1,
+      "total_engagement": 0,
+      "total_impressions": 0,
+      "avg_engagement": 0,
+      "engagement_rate": 0
+    },
+    {
+      "format": "lead_magnet_topic",
+      "count": 5,
+      "published": 1,
+      "total_engagement": 0,
+      "total_impressions": 0,
+      "avg_engagement": 0,
+      "engagement_rate": 0
+    },
+    {
+      "format": "linkedin_cta",
+      "count": 5,
+      "published": 1,
+      "total_engagement": 0,
+      "total_impressions": 0,
+      "avg_engagement": 0,
+      "engagement_rate": 0
+    },
+    {
+      "format": "x_cta",
+      "count": 5,
+      "published": 1,
+      "total_engagement": 0,
+      "total_impressions": 0,
+      "avg_engagement": 0,
+      "engagement_rate": 0
+    },
+    {
+      "format": "x_thread_optimized",
+      "count": 1,
+      "published": 1,
+      "total_engagement": 0,
+      "total_impressions": 0,
+      "avg_engagement": 0,
+      "engagement_rate": 0
+    }
+  ],
+  "best_format": "linkedin",
+  "worst_format": "x_thread_optimized",
+  "generated_at": "2026-02-21T19:49:38.433Z"
+}

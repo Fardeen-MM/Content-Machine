@@ -1944,7 +1944,7 @@
       "comments": 0
     },
     "captured_at": "2026-02-20T23:13:24.782Z",
-    "status": "pending",
+    "status": "used",
     "score": 0
   },
   {
@@ -5255,7 +5255,7 @@
       "num_comments": 1
     },
     "captured_at": "2026-02-20T23:13:43.360Z",
-    "status": "pending",
+    "status": "used",
     "score": 0
   },
   {
@@ -5272,7 +5272,7 @@
       "num_comments": 0
     },
     "captured_at": "2026-02-20T23:13:43.360Z",
-    "status": "pending",
+    "status": "used",
     "score": 0
   },
   {
@@ -5289,7 +5289,7 @@
       "num_comments": 0
     },
     "captured_at": "2026-02-20T23:13:43.360Z",
-    "status": "pending",
+    "status": "used",
     "score": 0
   },
   {
@@ -5306,7 +5306,7 @@
       "num_comments": 0
     },
     "captured_at": "2026-02-20T23:13:43.360Z",
-    "status": "pending",
+    "status": "used",
     "score": 0
   },
   {
@@ -6528,5 +6528,909 @@
     "score": 16,
     "status": "pending",
     "captured_at": "2026-02-21T01:54:12.075Z"
+  },
+  {
+    "id": "yt-V3p42xJ3p48",
+    "source": "youtube",
+    "source_detail": "Maximum Lawyer",
+    "title": "Identify &amp; Attract Ideal Clients: Law Firm Marketing Secrets #shorts",
+    "raw_content": "Stop attracting bad clients. Learn to identify your ideal clients by analyzing patterns in your best and worst past collaborations. Define what makes your top clients great and what to avoid in new ones. \n\nFull episode: https://youtu.be/lFApSHOIaXM\n#shorts #youtubeshorts\n\n#ClientAcquisition #BusinessStrategy #MarketingTips #IdealClients",
+    "url": "https://youtube.com/watch?v=V3p42xJ3p48",
+    "thumbnail": "https://i3.ytimg.com/vi/V3p42xJ3p48/hqdefault.jpg",
+    "category": "CONTENT_PIECE",
+    "captured_at": "2026-02-20T23:36:40+00:00",
+    "status": "pending",
+    "score": 0
+  },
+  {
+    "id": "yt-kOiNV790uRo",
+    "source": "youtube",
+    "source_detail": "Alex Hormozi",
+    "title": "You Don't Need Permission",
+    "raw_content": "Download your free scaling roadmap here: https://www.acquisition.com/roadmap-yt-d\nThe easiest business I can help you start (free trial): https://www.skool.com/hormozi\nBusiness owners: Want to scale faster? We provide in-person advisory for companies doing at least $1M per year: https://www.acquisition.com/workshop-yt-d\n\nIf you’re new to my channel, my name is Alex Hormozi. I’m the founder and managing partner of Acquisition.com. It’s a family office, which is just a formal way of saying we invest our own money into companies. Our 10 portfolio companies bring in over $250,000,000+ per year. Our ownership stake varies between 20% and 100% of them. Given this is a YT channel, and anyone can claim anything, I’ll give you some stuff you can google to verify below.\n\nHow I got here…\n\n21: Graduated Vanderbilt in 3 years Magna Cum Laude, and took a fancy consulting job.\n23 yrs old: Left my fancy consulting job to start a business (a gym).\n24 yrs old: Opened 5 gym locations.\n26 yrs old: Closed down 6th gym. Lost everything. \n26 yrs old: Got back to launching gyms (launched 33). Then, lost everything for a 2nd time. \n26 yrs old: In desperation, started licensing model as a hail mary. It worked. \n27 yrs old: &quot;Gym Launch&quot; does $3M profit the next 6 months. Then $17M profit next 12 months.\n28 yrs old: Started Prestige Labs. $20M the first year.  \n29 yrs old: Launched ALAN, a software company for agencies to work leads for customers. Scaled to $1.7mmo within 6 months. \n31 yrs old: Sold 75% of UseAlan to a strategic buyer in an all stock deal. \n31 yrs old: Sold 66% of Gym Launch &amp; Prestige Labs at $46.2M valuation in all-cash deal to American Pacific Group. (you can google it)\n31 yrs old: Started our family office Acquisition.com. We invest and scale companies using the $42M in distributions we had taken + the cash from the $46.2M exit.\n32 yrs old: Started making free content showing how we grow companies to make real business education accessible to everyone (and) to attract business owners to invest or scale their businesses. \n34 yrs old: I became co-owner of https://Skool.com, which is a platform for people to build communities online, making a living doing what they love, with people like them.\n36 yrs old: I did a $106M book launch selling 3.6M copies of my $100M Money Models book, in 72 hours, breaking the Guinness world record for the fastest selling non-fiction book of all time.\n\nToday: Our portfolio now does $200M/yr between 10 companies. The largest doing $100M/yr the smallest doing $5M per year. Our ownership varies between 20% and 100% ownership of the companies. Many of them we invested in early and helped grow (which is how we make our money - not youtube videos).\n\nTo all the gladiators in the arena, we’re all in the middle of writing our own stories. The worse the monsters, the more epic the story.\n\nYou either get an epic outcome or an epic story. Both mean you win. \n\nKeep crushing. May your desires be greater than your obstacles....",
+    "url": "https://youtube.com/watch?v=kOiNV790uRo",
+    "thumbnail": "https://i4.ytimg.com/vi/kOiNV790uRo/hqdefault.jpg",
+    "category": "DATA_POINT",
+    "captured_at": "2026-02-21T02:00:00+00:00",
+    "status": "pending",
+    "score": 0
+  },
+  {
+    "id": "hn-47094938",
+    "source": "hackernews",
+    "source_detail": "Hacker News",
+    "title": "Show HN: RecoverPay – AI-Powered Debt Recovery Automation for German SMBs",
+    "raw_content": "German SMBs lose 50B EUR annually to unpaid invoices. We built AI-powered dunning automation recovering 73% within 14 days. Smart scoring, auto reminders, legal orders. DSGVO-compliant.",
+    "url": "https://recoverpay.de",
+    "hn_url": "https://news.ycombinator.com/item?id=47094938",
+    "category": "CONTENT_PIECE",
+    "engagement": {
+      "points": 2,
+      "num_comments": 0
+    },
+    "captured_at": "2026-02-21T19:18:41.361Z",
+    "status": "pending",
+    "score": 0
+  },
+  {
+    "id": "reddit-1raxorg",
+    "source": "reddit",
+    "source_detail": "r/LawFirm",
+    "title": "Biglaw to Solo: 20 months In",
+    "raw_content": "### Intro\n\nI last posted around July of last year, at my one-year mark of leaving biglaw litigation practice to go solo. I initially started doing plaintiff-side litigation, and working as a contract attorney for two firms to keep income flowing (I'm the sole breadwinner for a family of five, have a mortgage and student loans and had very little savings). You can find my first post [(3 months) here](https://www.reddit.com/r/LawFirm/s/XR40vxHEet), my second post [(6 months) here](https://www.reddit.com/r/LawFirm/s/dtoiFzV4Ua), and my [one-year post here](https://www.reddit.com/r/LawFirm/s/u6l46BrPKb). I thought it was time for an update.\n\n### Office\n\nAt the last post, I had just signed on a small office in town for $535/month. That turned out to be a great move, but we have already outgrown it. Having a one-room office space meant no waiting room when people arrive early for their appointment. Being on the second floor of an historic building has meant finding alternate locations when a client can't climb the stairs (surprisingly uncommon).\n\nSo, I've just signed a lease on a space about a block from my current office, with a reception area, large conference room, and two offices, for $1800/mo. The other perk is it's across the hall from two financial advisors who are solid referral sources. That should make it pay for itself. I move over this spring, once renovations are done.\n\nTip: Work with a broker for negotiating your office lease. Commission is already priced in, so if you are unrepresented, it doesn't save you month, you just give the leasing agent both halves of that commission.\n\n### Tech\n\nZoho One continues to be fantastic. I still use Wealthcounsel for drafting, and it's fine, but I hate paying $800 a month. I'm hoping by 2027 we will have robust enough templates that we can cut wealthcounsel loose and make our own doc gen system with something like Gavel.\n\nGoogle workspace is going fine, and we added Google Voice pro account for my assistant's phone. It has been fine., though I'm considering switching to Ringcentral, which integrates with Zoho easily.\n\n### Staff\n\nIn August, I hired back the paralegal (lawyer in the Philippines) whom I found via Reddit and who had joined me in late 2024, then left for a full time position because I couldn't give her enough hours. She came on full time and now does all my initial drafting, and all revisions after the draft review meeting. That has been transformative, allowing us to scale up dramatically, as you'll see in the Financials section coming up. She is amazing - extremely sharp, capable, reliable, and fun. She wants to come to the US in a few years. I'm hoping when she does she can get an LLM and a US law license to be promoted to a Senior Associate or partnership role.\n\nIn January I brought on another VA, found through online-jobs.ph. She is an Executive Assistant role, blended with reception/intake. She answers all phone calls now (huge bottleneck removed), sets appointments, follows up, man...",
+    "url": "https://reddit.com/r/LawFirm/comments/1raxorg/biglaw_to_solo_20_months_in/",
+    "category": "DATA_POINT",
+    "engagement": {
+      "upvotes": 21,
+      "comments": 7
+    },
+    "captured_at": "2026-02-21T19:48:27.123Z",
+    "status": "pending",
+    "score": 0
+  },
+  {
+    "id": "reddit-1radqle",
+    "source": "reddit",
+    "source_detail": "r/lawschool",
+    "title": "Best tips for finding summer associate/clerk positions",
+    "raw_content": "I am a 1L in a mid-tier school. I am not looking to get into big law, just looking to find small to mid size firm to get some good and most importantly applicable experience. I have reached out to many firms in my area via email and some via phone, but haven’t had much luck with hearing back (some do reply to inform that they are not hiring right now). What is your tip for reaching out to the firms? I would appreciate any advice on how to get someone to actually respond or be interested in at least discussing the possibility on an internship.\n\nMinor background info: I have previously worked in healthcare, specifically non-profit public health sector, so not many law connections. I also find that many private firm employers are not interested in how it applies to my career, any tips for better applying that background to law? (Not looking to do healthcare law in particular)\n\nThank you.",
+    "url": "https://reddit.com/r/LawSchool/comments/1radqle/best_tips_for_finding_summer_associateclerk/",
+    "category": "PAIN_POINT",
+    "engagement": {
+      "upvotes": 2,
+      "comments": 1
+    },
+    "captured_at": "2026-02-21T19:48:38.416Z",
+    "status": "pending",
+    "score": 0
+  },
+  {
+    "id": "reddit-1rabc8p",
+    "source": "reddit",
+    "source_detail": "r/Ask_Lawyers",
+    "title": "iOS 26 is an infuriating flop. Legally, what is the tipping point between “a set of consumer complaints” and “a class action lawsuit?” And why do people do class action suits vs. individual suits (...",
+    "raw_content": "\\- Autocorrect is barely functioning or corrects the right word to a wrong one. There’s a widening gap between the accuracy of swipe vs. text, but overall it’s horrible.\n\n\\- Apparently third-party keyboards are limited so their functionality doesn’t eclipse the built in keyboard’s.\n\n\\- Safari search only works 25% of the time, etc. I have to now use a third-party browser just to reliably do the most basic of browser activities: searching  \n\n\\- The shift from text-base buttons (Done, Next, etc.) to X &amp; ✔️ icons that sometimes mean different things in different contexts is a nightmare. So many accidentally deleted screenshots. Horrible for accessibility and no option to revert back to text-based buttons.\n\nIn short, I feel like my phone’s functionality has been downgraded significantly. Legally, it’s definitely not a bait and switch, but it feels pretty damn close. \n\n\\- Made worse, of course, that I can’t switch to android or another operating system because I would then lose integration with other Apple products and, most scammily, start destroying group chats because iOS seems to do everything possible to make the green bubble experience as horrible as it can.\n\nI’m just at my wit's end and it made me curious about what class action lawsuits really are all about. ",
+    "url": "https://reddit.com/r/Ask_Lawyers/comments/1rabc8p/ios_26_is_an_infuriating_flop_legally_what_is_the/",
+    "category": "DATA_POINT",
+    "engagement": {
+      "upvotes": 0,
+      "comments": 6
+    },
+    "captured_at": "2026-02-21T19:48:43.167Z",
+    "status": "pending",
+    "score": 0
+  },
+  {
+    "id": "reddit-1rayycu",
+    "source": "reddit",
+    "source_detail": "r/smallbusiness",
+    "title": "I built a bootstrapped fragrance brand for 5 years without investors. Here’s what nobody tells you about growing slowly",
+    "raw_content": "Five years ago, I started SOSA Home &amp; Body, a small home fragrance business from my living room. There were no investors, no funding, and honestly no real business background. I just had curiosity and a slightly irrational belief that scent could change how people feel inside their homes. At that time, I didn’t even know the term bootstrapped business. I only knew that there was no external money coming in, which meant every decision carried real weight.\n\nLooking back, building a business without investors teaches you things very differently from the startup stories we usually see online. Growth doesn’t look exciting when you’re bootstrapping. You pack orders yourself, answer customer messages late at night, learn marketing through trial and error, and fix logistics problems you didn’t even know existed a week earlier. There’s no team to absorb mistakes and no financial runway to experiment endlessly. You either learn quickly or you don’t survive, and over time that constraint becomes your biggest teacher.\n\nAround the second year, something shifted in how I thought about growth. I stopped focusing on scaling quickly and started focusing on understanding deeply. When you’re running a bootstrapped small business, customers are not just revenue numbers; they become feedback loops. A repeat order feels more meaningful than any analytics dashboard. A complaint becomes product development. A simple message becomes insight into what people actually value. Customers, in a way, become your investors — except they invest through trust rather than capital.\n\nOne thing nobody talks about enough is how slow growth affects your mindset. There were long stretches where nothing looked impressive from the outside. No viral moments, no dramatic milestones, just consistent effort that felt invisible. It’s easy during those phases to believe you’re falling behind, especially when startup culture celebrates speed, funding announcements, and rapid expansion. But building a brand organically changes your relationship with progress. You stop chasing validation and start chasing clarity.\n\nRunning a home fragrance business from scratch forced me to understand something fundamental about branding. People don’t really buy products. They buy atmosphere. They buy comfort after long days. They buy identity — how they want their spaces to feel and what those spaces say about them. Once I understood that, growth stopped being about selling candles or fragrances and started being about creating emotional experiences people wanted to return to. That understanding only comes from spending time close to customers, not far from them.\n\nFive years later, I see bootstrapping very differently. Investors can accelerate growth, and there is nothing inherently wrong with that path. But building without investors teaches patience, resilience, and listening in ways that are difficult to shortcut. You become intentional with decisions because resources are limited. You learn what genuine...",
+    "url": "https://reddit.com/r/smallbusiness/comments/1rayycu/i_built_a_bootstrapped_fragrance_brand_for_5/",
+    "category": "PAIN_POINT",
+    "engagement": {
+      "upvotes": 3,
+      "comments": 2
+    },
+    "captured_at": "2026-02-21T19:48:52.251Z",
+    "status": "pending",
+    "score": 0
+  },
+  {
+    "id": "reddit-1raxlfa",
+    "source": "reddit",
+    "source_detail": "r/smallbusiness",
+    "title": "What’s One Business Task You’d Automate Immediately If You Could?",
+    "raw_content": "I build business automation systems through WPDriven, helping companies across various industries solve their operational bottlenecks.  \n  \nRight now, I’m exploring my next build and want to learn directly from active business leaders rather than guessing what the market needs.\n\nIf you have a brief moment to share: What is one daily or weekly task in your business that you’d automate completely if you could?",
+    "url": "https://reddit.com/r/smallbusiness/comments/1raxlfa/whats_one_business_task_youd_automate_immediately/",
+    "category": "QUESTION",
+    "engagement": {
+      "upvotes": 0,
+      "comments": 8
+    },
+    "captured_at": "2026-02-21T19:48:52.251Z",
+    "status": "pending",
+    "score": 0
+  },
+  {
+    "id": "reddit-1raznko",
+    "source": "reddit",
+    "source_detail": "r/Entrepreneur",
+    "title": "Scaling an influencer brand from $2M to $8M in 15 months was easier than getting past a LinkedIn bot. What is happening?",
+    "raw_content": "I’m going to be blunt because I’m genuinely confused.\n\nI’ve spent 11 years as a Creative &amp; Video Director. My last run was as Head of Content where I built a \"content-to-commerce\" ecosystem that scaled annual revenue from $2M to $8M in 18 months. We basically turned organic video into a high-ticket funnel that actually converted.  \n\nI’m talking high-end cinematic stuff, feature-length documentary standards. I’ve managed the P&amp;L, built global teams from scratch, and handled everything from AI-integrated workflows to GEO/AEO strategy to keep us visible in the new search landscape.  \n\nThe problem:\n\nI’m back in the job market and it’s a graveyard. I’m seeing 500+ applicants on LinkedIn within 10 minutes. I have the data, the portfolio, and the ROI to prove I can move the needle, but I’m getting ghosted by automated HR filters. It feels like the \"apply\" button is just a black hole.\n\nIf you’re a founder or an agency owner here:\n\n1. Is the market actually this saturated, or are companies just overwhelmed by low-quality AI applications that they’ve stopped looking at the real talent?\n\n2. Where do you actually find your senior creative leadership? Because the traditional boards feel like a waste of time for anyone above mid-level.\n\nI’m not looking for a pity party, I’m looking for the \"new rules\" of the game. If you’ve managed to bypass the gatekeepers or you're a founder who hires for these roles, where should I be looking?",
+    "url": "https://reddit.com/r/Entrepreneur/comments/1raznko/scaling_an_influencer_brand_from_2m_to_8m_in_15/",
+    "category": "DATA_POINT",
+    "engagement": {
+      "upvotes": 0,
+      "comments": 1
+    },
+    "captured_at": "2026-02-21T19:48:54.589Z",
+    "status": "pending",
+    "score": 0
+  },
+  {
+    "id": "reddit-1raydb6",
+    "source": "reddit",
+    "source_detail": "r/Entrepreneur",
+    "title": "virtual assistant/secretary to local businesses?",
+    "raw_content": "Hey everyone,\n\nI’m exploring a business model where you set up an AI-powered “virtual secretary” for local businesses (barbershops, gyms, dentists, realtors, etc.). The idea is simple:\n\n* Auto-reply to Instagram/WhatsApp messages\n* Answer FAQs (prices, location, hours, services)\n* Send a booking link (Calendly, etc.)\n* Confirm appointments and send reminders\n* Do basic follow-ups\n\nBasically, use ChatGPT + simple automations (Zapier/Make) to save them time and help them not lose leads.\n\nI’m curious:\n\n* Has anyone here actually sold this as a service?\n* What niche worked best for you?\n* Did you charge setup + monthly, or just monthly?\n* What was the hardest part: selling it, setting it up, or keeping clients?\n* Any mistakes you’d avoid if you started again?\n\nNot trying to sell anything here, just genuinely want to learn from people who’ve tried this or something similar (AI automation, chatbots, virtual assistants for SMBs).\n\nWould love to hear real experiences 🙏",
+    "url": "https://reddit.com/r/Entrepreneur/comments/1raydb6/virtual_assistantsecretary_to_local_businesses/",
+    "category": "QUESTION",
+    "engagement": {
+      "upvotes": 2,
+      "comments": 4
+    },
+    "captured_at": "2026-02-21T19:48:54.590Z",
+    "status": "pending",
+    "score": 0
+  },
+  {
+    "id": "reddit-1ratcdc",
+    "source": "reddit",
+    "source_detail": "r/Entrepreneur",
+    "title": "How are you improving the customer experience in your business?",
+    "raw_content": "As Steve Jobs said \"Start with the customer experience and work backwards to the technology.\"\n\nMay be in the areas like customer onboarding, website, email marketing, SMM, customer support etc.\n\nAlso product, positioning, pricing, packaging as well.",
+    "url": "https://reddit.com/r/Entrepreneur/comments/1ratcdc/how_are_you_improving_the_customer_experience_in/",
+    "category": "QUESTION",
+    "engagement": {
+      "upvotes": 5,
+      "comments": 6
+    },
+    "captured_at": "2026-02-21T19:48:54.590Z",
+    "status": "pending",
+    "score": 0
+  },
+  {
+    "id": "reddit-1rasol1",
+    "source": "reddit",
+    "source_detail": "r/Entrepreneur",
+    "title": "I uploaded a self help book into an AI and it asked me harder questions than any coach I've ever paid",
+    "raw_content": "I spent 9 years building businesses and I had no idea why I was doing any of it\n\nok so this might sound dumb but I uploaded a book into an AI and it helped me understand something about myself that 9 years of running businesses never did. and I keep thinking about it so figured I'd write it out.\n\nI'm 36. sold a company that had 60 employees. built multiple things since then. made good money lost good money. on paper everything looked fine. in reality after I sold I spent close to three years just... doing nothing that worked. launched a community, made like 10K and quit. took on a client I couldnt deliver for and had to refund them. tried helping a friend sell his course over the phone, we both gave up after few weeks. made some impulsive investments im not proud of.\n\nand the whole time I kept thinking something was wrong with me because I'd already proven I could build things. 60 employees. millions in revenue. and now I couldnt even commit to finishing a landing page without overthinking it for a week.\n\nanyway. few weeks ago I was using AI for work stuff like I always do. ads, competitor research, cold email sequences the usual. and I had this random thought like what if I actually used this thing for something personal. not business personal. like actually about me.\n\nso I took Simon Sineks Find Your Why book, the actual PDF, uploaded it into Claude and basically said ok treat me like a coaching client. go through the exercises with me. ask me the questions from the book but dont let me give you surface level bullshit answers.\n\nand man. it went places I wasnt expecting.\n\nit started asking me about specific moments. not like \"what are your values\" garbage. real stuff. tell me about a time you felt most alive what were you doing who was around you. and everytime I gave a vague answer it pushed back. like no be more specific what exactly happened what did it feel like.\n\nso im sitting there telling it about this time in Australia when I was 22 and broke, and I connected a friend who was an investor type with a DJ who needed funding for something. and I remember watching them talk and feeling this thing in my chest like THIS. this is it. not the money not the deal just the fact that I put two people in a room who would never have met without me and something was happening.\n\nand then it asked me ok what else. and I realized every single story I was telling had the same thread. connecting people. putting the right humans together. making things happen that wouldnt exist if I wasnt the bridge.\n\nafter like two hours of going back and forth it pulled everything into one sentence and I literally stared at my screen for a while.\n\n\"To transform ideas into reality by connecting the right people so that everyone can build what they envision.\"\n\nnow I know reading someone elses purpose statement feels like nothing. its just words. but arriving at it through your own stories is a completly different experience. it wasnt generated by the AI. it was extracted f...",
+    "url": "https://reddit.com/r/Entrepreneur/comments/1rasol1/i_uploaded_a_self_help_book_into_an_ai_and_it/",
+    "category": "PAIN_POINT",
+    "engagement": {
+      "upvotes": 2,
+      "comments": 19
+    },
+    "captured_at": "2026-02-21T19:48:54.590Z",
+    "status": "pending",
+    "score": 0
+  },
+  {
+    "id": "reddit-1rargy7",
+    "source": "reddit",
+    "source_detail": "r/Entrepreneur",
+    "title": "Out of curiosity!!",
+    "raw_content": "I am really curious about the thing that I am 22 years old and I wanna create a massive distribution in not in just one niche, but where I can get along with very great people of various niches and network with them and sell my services to them, which really don't know what I want to sell at this moment.\n\nA quick history about me. \n\nRan a marketing agency for 1.5 years but then left it because I realised I don't know shit about platforms and all I am doing it to pretend but I was good with tech so I am just curious on how can I make my hands dirty and start something that can give my older version a satisfaction and also about money well yeah If I can start making money in tech then yeah that would be huge too.\n\nBy money, I meant not $10k, $20k months but like $100k or more months. Wanna play really big, and I know I have ambition, but what I really need is like a bit of direction and what is great to be done here.\n\nGenuinely need advice on this.\n\nWhat's your take on this?   \nAnd if you are young and starting your entrepreneurship days and if you are in tech then how would you have proceeded, and maybe I should say what things you should have done that would have mattered the most in the long run?\n\nExpecting great advice.",
+    "url": "https://reddit.com/r/Entrepreneur/comments/1rargy7/out_of_curiosity/",
+    "category": "DATA_POINT",
+    "engagement": {
+      "upvotes": 0,
+      "comments": 9
+    },
+    "captured_at": "2026-02-21T19:48:54.590Z",
+    "status": "pending",
+    "score": 0
+  },
+  {
+    "id": "reddit-1rawtgp",
+    "source": "reddit",
+    "source_detail": "r/startups",
+    "title": "Sales automation during pre-rev stage. I will not promote",
+    "raw_content": "Hi folks, I’m in my early weeks of developing my startup. I have a solid MVP already and have been trying to find design partners, pilots and clients .\n\nIt’s been quite tough so far and not many people are ready to jump on calls and demos. The industry we operate in is a part of it - legal tech specifically on the side where stakes are high. People are generally conservative. I know that I need to push those numbers though . So far it’s been mostly manual LinkedIn outreach. Recently I developed a gtm strategy that involves lots of automation and templating, but targeted outreach based on signals. \n\nWhat I’m wondering is how early did you start automating you client discovery, the outreach and whether it’s actually healthy to do so. Thanks for any discussion",
+    "url": "https://reddit.com/r/startups/comments/1rawtgp/sales_automation_during_prerev_stage_i_will_not/",
+    "category": "PAIN_POINT",
+    "engagement": {
+      "upvotes": 3,
+      "comments": 6
+    },
+    "captured_at": "2026-02-21T19:48:57.051Z",
+    "status": "pending",
+    "score": 0
+  },
+  {
+    "id": "reddit-1rb0j1v",
+    "source": "reddit",
+    "source_detail": "r/SaaS",
+    "title": "outbound automation tool (lead scraping → personalized outreach → auto-replies)",
+    "raw_content": "We were struggling with outbound because everything felt fragmented.\n\nLead sourcing was one tool.  \nPersonalization was another.  \nSending sequences was separate.  \nAnd reply handling always ended up manual.\n\nSo I built an internal workflow that connects everything into one pipeline:\n\n* Define ICP (title, industry, location)\n* Generate + scrape targeted leads\n* Enrich profile data\n* Create personalized LinkedIn + email messages\n* Send with randomized delays\n* Log everything in structured storage\n* Trigger auto-responses based on incoming messages\n* Move warm leads toward calendar booking\n\nThe unexpected bottleneck wasn’t writing copy — it was continuing conversations naturally.\n\nMost tools stop at “sequence sent.”  \nBut real outbound is won in the replies.\n\nAdding conversation memory + webhook-triggered responses made the biggest difference in reducing manual monitoring.\n\nStill refining it, but it’s running batches of 100+ prospects without constant supervision.\n\nCurious how others here are handling outbound:\n\n* Fully manual?\n* SDR-driven?\n* Partial automation?\n* Fully automated systems?\n\nWould love to compare approaches.",
+    "url": "https://reddit.com/r/SaaS/comments/1rb0j1v/outbound_automation_tool_lead_scraping/",
+    "category": "PAIN_POINT",
+    "engagement": {
+      "upvotes": 1,
+      "comments": 1
+    },
+    "captured_at": "2026-02-21T19:48:59.393Z",
+    "status": "pending",
+    "score": 0
+  },
+  {
+    "id": "reddit-1rb0iiq",
+    "source": "reddit",
+    "source_detail": "r/SaaS",
+    "title": "I'm Jente, a real person, and I'm building a resume builder in a very crowded niche. So far 25.000 resumes are exported! MRR=600$",
+    "raw_content": "Hello fellow SaaS builders, I’m Jente, solo founder of Mokaru.ai.\n\nMokaru is a job search platform focused on one very specific, very crowded niche: helping job seekers tailor their resume to real job descriptions and keep track of their applications in one place. Yes, it’s crowded. Yes, there are already a ton of resume tools. That part is not lost on me.\n\nI still decided to build it anyway, because the pain is real. People are sending out dozens of applications, have zero overview, don’t follow up, and end up tweaking their resume in Word or Google Docs for every job like it’s 2009.\n\nI started Mokaru to solve my own frustration: One place to manage applications, tailor resumes properly, and stop guessing what actually matters for each job.\n\nThe niche is VERY crowded (a lot of vibeCoded applications), which is honestly a terrible business idea on paper. But I’m stubborn, and I’m starting to see results. So far, users have created 25,000+ resumes on the platform, and the feedback loop has been surprisingly motivating. That’s the only thing keeping this thing alive, to be honest.\n\nSome lessons so far from building in a saturated space:\n\n* You don’t need a \"revolutionary\" idea. You need to solve a real, boring problem better than existing tools for a specific group of users.\n* Resume tailoring actually matters. Not in a magical \"ATS-hack way\", but in a \"stop sending the same generic CV to 50 companies\" way. People underestimate how much small wording changes matter when humans eventually read the resume/cv.\n* Job search is mostly a workflow problem. Tools should reduce mental load, not add more steps.\n\nBuilding a SaaS solo is slow and humbling :). No overnight success, no \"10K/MRR\". Just shipping, fixing broken stuff, and talking to users who politely tell you what sucks.\n\nOrganic traffic is still at 0 and I'm not sure how to fix it, yet. a lof of competition, with money. I gained my growth so far by using lead generation tools, messaging users (this takes a lof of time) and some Reddit ads. The people that use it, like it! Distribution is key now.\n\nI’m not claiming Mokaru is \"the best platform\" yet. That’s the goal. I genuinely want to build the best possible tool for job seekers, without the usual fake marketing promises. No \"we guarantee you a job\" nonsense. Just a platform that makes the job search less chaotic and more intentional.\n\nIf you’re building in a crowded market: How do you stay motivated when your idea isn’t sexy or unique on paper?  \nIf you’re a job seeker:  \nWhat part of the application process drains you the most?\n\nHappy to answer questions about building in a saturated niche, bootstrapping, user acquisition, or resume workflows.",
+    "url": "https://reddit.com/r/SaaS/comments/1rb0iiq/im_jente_a_real_person_and_im_building_a_resume/",
+    "category": "PAIN_POINT",
+    "engagement": {
+      "upvotes": 1,
+      "comments": 0
+    },
+    "captured_at": "2026-02-21T19:48:59.393Z",
+    "status": "pending",
+    "score": 0
+  },
+  {
+    "id": "reddit-1rb0fkj",
+    "source": "reddit",
+    "source_detail": "r/SaaS",
+    "title": "Is AI agency is profitable?",
+    "raw_content": "Currently there are too many AI agencies in market, So starting a new AI agency is now profitable do other companies really need automation systems?",
+    "url": "https://reddit.com/r/SaaS/comments/1rb0fkj/is_ai_agency_is_profitable/",
+    "category": "QUESTION",
+    "engagement": {
+      "upvotes": 1,
+      "comments": 0
+    },
+    "captured_at": "2026-02-21T19:48:59.393Z",
+    "status": "pending",
+    "score": 0
+  },
+  {
+    "id": "reddit-1rb01wp",
+    "source": "reddit",
+    "source_detail": "r/SaaS",
+    "title": "I wasted 14 months building products nobody wanted. The fix was embarrassingly simple.",
+    "raw_content": "This is going to sound obvious in hindsight but it genuinely changed everything for me.\n\nI spent the better part of a year and a half building two different SaaS products.\n\nThe first one took me 8 months. Launched to absolute silence.\n\nThe second one I built faster, about 5 months, but same result. Maybe 12 signups total between both. Zero paying customers.\n\nThe problem wasn't my code, my design, or even my marketing.\n\nThe problem was I was solving imaginary problems.\n\nI'd come up with an idea in the shower, get excited, and immediately start building. Never once stopped to check if real people were actually frustrated enough to pay for a solution.\n\n...\n\nAfter the second failure I was pretty burnt out. I almost quit entirely.\n\nBut instead I did something different.\n\nI started obsessively reading negative reviews. G2 reviews, app store complaints, Reddit rant posts, Upwork job listings where people were hiring freelancers to solve repetitive problems manually.\n\nWhat I found was eye opening.\n\nThere were patterns everywhere. The same complaints kept surfacing across multiple platforms.\n\nPeople spending $2000+ on consultants for things that should be automated. Small business owners posting walls of text about how their current tools were failing them. Developers on Upwork getting hired repeatedly for the exact same task across dozens of clients.\n\n...\n\nI started keeping a spreadsheet. Every validated complaint went in with the source, the platform, how many times I saw it repeated, and whether people were already spending money on bad solutions.\n\nWithin a few weeks I had over 200 entries.\n\nEventually I got tired of doing this manually so I built a tool that does it automatically. It pulls hundreds of thousands of negative reviews and user complaints from G2/Capterra, Reddit, Upwork and the App Store and breaks them all down by pain point. Saves weeks of manual research.\n\nThat process became the foundation for my third product.\n\nExcept this time I didn't guess. I picked the problem that had the most evidence behind it, the most people complaining, and the clearest signal that money was already flowing toward broken solutions.\n\nBuilt an MVP in 11 days. Had 14 paying customers within the first three weeks.\n\nNot because I'm some genius builder, but because the demand was already there. I just had to find it instead of inventing it.\n\n...\n\n\\*\\*Here's what I'd tell anyone starting from zero today:\\*\\*\n\n1\\\\ Stop brainstorming ideas. Start collecting complaints.\n\nThe best SaaS ideas aren't creative. They're obvious once you see enough people struggling with the same thing.\n\n2\\\\ Go where people vent honestly.\n\nG2 reviews are gold because users are comparing against competitors and saying exactly what's missing. App store reviews surface problems people have with existing solutions. Reddit threads from frustrated business owners tell you what they'd pay to fix right now. Upwork postings show you what tasks are being done manually over and over.\n\n3\\\\ Look for...",
+    "url": "https://reddit.com/r/SaaS/comments/1rb01wp/i_wasted_14_months_building_products_nobody/",
+    "category": "DATA_POINT",
+    "engagement": {
+      "upvotes": 1,
+      "comments": 0
+    },
+    "captured_at": "2026-02-21T19:48:59.394Z",
+    "status": "pending",
+    "score": 0
+  },
+  {
+    "id": "reddit-1rayxqo",
+    "source": "reddit",
+    "source_detail": "r/SaaS",
+    "title": "Seeking advise on GTM - Content Marketing SaaS",
+    "raw_content": "I have been building [robowrite.ai](http://robowrite.ai) for about 3 months now, seeking advise on how to approach GTM.\n\n  \nI like building, but terrible in outreach!\n\n  \nHow do you guys handle GTM? Should I get freelancers for this?",
+    "url": "https://reddit.com/r/SaaS/comments/1rayxqo/seeking_advise_on_gtm_content_marketing_saas/",
+    "category": "PAIN_POINT",
+    "engagement": {
+      "upvotes": 1,
+      "comments": 2
+    },
+    "captured_at": "2026-02-21T19:48:59.394Z",
+    "status": "pending",
+    "score": 0
+  },
+  {
+    "id": "reddit-1rayiwz",
+    "source": "reddit",
+    "source_detail": "r/SaaS",
+    "title": "if i build this does you use it ?",
+    "raw_content": "Now a days many solo saas founders are vibecoding using ai and i also do that but while creating a landing page pages and blog pages the ai tools like lovable,cursor,bolt,antigravity etc will literally make it worse the headlines ,cta's,texts etc are too programatic not easily understandble it makes very low section like it will only generate only navbar,hero section,pricing and footer as default no other sections no good contents till you explain it 5-6 times which eat up your 40% of credits.\n\n  \nso,i decided to make a micro saas where you enter your landing page url ai will analyze youe site and make a full report including master prompt explaing what is good what is bad how to fix it manually + full master prompt you can give to your app builder to fix it in single prompt.\n\n  \nbut,i am confused does it is my problem or also with others so i am asking you people if i build this will you use it and what can be the good suggestions for this like i am thinking the pricing will be 1 project for 7$ and 19$/month for unlimited projects ",
+    "url": "https://reddit.com/r/SaaS/comments/1rayiwz/if_i_build_this_does_you_use_it/",
+    "category": "DATA_POINT",
+    "engagement": {
+      "upvotes": 1,
+      "comments": 0
+    },
+    "captured_at": "2026-02-21T19:48:59.394Z",
+    "status": "pending",
+    "score": 0
+  },
+  {
+    "id": "reddit-1rabj4p",
+    "source": "reddit",
+    "source_detail": "r/sweatystartup",
+    "title": "…Do employees NEED Commercial Auto Insurance?",
+    "raw_content": "I’ve been gradually scaling a small home services business, and am looking to hire a part-time employee. \n\nIt would be probably 1 day per week to start, but require their own vehicle as they travel from house to house. \n\nIs commercial auto insurance essential for this? I’m doing the math and $5k - $7k to insure them would be close to their annual pay. ",
+    "url": "https://reddit.com/r/sweatystartup/comments/1rabj4p/do_employees_need_commercial_auto_insurance/",
+    "category": "DATA_POINT",
+    "engagement": {
+      "upvotes": 3,
+      "comments": 23
+    },
+    "captured_at": "2026-02-21T19:49:01.811Z",
+    "status": "pending",
+    "score": 0
+  },
+  {
+    "id": "reddit-1rapkqm",
+    "source": "reddit",
+    "source_detail": "r/EntrepreneurRideAlong",
+    "title": "​I built and launched my own app. Now I’m building apps for other founders to fund my marketing.",
+    "raw_content": "Hey everyone,\n\nI’m an independent Android developer, and I’m currently bootstrapping my own startup.\nI recently launched my own app on the Google Play Store—a crypto paper trading simulator called Cyrex.\n\n Getting it live was a huge milestone, but now I’m at the hardest part: scaling it. To raise funds for marketing and user acquisition, I am taking on 1-2 freelance clients to build their apps. Every dollar I make goes straight into growing my own project.\n\n\nI know how frustrating it is to hire developers who only know how to write code but have no idea how a product actually gets launched. Because I build and publish my own apps \n\n\n I understand the entire lifecycle.\nHow I can help you get your idea to market:\nEnd-to-End Development: Whether you are starting from a blank page or have a stalled project, I can build a fully functional native Android app.\n\nComplex Integrations: I can link your app to custom databases, live data feeds (like I did with real-time crypto markets), and payment systems.\n\nPublishing &amp; ASO: I don’t just hand over the code. I will help you navigate the massive headache of passing Google's strict Play Store review policies, packaging the app, and setting up your App Store Optimization (ASO) so organic users can actually find you.\n\n\nI believe in proving my skills. You can check out the exact level of UI/UX, performance, and data integration I ship by downloading my live app from my profile \n\nLet's work together\nIf you are a founder with a solid idea or a budget, but you need a technical partner who actually knows how to cross the finish line, let's talk. I am open to fixed-price project rates or hourly contracts depending on what you need.\n\nSend me a DM or chat request with a brief overview of your concept. Let’s build your app so I can grow mine",
+    "url": "https://reddit.com/r/EntrepreneurRideAlong/comments/1rapkqm/i_built_and_launched_my_own_app_now_im_building/",
+    "category": "PAIN_POINT",
+    "engagement": {
+      "upvotes": 0,
+      "comments": 6
+    },
+    "captured_at": "2026-02-21T19:49:04.223Z",
+    "status": "pending",
+    "score": 0
+  },
+  {
+    "id": "reddit-1raou36",
+    "source": "reddit",
+    "source_detail": "r/EntrepreneurRideAlong",
+    "title": "your revenue number means less than you think. here's what buyers actually see.",
+    "raw_content": "Looked at a $50k/month business last week and passed. Then bought one doing $31k. Let me explain.\n\nThis keeps coming up and I think sellers genuinely don’t understand how buyers think about revenue. Everyone’s so focused on the number that they miss what the number is actually made of.\n\nThe $50k business looked great on the surface. Growing, profitable on paper, decent margins. But when we pulled it apart like 60% of that revenue was coming from paid channels. Facebook and Google ads mostly, around $18k/month in spend. So you’re really looking at $32k in revenue that actually sticks if something goes wrong with the ads. And things go wrong with ads all the time. CPMs spike, accounts get suspended, iOS updates tank your targeting overnight. I’ve seen it happen enough that I basically treat paid-dependent revenue as semi-recurring at best.\n\nThe $31k business? Almost entirely organic search and direct traffic. Referral from a few partners. Maybe $800/month in ad spend for retargeting. Thats it. That revenue exists because the product is good and people find it, not because someone is feeding a machine $600 a day to keep the lights on.\n\nWe ended up paying a higher multiple on the $31k business than what the $50k seller was asking. And the $50k seller was frustrated, kept saying but my revenue is higher. Yeah man it is. But revenue isn’t just a number, its a composition. And the composition matters more than the total in almost every deal I’ve looked at.\n\nThe other thing that kills me is concentration. We see this constantly at Pocket Fund where a business looks healthy until you realize two customers make up 30-40% of the total. Thats not a business thats a relationship. If one of those customers leaves you just lost a third of your revenue overnight and theres nothing you can do about it. I’ve watched sellers lose half a turn on their multiple specifically because of concentration risk. On a business doing $400k in annual profit thats like $200k in purchase price just… gone. Because you let two accounts get too big.\n\nThe founders who get this are the ones who think about revenue quality before they ever think about selling. Shifting even 20% of your revenue from one-time to recurring, or from paid to organic, or spreading out your customer base… that stuff compounds into your valuation in ways that just adding more revenue at the same quality never will.\n\nAnyway I think about this a lot because the gap between what sellers think matters and what buyers actually price is probably the single biggest disconnect in the whole space.",
+    "url": "https://reddit.com/r/EntrepreneurRideAlong/comments/1raou36/your_revenue_number_means_less_than_you_think/",
+    "category": "DATA_POINT",
+    "engagement": {
+      "upvotes": 0,
+      "comments": 8
+    },
+    "captured_at": "2026-02-21T19:49:04.223Z",
+    "status": "pending",
+    "score": 0
+  },
+  {
+    "id": "reddit-1ranx40",
+    "source": "reddit",
+    "source_detail": "r/EntrepreneurRideAlong",
+    "title": "I built a tool to automate video essay creation from text - I'm looking for some testers!",
+    "raw_content": "Hello! \n\nI'm hoping to get a few testing eyes on this project before I open it up to the world. \n\nIt's called Cliptude dot com - it's a text-to-video automation tool that turns scripts into fully edited videos (without the usual AI nonsense) because I was personally finding myself spending way more time editing my cultural autopsy video essays than actually researching and writing them. \n\nHoping this resonates with other creators.\n\nWould love people to take a look and give some feedback. \n\nWhen you sign up, you will automatically get 700 free credits so you can fully test it out!\n\nLet me know your thoughts in the comments!",
+    "url": "https://reddit.com/r/EntrepreneurRideAlong/comments/1ranx40/i_built_a_tool_to_automate_video_essay_creation/",
+    "category": "PAIN_POINT",
+    "engagement": {
+      "upvotes": 1,
+      "comments": 4
+    },
+    "captured_at": "2026-02-21T19:49:04.223Z",
+    "status": "pending",
+    "score": 0
+  },
+  {
+    "id": "reddit-1rafffk",
+    "source": "reddit",
+    "source_detail": "r/EntrepreneurRideAlong",
+    "title": "I stopped building and started helping builders manually. 10 days in",
+    "raw_content": "I've been a developer for 10+ years. Built and failed with 3 products. Every single time the same pattern: build something, post about it, get some likes from other builders, wonder why nobody signs up.\n\nFor a while I got caught up in the X growth game. Follow for follow, engage pods, \"build in public\" threads. My follower count went up but none of it translated into anything real. I was building an audience of other builders who would never use my products.\n\nThen I had this idea for a distribution coach for indie builders, I call it Stride (strideday.com). Something that helps people like me figure out where to actually find users. And I almost did what I always do: disappear for 2 months, build the whole thing, launch to crickets.\n\nThis time I forced myself to stop. I made a landing page. That's it. No product. Then I started doing the work by hand. A few people joined the waitlist and left their X handles, so I looked at their profiles, their landing pages, their content, and just DM'd them with honest feedback. For free. No pitch.\n\nI also changed how I use X. Instead of being a generic reply guy trying to hit 50-100 replies a day, I started only replying to posts that were actually relevant to what I'm building. Builders sharing their launches, asking how to get users, struggling with distribution. Real conversations instead of volume. A couple of those replies actually turned into leads, people who DM'd me asking for help.\n\nMy follower growth slowed down compared to the follow-for-follow days. But honestly I'm way less stressed. The engagement feels real now. I'm sharing what I'm learning from the coaching work, and it turns out that's way more interesting to people than \"day 14 of building my SaaS.\" I'm learning more about what this product should actually be than I ever would have figured out sitting in my code editor. One builder even DM'd me saying this was the most useful feedback he'd gotten on his product. That felt better than any follower milestone.\n\nI've worked with about 8 builders now. Here are the biggest things I keep learning.\n\n**1. Where you post matters more than how much you post**\n\nMost builders think the answer to \"nobody's using my product\" is to post more. It's not. It's to post in the right place. You can be incredibly consistent, show up every day, and still get nowhere if the people seeing your content would never be your users. The flip side is also true. When you find the right community, even a single post can do more than months of grinding on the wrong platform. One builder had 2,000 posts on X with 114 followers because he was talking to other builders, not his actual users. Another posted once in a niche subreddit and got 60 signups.\n\n**2. Thinking about distribution forces you to fix your positioning**\n\nI expected to help people with tactics. Where to post, what to say, when to say it. But almost every conversation turned into a positioning conversation first. If your product is \"for everyone,\" you have no...",
+    "url": "https://reddit.com/r/EntrepreneurRideAlong/comments/1rafffk/i_stopped_building_and_started_helping_builders/",
+    "category": "PAIN_POINT",
+    "engagement": {
+      "upvotes": 10,
+      "comments": 12
+    },
+    "captured_at": "2026-02-21T19:49:04.224Z",
+    "status": "pending",
+    "score": 0
+  },
+  {
+    "id": "reddit-1raxvw3",
+    "source": "reddit",
+    "source_detail": "r/SEO",
+    "title": "My thoughts on scaling agency services through automated site audits",
+    "raw_content": "I have been reassessing my workflow for client onboarding and site health checks lately. In my experience, manual audits are becoming a massive bottleneck if you are trying to scale an agency or manage multiple high-traffic properties. I recently started using tools like Scanly to automate the heavy lifting for SEO, performance, and security metrics. Beyond just improving your own site's traffic, there is a significant opportunity in selling these automated reports to other marketing agencies that lack the technical bandwidth. It streamlines the lead generation process and provides immediate value. I am curious—do you find that automated audits provide enough depth for your standards, or are you still sticking to manual deep-dives?",
+    "url": "https://reddit.com/r/SEO/comments/1raxvw3/my_thoughts_on_scaling_agency_services_through/",
+    "category": "PAIN_POINT",
+    "engagement": {
+      "upvotes": 1,
+      "comments": 1
+    },
+    "captured_at": "2026-02-21T19:49:06.574Z",
+    "status": "pending",
+    "score": 0
+  },
+  {
+    "id": "reddit-1rae3vb",
+    "source": "reddit",
+    "source_detail": "r/PPC",
+    "title": "Hiring contractor to help out with Google Ads long term",
+    "raw_content": "We're a small agency managing some enterprise clients and need some help with the executional work load for lead gen and ecom (updating ads, setting up promos, running google sheet dashboards, setting up basic campaigns, budgets, bids, creative, SQR, etc.).\n\n1-2 meeting per week, minimum of 10 hours per week.\n\nLooking for US based, strong English speakers only.\n\nLooking for long term support / not project based.\n\n3+ years of experience\n\nPlease dm me with your rate and experience summary and we'll setup a call.",
+    "url": "https://reddit.com/r/PPC/comments/1rae3vb/hiring_contractor_to_help_out_with_google_ads/",
+    "category": "PAIN_POINT",
+    "engagement": {
+      "upvotes": 1,
+      "comments": 3
+    },
+    "captured_at": "2026-02-21T19:49:08.931Z",
+    "status": "pending",
+    "score": 0
+  },
+  {
+    "id": "reddit-1rampmv",
+    "source": "reddit",
+    "source_detail": "r/digital_marketing",
+    "title": "What waitlist size / metrics do you consider “validation” for a new product?",
+    "raw_content": "I’ve set up a waitlist for a new product (fitness accountability app).\n\n I’d like to ask:\n\n\\- What number of signups would you consider “validation” before starting to develop it (e.g. 100, 500, 1k)?\n\n\\- What other signs do you look at besides raw count?\n\nI am currently posting only on TikTok and I have around 400 profile visits in 2 weeks. The user can sign-up after being re-directed to the landing page.\n\nAny advice is welcome, thank you.",
+    "url": "https://reddit.com/r/digital_marketing/comments/1rampmv/what_waitlist_size_metrics_do_you_consider/",
+    "category": "QUESTION",
+    "engagement": {
+      "upvotes": 3,
+      "comments": 13
+    },
+    "captured_at": "2026-02-21T19:49:13.745Z",
+    "status": "pending",
+    "score": 0
+  },
+  {
+    "id": "reddit-1razkas",
+    "source": "reddit",
+    "source_detail": "r/socialmedia",
+    "title": "How much vulnerability should I show in my social media? Nail artist starting her career",
+    "raw_content": "Hi all,\n\nSo here’s the truth, my life blew up last year, I was bullied at work and was pushed to quit my job (service designer at the government) and as that was happening the guy I dated for 5 months ghosted me, and then my “therapist” saw that as a good opportunity to ask me out on a date and try to convince me to move back to Iran to live with her ( I migrated to Canada in 2021 and got my masters in design here)… anyway that was the last draw that made me have a nervous break down and end up hospitalized for 3 weeks. There, I was diagnosed with bipolar disorder. \n\nI can’t find another job in service design no matter how hard I try. I barely get interviews. The job market is terrible. So I wanna pivot, I’ve been doing my own nails and my family and friends’ for years. I’m getting a diploma in Nail tech and facial and want to start my own career as an independent nail artist and hopefully grow my business to have a spa one day. \n\nI wanna start recording my journey and posting it on social media to build an audience but I don't know how much of my story I should share. How much of it would help me and how much would hurt my business. Some say act successful and fully booked until you are, some say show vulnerability and make your audience relate to your story.  The reality for me is that I’m at my rock bottom. I barely have a cashier part time job right now and live with my sister and fiance in her one-bedroom apartment. Showing vulnerability for me means sharing where I’m starting at, the rock bottom. \n\nSo do you think I should be honest and vulnerable in my social media marketing strategy or do you think I should be strategic and pretend to be successful until I become successful? ",
+    "url": "https://reddit.com/r/socialmedia/comments/1razkas/how_much_vulnerability_should_i_show_in_my_social/",
+    "category": "QUESTION",
+    "engagement": {
+      "upvotes": 1,
+      "comments": 1
+    },
+    "captured_at": "2026-02-21T19:49:16.115Z",
+    "status": "pending",
+    "score": 0
+  },
+  {
+    "id": "reddit-1rayp6x",
+    "source": "reddit",
+    "source_detail": "r/socialmedia",
+    "title": "My social media looked like a mess until I followed these 5 simple rules",
+    "raw_content": "If you’re managing your own socials or handling clients, these things might help you scale faster and stop you from feeling all over the place.\n\n  \n**1. Start with the connection first**\n\nWhen I started, I made one mistake. I jumped straight into polished content.\n\nNo one cared, and it only led me to burnout. \n\nWhat worked better? Connection.\n\nThat’s where you actually understand how your audience talks. The humour. The complaints. The tone. The pain points.\n\nWhen I started adding humour around real pain points, engagement felt natural. The content stopped feeling like a lecture.\n\nOnce people feel understood, they’re way more open to your informational or promotional posts later. \n\n**2. Lock in your colours early**  \n\nThis sounds small, but it changed everything for me.\n\nAt first, every post had random colours. It looked messy.\n\nThen I limited myself to 2 to 3 consistent colours.\n\nSuddenly,  the profile looked intentional. More trustworthy.\n\nYou don’t need a full branding project. Just consistency. Visual memory builds faster than we think. This is about trust, not just aesthetics. People buy from brands that look like they have their act together.\n\n**3. Separate low effort and high effort content**  \n\nI used to think every post had to be a carousel or long breakdown.\n\nBurned out fast.\n\nNow I batch simple text posts. Casual thoughts. Quick takes. \n\nEdutainment works. People want to learn without feeling like they’re in a classroom.\n\nThose low-effort posts keep consistency going.\n\nThen I use the extra time to create deeper content like carousels and long-form pieces..\n\n**4. Automation plus randomness**  \n\nAutomation gets blamed for making content robotic.\n\nIt only feels robotic if everything is pre-planned and nothing is reactive.\n\nI schedule posts ahead of time.\n\nBut I also leave space to jump in randomly when something interesting happens.\n\nThat mix keeps things human.\n\nAutomation gives structure. Randomness keeps personality alive.  \n\n\n**5. Unified inbox changed my engagement**  \n\nReplying builds trust. That part everyone knows.\n\nWhat I didn’t expect was how much I was missing because I had to open different apps for every platform.\n\nI’d forget replies. I’d respond late. It felt chaotic.\n\nOnce everything was in one place, replying became easier.\n\n\n\nWould love to hear opinions and similar experiences from everyone here. AndIf you want the exact weekly breakdown I use behind these rules, I’m happy to share it. \n\n\n\n",
+    "url": "https://reddit.com/r/socialmedia/comments/1rayp6x/my_social_media_looked_like_a_mess_until_i/",
+    "category": "PAIN_POINT",
+    "engagement": {
+      "upvotes": 0,
+      "comments": 2
+    },
+    "captured_at": "2026-02-21T19:49:16.115Z",
+    "status": "pending",
+    "score": 0
+  },
+  {
+    "id": "reddit-1raoh61",
+    "source": "reddit",
+    "source_detail": "r/socialmedia",
+    "title": "How to grow social media handles",
+    "raw_content": "Hi I am a Video Editor and Graphic Designer at a corporate company in India. The company's India Instagram page and LinkedIn Page have 1700 and roughly 50k followers respectively. We post the same posts and videos on LinkedIn and Instagram, for the exception of Hiring related social media posts which only goes on LinkedIn. Now except for the hiring posts and one or two videos the posts hardly receive any engagement. I am trying my best to create as updated and modern designs as I can, trying to replicate other companies like Turing, Deel, Genpact etc. These companies somehow have huge followings on LinkedIn though there engagement is also kinda similar. \n\nBut I don't care about them, please give me advice as to the type of content I should create to bring in more followers ad engagement on our pages.\n\nThey need to professional and corporate as the company has it in its protocols.\n\nPlease help out.\n\nNote - The company's India page is targeted more towards candidates, to bring in more talented resources, employer branding is the purpose.",
+    "url": "https://reddit.com/r/socialmedia/comments/1raoh61/how_to_grow_social_media_handles/",
+    "category": "QUESTION",
+    "engagement": {
+      "upvotes": 3,
+      "comments": 5
+    },
+    "captured_at": "2026-02-21T19:49:16.115Z",
+    "status": "pending",
+    "score": 0
+  },
+  {
+    "id": "reddit-1ran8aw",
+    "source": "reddit",
+    "source_detail": "r/socialmedia",
+    "title": "Instagram growth for a local car dealership has plateaued at 700 what would you test next?",
+    "raw_content": "I manage Instagram accounts for car dealerships and I’m currently stuck at around 700 followers on one page, trying to reach 1,000 but growth has stalled. The strategy I’ve been using is heavy manual engagement within the same niche. I interact with other dealerships by liking multiple recent posts, engaging with their stories, and following around 50 to 60 relevant accounts per week. The follow-back rate is extremely low, usually around 5 out of 50, and I’m not seeing meaningful profile visits or traction from this activity. Clearly this approach is not compounding. For those who have grown local business accounts, especially in automotive or similar industries, what strategies are actually driving sustainable growth right now? Is manual engagement still worth the time, or should the focus shift entirely toward content, paid distribution, partnerships, or something else? I am looking for practical, experience-based insights rather than shortcuts or automation tactics.",
+    "url": "https://reddit.com/r/socialmedia/comments/1ran8aw/instagram_growth_for_a_local_car_dealership_has/",
+    "category": "QUESTION",
+    "engagement": {
+      "upvotes": 1,
+      "comments": 5
+    },
+    "captured_at": "2026-02-21T19:49:16.115Z",
+    "status": "pending",
+    "score": 0
+  },
+  {
+    "id": "reddit-1railb3",
+    "source": "reddit",
+    "source_detail": "r/socialmedia",
+    "title": "[Hiring] READ FULL POST BEFORE DM – Hiring Founding Team for Performance-Based Social Media Growth Agency (Revenue Share Initially)",
+    "raw_content": "We are building a lean, performance-focused social media growth agency from scratch.\n\nThis is NOT a random freelance gig.\nThis is for people who want to build something long-term and grow with the agency.\n\nI am currently assembling a small founding team of 3 core roles:\n\n🔹 1. Social Media Manager + Graphic\n          Designer\n\nYou should:\n\n• Design clean, modern posts (no cheap\n   templates)\n\n• Understand content structure for Instagram\n  Create 8–16 posts per client monthly\n  Write basic captions (hooks will be\n  strategy-led)\n\n• Understand engagement and analytics\n   basics\n\nExperience with:\n\n• Cafes\n\n• Local brands\n\n• Small businesses\n\n• Personal brands\n\nPortfolio must look clean and professional.\n\n🔹 2. Video Editor (Short Form) + Basic AI\n           Knowledge\n\nYou should:\n\n• Edit high-retention reels\n\n• Understand pacing, hooks, subtitles\n\n• Repurpose long content into short clips\n\n• Use AI tools for captions, scripting or\n   workflow\n\n• Basic automation knowledge is a plus\n\nMust have:\n\n• Clean editing portfolio\n\n• Fast turnaround\n\n• Understanding of short-form growth\n\n🔹 3. Experienced Cold Outreach /\n          Appointment Setter\n\nYou must:\n\n• Have real outreach experience\n\n• Know Instagram cold DMs\n\n• Know follow-up systems\n\n• Track leads properly\n\n• Book qualified calls\n\nProof of past results required.\n\nThis role is commission-based initially.\n\n💰 Important – Payment Structure\nThis is a founding team model.\nInitially: Revenue-share / project-based until we sign first paying clients.\n\nOnce we receive advance payments from clients: We move into structured payments + performance bonuses.\n\nIf you’re looking for fixed salary from day 1, this is NOT for you.\n\nIf you want to build something serious and grow into fixed + long-term structure, this is for you.\n\nNo one will be underpaid. No one will be exploited. But no one gets paid before revenue either.\n\n🎯 What I Expect From Founding Team\n\n• Professional communication\n\n• Clean portfolio\n\n• Growth mindset\n\n• Long-term thinking\n\n• Reliability\n\n• No ego, no excuses\n\nWe are building a results-driven agency, not a content factory.\n\n📩 How To Apply\n\nDM with:\n\n• Your role\n\n• Portfolio\n\n• Tools you use\n\n• Past client work\n\n• Your availability\n\n• Why you want to join a founding team\n   instead of normal freelance work\n\nSerious applicants only.",
+    "url": "https://reddit.com/r/socialmedia/comments/1railb3/hiring_read_full_post_before_dm_hiring_founding/",
+    "category": "PAIN_POINT",
+    "engagement": {
+      "upvotes": 1,
+      "comments": 3
+    },
+    "captured_at": "2026-02-21T19:49:16.115Z",
+    "status": "pending",
+    "score": 0
+  },
+  {
+    "id": "reddit-1rae8sv",
+    "source": "reddit",
+    "source_detail": "r/socialmedia",
+    "title": "Scaling a Winning Product",
+    "raw_content": "Hey everyone,\n\nI’ve got a product that’s performing really well, and I’m looking at ways to take it even further. Curious how others approach scaling whether through ads, email campaigns, or social media.\n\nAlso interested in creative ways to increase repeat purchases and reach more customers.\n\nWould love to see what’s working for you all",
+    "url": "https://reddit.com/r/socialmedia/comments/1rae8sv/scaling_a_winning_product/",
+    "category": "PAIN_POINT",
+    "engagement": {
+      "upvotes": 3,
+      "comments": 8
+    },
+    "captured_at": "2026-02-21T19:49:16.115Z",
+    "status": "pending",
+    "score": 0
+  },
+  {
+    "id": "reddit-1rancr4",
+    "source": "reddit",
+    "source_detail": "r/content_marketing",
+    "title": "I want sustainable growth for a local dealership account. What would you test?",
+    "raw_content": "I manage Instagram accounts for car dealerships and I’m currently stuck at around 700 followers on one page, trying to reach 1,000 but growth has stalled. The strategy I’ve been using is heavy manual engagement within the same niche. I interact with other dealerships by liking multiple recent posts, engaging with their stories, and following around 50 to 60 relevant accounts per week. The follow-back rate is extremely low, usually around 5 out of 50, and I’m not seeing meaningful profile visits or traction from this activity. Clearly this approach is not compounding. For those who have grown local business accounts, especially in automotive or similar industries, what strategies are actually driving sustainable growth right now? Is manual engagement still worth the time, or should the focus shift entirely toward content, paid distribution, partnerships, or something else? I am looking for practical, experience-based insights rather than shortcuts or automation tactics.",
+    "url": "https://reddit.com/r/content_marketing/comments/1rancr4/i_want_sustainable_growth_for_a_local_dealership/",
+    "category": "QUESTION",
+    "engagement": {
+      "upvotes": 2,
+      "comments": 3
+    },
+    "captured_at": "2026-02-21T19:49:18.659Z",
+    "status": "pending",
+    "score": 0
+  },
+  {
+    "id": "reddit-1raksy4",
+    "source": "reddit",
+    "source_detail": "r/content_marketing",
+    "title": "Nobody asks a doctor to summarise their job title",
+    "raw_content": "Someone asked me what I do the other day and I gave them a four minute answer. It actually happens all the time. I find it so hard to give a clear answer, but I kinda think that is the nature of what many content marketers and strategists do these days.\n\nAnd the long winded response isnt because I'm disorganised. It's because the honest version doesn't fit in a job title. Marketing consultant sounds like I'm going to send you a 40 page deck. Agency sounds like I'm going to charge you a retainer and disappear. Coach makes me want to lie down.\n\nSo I've stopped trying to name it. In fact, I have started embracing it. I saw this YT video of a guy who roasts people's website and thought that I could have these calls with founders where we drink wine and talk through whatever part of their marketing is pissing them off. Sometimes that turns into proper work together. Sometimes it's just a good conversation.\n\nI am pretty sure that devil may care attitude is the thing people come back for. Not the structured offers or technical execution. Just someone who asks the right questions without making them feel stupid for not having the answers.\n\nThe road to a more rewarding and fufilling business has a funny way of ignoring what you envisaged and naturally evolving if you let it.",
+    "url": "https://reddit.com/r/content_marketing/comments/1raksy4/nobody_asks_a_doctor_to_summarise_their_job_title/",
+    "category": "PAIN_POINT",
+    "engagement": {
+      "upvotes": 1,
+      "comments": 1
+    },
+    "captured_at": "2026-02-21T19:49:18.659Z",
+    "status": "pending",
+    "score": 0
+  },
+  {
+    "id": "reddit-1rawe06",
+    "source": "reddit",
+    "source_detail": "r/webdev",
+    "title": "Production ready pull request automation sounds great in theory but does it work in practice?",
+    "raw_content": " Tools that auto-generate prs for dependency updates, security patches, standardized refactors sound great for reducing toil but most generate prs that aren't actually mergeable, either breaking tests or not following code style or making changes that are technically correct but architecturally wrong. Trust is real too where even if a pr passes checks you still need human review which means time savings aren't as big, and for critical changes like security patches auto-merging without understanding what changed is risky, as for dependabot it generates overwhelming prs mostly for indirect dependencies that don't matter, plus frequent merge conflicts because they're generated independently…",
+    "url": "https://reddit.com/r/webdev/comments/1rawe06/production_ready_pull_request_automation_sounds/",
+    "category": "QUESTION",
+    "engagement": {
+      "upvotes": 0,
+      "comments": 2
+    },
+    "captured_at": "2026-02-21T19:49:21.104Z",
+    "status": "pending",
+    "score": 0
+  },
+  {
+    "id": "reddit-1raux9v",
+    "source": "reddit",
+    "source_detail": "r/analytics",
+    "title": "Looking for Data Engineer jobs in usa, Currently in 60 days grace period(H1B Visa), seeking referral, would like to connect with anyone who is hiring",
+    "raw_content": "Hello All,\n\nI’m a Data Engineer with 5 + years of experience and recently got laid off, I am currently in my 60 days grace period, I am reaching out to see if anyone is hiring or knows someone and can give a referral as its really crucial time for me\n\nKey skills and Tech Stack:\n\nSpark,Scala,Sql, Python, Kafka, Gcp and AWS cloud platforms and Airflow\n\nPlease DM if anyone has any Leads",
+    "url": "https://reddit.com/r/analytics/comments/1raux9v/looking_for_data_engineer_jobs_in_usa_currently/",
+    "category": "PAIN_POINT",
+    "engagement": {
+      "upvotes": 0,
+      "comments": 1
+    },
+    "captured_at": "2026-02-21T19:49:23.776Z",
+    "status": "pending",
+    "score": 0
+  },
+  {
+    "id": "reddit-1raove8",
+    "source": "reddit",
+    "source_detail": "r/analytics",
+    "title": "2 interview calls and confused",
+    "raw_content": "So I am 26 CA drop out and have alot of career gap.\nI had an mis internship (excel and power bi) for 3 months and after hustling for another 5 months I got MIS role \n\nOne is a product based company , almost 40min from my place, and they havnt mentioned the skills required except Excel , I guess they will definitely need dashboards then I will be using Power BI (it's just me assuming rn).\n\nAnd other is a marketing agency , almost 2 hours from my place ,and it's and MIS analyst role mentioning excel and good to have power bi and SQL for reporting. \n\nSalary is almost entry level (low) for both\nJust confused if i got the offer from both the companies , who will I should go as I am looking to get into data analytics after 5-6months of doing this\n\nPs. I was actually looking for a data analytics role, internship or job,.but couldn't find in these 5 months and I don't really want to do work just excel. And not want to waste more time either that's why I am thinking to go for MIS again. As sitting ideal not working for me",
+    "url": "https://reddit.com/r/analytics/comments/1raove8/2_interview_calls_and_confused/",
+    "category": "PAIN_POINT",
+    "engagement": {
+      "upvotes": 1,
+      "comments": 5
+    },
+    "captured_at": "2026-02-21T19:49:23.776Z",
+    "status": "pending",
+    "score": 0
+  },
+  {
+    "id": "reddit-1rairgg",
+    "source": "reddit",
+    "source_detail": "r/analytics",
+    "title": "Reconciling frontend conversion data with backend validated outcomes",
+    "raw_content": "I’ve been working through a recurring measurement issue and would appreciate input from others who deal with performance driven funnels.\n\nIn our setup, a conversion event fires on the frontend when a user completes registration. That event is captured in our analytics stack and attributed according to our defined window. However, once users go through backend validation and scoring, the number of fully qualified registrations is consistently lower than what is reported on the frontend.\n\nThe discrepancy is not massive, but it is persistent. It also varies depending on traffic source. We have ruled out obvious duplication, misfiring events, and basic tagging errors. Timestamp alignment looks clean, and there are no obvious session breaks causing inflation.\n\nThe question I am trying to answer is methodological rather than technical. In situations like this, do you treat frontend conversions as directional signals and backend validation as the true KPI, or do you attempt to reconcile both into a single reporting framework? I am particularly interested in how teams structure reconciliation logic when attribution windows and validation timing do not perfectly align.\n\nAt Blockchain-Ads we operate in performance heavy and compliance sensitive verticals, so understanding where measurement ends and quality filtering begins is important before scaling spend. I would rather solve for structural clarity than assume traffic variance is the cause.\n\nCurious how others approach this from a data integrity standpoint.",
+    "url": "https://reddit.com/r/analytics/comments/1rairgg/reconciling_frontend_conversion_data_with_backend/",
+    "category": "PAIN_POINT",
+    "engagement": {
+      "upvotes": 1,
+      "comments": 2
+    },
+    "captured_at": "2026-02-21T19:49:23.776Z",
+    "status": "pending",
+    "score": 0
+  },
+  {
+    "id": "reddit-1ravdjy",
+    "source": "reddit",
+    "source_detail": "r/FacebookAds",
+    "title": "$2,000 in ads. 100s of leads. But still 0 buyers.",
+    "raw_content": "I just finished a call with a business owner a couple hours ago, and whilst I was going through his ads, he was telling me how he's getting 100s of leads but none of them are actually converting, how they’re all junk and bots, and asked me to check out his targeting.\n\nI took a look at the ad account, and the targeting was fine, the creative and ad copy were a bit weak, and although the costs were high, it didn’t have many issues with it.\n\nBut when I saw the actual campaign structure, it turned out he had been running instant form ads for weeks. He accumulated so many clickers and low-quality leads that came from running instant forms that the pixel was trained on the wrong signals.\n\nEven though the campaigns looked fine, the algorithm was just giving more of the same low-quality leads.\n\nThis is the part most people miss: your audience or creative needs to be perfect if you’re trying to get leads or even appointments, but if the signals are damaged, the results will reflect upon the quality of your signals.\n\nUntil you understand how to optimize the account for high-quality signals, you’ll never actually get qualified leads. \n\n\n\n**Why your signals matter**\n\nFacebook now holds data on an ad account level. That means every single action your audience takes… every click, every lead, every page visit, it's all tracked as a “Signal” inside your ad account.\n\nI worked with a local service-based business a while back that was running instant form ads and sending leads straight into messages. \n\nThey were spending $30/day and kept running into a wall with zero conversions. Once we raised it to **$100/day**, cleaned up the signal quality, and used a new pixel, we hit **12X ROAS.**\n\nThe signals matter more than your campaign structure; that’s why winning accounts will continue to win, and losing accounts will tank in performances over and over…\n\n\n\n**The 2 Phases to Signals**\n\n1. Clearing the Old Signals\n\n  \nBefore you can get any qualified leads, you need a fresh start. That often means starting with a new ad account or at least a fresh pixel.  \n\nWhy? Because the algorithm has already learned patterns from all the clickers, junk leads, and form fillers in your old account. Those bad signals will keep repeating themselves if you don’t reset.\n\nYou can check your campaign history and see how many leads you got, and how many those converted. Same with budget: if Facebook is continuously spending a low budget daily, it means that they don’t think your account is worth advertising, so they won’t spend that much each day.\n\n1. Feeding High-Quality Signals\n\nOnce you have a clean slate, the next step is feeding it the right signals. That means only tracking meaningful actions like real clicks, real form submissions, and actual conversions. \n\nEvery touchpoint you create, from landing pages to creative copy, should be guiding the algorithm to understand who your ideal client actually is.\n\nOnce the creative, ad copy, and landing page is smooth and compelling, you’ll sta...",
+    "url": "https://reddit.com/r/FacebookAds/comments/1ravdjy/2000_in_ads_100s_of_leads_but_still_0_buyers/",
+    "category": "DATA_POINT",
+    "engagement": {
+      "upvotes": 1,
+      "comments": 4
+    },
+    "captured_at": "2026-02-21T19:49:30.843Z",
+    "status": "pending",
+    "score": 0
+  },
+  {
+    "id": "reddit-1rar5i7",
+    "source": "reddit",
+    "source_detail": "r/FacebookAds",
+    "title": "Best Meta campaign structure for a B2B bulk manufacturing company?",
+    "raw_content": "Hi everyone,\n\nLooking for advice specifically on **Meta Ads** for a B2B custom manufacturing company.\n\nWe manufacture and supply in bulk:\n\n* Custom printed flags (all sizes)\n* Feather &amp; teardrop flags\n* Event tents &amp; trade show displays\n* Corporate banners &amp; backdrops\n* Custom table covers\n* Large-format branded signage\n\nOur target buyers are:\n\n* Corporate marketing teams\n* Event organizers\n* Trade show companies\n* Universities\n* Government departments\n* Retail chains\n* Distributors\n\nAverage order value is high, and the sales cycle is longer since these are bulk orders.\n\nCurrently testing Meta lead generation campaigns, but I’m unsure about the best structure long term.\n\nFor B2B bulk manufacturing on Meta:\n\n* Is Lead Form campaign usually better than Website Conversion?\n* Should we optimize for Leads or Qualified Leads (via offline conversions)?\n* Does broad targeting work better than detailed job-title targeting?\n* Is Meta mainly useful for retargeting in this space?\n* How would you structure a full funnel for this type of business?\n\nWould really appreciate insights from anyone running Meta successfully for B2B manufacturing or wholesale businesses.",
+    "url": "https://reddit.com/r/FacebookAds/comments/1rar5i7/best_meta_campaign_structure_for_a_b2b_bulk/",
+    "category": "QUESTION",
+    "engagement": {
+      "upvotes": 1,
+      "comments": 4
+    },
+    "captured_at": "2026-02-21T19:49:30.843Z",
+    "status": "pending",
+    "score": 0
+  },
+  {
+    "id": "reddit-1rapn9w",
+    "source": "reddit",
+    "source_detail": "r/FacebookAds",
+    "title": "Best way to improve tracking with CAPI",
+    "raw_content": "Hey guys,\n\nI lead a media buyer team, and we noticed that the quality of the events went down to about 6/10.\n\nWe do performance and affiliate marketing (pretty aggressive spending) and so we really only have to track pageviews and purchases. (Very simple tofu funnels: landing page -&gt; thank you page)\n\nWe use Pixel Your Site for implementing the Pixels and Stape for creating the tokens for the CAPI.\n\nI wanted to try a different server side tracking, but we have something like 850 pixels and millions of events monthly so that is not gonna be super cost-effective lol.\n\nI heard that there are better ways, like creating a proprietary server side, using GTM4 and I think GoogleCloud or something.\n\nDo you have some info about this?\n\nThanks guys ",
+    "url": "https://reddit.com/r/FacebookAds/comments/1rapn9w/best_way_to_improve_tracking_with_capi/",
+    "category": "PAIN_POINT",
+    "engagement": {
+      "upvotes": 2,
+      "comments": 3
+    },
+    "captured_at": "2026-02-21T19:49:30.843Z",
+    "status": "pending",
+    "score": 0
+  },
+  {
+    "id": "reddit-1rapn3d",
+    "source": "reddit",
+    "source_detail": "r/FacebookAds",
+    "title": "Need to make 200$ by today",
+    "raw_content": "Need to make $200 ASAP — I build websites, ads &amp; automations (can start today)\n\nPost:\n\nHey everyone,\n\nI’ll be straight up — I need to make $200 today due to a personal situation.\n\nI’m a developer/marketer and I can start immediately.\n\nIf you need something done fast, I can help with:\n\n\t•\tSimple or professional websites / landing pages\n\n\t•\tWebsite revamps (speed, mobile, conversions)\n\n\t•\tMeta / Google Ads setup (local businesses, services)\n\n\t•\tAutomations (Instagram auto-replies, lead capture, Google Sheets, email flows)\n\nI’m not asking for charity — just work.\n\nFlat pricing, quick turnaround, and I’ll overdeliver.\n\nIf you have something you’ve been delaying, this might be the right time.\n\nTextme or comment and I’ll reach out.\n\nThanks for reading ",
+    "url": "https://reddit.com/r/FacebookAds/comments/1rapn3d/need_to_make_200_by_today/",
+    "category": "DATA_POINT",
+    "engagement": {
+      "upvotes": 1,
+      "comments": 0
+    },
+    "captured_at": "2026-02-21T19:49:30.843Z",
+    "status": "pending",
+    "score": 0
+  },
+  {
+    "id": "reddit-1raocu6",
+    "source": "reddit",
+    "source_detail": "r/FacebookAds",
+    "title": "Discord bot to make funnel better, need suggestions",
+    "raw_content": "Hi,\n\n  \nI am running ads which converts to my Discord. In my discord I then want to invite all new comers to a \"private\" channel with me and them where they get all information how to get started instantly.\n\n  \nHow I do it today is that there is a channel #get-started-free and in this channel it says \"you want to get started free, message us\" Problem is not many message us.\n\n  \nI want to make this funnel very easy and make more people to come in to actually engage in chatting with us or actually getting started.\n\nI belive with a bot from my understand I can make a custom channel for me and the person joining and they get the information there, where I can also provide like client reviews (if not just in text).\n\n  \nI need help to choose a bot for this, or do you have any other suggestions that has run funnels with ad that have a better idea?",
+    "url": "https://reddit.com/r/FacebookAds/comments/1raocu6/discord_bot_to_make_funnel_better_need_suggestions/",
+    "category": "PAIN_POINT",
+    "engagement": {
+      "upvotes": 1,
+      "comments": 1
+    },
+    "captured_at": "2026-02-21T19:49:30.844Z",
+    "status": "pending",
+    "score": 0
+  },
+  {
+    "id": "reddit-1rarioq",
+    "source": "reddit",
+    "source_detail": "r/AdWords",
+    "title": "Has anyone actually scaled non-brand search without blowing up MER?",
+    "raw_content": "I’m curious how people are thinking about non-brand scale right now. we’ve been pushing non-brand pretty aggressively the last 60 days. sitting around $40k/day total google spend, about 80% of that cold traffic. branded is stable, shopping is solid, but the moment we try to scale non-brand 15–20% in a week, blended MER dips and the team starts getting nervous.\n\nWhat’s tricky is that in-platform ROAS looks fine. but when you zoom out and look at backend numbers (shopify + contribution margin), the story feels different.\n\nWe’ve been trying to shift toward marginal thinking instead of overall MER thinking. like:\n\nIf we increase spend by $10k/day and total revenue increases proportionally, even if overall MER compresses slightly… is that still a win?\n\nI work agency-side (at Vysta Paid Media Group) and one thing we’re strict about is not combining budget increases with structural changes in the same week. but even with discipline, scale pressure is real.\n\ncurious how others are handling this:\n\n* are you scaling on blended MER?\n* are you using holdout tests?\n* or just gut + trend lines?\n\nWould love to hear how other operators think about this because “scale” feels way harder in 2026 than it did 2–3 years ago.",
+    "url": "https://reddit.com/r/adwords/comments/1rarioq/has_anyone_actually_scaled_nonbrand_search/",
+    "category": "DATA_POINT",
+    "engagement": {
+      "upvotes": 6,
+      "comments": 3
+    },
+    "captured_at": "2026-02-21T19:49:35.620Z",
+    "status": "pending",
+    "score": 0
+  },
+  {
+    "id": "reddit-1rauyzv",
+    "source": "reddit",
+    "source_detail": "r/sales",
+    "title": "VP of Sales Hiring Criteria",
+    "raw_content": "I implore all founders and senior leaders to make sure the person they hire to lead their sales team or revenue organization has actually been a successful AE at one point in their career. As a former experiences sales leader myself, I had multiple successful individual contributor roles before being elevated to run a sales team. I worked recently for an individual who never was an AE or any individual sales position and had never managed a sales team. Needless to say, the organization fell very short of its revenue goal, had massive turnover in sales and across the company and recently got acquired by their biggest rival, who had an experienced sales leader who had been an AE. I also worked many years for another individual who also never made one cold call. He benefited greatly from my sales acumen and prowess as I didn’t rely on him for sales advice. ",
+    "url": "https://reddit.com/r/sales/comments/1rauyzv/vp_of_sales_hiring_criteria/",
+    "category": "PAIN_POINT",
+    "engagement": {
+      "upvotes": 7,
+      "comments": 8
+    },
+    "captured_at": "2026-02-21T19:49:38.058Z",
+    "status": "pending",
+    "score": 0
+  },
+  {
+    "id": "reddit-1rae91g",
+    "source": "reddit",
+    "source_detail": "r/sales",
+    "title": "Canadian AE looking for U.S. SaaS roles, best places to search?",
+    "raw_content": "I’m a Canadian in Vancouver, and I’ve noticed lots of people here working for U.S. companies. I’m an experienced SaaS Account Executive, and I’m hunting for AE roles with U.S.-based companies. I know many use tools like DEEL to hire Canadians as contractors.\n\nI’ve been actively searching on LinkedIn, but it’s been tough to pinpoint U.S. companies specifically open to hiring Canadians. Any recommended job boards, platforms, or communities where these opportunities are more common? If you’ve landed a U.S. SaaS role this way, I’d love to hear how you found it!",
+    "url": "https://reddit.com/r/sales/comments/1rae91g/canadian_ae_looking_for_us_saas_roles_best_places/",
+    "category": "QUESTION",
+    "engagement": {
+      "upvotes": 0,
+      "comments": 4
+    },
+    "captured_at": "2026-02-21T19:49:38.058Z",
+    "status": "pending",
+    "score": 0
+  },
+  {
+    "id": "reddit-1ractsa",
+    "source": "reddit",
+    "source_detail": "r/sales",
+    "title": "AE Side Hustle",
+    "raw_content": "Divorced dad of two with a serious girlfriend trying to save for a mortgage one day.. If i drove door dash or instacart on the nights i don’t have the kids (2/3 nights a week), do yall think that could be lucrative? or would a consulting type gig in sales be better after hours?",
+    "url": "https://reddit.com/r/sales/comments/1ractsa/ae_side_hustle/",
+    "category": "PAIN_POINT",
+    "engagement": {
+      "upvotes": 0,
+      "comments": 42
+    },
+    "captured_at": "2026-02-21T19:49:38.058Z",
+    "status": "pending",
+    "score": 0
+  },
+  {
+    "id": "reddit-1rar7fi",
+    "source": "reddit",
+    "source_detail": "r/leadgeneration",
+    "title": "SMS lead generation?",
+    "raw_content": "Is anyone here running a lead generation agency solely focused on SMS not ads? If so, why did you choose sms instead?",
+    "url": "https://reddit.com/r/LeadGeneration/comments/1rar7fi/sms_lead_generation/",
+    "category": "QUESTION",
+    "engagement": {
+      "upvotes": 1,
+      "comments": 2
+    },
+    "captured_at": "2026-02-21T19:49:40.457Z",
+    "status": "pending",
+    "score": 0
+  },
+  {
+    "id": "reddit-1ra7bk4",
+    "source": "reddit",
+    "source_detail": "r/leadgeneration",
+    "title": "Thoughts on intent signals, good and bad",
+    "raw_content": "I've seen a lot of LinkedIn posts around sales signals and a plethora of tools that claim to help you find buyers with intent.\n\n  \nHaving seen how this has evolved over the last few years, I wanted to share my thoughts on what I think works, vs what I think doesn't.\n\n  \nFor anyone not aware what they are, it's often features or standalone products that try to identify \"triggers\" that would indicate that someone is interested in your solution.\n\n  \nSignal 1: Website visitors\n\nI think this is a bit of a hit and miss. This data is hard to get right and typically is limited to the US (in most cases).\n\nSometimes, this can be good, especially if you can see the page they dropped off at.\n\nE.g say someone visited your website and then dropped off at pricing, that can be a good intent signal of interest, but not of budget (which can be a good or bad thing depending on your case).\n\nThe other time it can be good is if you see someone repeatedly visiting your website, then it can be a good indicator of interest to book a call.\n\nThat said, a lot of times, people are just curious to see what's out there, can be good, but can lead you chasing a bad lead.\n\n\n\nSignal 2: Fundraising announcements\n\nThis \\*can\\* be good. Assuming you can align your value prop with the right outcomes for that stage of the company.\n\nFor example, company raises $1m pre-seed.\n\nThey \\*likely\\* will be focused on being able to ship product faster and reliably + growth. Selling an ERP will be a bad idea.\n\nBut say they raise $100m series D, then sure, maybe an ERP is a good idea.\n\n(just an example, don't kill me ERP sellers lol).\n\nThe core lesson here is to know your ICP and their timing to align your solution to the right stage of company - namely applicable to early stage sellers.\n\n\n\nSignal 3: Hiring/job openings\n\nWith the exception of \\*maybe\\* staffing firms, I don't think this is always a good one.\n\nThe common argument is that \"you can infer from the signal\"\n\ne.g say if a job is out for a bookkeeper and you sell an AI bookkeeper or something, you might be inclined to think that company can just use your tool, and perhaps in the future that could happen.\n\nBut in most cases, when someone has put a job ad out, it's because they specifically have budgeted for a body to be on a seat to do that job and have specific expectations in mind and may not have that for your system.\n\nSure, you can reach out, because, you never know, but if you have to pick a signal, I think you may not be as well served with this one.\n\n\n\nSignal 4: Job changes/recent hires\n\nThis one can be really good, especially if you're targeting recent leadership hires.\n\nAgain, timing matters though.\n\nFor example, 100 person company hires a new head of sales and you sell a sales tool, approaching them from day 0 for a call is not a wise idea.\n\nReason being is that they typically need 90 days to get enough of an understanding of what's even going on.\n\nMaking an intro to yourself can be fine, trying to book a call can be fine from...",
+    "url": "https://reddit.com/r/LeadGeneration/comments/1ra7bk4/thoughts_on_intent_signals_good_and_bad/",
+    "category": "DATA_POINT",
+    "engagement": {
+      "upvotes": 2,
+      "comments": 1
+    },
+    "captured_at": "2026-02-21T19:49:40.457Z",
+    "status": "pending",
+    "score": 0
+  },
+  {
+    "id": "reddit-1rav94p",
+    "source": "reddit",
+    "source_detail": "r/CRM",
+    "title": "How to Automate COA/MSDS, Manage Agents, and Handle Freight Faster in a Growing Chemical Export Business?",
+    "raw_content": "Hi everyone,\n\nI run a chemical export business based in India. We’re about 1 year old and have started getting international clients. As we grow, I’m facing some operational challenges and would really appreciate advice from people who have experience in exports, chemicals, or scaling B2B operations.\n\nHere are the main issues:\n1. COA &amp; MSDS Management\nWe deal with many different chemicals, and each manufacturer provides separate COA and MSDS documents on their letterhead.\nThe challenge:\nEvery time a client or agent asks, we have to resend documents.\nSometimes we need to convert manufacturer COA into our company’s letterhead format.\nManaging and organizing all versions is becoming difficult.\nIs there any system where:\nI can upload the manufacturer’s COA\nAutomatically extract the details\nGenerate a new COA in my company letterhead format?\nAre there tools or automation workflows that exporters are using for this?\n\n2. Managing Old and New Clients\nWe now have many clients across different countries.\nThe problem:\nIt’s hard to stay in touch consistently.\nFollow-ups get missed.\nManaging repeat customers vs new inquiries is messy.\nWhat CRM system would you recommend for a small but growing export business?\nWhat structure or workflow works best in B2B chemical exports?\n\n3. Managing Regional Agents\nWe work with agents in different regions.\nIssues:\nAgents frequently request COA and pricing again and again.\nWe get many inquiries through them.\nHandling pricing and documentation manually for every request is time-consuming.\nHow do larger export companies manage this? Do they use shared portals, dashboards, or automated price lists?\n\n4. Freight Forwarder Delays\nFor every quotation, we have to request freight rates from freight forwarders, and sometimes they take too long to respond.\nIs there a better system for managing freight rates? How do exporters quote quickly without waiting every time?\n\nWe’re still a small company, but growing steadily. I want to build proper systems now instead of staying stuck in manual operations.\n\nAny advice on tools, workflows, automation systems, or SOP structures would be highly appreciated.\n\nThanks in advance",
+    "url": "https://reddit.com/r/CRM/comments/1rav94p/how_to_automate_coamsds_manage_agents_and_handle/",
+    "category": "QUESTION",
+    "engagement": {
+      "upvotes": 1,
+      "comments": 0
+    },
+    "captured_at": "2026-02-21T19:49:42.784Z",
+    "status": "pending",
+    "score": 0
+  },
+  {
+    "id": "reddit-1rasa1z",
+    "source": "reddit",
+    "source_detail": "r/CRM",
+    "title": "CRM for Branding Photographer",
+    "raw_content": "I work with businesses build their brand through my photography. I shoot both in studio and on location. \n\nI’ve searched for answers to these needs, without success. Honeybook and 17 Hats are beyond budget presently. \n\n\\- Lead management. \n\n\\- Contact management. \n\n   Automated email. Reminders to me. \n\n\\- Send a contract/agreement/release to client to e-sign and pay retainer to lock-in a specific date.  \n\n\\- Send/manage invoice(s)\n\n\\- Onboard calendar or hook into one (Calendly?)\n\n\\- Record project details and shoot info. \n\n\\- Local backup\n\nI’m on Zenfolio; their crm is lacking contract signing et al. \n\nI’m considering moving platforms, say, to Pixieset with its Studio Manager. Much prefer not to change platform. I know they’re many out there at numerous price-points. \n\nIs there a way to integrate an external crm into Zenfolio? I imagine there be a way to develop certain aspects via Claude or Lovable. \n\n ",
+    "url": "https://reddit.com/r/CRM/comments/1rasa1z/crm_for_branding_photographer/",
+    "category": "PAIN_POINT",
+    "engagement": {
+      "upvotes": 2,
+      "comments": 0
+    },
+    "captured_at": "2026-02-21T19:49:42.784Z",
+    "status": "pending",
+    "score": 0
+  },
+  {
+    "id": "reddit-1raoxdu",
+    "source": "reddit",
+    "source_detail": "r/GrowthHacking",
+    "title": "I just solved one of the biggest problem in cold email industry",
+    "raw_content": "(Note for mod: I respect all the guidelines of this community. If there is any issue, please contact me and I will fix it.)\n\nI know this sounds like a big claim, but we've actually solved a real problem in cold email, so let me explain.\n\nFrom my understanding cold email success depends on 3 pillars:\n\n**Deliverability** – whether you land in spam or inbox\n\n**Personalization** – emails look like they're written for the recipient\n\n**Timing** – send emails when people are most likely to open\n\nIf one breaks, the whole thing collapses.\n\nThe most important one which we solved is deliverability. Because if you don't land in the inbox, none of it matters.\n\nAnd this is where the industry has been stuck.\n\nTraditional \"warmup\" was built for an older version of the game.\n\nSend artificial emails. Generate artificial replies. Increase volume slowly.\n\nThat used to create enough pattern history to survive.\n\nAfter recent policy changes and the AI boom, providers like Gmail and Outlook now prioritize **real engagement signals** over synthetic behavior.\n\nNot just opens. Not fake replies. Real conversations.\n\nSo we didn't remove synthetic behavior. We upgraded how it works.\n\nOur system still uses synthetic activity to build baseline behavior and avoid cold start problems. But it doesn't treat it as proof of trust.\n\nAt the same time, it combines real engagement in real time.\n\n* It tracks reply quality and conversation depth\n* It observes engagement trends\n* It detects negative signals\n* It calculates dynamic daily send limits\n\nIf engagement improves, limits increase. If engagement drops, volume automatically reduces. If risk signals appear, scaling pauses.\n\nSynthetic behavior supports the system. Real engagement decides the scaling.\n\nIt's more advanced, more responsive, and outcome-driven instead of fixed ramp-based.\n\n**Why trust this system?**\n\nThink about it logically.\n\nIf engagement drops, should your tool push harder or slow down? If real humans are replying, should you still be capped at arbitrary limits? If mailbox providers evaluate outcomes, shouldn't your sending system do the same?\n\nYou can check it out here: [https://outreachnav.online/email-warmup](https://outreachnav.online/email-warmup)\n\nFor the first few users, it will be at no charge.\n\nAnd next I'm working on fixing the personalization pillar. If you have any recommendations, drop them in the comments - I'd really appreciate it.",
+    "url": "https://reddit.com/r/GrowthHacking/comments/1raoxdu/i_just_solved_one_of_the_biggest_problem_in_cold/",
+    "category": "PAIN_POINT",
+    "engagement": {
+      "upvotes": 1,
+      "comments": 3
+    },
+    "captured_at": "2026-02-21T19:49:45.100Z",
+    "status": "pending",
+    "score": 0
+  },
+  {
+    "id": "reddit-1ramaqi",
+    "source": "reddit",
+    "source_detail": "r/GrowthHacking",
+    "title": "Just hit a vertical growth curve (+829%) solo. Now looking for a TikTok Ads partner to hit 100k.",
+    "raw_content": "I’ve been building a \"Quiet Tech\" ecosystem (DoMind and Moodie) by betting on Offline-First and Privacy.\n\nThe strategy worked. I reached 4,500+ users purely through Reddit and X. Now the graph is vertical and I need to pour gas on the fire.\n\nI’m looking for someone who knows how to run high-converting TikTok ads for mobile apps.\n\n* The Mission: Move people away from the \"Attention Casino\" and into a digital sanctuary.\n* The Data: 12% conversion rate on current traffic. 5-star average rating.\n\nIf you have a track record of scaling consumer apps via TikTok, I’d love to see your work. DM me and let’s talk strategy.",
+    "url": "https://reddit.com/r/GrowthHacking/comments/1ramaqi/just_hit_a_vertical_growth_curve_829_solo_now/",
+    "category": "DATA_POINT",
+    "engagement": {
+      "upvotes": 1,
+      "comments": 1
+    },
+    "captured_at": "2026-02-21T19:49:45.101Z",
+    "status": "pending",
+    "score": 0
+  },
+  {
+    "id": "reddit-1ram69m",
+    "source": "reddit",
+    "source_detail": "r/GrowthHacking",
+    "title": "How can I get a new \"trajectory\" change in the growth graph? Going from \"doing things that don't scale\" to actually scaling",
+    "raw_content": "Hey all,\n\nThe external launch of our service was around new years and basically all that we did in the beginning was commenting on reddit.\n\nThen mid Jan I wrote a couple of posts on reddit and you can clearly see the growth rate changed. \n\nOther than that we have just done some shitty tiktok which honestly doesnt feel worth the time. We are working on a automation tool there though to automate the content creation so even though it might not give that much effect the effort is super low. There is potential for the quality to increase alot also I should say.\n\nBasically we have done \"the things that don't scale\" up until now and now I \"responsible for growth\" need to start figuring out things that actually scale.\n\nWe are building a platform for game development with the help of AI. Its called [www.dreamforge.ai](http://www.dreamforge.ai) where you can create games by chatting. Of course I think it is pretty cool. I mean what times we are living in.\n\nMaybe you are thinking well easy to market just go into different game dev communities. I wish it was that simple. The hate towards AI in game dev communities is real and even though they all probably use AI in some way, tools like ours are just dismissed as AI slop. In reality we are aiming to reach users that have created game content for example in minecraft. So they are not game developers but creative and like gaming.\n\nAny growth hacks that you can come up with that would suit us?\n\n",
+    "url": "https://reddit.com/r/GrowthHacking/comments/1ram69m/how_can_i_get_a_new_trajectory_change_in_the/",
+    "category": "QUESTION",
+    "engagement": {
+      "upvotes": 3,
+      "comments": 3
+    },
+    "captured_at": "2026-02-21T19:49:45.101Z",
+    "status": "pending",
+    "score": 0
+  },
+  {
+    "id": "yt-ul7MQcGvSvc",
+    "source": "youtube",
+    "source_detail": "Alex Hormozi",
+    "title": "&quot;I Don't Know What I Want..&quot;",
+    "raw_content": "Download your free scaling roadmap here: https://www.acquisition.com/roadmap-yt-d\nThe easiest business I can help you start (free trial): https://www.skool.com/hormozi\nBusiness owners: Want to scale faster? We provide in-person advisory for companies doing at least $1M per year: https://www.acquisition.com/workshop-yt-d\n\nIf you’re new to my channel, my name is Alex Hormozi. I’m the founder and managing partner of Acquisition.com. It’s a family office, which is just a formal way of saying we invest our own money into companies. Our 10 portfolio companies bring in over $250,000,000+ per year. Our ownership stake varies between 20% and 100% of them. Given this is a YT channel, and anyone can claim anything, I’ll give you some stuff you can google to verify below.\n\nHow I got here…\n\n21: Graduated Vanderbilt in 3 years Magna Cum Laude, and took a fancy consulting job.\n23 yrs old: Left my fancy consulting job to start a business (a gym).\n24 yrs old: Opened 5 gym locations.\n26 yrs old: Closed down 6th gym. Lost everything. \n26 yrs old: Got back to launching gyms (launched 33). Then, lost everything for a 2nd time. \n26 yrs old: In desperation, started licensing model as a hail mary. It worked. \n27 yrs old: &quot;Gym Launch&quot; does $3M profit the next 6 months. Then $17M profit next 12 months.\n28 yrs old: Started Prestige Labs. $20M the first year.  \n29 yrs old: Launched ALAN, a software company for agencies to work leads for customers. Scaled to $1.7mmo within 6 months. \n31 yrs old: Sold 75% of UseAlan to a strategic buyer in an all stock deal. \n31 yrs old: Sold 66% of Gym Launch &amp; Prestige Labs at $46.2M valuation in all-cash deal to American Pacific Group. (you can google it)\n31 yrs old: Started our family office Acquisition.com. We invest and scale companies using the $42M in distributions we had taken + the cash from the $46.2M exit.\n32 yrs old: Started making free content showing how we grow companies to make real business education accessible to everyone (and) to attract business owners to invest or scale their businesses. \n34 yrs old: I became co-owner of https://Skool.com, which is a platform for people to build communities online, making a living doing what they love, with people like them.\n36 yrs old: I did a $106M book launch selling 3.6M copies of my $100M Money Models book, in 72 hours, breaking the Guinness world record for the fastest selling non-fiction book of all time.\n\nToday: Our portfolio now does $200M/yr between 10 companies. The largest doing $100M/yr the smallest doing $5M per year. Our ownership varies between 20% and 100% ownership of the companies. Many of them we invested in early and helped grow (which is how we make our money - not youtube videos).\n\nTo all the gladiators in the arena, we’re all in the middle of writing our own stories. The worse the monsters, the more epic the story.\n\nYou either get an epic outcome or an epic story. Both mean you win. \n\nKeep crushing. May your desires be greater than your obstacles....",
+    "url": "https://youtube.com/watch?v=ul7MQcGvSvc",
+    "thumbnail": "https://i2.ytimg.com/vi/ul7MQcGvSvc/hqdefault.jpg",
+    "category": "DATA_POINT",
+    "captured_at": "2026-02-21T19:40:09+00:00",
+    "status": "pending",
+    "score": 0
   }
 ]

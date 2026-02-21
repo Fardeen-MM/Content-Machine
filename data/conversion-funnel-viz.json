@@ -2,7 +2,7 @@
   "stages": [
     {
       "name": "Content Created",
-      "count": 41,
+      "count": 61,
       "color": "#6366f1"
     },
     {
@@ -38,7 +38,7 @@
     "Converted_to_Leads": 100,
     "Leads_to_Closed": 0
   },
-  "generated_at": "2026-02-21T17:25:35.060Z",
+  "generated_at": "2026-02-21T19:49:38.345Z",
   "overall_rate": 0,
   "bottleneck": {
     "stage": "Closed",

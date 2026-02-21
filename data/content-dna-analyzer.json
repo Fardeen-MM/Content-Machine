@@ -1,17 +1,17 @@
 {
-  "total_content": 41,
+  "total_content": 61,
   "format_distribution": {
-    "linkedin": 35,
-    "x_single": 33,
-    "x_thread": 32,
-    "short_video": 26,
-    "carousel": 7,
-    "hot_take": 13,
-    "poll": 7,
-    "quote_cards": 11,
-    "stat_graphic": 11,
-    "before_after": 11,
-    "listicle": 6,
+    "linkedin": 55,
+    "x_single": 53,
+    "x_thread": 52,
+    "short_video": 46,
+    "carousel": 27,
+    "hot_take": 33,
+    "poll": 27,
+    "quote_cards": 31,
+    "stat_graphic": 31,
+    "before_after": 31,
+    "listicle": 26,
     "blog": 3,
     "youtube_script": 3,
     "lead_magnet": 3,
@@ -44,11 +44,11 @@
   "top_topic_words": [
     {
       "word": "firm",
-      "count": 14
+      "count": 15
     },
     {
       "word": "google",
-      "count": 10
+      "count": 13
     },
     {
       "word": "month",
@@ -56,10 +56,22 @@
     },
     {
       "word": "cases",
-      "count": 7
+      "count": 8
     },
     {
       "word": "marketing",
+      "count": 8
+    },
+    {
+      "word": "what",
+      "count": 8
+    },
+    {
+      "word": "legal",
+      "count": 8
+    },
+    {
+      "word": "call",
       "count": 7
     },
     {
@@ -67,7 +79,11 @@
       "count": 6
     },
     {
-      "word": "call",
+      "word": "from",
+      "count": 6
+    },
+    {
+      "word": "with",
       "count": 6
     },
     {
@@ -75,31 +91,15 @@
       "count": 6
     },
     {
-      "word": "from",
-      "count": 4
-    },
-    {
-      "word": "legal",
-      "count": 4
-    },
-    {
       "word": "more",
-      "count": 4
+      "count": 5
+    },
+    {
+      "word": "here",
+      "count": 5
     },
     {
       "word": "intake",
-      "count": 4
-    },
-    {
-      "word": "team",
-      "count": 4
-    },
-    {
-      "word": "with",
-      "count": 4
-    },
-    {
-      "word": "your",
       "count": 4
     }
   ],
@@ -111,5 +111,5 @@
   ],
   "optimal_length": "medium (500-1500 chars)",
   "dominant_hook": "statement",
-  "generated_at": "2026-02-21T14:35:25.436Z"
+  "generated_at": "2026-02-21T19:49:39.730Z"
 }

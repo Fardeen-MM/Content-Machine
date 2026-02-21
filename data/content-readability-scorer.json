@@ -1,0 +1,193 @@
+{
+  "total_analyzed": 37,
+  "avg_readability": 58,
+  "easy": 0,
+  "standard": 16,
+  "moderate": 20,
+  "difficult": 1,
+  "most_readable": [
+    {
+      "id": "91939c91ddfbb997",
+      "title": "Speed to lead is killing us — callers hang up after 30 seconds",
+      "readability_score": 75,
+      "level": "standard",
+      "word_count": 176,
+      "sentence_count": 21,
+      "avg_words_per_sentence": 8.4
+    },
+    {
+      "id": "942509da1ea4f8",
+      "title": "Hired 3 marketing agencies in 2 years — all terrible. What am I doing wrong?",
+      "readability_score": 70,
+      "level": "standard",
+      "word_count": 124,
+      "sentence_count": 27,
+      "avg_words_per_sentence": 4.6
+    },
+    {
+      "id": "4d214093372dfe2a",
+      "title": "Clio Legal Trends Report: 67% of firms don't track marketing ROI",
+      "readability_score": 69,
+      "level": "standard",
+      "word_count": 170,
+      "sentence_count": 21,
+      "avg_words_per_sentence": 8.1
+    },
+    {
+      "id": "be51be586030c8",
+      "title": "Should I invest in SEO or PPC first? Budget is $5K/month",
+      "readability_score": 69,
+      "level": "standard",
+      "word_count": 191,
+      "sentence_count": 15,
+      "avg_words_per_sentence": 12.7
+    },
+    {
+      "id": "858d056a779d6",
+      "title": "We switched from Avvo to Google LSAs — 4x more cases at half the cost",
+      "readability_score": 68,
+      "level": "standard",
+      "word_count": 169,
+      "sentence_count": 18,
+      "avg_words_per_sentence": 9.4
+    },
+    {
+      "id": "7436b8ca438b2ed1",
+      "title": "Spent $5K/month on Google Ads for my PI firm and got 2 cases",
+      "readability_score": 67,
+      "level": "standard",
+      "word_count": 182,
+      "sentence_count": 21,
+      "avg_words_per_sentence": 8.7
+    },
+    {
+      "id": "dd33fd2be463cf5f",
+      "title": "Spent $5K/month on Google Ads for my PI firm and got 2 cases",
+      "readability_score": 65,
+      "level": "standard",
+      "word_count": 161,
+      "sentence_count": 23,
+      "avg_words_per_sentence": 7
+    },
+    {
+      "id": "1d3caed24b1928",
+      "title": "Our intake team started texting leads within 30 seconds — conversion up 41%",
+      "readability_score": 65,
+      "level": "standard",
+      "word_count": 164,
+      "sentence_count": 23,
+      "avg_words_per_sentence": 7.1
+    },
+    {
+      "id": "ec092ef2822c6bc1",
+      "title": "Call insight: Your intake team is asking the same questions in the same or",
+      "readability_score": 64,
+      "level": "standard",
+      "word_count": 138,
+      "sentence_count": 14,
+      "avg_words_per_sentence": 9.9
+    },
+    {
+      "id": "34f0159edc64e457",
+      "title": "Why Law Firm Marketing Costs Skyrocketed in 2025 (And What Comes Next)",
+      "readability_score": 64,
+      "level": "standard",
+      "word_count": 144,
+      "sentence_count": 19,
+      "avg_words_per_sentence": 7.6
+    }
+  ],
+  "least_readable": [
+    {
+      "id": "2a3227e1afa2fb78",
+      "title": "Call insight: The real opportunity in lead generation isn't getting more v",
+      "readability_score": 39,
+      "level": "difficult",
+      "word_count": 135,
+      "sentence_count": 14,
+      "avg_words_per_sentence": 9.6
+    },
+    {
+      "id": "602f738cf8a9e190",
+      "title": "Call insight: You're probably wasting 2-3 hours a day on intake conversati",
+      "readability_score": 44,
+      "level": "moderate",
+      "word_count": 141,
+      "sentence_count": 17,
+      "avg_words_per_sentence": 8.3
+    },
+    {
+      "id": "8341e619808ae019",
+      "title": "Call insight: We keep meeting executive assistants secretly building sprea",
+      "readability_score": 47,
+      "level": "moderate",
+      "word_count": 145,
+      "sentence_count": 16,
+      "avg_words_per_sentence": 9.1
+    },
+    {
+      "id": "84c5ceee86f4d356",
+      "title": "Doing the “Impossible”: Lawyer Who Grew His Revenue by 59% with Fewer Leads — with Eric Gros-Dubois",
+      "readability_score": 48,
+      "level": "moderate",
+      "word_count": 130,
+      "sentence_count": 11,
+      "avg_words_per_sentence": 11.8
+    },
+    {
+      "id": "6416c9f94e5c38",
+      "title": "Google just rolled out AI Overviews for legal queries — is SEO for lawyers dead?",
+      "readability_score": 48,
+      "level": "moderate",
+      "word_count": 175,
+      "sentence_count": 16,
+      "avg_words_per_sentence": 10.9
+    },
+    {
+      "id": "657fd7635c61e6fc",
+      "title": "Call insight: We watched a firm generate 5,000 leads monthly on a $2-3K bu",
+      "readability_score": 50,
+      "level": "moderate",
+      "word_count": 141,
+      "sentence_count": 15,
+      "avg_words_per_sentence": 9.4
+    },
+    {
+      "id": "428fe56f109338c7",
+      "title": "ABA: Average PI firm spends $124K on marketing annually",
+      "readability_score": 50,
+      "level": "moderate",
+      "word_count": 161,
+      "sentence_count": 10,
+      "avg_words_per_sentence": 16.1
+    },
+    {
+      "id": "54da56c7cf4c18",
+      "title": "Landing pages vs homepage for law firm ads — A/B test results",
+      "readability_score": 52,
+      "level": "moderate",
+      "word_count": 154,
+      "sentence_count": 14,
+      "avg_words_per_sentence": 11
+    },
+    {
+      "id": "6e4f84de57065",
+      "title": "Is TikTok worth it for a law firm? Seems unprofessional",
+      "readability_score": 53,
+      "level": "moderate",
+      "word_count": 176,
+      "sentence_count": 18,
+      "avg_words_per_sentence": 9.8
+    },
+    {
+      "id": "201a738d779578",
+      "title": "Our Google Business Profile drives more calls than our website",
+      "readability_score": 53,
+      "level": "moderate",
+      "word_count": 161,
+      "sentence_count": 17,
+      "avg_words_per_sentence": 9.5
+    }
+  ],
+  "generated_at": "2026-02-21T19:49:38.424Z"
+}

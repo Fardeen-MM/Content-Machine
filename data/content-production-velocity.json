@@ -1,0 +1,66 @@
+{
+  "total_content": 61,
+  "completed": 1,
+  "in_progress": 60,
+  "avg_total_days": 0.3,
+  "avg_create_to_approve": 0,
+  "fastest": [
+    {
+      "id": "4aa23b276fa5218b",
+      "title": "Lessons Learned From 5,000 Days of Crisp — Episode 438",
+      "status": "published",
+      "created_to_approved_days": null,
+      "approved_to_published_days": null,
+      "total_days": 0.3,
+      "is_complete": true
+    }
+  ],
+  "slowest": [
+    {
+      "id": "8dfa41e3fa145ba7",
+      "title": "Speed to lead is killing us — callers hang up after 30 seconds",
+      "status": "review",
+      "created_to_approved_days": null,
+      "approved_to_published_days": null,
+      "total_days": 8.1,
+      "is_complete": false
+    },
+    {
+      "id": "13497fe9d9ea6a2c",
+      "title": "National Law Review: AI is transforming how law firms acquire clients",
+      "status": "review",
+      "created_to_approved_days": null,
+      "approved_to_published_days": null,
+      "total_days": 7.7,
+      "is_complete": false
+    },
+    {
+      "id": "428fe56f109338c7",
+      "title": "ABA: Average PI firm spends $124K on marketing annually",
+      "status": "review",
+      "created_to_approved_days": null,
+      "approved_to_published_days": null,
+      "total_days": 7.4,
+      "is_complete": false
+    },
+    {
+      "id": "7f77c159bb8ccf6a",
+      "title": "Fired my 3rd marketing agency this year — what am I doing wrong?",
+      "status": "review",
+      "created_to_approved_days": null,
+      "approved_to_published_days": null,
+      "total_days": 7.1,
+      "is_complete": false
+    },
+    {
+      "id": "b27b9c8b72a638",
+      "title": "I built a $3M law firm in 4 years with zero referrals — here's every channel I used",
+      "status": "review",
+      "created_to_approved_days": null,
+      "approved_to_published_days": null,
+      "total_days": 6.8,
+      "is_complete": false
+    }
+  ],
+  "generated_at": "2026-02-21T19:49:38.440Z"
+}

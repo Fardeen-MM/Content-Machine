@@ -1,0 +1,19 @@
+{
+  "viral": [],
+  "trending": [],
+  "rising": [
+    {
+      "id": "4aa23b276fa5218b",
+      "title": "Lessons Learned From 5,000 Days of Crisp — Episode 438",
+      "impressions": 2500,
+      "engagements": 2.72,
+      "engagement_rate": 0.11,
+      "velocity": 135,
+      "age_hours": 18,
+      "viral_score": 28,
+      "status": "rising"
+    }
+  ],
+  "total_candidates": 1,
+  "generated_at": "2026-02-21T19:49:38.366Z"
+}

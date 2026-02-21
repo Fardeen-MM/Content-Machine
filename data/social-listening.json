@@ -1,11 +1,11 @@
 {
-  "total_signals": 473,
+  "total_signals": 476,
   "by_source": {
     "reddit": 121,
     "google-news": 1,
     "rss": 189,
-    "youtube": 75,
-    "hackernews": 41,
+    "youtube": 77,
+    "hackernews": 42,
     "competitor": 45,
     "content-ideas": 1
   },
@@ -16,7 +16,7 @@
     },
     {
       "word": "marketing",
-      "count": 65
+      "count": 66
     },
     {
       "word": "smokeball",
@@ -32,7 +32,7 @@
     },
     {
       "word": "automation",
-      "count": 18
+      "count": 19
     },
     {
       "word": "tools",
@@ -74,7 +74,7 @@
   "sentiment": {
     "positive": 46,
     "negative": 14,
-    "neutral": 413
+    "neutral": 416
   },
   "dominant_sentiment": "positive",
   "trending_up": [
@@ -84,5 +84,5 @@
     "firms",
     "content"
   ],
-  "generated_at": "2026-02-21T14:01:42.297Z"
+  "generated_at": "2026-02-21T19:49:40.784Z"
 }

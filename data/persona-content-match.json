@@ -1,7 +1,7 @@
 {
-  "total_matched": 41,
+  "total_matched": 50,
   "by_persona": {
-    "Small Firm Owner": 41
+    "Small Firm Owner": 50
   },
   "top_matches": [
     {
@@ -85,9 +85,9 @@
       ]
     }
   ],
-  "unmatched": 22,
+  "unmatched": 29,
   "recommendations": [
     "Underserved personas: Mid-Size Managing Partner, Large Firm Marketing Director — create targeted content"
   ],
-  "generated_at": "2026-02-21T17:22:06.336Z"
+  "generated_at": "2026-02-21T19:49:38.337Z"
 }

@@ -1,0 +1,88 @@
+{
+  "current_estimated_followers": 0,
+  "posts_this_week": 1,
+  "posts_this_month": 1,
+  "weekly_growth_rate": 15,
+  "content_in_pipeline": 5,
+  "projections": [
+    {
+      "month": 1,
+      "projected_followers": 15,
+      "projected_impressions": 750,
+      "projected_leads": 0
+    },
+    {
+      "month": 2,
+      "projected_followers": 30,
+      "projected_impressions": 1500,
+      "projected_leads": 0
+    },
+    {
+      "month": 3,
+      "projected_followers": 45,
+      "projected_impressions": 2250,
+      "projected_leads": 0
+    },
+    {
+      "month": 4,
+      "projected_followers": 60,
+      "projected_impressions": 3000,
+      "projected_leads": 1
+    },
+    {
+      "month": 5,
+      "projected_followers": 75,
+      "projected_impressions": 3750,
+      "projected_leads": 1
+    },
+    {
+      "month": 6,
+      "projected_followers": 90,
+      "projected_impressions": 4500,
+      "projected_leads": 1
+    },
+    {
+      "month": 7,
+      "projected_followers": 105,
+      "projected_impressions": 5250,
+      "projected_leads": 1
+    },
+    {
+      "month": 8,
+      "projected_followers": 120,
+      "projected_impressions": 6000,
+      "projected_leads": 1
+    },
+    {
+      "month": 9,
+      "projected_followers": 135,
+      "projected_impressions": 6750,
+      "projected_leads": 1
+    },
+    {
+      "month": 10,
+      "projected_followers": 150,
+      "projected_impressions": 7500,
+      "projected_leads": 2
+    },
+    {
+      "month": 11,
+      "projected_followers": 165,
+      "projected_impressions": 8250,
+      "projected_leads": 2
+    },
+    {
+      "month": 12,
+      "projected_followers": 180,
+      "projected_impressions": 9000,
+      "projected_leads": 2
+    }
+  ],
+  "projected_6m_followers": 90,
+  "projected_12m_followers": 180,
+  "recommendations": [
+    "Publishing less than 3x/week — increase to accelerate growth",
+    "Low impressions — focus on engagement-first content"
+  ],
+  "generated_at": "2026-02-21T19:49:38.426Z"
+}

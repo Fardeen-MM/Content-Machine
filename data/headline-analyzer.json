@@ -1,0 +1,185 @@
+{
+  "total_analyzed": 61,
+  "avg_score": 70,
+  "top_headlines": [
+    {
+      "id": "be51be586030c8",
+      "headline": "Should I invest in SEO or PPC first? Budget is $5K/month",
+      "score": 91,
+      "word_count": 11,
+      "has_number": true,
+      "has_question": true,
+      "has_power_word": false,
+      "has_emotion": false,
+      "tips": [
+        "Add a power word",
+        "Add emotional triggers"
+      ]
+    },
+    {
+      "id": "7f77c159bb8ccf6a",
+      "headline": "Fired my 3rd marketing agency this year — what am I doing wrong?",
+      "score": 86,
+      "word_count": 13,
+      "has_number": true,
+      "has_question": true,
+      "has_power_word": false,
+      "has_emotion": true,
+      "tips": [
+        "Add a power word"
+      ]
+    },
+    {
+      "id": "942509da1ea4f8",
+      "headline": "Hired 3 marketing agencies in 2 years — all terrible. What am I doing wrong?",
+      "score": 86,
+      "word_count": 15,
+      "has_number": true,
+      "has_question": true,
+      "has_power_word": false,
+      "has_emotion": true,
+      "tips": [
+        "Add a power word"
+      ]
+    },
+    {
+      "id": "428fe56f109338c7",
+      "headline": "ABA: Average PI firm spends $124K on marketing annually",
+      "score": 83,
+      "word_count": 9,
+      "has_number": true,
+      "has_question": false,
+      "has_power_word": false,
+      "has_emotion": false,
+      "tips": [
+        "Add a power word",
+        "Add emotional triggers"
+      ]
+    },
+    {
+      "id": "a318e2a656b57",
+      "headline": "Negative keywords saved my law firm client $3,200/month",
+      "score": 83,
+      "word_count": 8,
+      "has_number": true,
+      "has_question": false,
+      "has_power_word": false,
+      "has_emotion": false,
+      "tips": [
+        "Add a power word",
+        "Add emotional triggers"
+      ]
+    },
+    {
+      "id": "8ba52566277d9674",
+      "headline": "1 month, 178k followers, 213M views, $500,000 Revenue",
+      "score": 83,
+      "word_count": 8,
+      "has_number": true,
+      "has_question": false,
+      "has_power_word": false,
+      "has_emotion": false,
+      "tips": [
+        "Add a power word",
+        "Add emotional triggers"
+      ]
+    },
+    {
+      "id": "2d1c57867cf2189d",
+      "headline": "Marketing Agency Raises $100 Billion Dollars to Make iPhone Apps",
+      "score": 83,
+      "word_count": 10,
+      "has_number": true,
+      "has_question": false,
+      "has_power_word": false,
+      "has_emotion": false,
+      "tips": [
+        "Add a power word",
+        "Add emotional triggers"
+      ]
+    },
+    {
+      "id": "15cd4fe4bf6f9b16",
+      "headline": "Canadian Startup Clio Raises $250M for Legal Tech",
+      "score": 83,
+      "word_count": 8,
+      "has_number": true,
+      "has_question": false,
+      "has_power_word": false,
+      "has_emotion": false,
+      "tips": [
+        "Add a power word",
+        "Add emotional triggers"
+      ]
+    },
+    {
+      "id": "c620397eb573dacb",
+      "headline": "Legal Tech Startup Casetext (YC S13) Raises $7M Series A",
+      "score": 83,
+      "word_count": 10,
+      "has_number": true,
+      "has_question": false,
+      "has_power_word": false,
+      "has_emotion": false,
+      "tips": [
+        "Add a power word",
+        "Add emotional triggers"
+      ]
+    },
+    {
+      "id": "75e110476877693b",
+      "headline": "How I Generated $2,795 from 2,150 Organic Visitors",
+      "score": 83,
+      "word_count": 8,
+      "has_number": true,
+      "has_question": false,
+      "has_power_word": false,
+      "has_emotion": false,
+      "tips": [
+        "Add a power word",
+        "Add emotional triggers"
+      ]
+    }
+  ],
+  "weak_headlines": [
+    {
+      "id": "5e6555b1ae727932",
+      "headline": "Google ads",
+      "score": 40,
+      "word_count": 2,
+      "has_number": false,
+      "has_question": false,
+      "has_power_word": false,
+      "has_emotion": false,
+      "tips": [
+        "Add a power word",
+        "Add a number for specificity",
+        "Headline is too short",
+        "Add emotional triggers"
+      ]
+    }
+  ],
+  "common_tips": [
+    {
+      "tip": "Add a power word",
+      "count": 60
+    },
+    {
+      "tip": "Add emotional triggers",
+      "count": 56
+    },
+    {
+      "tip": "Add a number for specificity",
+      "count": 20
+    },
+    {
+      "tip": "Headline is too long",
+      "count": 9
+    },
+    {
+      "tip": "Headline is too short",
+      "count": 1
+    }
+  ],
+  "generated_at": "2026-02-21T19:49:38.387Z"
+}

@@ -1,0 +1,138 @@
+{
+  "total_content": 61,
+  "avg_recency_score": 93,
+  "grade": "A",
+  "buckets": {
+    "fresh": 41,
+    "recent": 18,
+    "aging": 2,
+    "stale": 0,
+    "archive": 0
+  },
+  "stalest_content": [
+    {
+      "id": "8dfa41e3fa145ba7",
+      "title": "Speed to lead is killing us — callers hang up after 30 seconds",
+      "age_days": 8,
+      "recency_score": 60,
+      "bucket": "aging",
+      "status": "review"
+    },
+    {
+      "id": "13497fe9d9ea6a2c",
+      "title": "National Law Review: AI is transforming how law firms acquire clients",
+      "age_days": 8,
+      "recency_score": 60,
+      "bucket": "aging",
+      "status": "review"
+    },
+    {
+      "id": "dd33fd2be463cf5f",
+      "title": "Spent $5K/month on Google Ads for my PI firm and got 2 cases",
+      "age_days": 6,
+      "recency_score": 80,
+      "bucket": "recent",
+      "status": "approved"
+    },
+    {
+      "id": "c4c23c4858e12fc8",
+      "title": "My web designer charges $300/mo and my site looks like it's from 2005",
+      "age_days": 6,
+      "recency_score": 80,
+      "bucket": "recent",
+      "status": "review"
+    },
+    {
+      "id": "7f77c159bb8ccf6a",
+      "title": "Fired my 3rd marketing agency this year — what am I doing wrong?",
+      "age_days": 7,
+      "recency_score": 80,
+      "bucket": "recent",
+      "status": "review"
+    },
+    {
+      "id": "4c20a864324032bb",
+      "title": "Just found out my marketing agency was running ads to the wrong zip codes for 6 months",
+      "age_days": 6,
+      "recency_score": 80,
+      "bucket": "recent",
+      "status": "approved"
+    },
+    {
+      "id": "4d214093372dfe2a",
+      "title": "Clio Legal Trends Report: 67% of firms don't track marketing ROI",
+      "age_days": 7,
+      "recency_score": 80,
+      "bucket": "recent",
+      "status": "review"
+    },
+    {
+      "id": "428fe56f109338c7",
+      "title": "ABA: Average PI firm spends $124K on marketing annually",
+      "age_days": 7,
+      "recency_score": 80,
+      "bucket": "recent",
+      "status": "review"
+    },
+    {
+      "id": "858d056a779d6",
+      "title": "We switched from Avvo to Google LSAs — 4x more cases at half the cost",
+      "age_days": 6,
+      "recency_score": 80,
+      "bucket": "recent",
+      "status": "review"
+    },
+    {
+      "id": "1d3caed24b1928",
+      "title": "Our intake team started texting leads within 30 seconds — conversion up 41%",
+      "age_days": 6,
+      "recency_score": 80,
+      "bucket": "recent",
+      "status": "review"
+    }
+  ],
+  "freshest_content": [
+    {
+      "id": "942bdcb1159acca7",
+      "title": "Running a US home service business remotely – scalable model or risky dependency?",
+      "age_days": 0,
+      "recency_score": 100,
+      "bucket": "fresh",
+      "status": "review"
+    },
+    {
+      "id": "5e6555b1ae727932",
+      "title": "Google ads",
+      "age_days": 0,
+      "recency_score": 100,
+      "bucket": "fresh",
+      "status": "review"
+    },
+    {
+      "id": "75f380d0e3a8ce07",
+      "title": "Got paid to fix a client's ads. turns out the ads werent the problem",
+      "age_days": 0,
+      "recency_score": 100,
+      "bucket": "fresh",
+      "status": "review"
+    },
+    {
+      "id": "5b9f0c694cd43836",
+      "title": "Landing Page Experience and Conversion Rates",
+      "age_days": 0,
+      "recency_score": 100,
+      "bucket": "fresh",
+      "status": "review"
+    },
+    {
+      "id": "75e110476877693b",
+      "title": "How I Generated $2,795 from 2,150 Organic Visitors",
+      "age_days": 0,
+      "recency_score": 100,
+      "bucket": "fresh",
+      "status": "review"
+    }
+  ],
+  "recommendations": [],
+  "generated_at": "2026-02-21T19:49:38.414Z"
+}

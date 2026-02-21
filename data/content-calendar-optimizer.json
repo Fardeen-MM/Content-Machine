@@ -1,0 +1,55 @@
+{
+  "publishing_days": {
+    "Sun": 0,
+    "Mon": 0,
+    "Tue": 0,
+    "Wed": 0,
+    "Thu": 0,
+    "Fri": 0,
+    "Sat": 1
+  },
+  "publishing_hours": {
+    "0": 0,
+    "1": 0,
+    "2": 0,
+    "3": 1,
+    "4": 0,
+    "5": 0,
+    "6": 0,
+    "7": 0,
+    "8": 0,
+    "9": 0,
+    "10": 0,
+    "11": 0,
+    "12": 0,
+    "13": 0,
+    "14": 0,
+    "15": 0,
+    "16": 0,
+    "17": 0,
+    "18": 0,
+    "19": 0,
+    "20": 0,
+    "21": 0,
+    "22": 0,
+    "23": 0
+  },
+  "total_published": 1,
+  "approved_waiting": 5,
+  "scheduled": 0,
+  "busiest_day": "Sat",
+  "quietest_day": "Sun",
+  "gap_days": [
+    "Sun",
+    "Mon",
+    "Tue",
+    "Wed",
+    "Thu",
+    "Fri"
+  ],
+  "recommendations": [
+    "Post on Sun, Mon, Tue, Wed, Thu, Fri to fill calendar gaps",
+    "Fewer than 7 posts this period — increase cadence"
+  ],
+  "generated_at": "2026-02-21T19:49:38.451Z"
+}

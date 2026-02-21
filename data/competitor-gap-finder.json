@@ -1,0 +1,358 @@
+{
+  "total_competitor_topics": 45,
+  "total_gaps": 26,
+  "high_priority": 6,
+  "gaps": [
+    {
+      "competitor_title": "CCPA/CPRA: Privacy Policy and Disclaimers for Law Firms. Whew!",
+      "source": "https://www.paperstreet.com/blog/ccpa-cpra-privacy-disclaimers/",
+      "coverage_pct": 0,
+      "uncovered_keywords": [
+        "ccpa/cpra:",
+        "privacy",
+        "policy",
+        "disclaimers",
+        "firms."
+      ],
+      "priority": "high",
+      "competitor": "PaperStreet"
+    },
+    {
+      "competitor_title": "Ask Attorney Jennifer B.: Technology in Family Law",
+      "source": "https://www.martindale-avvo.com/blog/ask-attorney-jennifer-b-technology-in-family-law/",
+      "coverage_pct": 0,
+      "uncovered_keywords": [
+        "attorney",
+        "jennifer",
+        "technology",
+        "family"
+      ],
+      "priority": "high",
+      "competitor": "Martindale-Avvo Blog"
+    },
+    {
+      "competitor_title": "New AV Preeminent Peer Rated Attorneys &#124; January 2026",
+      "source": "https://www.martindale-avvo.com/blog/new-av-preeminent-peer-rated-attorneys-january-2026/",
+      "coverage_pct": 0,
+      "uncovered_keywords": [
+        "preeminent",
+        "peer",
+        "rated",
+        "attorneys",
+        "&#124;"
+      ],
+      "priority": "high",
+      "competitor": "Martindale-Avvo Blog"
+    },
+    {
+      "competitor_title": "Ask Attorney Jennifer B.: Drafting and Enforcing Prenups",
+      "source": "https://www.martindale-avvo.com/blog/drafting-and-enforcing-prenups/",
+      "coverage_pct": 0,
+      "uncovered_keywords": [
+        "attorney",
+        "jennifer",
+        "drafting",
+        "enforcing",
+        "prenups"
+      ],
+      "priority": "high",
+      "competitor": "Martindale-Avvo Blog"
+    },
+    {
+      "competitor_title": "Understanding Google&#8217;s Recent Spam Update",
+      "source": "https://www.postali.com/understanding-googles-recent-spam-update/",
+      "coverage_pct": 0,
+      "uncovered_keywords": [
+        "understanding",
+        "google&#8217;s",
+        "recent",
+        "spam",
+        "update"
+      ],
+      "priority": "high",
+      "competitor": "Postali"
+    },
+    {
+      "competitor_title": "Shadow IT and AI in Law Firms: Risks and Prevention Guide",
+      "source": "https://www.clio.com/blog/shadow-it-and-shadow-ai-law-firms/",
+      "coverage_pct": 0,
+      "uncovered_keywords": [
+        "shadow",
+        "firms:",
+        "risks",
+        "prevention",
+        "guide"
+      ],
+      "priority": "high",
+      "competitor": "Clio Blog"
+    },
+    {
+      "competitor_title": "How to Refresh a Stale Practice Area Page Without Rewriting Everything",
+      "source": "https://www.paperstreet.com/blog/how-to-refresh-a-stale-practice-area-page-without-rewriting-everything/",
+      "coverage_pct": 13,
+      "uncovered_keywords": [
+        "refresh",
+        "stale",
+        "practice",
+        "area",
+        "without"
+      ],
+      "priority": "medium",
+      "competitor": "PaperStreet"
+    },
+    {
+      "competitor_title": "Data-Driven Marketing for Law Firms: Moving Beyond “We Think It’s Working”",
+      "source": "https://jurisdigital.com/guides/law-firm-marketing-analytics/",
+      "coverage_pct": 13,
+      "uncovered_keywords": [
+        "data-driven",
+        "firms:",
+        "moving",
+        "beyond",
+        "think"
+      ],
+      "priority": "medium",
+      "competitor": "Juris Digital"
+    },
+    {
+      "competitor_title": "AI vs. Human Writers: What’s Best for Law Firm SEO?",
+      "source": "https://gladiatorlawmarketing.com/ai-content-law-firm-seo/",
+      "coverage_pct": 17,
+      "uncovered_keywords": [
+        "human",
+        "writers:",
+        "what’s",
+        "best",
+        "seo?"
+      ],
+      "priority": "medium",
+      "competitor": "Gladiator Law Marketing"
+    },
+    {
+      "competitor_title": "How Can Law Firms Use Memorable Slogans and Taglines to Stand Out?",
+      "source": "https://gladiatorlawmarketing.com/law-firm-memorable-slogans-strategy/",
+      "coverage_pct": 17,
+      "uncovered_keywords": [
+        "memorable",
+        "slogans",
+        "taglines",
+        "stand",
+        "out?"
+      ],
+      "priority": "medium",
+      "competitor": "Gladiator Law Marketing"
+    },
+    {
+      "competitor_title": "Valentine&#8217;s Day Edition: 10 Things Our Team is Loving Right Now",
+      "source": "https://www.paperstreet.com/blog/valentines-day-edition-10-things-our-team-is-loving-right-now/",
+      "coverage_pct": 17,
+      "uncovered_keywords": [
+        "valentine&#8217;s",
+        "edition:",
+        "things",
+        "loving",
+        "right"
+      ],
+      "priority": "medium",
+      "competitor": "PaperStreet"
+    },
+    {
+      "competitor_title": "Privacy Policy Template for Law Firms by PaperStreet",
+      "source": "https://www.paperstreet.com/blog/privacy-policy-template-for-law-firms-by-paperstreet/",
+      "coverage_pct": 20,
+      "uncovered_keywords": [
+        "privacy",
+        "policy",
+        "template",
+        "paperstreet"
+      ],
+      "priority": "medium",
+      "competitor": "PaperStreet"
+    },
+    {
+      "competitor_title": "How to Audit Your Law Firm’s Online Presence",
+      "source": "https://www.martindale-avvo.com/blog/how-to-audit-your-law-firms-online-presence/",
+      "coverage_pct": 20,
+      "uncovered_keywords": [
+        "audit",
+        "firm’s",
+        "online",
+        "presence"
+      ],
+      "priority": "medium",
+      "competitor": "Martindale-Avvo Blog"
+    },
+    {
+      "competitor_title": "How to Optimize Legal Directory Profiles",
+      "source": "https://www.martindale-avvo.com/blog/how-to-optimize-legal-directory-profiles/",
+      "coverage_pct": 25,
+      "uncovered_keywords": [
+        "optimize",
+        "directory",
+        "profiles"
+      ],
+      "priority": "low",
+      "competitor": "Martindale-Avvo Blog"
+    },
+    {
+      "competitor_title": "Stop Paying for AI Visibility Tracking. Here&#8217;s What Actually Matters.",
+      "source": "https://jurisdigital.com/news/stop-paying-for-ai-visibility-tracking-heres-what-actually-matters/",
+      "coverage_pct": 25,
+      "uncovered_keywords": [
+        "stop",
+        "paying",
+        "visibility",
+        "tracking.",
+        "here&#8217;s"
+      ],
+      "priority": "low",
+      "competitor": "Juris Digital"
+    },
+    {
+      "competitor_title": "The Meteoric Rise of Voice Search: Its Impact on Law Firm Marketing",
+      "source": "https://gladiatorlawmarketing.com/how-does-voice-search-affect-seo/",
+      "coverage_pct": 29,
+      "uncovered_keywords": [
+        "meteoric",
+        "rise",
+        "voice",
+        "search:",
+        "impact"
+      ],
+      "priority": "low",
+      "competitor": "Gladiator Law Marketing"
+    },
+    {
+      "competitor_title": "California’s New Advertising Rules for Law Firms and Lawyers: SB 37 and Section 6153 of the Business and Professions Code",
+      "source": "https://www.paperstreet.com/blog/californias-new-advertising-rules-for-law-firms-and-lawyers-sb-37-and-section-6153-of-the-business-and-professions-code/",
+      "coverage_pct": 30,
+      "uncovered_keywords": [
+        "california’s",
+        "advertising",
+        "rules",
+        "section",
+        "6153"
+      ],
+      "priority": "low",
+      "competitor": "PaperStreet"
+    },
+    {
+      "competitor_title": "Why SEO for Divorce Lawyers is Important",
+      "source": "https://gladiatorlawmarketing.com/why-seo-divorce-lawyers-important/",
+      "coverage_pct": 33,
+      "uncovered_keywords": [
+        "divorce",
+        "important"
+      ],
+      "priority": "low",
+      "competitor": "Gladiator Law Marketing"
+    },
+    {
+      "competitor_title": "Internet Marketing Associate",
+      "source": "https://www.paperstreet.com/blog/internet-marketing-associate/",
+      "coverage_pct": 33,
+      "uncovered_keywords": [
+        "internet",
+        "associate"
+      ],
+      "priority": "low",
+      "competitor": "PaperStreet"
+    },
+    {
+      "competitor_title": "The Hidden Intake Gaps",
+      "source": "https://www.martindale-avvo.com/blog/the-hidden-intake-gaps/",
+      "coverage_pct": 33,
+      "uncovered_keywords": [
+        "hidden",
+        "gaps"
+      ],
+      "priority": "low",
+      "competitor": "Martindale-Avvo Blog"
+    },
+    {
+      "competitor_title": "The Ultimate SEO Framework for Lawyers",
+      "source": "https://www.martindale-avvo.com/blog/the-ultimate-seo-framework-for-lawyers/",
+      "coverage_pct": 33,
+      "uncovered_keywords": [
+        "ultimate",
+        "framework"
+      ],
+      "priority": "low",
+      "competitor": "Martindale-Avvo Blog"
+    },
+    {
+      "competitor_title": "How to Get Your Law Firm Cited in ChatGPT and Perplexity Searches",
+      "source": "https://jurisdigital.com/guides/perplexity-chatgpt-citations-law-firms/",
+      "coverage_pct": 33,
+      "uncovered_keywords": [
+        "cited",
+        "chatgpt",
+        "perplexity",
+        "searches"
+      ],
+      "priority": "low",
+      "competitor": "Juris Digital"
+    },
+    {
+      "competitor_title": "Click Study –  AI Overviews vs. Traditional Organic: Which Gets More Clicks?",
+      "source": "https://jurisdigital.com/research/click-study-ai-vs-traditional-organic/",
+      "coverage_pct": 33,
+      "uncovered_keywords": [
+        "click",
+        "study",
+        "traditional",
+        "organic:",
+        "which"
+      ],
+      "priority": "low",
+      "competitor": "Juris Digital"
+    },
+    {
+      "competitor_title": "Your Rankings Didn&#8217;t Drop. So Why Did Your Calls?",
+      "source": "https://jurisdigital.com/news/your-rankings-didnt-drop-so-why-did-your-calls/",
+      "coverage_pct": 33,
+      "uncovered_keywords": [
+        "rankings",
+        "didn&#8217;t",
+        "drop.",
+        "calls?"
+      ],
+      "priority": "low",
+      "competitor": "Juris Digital"
+    },
+    {
+      "competitor_title": "Google Verified Badge Replaces Google Screened: How Law Firms Can Qualify and Maintain It",
+      "source": "https://www.postali.com/google-verified-badge-replaces-google-screened-how-law-firms-can-qualify-and-maintain-it/",
+      "coverage_pct": 33,
+      "uncovered_keywords": [
+        "verified",
+        "badge",
+        "replaces",
+        "screened:",
+        "qualify"
+      ],
+      "priority": "low",
+      "competitor": "Postali"
+    },
+    {
+      "competitor_title": "AI Overviews and Law Firm Site Traffic: A Guide to Surviving the Zero-Click Crisis",
+      "source": "https://www.paperstreet.com/blog/ai-overviews-and-law-firm-site-traffic-a-guide-to-surviving-the-zero-click-crisis/",
+      "coverage_pct": 38,
+      "uncovered_keywords": [
+        "traffic:",
+        "guide",
+        "surviving",
+        "zero-click",
+        "crisis"
+      ],
+      "priority": "low",
+      "competitor": "PaperStreet"
+    }
+  ],
+  "coverage_overview": {
+    "well_covered": 19,
+    "gaps": 26,
+    "coverage_rate": 42
+  },
+  "generated_at": "2026-02-21T19:49:38.412Z"
+}

@@ -1,0 +1,150 @@
+{
+  "total_scheduled": 13,
+  "by_platform": {
+    "x": 9,
+    "linkedin": 4
+  },
+  "schedule": [
+    {
+      "content_id": "17613aa38257031a",
+      "title": "Show HN: Stripe Specialist Team Scam – 50%+ deals",
+      "format": "x_single",
+      "platform": "x",
+      "scheduled_for": "2026-02-23T17:00:00.000Z",
+      "day": "Mon",
+      "hour": 12,
+      "reason": "Optimal x time"
+    },
+    {
+      "content_id": "dd33fd2be463cf5f",
+      "title": "Spent $5K/month on Google Ads for my PI firm and got 2 cases",
+      "format": "linkedin",
+      "platform": "linkedin",
+      "scheduled_for": "2026-02-24T14:00:00.000Z",
+      "day": "Tue",
+      "hour": 9,
+      "reason": "Optimal linkedin time"
+    },
+    {
+      "content_id": "4c20a864324032bb",
+      "title": "Just found out my marketing agency was running ads to the wrong zip codes for 6 months",
+      "format": "linkedin",
+      "platform": "linkedin",
+      "scheduled_for": "2026-02-24T14:00:00.000Z",
+      "day": "Tue",
+      "hour": 9,
+      "reason": "Optimal linkedin time"
+    },
+    {
+      "content_id": "942509da1ea4f8",
+      "title": "Hired 3 marketing agencies in 2 years — all terrible. What am I doing wrong?",
+      "format": "linkedin",
+      "platform": "linkedin",
+      "scheduled_for": "2026-02-24T14:00:00.000Z",
+      "day": "Tue",
+      "hour": 9,
+      "reason": "Optimal linkedin time"
+    },
+    {
+      "content_id": "6e4f84de57065",
+      "title": "Is TikTok worth it for a law firm? Seems unprofessional",
+      "format": "linkedin",
+      "platform": "linkedin",
+      "scheduled_for": "2026-02-24T14:00:00.000Z",
+      "day": "Tue",
+      "hour": 9,
+      "reason": "Optimal linkedin time"
+    },
+    {
+      "content_id": "dd33fd2be463cf5f",
+      "title": "Spent $5K/month on Google Ads for my PI firm and got 2 cases",
+      "format": "x_single",
+      "platform": "x",
+      "scheduled_for": "2026-02-25T14:00:00.000Z",
+      "day": "Wed",
+      "hour": 9,
+      "reason": "Optimal x time"
+    },
+    {
+      "content_id": "4c20a864324032bb",
+      "title": "Just found out my marketing agency was running ads to the wrong zip codes for 6 months",
+      "format": "x_single",
+      "platform": "x",
+      "scheduled_for": "2026-02-25T14:00:00.000Z",
+      "day": "Wed",
+      "hour": 9,
+      "reason": "Optimal x time"
+    },
+    {
+      "content_id": "942509da1ea4f8",
+      "title": "Hired 3 marketing agencies in 2 years — all terrible. What am I doing wrong?",
+      "format": "x_single",
+      "platform": "x",
+      "scheduled_for": "2026-02-25T14:00:00.000Z",
+      "day": "Wed",
+      "hour": 9,
+      "reason": "Optimal x time"
+    },
+    {
+      "content_id": "6e4f84de57065",
+      "title": "Is TikTok worth it for a law firm? Seems unprofessional",
+      "format": "x_single",
+      "platform": "x",
+      "scheduled_for": "2026-02-25T14:00:00.000Z",
+      "day": "Wed",
+      "hour": 9,
+      "reason": "Optimal x time"
+    },
+    {
+      "content_id": "dd33fd2be463cf5f",
+      "title": "Spent $5K/month on Google Ads for my PI firm and got 2 cases",
+      "format": "x_thread",
+      "platform": "x",
+      "scheduled_for": "2026-02-27T19:00:00.000Z",
+      "day": "Fri",
+      "hour": 14,
+      "reason": "Optimal x time"
+    },
+    {
+      "content_id": "4c20a864324032bb",
+      "title": "Just found out my marketing agency was running ads to the wrong zip codes for 6 months",
+      "format": "x_thread",
+      "platform": "x",
+      "scheduled_for": "2026-02-27T19:00:00.000Z",
+      "day": "Fri",
+      "hour": 14,
+      "reason": "Optimal x time"
+    },
+    {
+      "content_id": "942509da1ea4f8",
+      "title": "Hired 3 marketing agencies in 2 years — all terrible. What am I doing wrong?",
+      "format": "x_thread",
+      "platform": "x",
+      "scheduled_for": "2026-02-27T19:00:00.000Z",
+      "day": "Fri",
+      "hour": 14,
+      "reason": "Optimal x time"
+    },
+    {
+      "content_id": "6e4f84de57065",
+      "title": "Is TikTok worth it for a law firm? Seems unprofessional",
+      "format": "x_thread",
+      "platform": "x",
+      "scheduled_for": "2026-02-27T19:00:00.000Z",
+      "day": "Fri",
+      "hour": 14,
+      "reason": "Optimal x time"
+    }
+  ],
+  "next_post": {
+    "content_id": "17613aa38257031a",
+    "title": "Show HN: Stripe Specialist Team Scam – 50%+ deals",
+    "format": "x_single",
+    "platform": "x",
+    "scheduled_for": "2026-02-23T17:00:00.000Z",
+    "day": "Mon",
+    "hour": 12,
+    "reason": "Optimal x time"
+  },
+  "generated_at": "2026-02-21T19:49:38.405Z"
+}

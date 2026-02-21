@@ -33,13 +33,13 @@
     {
       "date": "2026-02-21",
       "day": "Fri",
-      "created": 4,
+      "created": 24,
       "published": 2
     }
   ],
-  "max_activity": 15,
+  "max_activity": 26,
   "total_days_active": 6,
   "best_day": "Sun",
-  "avg_per_day": 7,
-  "generated_at": "2026-02-21T17:29:12.071Z"
+  "avg_per_day": 10.3,
+  "generated_at": "2026-02-21T19:49:38.358Z"
 }

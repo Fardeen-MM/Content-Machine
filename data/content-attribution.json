@@ -1,0 +1,30 @@
+{
+  "attributions": [
+    {
+      "id": "27d833ecee616822",
+      "content_id": "4aa23b276fa5218b",
+      "lead_email": "partner@bigfirm.com",
+      "touchpoint": "booking",
+      "platform": "linkedin",
+      "value": 5000,
+      "attributed_at": "2026-02-21T17:25:40.441Z"
+    }
+  ],
+  "summary": {
+    "total_attributions": 1,
+    "unique_content": 1,
+    "total_value": 5000,
+    "top_content": [
+      {
+        "content_id": "4aa23b276fa5218b",
+        "touches": 1,
+        "leads": 1,
+        "value": 5000
+      }
+    ],
+    "by_touchpoint": {
+      "booking": 1
+    }
+  },
+  "generated_at": "2026-02-21T17:25:40.441Z"
+}

@@ -17437,6 +17437,348 @@ Content: ${firstContent.substring(0, 2000)}`;
       return json(res, readJSON('persona-content-match.json') || { total_matched: 0, by_persona: {} });
     }
 
+    // ========== BATCH 77: Conversion Optimization & Lead Nurture ==========
+
+    // --- CTA Performance Dashboard ---
+    // Track CTA click-through rates and conversion by type
+    if (method === 'POST' && pathname === '/api/cta-performance') {
+      const body = await parseBody(req);
+      const store = (() => { const raw = readJSON('cta-performance.json'); return (raw && raw.ctas) ? raw : { ctas: [] }; })();
+
+      if (body.action === 'log') {
+        store.ctas.push({
+          id: generateId(),
+          content_id: body.content_id || '',
+          cta_text: body.cta_text || '',
+          cta_type: body.cta_type || 'link',
+          platform: body.platform || 'unknown',
+          clicks: body.clicks || 1,
+          conversions: body.conversions || 0,
+          logged_at: new Date().toISOString()
+        });
+      }
+
+      const totalClicks = store.ctas.reduce((s, c) => s + (c.clicks || 0), 0);
+      const totalConversions = store.ctas.reduce((s, c) => s + (c.conversions || 0), 0);
+      const byType = {};
+      for (const c of store.ctas) {
+        if (!byType[c.cta_type]) byType[c.cta_type] = { clicks: 0, conversions: 0, count: 0 };
+        byType[c.cta_type].clicks += c.clicks || 0;
+        byType[c.cta_type].conversions += c.conversions || 0;
+        byType[c.cta_type].count++;
+      }
+
+      store.summary = {
+        total_ctas: store.ctas.length,
+        total_clicks: totalClicks,
+        total_conversions: totalConversions,
+        avg_ctr: totalClicks > 0 ? Math.round((totalConversions / totalClicks) * 100) : 0,
+        by_type: byType,
+        top_performer: store.ctas.sort((a, b) => (b.conversions || 0) - (a.conversions || 0))[0] || null
+      };
+      store.generated_at = new Date().toISOString();
+      writeJSON('cta-performance.json', store);
+      return json(res, store);
+    }
+    if (method === 'GET' && pathname === '/api/cta-performance') {
+      return json(res, readJSON('cta-performance.json') || { ctas: [], summary: {} });
+    }
+
+    // --- Lead Nurture Sequence Builder ---
+    // Create automated multi-touch nurture sequences
+    if (method === 'POST' && pathname === '/api/lead-nurture-sequence') {
+      const body = await parseBody(req);
+      const store = (() => { const raw = readJSON('lead-nurture-sequences.json'); return (raw && raw.sequences) ? raw : { sequences: [] }; })();
+
+      if (body.action === 'create') {
+        store.sequences.push({
+          id: generateId(),
+          name: body.name || 'Untitled Sequence',
+          trigger: body.trigger || 'lead_magnet_download',
+          target_persona: body.target_persona || 'all',
+          steps: [
+            { day: 0, type: 'email', subject: 'Welcome + Resource delivery', status: 'draft' },
+            { day: 2, type: 'email', subject: 'Quick win related to resource', status: 'draft' },
+            { day: 5, type: 'email', subject: 'Case study / social proof', status: 'draft' },
+            { day: 8, type: 'email', subject: 'Value-add + soft CTA', status: 'draft' },
+            { day: 14, type: 'email', subject: 'Direct offer + booking link', status: 'draft' }
+          ],
+          active: false,
+          enrolled: 0,
+          converted: 0,
+          created_at: new Date().toISOString()
+        });
+      } else if (body.action === 'enroll') {
+        const seq = store.sequences.find(s => s.id === body.sequence_id);
+        if (seq) { seq.enrolled = (seq.enrolled || 0) + 1; }
+      } else if (body.action === 'convert') {
+        const seq = store.sequences.find(s => s.id === body.sequence_id);
+        if (seq) { seq.converted = (seq.converted || 0) + 1; }
+      }
+
+      store.total = store.sequences.length;
+      store.active = store.sequences.filter(s => s.active).length;
+      store.total_enrolled = store.sequences.reduce((s, seq) => s + (seq.enrolled || 0), 0);
+      store.total_converted = store.sequences.reduce((s, seq) => s + (seq.converted || 0), 0);
+      store.generated_at = new Date().toISOString();
+      writeJSON('lead-nurture-sequences.json', store);
+      return json(res, store);
+    }
+    if (method === 'GET' && pathname === '/api/lead-nurture-sequence') {
+      return json(res, readJSON('lead-nurture-sequences.json') || { sequences: [], total: 0 });
+    }
+
+    // --- Social Proof Widget Builder ---
+    // Generate embeddable social proof widgets from testimonials and metrics
+    if (method === 'POST' && pathname === '/api/social-proof-widget') {
+      const proofData = readJSON('social-proof-collector.json');
+      const proofs = Array.isArray(proofData) ? proofData : (proofData?.proofs || []);
+      const engagement = readJSON('engagement-tracker.json');
+      const engList = Array.isArray(engagement) ? engagement : [];
+
+      const totalImpressions = engList.reduce((s, e) => s + (e.impressions || 0), 0);
+      const totalClients = proofs.filter(p => p.type === 'testimonial').length;
+      const avgRating = proofs.length ? proofs.reduce((s, p) => s + (p.rating || 5), 0) / proofs.length : 5;
+
+      const widgets = [
+        {
+          type: 'counter',
+          title: 'Trusted by Law Firms',
+          value: Math.max(totalClients, 1),
+          suffix: '+ law firms served',
+          style: 'minimal'
+        },
+        {
+          type: 'testimonial_carousel',
+          title: 'What Our Clients Say',
+          items: proofs.filter(p => p.type === 'testimonial').slice(0, 5).map(p => ({
+            quote: p.content || p.text || '',
+            author: p.author || 'Law Firm Client',
+            rating: p.rating || 5
+          })),
+          style: 'card'
+        },
+        {
+          type: 'stats_bar',
+          title: 'Results That Matter',
+          stats: [
+            { label: 'Content Impressions', value: totalImpressions.toLocaleString() },
+            { label: 'Client Rating', value: `${Math.round(avgRating * 10) / 10}/5` },
+            { label: 'Content Pieces', value: String(readJSON('content.json').length) }
+          ],
+          style: 'dark'
+        }
+      ];
+
+      const report = { widgets, total_widgets: widgets.length, generated_at: new Date().toISOString() };
+      writeJSON('social-proof-widgets.json', report);
+      return json(res, report);
+    }
+    if (method === 'GET' && pathname === '/api/social-proof-widget') {
+      return json(res, readJSON('social-proof-widgets.json') || { widgets: [], total_widgets: 0 });
+    }
+
+    // --- Content Attribution Tracker ---
+    // Track which content pieces drive actual leads and revenue
+    if (method === 'POST' && pathname === '/api/content-attribution') {
+      const body = await parseBody(req);
+      const store = (() => { const raw = readJSON('content-attribution.json'); return (raw && raw.attributions) ? raw : { attributions: [] }; })();
+
+      if (body.action === 'log') {
+        store.attributions.push({
+          id: generateId(),
+          content_id: body.content_id || '',
+          lead_email: body.lead_email || '',
+          touchpoint: body.touchpoint || 'view',
+          platform: body.platform || 'unknown',
+          value: body.value || 0,
+          attributed_at: new Date().toISOString()
+        });
+      }
+
+      const byContent = {};
+      for (const a of store.attributions) {
+        if (!byContent[a.content_id]) byContent[a.content_id] = { touches: 0, leads: 0, value: 0 };
+        byContent[a.content_id].touches++;
+        if (a.touchpoint === 'conversion' || a.touchpoint === 'booking') byContent[a.content_id].leads++;
+        byContent[a.content_id].value += a.value || 0;
+      }
+
+      store.summary = {
+        total_attributions: store.attributions.length,
+        unique_content: Object.keys(byContent).length,
+        total_value: store.attributions.reduce((s, a) => s + (a.value || 0), 0),
+        top_content: Object.entries(byContent).sort((a, b) => b[1].value - a[1].value).slice(0, 5).map(([id, data]) => ({ content_id: id, ...data })),
+        by_touchpoint: {}
+      };
+      for (const a of store.attributions) {
+        if (!store.summary.by_touchpoint[a.touchpoint]) store.summary.by_touchpoint[a.touchpoint] = 0;
+        store.summary.by_touchpoint[a.touchpoint]++;
+      }
+
+      store.generated_at = new Date().toISOString();
+      writeJSON('content-attribution.json', store);
+      return json(res, store);
+    }
+    if (method === 'GET' && pathname === '/api/content-attribution') {
+      return json(res, readJSON('content-attribution.json') || { attributions: [], summary: {} });
+    }
+
+    // --- Conversion Funnel Visualizer ---
+    // Build and track conversion funnels from content to revenue
+    if (method === 'POST' && pathname === '/api/conversion-funnel-viz') {
+      const content = readJSON('content.json');
+      const published = readJSON('published.json') || [];
+      const engagement = readJSON('engagement-tracker.json');
+      const engList = Array.isArray(engagement) ? engagement : [];
+      const conversions = readJSON('conversion-tracker.json');
+      const convEvents = Array.isArray(conversions) ? conversions : (conversions?.events || []);
+      const leads = readJSON('lead-scorer.json');
+      const leadList = (leads && leads.leads) ? leads.leads : [];
+
+      const funnel = {
+        stages: [
+          { name: 'Content Created', count: content.length, color: '#6366f1' },
+          { name: 'Published', count: published.length, color: '#3b82f6' },
+          { name: 'Engaged', count: engList.length, color: '#06b6d4' },
+          { name: 'Converted', count: convEvents.length, color: '#10b981' },
+          { name: 'Leads', count: leadList.length, color: '#f59e0b' },
+          { name: 'Closed', count: leadList.filter(l => l.tier === 'hot').length, color: '#059669' }
+        ],
+        conversion_rates: {},
+        generated_at: new Date().toISOString()
+      };
+
+      for (let i = 1; i < funnel.stages.length; i++) {
+        const prev = funnel.stages[i - 1];
+        const curr = funnel.stages[i];
+        funnel.conversion_rates[`${prev.name}_to_${curr.name}`] = prev.count > 0 ? Math.round((curr.count / prev.count) * 100) : 0;
+      }
+
+      funnel.overall_rate = content.length > 0 ? Math.round((leadList.filter(l => l.tier === 'hot').length / content.length) * 100) : 0;
+      funnel.bottleneck = funnel.stages.reduce((worst, stage, i) => {
+        if (i === 0) return worst;
+        const rate = funnel.stages[i - 1].count > 0 ? stage.count / funnel.stages[i - 1].count : 1;
+        return rate < worst.rate ? { stage: stage.name, rate } : worst;
+      }, { stage: 'none', rate: 1 });
+
+      writeJSON('conversion-funnel-viz.json', funnel);
+      return json(res, funnel);
+    }
+    if (method === 'GET' && pathname === '/api/conversion-funnel-viz') {
+      return json(res, readJSON('conversion-funnel-viz.json') || { stages: [], conversion_rates: {} });
+    }
+
+    // --- Content ROI Calculator ---
+    // Calculate detailed ROI per content piece and format
+    if (method === 'POST' && pathname === '/api/content-roi-detail') {
+      const content = readJSON('content.json');
+      const engagement = readJSON('engagement-tracker.json');
+      const engList = Array.isArray(engagement) ? engagement : [];
+      const attribution = readJSON('content-attribution.json');
+      const attrList = (attribution && attribution.attributions) ? attribution.attributions : [];
+
+      const costPerPiece = 76.22;
+      const results = content.slice(0, 50).map(c => {
+        const eng = engList.find(e => e.content_id === c.id);
+        const attr = attrList.filter(a => a.content_id === c.id);
+        const revenue = attr.reduce((s, a) => s + (a.value || 0), 0);
+        const impressions = eng?.impressions || 0;
+        const engagements = eng?.engagements || eng?.engagement_rate || 0;
+        const roi = costPerPiece > 0 ? Math.round(((revenue - costPerPiece) / costPerPiece) * 100) : 0;
+
+        return {
+          id: c.id,
+          title: c.trigger_title || 'Untitled',
+          format_count: Object.keys(c.formats || {}).length,
+          cost: costPerPiece,
+          revenue,
+          roi,
+          impressions,
+          engagements,
+          touches: attr.length,
+          efficiency: impressions > 0 ? Math.round((engagements / impressions) * 1000) / 10 : 0
+        };
+      });
+
+      const totalCost = results.length * costPerPiece;
+      const totalRevenue = results.reduce((s, r) => s + r.revenue, 0);
+
+      const report = {
+        content_roi: results.sort((a, b) => b.roi - a.roi).slice(0, 30),
+        summary: {
+          total_pieces: results.length,
+          total_cost: Math.round(totalCost),
+          total_revenue: totalRevenue,
+          overall_roi: totalCost > 0 ? Math.round(((totalRevenue - totalCost) / totalCost) * 100) : 0,
+          profitable_pieces: results.filter(r => r.roi > 0).length,
+          avg_roi: results.length ? Math.round(results.reduce((s, r) => s + r.roi, 0) / results.length) : 0
+        },
+        generated_at: new Date().toISOString()
+      };
+
+      writeJSON('content-roi-detail.json', report);
+      return json(res, report);
+    }
+    if (method === 'GET' && pathname === '/api/content-roi-detail') {
+      return json(res, readJSON('content-roi-detail.json') || { content_roi: [], summary: {} });
+    }
+
+    // --- Weekly Growth Report ---
+    // Comprehensive weekly metrics summary
+    if (method === 'POST' && pathname === '/api/weekly-growth-report') {
+      const content = readJSON('content.json');
+      const published = readJSON('published.json') || [];
+      const engagement = readJSON('engagement-tracker.json');
+      const engList = Array.isArray(engagement) ? engagement : [];
+      const leads = readJSON('lead-scorer.json');
+      const leadList = (leads && leads.leads) ? leads.leads : [];
+      const now = Date.now();
+      const sevenDays = 7 * 24 * 60 * 60 * 1000;
+
+      const thisWeek = content.filter(c => now - new Date(c.generated_at || 0).getTime() < sevenDays);
+      const lastWeek = content.filter(c => {
+        const age = now - new Date(c.generated_at || 0).getTime();
+        return age >= sevenDays && age < sevenDays * 2;
+      });
+
+      const report = {
+        period: { start: new Date(now - sevenDays).toISOString(), end: new Date().toISOString() },
+        content: {
+          created: thisWeek.length,
+          previous_week: lastWeek.length,
+          change: thisWeek.length - lastWeek.length,
+          trend: thisWeek.length > lastWeek.length ? 'up' : thisWeek.length < lastWeek.length ? 'down' : 'flat'
+        },
+        publishing: {
+          published: published.filter(p => now - new Date(p.published_at || p.generated_at || 0).getTime() < sevenDays).length,
+          total_published: published.length
+        },
+        engagement: {
+          total_entries: engList.length,
+          avg_rate: engList.length ? Math.round(engList.reduce((s, e) => s + (e.engagement_rate || 0), 0) / engList.length * 100) / 100 : 0
+        },
+        leads: {
+          total: leadList.length,
+          hot: leadList.filter(l => l.tier === 'hot').length,
+          warm: leadList.filter(l => l.tier === 'warm').length,
+          cold: leadList.filter(l => l.tier === 'cold').length
+        },
+        highlights: [],
+        generated_at: new Date().toISOString()
+      };
+
+      if (thisWeek.length > lastWeek.length) report.highlights.push(`Content creation up ${thisWeek.length - lastWeek.length} pieces vs last week`);
+      if (leadList.filter(l => l.tier === 'hot').length > 0) report.highlights.push(`${leadList.filter(l => l.tier === 'hot').length} hot leads in pipeline`);
+      if (report.content.created > 10) report.highlights.push('Strong content production week');
+
+      writeJSON('weekly-growth-report.json', report);
+      return json(res, report);
+    }
+    if (method === 'GET' && pathname === '/api/weekly-growth-report') {
+      return json(res, readJSON('weekly-growth-report.json') || { content: {}, publishing: {}, leads: {} });
+    }
+
     // --- Static file serving ---
 
     // Serve dashboard

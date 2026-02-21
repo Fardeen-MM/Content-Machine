@@ -1,0 +1,47 @@
+{
+  "stages": [
+    {
+      "name": "Content Created",
+      "count": 41,
+      "color": "#6366f1"
+    },
+    {
+      "name": "Published",
+      "count": 1,
+      "color": "#3b82f6"
+    },
+    {
+      "name": "Engaged",
+      "count": 1,
+      "color": "#06b6d4"
+    },
+    {
+      "name": "Converted",
+      "count": 2,
+      "color": "#10b981"
+    },
+    {
+      "name": "Leads",
+      "count": 2,
+      "color": "#f59e0b"
+    },
+    {
+      "name": "Closed",
+      "count": 0,
+      "color": "#059669"
+    }
+  ],
+  "conversion_rates": {
+    "Content Created_to_Published": 2,
+    "Published_to_Engaged": 100,
+    "Engaged_to_Converted": 200,
+    "Converted_to_Leads": 100,
+    "Leads_to_Closed": 0
+  },
+  "generated_at": "2026-02-21T17:25:35.060Z",
+  "overall_rate": 0,
+  "bottleneck": {
+    "stage": "Closed",
+    "rate": 0
+  }
+}

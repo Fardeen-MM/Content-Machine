@@ -1,0 +1,51 @@
+{
+  "sequences": [
+    {
+      "id": "1e64fe661be52dee",
+      "name": "SEO Audit Follow-up",
+      "trigger": "lead_magnet_download",
+      "target_persona": "Small Firm Owner",
+      "steps": [
+        {
+          "day": 0,
+          "type": "email",
+          "subject": "Welcome + Resource delivery",
+          "status": "draft"
+        },
+        {
+          "day": 2,
+          "type": "email",
+          "subject": "Quick win related to resource",
+          "status": "draft"
+        },
+        {
+          "day": 5,
+          "type": "email",
+          "subject": "Case study / social proof",
+          "status": "draft"
+        },
+        {
+          "day": 8,
+          "type": "email",
+          "subject": "Value-add + soft CTA",
+          "status": "draft"
+        },
+        {
+          "day": 14,
+          "type": "email",
+          "subject": "Direct offer + booking link",
+          "status": "draft"
+        }
+      ],
+      "active": false,
+      "enrolled": 0,
+      "converted": 0,
+      "created_at": "2026-02-21T17:25:26.824Z"
+    }
+  ],
+  "total": 1,
+  "active": 0,
+  "total_enrolled": 0,
+  "total_converted": 0,
+  "generated_at": "2026-02-21T17:25:26.825Z"
+}

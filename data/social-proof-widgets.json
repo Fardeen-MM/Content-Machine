@@ -1,0 +1,38 @@
+{
+  "widgets": [
+    {
+      "type": "counter",
+      "title": "Trusted by Law Firms",
+      "value": 1,
+      "suffix": "+ law firms served",
+      "style": "minimal"
+    },
+    {
+      "type": "testimonial_carousel",
+      "title": "What Our Clients Say",
+      "items": [],
+      "style": "card"
+    },
+    {
+      "type": "stats_bar",
+      "title": "Results That Matter",
+      "stats": [
+        {
+          "label": "Content Impressions",
+          "value": "2,500"
+        },
+        {
+          "label": "Client Rating",
+          "value": "5/5"
+        },
+        {
+          "label": "Content Pieces",
+          "value": "41"
+        }
+      ],
+      "style": "dark"
+    }
+  ],
+  "total_widgets": 3,
+  "generated_at": "2026-02-21T17:25:30.905Z"
+}

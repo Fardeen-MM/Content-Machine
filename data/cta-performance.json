@@ -1,0 +1,38 @@
+{
+  "ctas": [
+    {
+      "id": "f059a1f10b5da779",
+      "content_id": "",
+      "cta_text": "Book a Free Audit",
+      "cta_type": "booking",
+      "platform": "linkedin",
+      "clicks": 25,
+      "conversions": 3,
+      "logged_at": "2026-02-21T17:25:21.507Z"
+    }
+  ],
+  "summary": {
+    "total_ctas": 1,
+    "total_clicks": 25,
+    "total_conversions": 3,
+    "avg_ctr": 12,
+    "by_type": {
+      "booking": {
+        "clicks": 25,
+        "conversions": 3,
+        "count": 1
+      }
+    },
+    "top_performer": {
+      "id": "f059a1f10b5da779",
+      "content_id": "",
+      "cta_text": "Book a Free Audit",
+      "cta_type": "booking",
+      "platform": "linkedin",
+      "clicks": 25,
+      "conversions": 3,
+      "logged_at": "2026-02-21T17:25:21.507Z"
+    }
+  },
+  "generated_at": "2026-02-21T17:25:21.507Z"
+}

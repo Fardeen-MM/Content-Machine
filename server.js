@@ -5306,8 +5306,9 @@ Make posts specific, data-driven, and not braggy. Show results naturally. Each 8
       if (cached?.generated_at && (Date.now() - new Date(cached.generated_at).getTime()) < 6 * 60 * 60 * 1000) {
         return json(res, cached);
       }
+      if (cached) return json(res, cached);
 
-      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { recommendations: [], generated_at: null });
 
       const content = readJSON('content.json');
       const triggers = readJSON('trigger-queue.json');
@@ -5381,7 +5382,7 @@ Return JSON (raw, no fences):
 
         return json(res, parsed);
       } catch (err) {
-        return json(res, { error: err.message }, 500);
+        return json(res, { recommendations: [], error: 'AI unavailable: ' + err.message, generated_at: null });
       }
     }
 
@@ -11903,9 +11904,13 @@ Return JSON:
 
     // POST /api/social-proof-engine — Auto-generate social proof assets from meeting data
     if (method === 'POST' && pathname === '/api/social-proof-engine') {
-      const meetings = db.getMeetings({ limit: 50 });
-      const clients = db.getClients({});
-      const atoms = db.getAtoms({});
+      let meetings = [], clients = [], atoms = [];
+      try {
+        const db = require('./lib/db');
+        meetings = db.getMeetings({ limit: 50 }) || [];
+        clients = db.getClients({}) || [];
+        atoms = db.getAtoms({}) || [];
+      } catch (e) { /* db not initialized yet */ }
 
       const successStories = atoms.filter(a => a.type === 'success_story');
       const quotes = atoms.filter(a => a.type === 'quote');
@@ -12177,7 +12182,7 @@ Return JSON:
     // POST /api/lead-magnet-generator — Auto-generate a lead magnet from best content
     if (method === 'POST' && pathname === '/api/lead-magnet-generator') {
       const allContent = readJSON('content.json', []);
-      const body = await parseBody(req);
+      const body = await parseBody(req) || {};
       const contentId = body.content_id;
       const magType = body.type || 'checklist';
 
@@ -12787,7 +12792,7 @@ Return JSON:
 
     // GET /api/content-intelligence
     if (method === 'GET' && pathname === '/api/content-intelligence') {
-      return json(res, readJSON('content-intelligence.json', null));
+      return json(res, readJSON('content-intelligence.json') || {});
     }
 
     // POST /api/conversion-optimizer — Optimize content for lead conversion
@@ -13682,7 +13687,7 @@ Return COMPACT JSON:
 
     // POST /api/hashtag-strategy — Generate platform-specific hashtag strategies
     if (method === 'POST' && pathname === '/api/hashtag-strategy') {
-      const body = await parseBody(req);
+      const body = await parseBody(req) || {};
       const platform = body.platform || 'linkedin';
       const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
       const result = await callClaude({
@@ -13860,7 +13865,7 @@ Return JSON:
 
     // POST /api/outbound-sequence — Generate cold outbound email/DM sequences
     if (method === 'POST' && pathname === '/api/outbound-sequence') {
-      const body = await parseBody(req);
+      const body = await parseBody(req) || {};
       const target = body.target || 'managing partners at mid-size law firms';
       const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
       const result = await callClaude({
@@ -19867,6 +19872,110 @@ Content: ${firstContent.substring(0, 2000)}`;
     }
     if (method === 'GET' && pathname === '/api/content-impact-score') {
       return json(res, readJSON('content-impact-score.json') || { impact_score: 0, grade: 'F', breakdown: {} });
+    }
+
+    // --- Missing GET handlers (bulk fix) ---
+    if (method === 'GET' && pathname === '/api/autopilot') {
+      return json(res, readJSON('autopilot.json') || { enabled: false, config: {} });
+    }
+    if (method === 'GET' && pathname === '/api/chat') {
+      return json(res, readJSON('chat-messages.json') || []);
+    }
+    if (method === 'GET' && pathname === '/api/content-series') {
+      return json(res, readJSON('content-series.json') || []);
+    }
+    if (method === 'GET' && pathname === '/api/content-leads') {
+      return json(res, readJSON('content-leads.json') || []);
+    }
+    if (method === 'GET' && pathname === '/api/content-ideas') {
+      return json(res, readJSON('content-ideas.json') || []);
+    }
+    if (method === 'GET' && pathname === '/api/social-proof-data') {
+      return json(res, readJSON('social-proof-data.json') || []);
+    }
+    if (method === 'GET' && pathname === '/api/roi-report') {
+      return json(res, readJSON('roi-report.json') || { total_roi: 0 });
+    }
+    if (method === 'GET' && pathname === '/api/audience-growth-data') {
+      return json(res, readJSON('audience-growth-data.json') || []);
+    }
+    if (method === 'GET' && pathname === '/api/content-themes') {
+      return json(res, readJSON('content-themes.json') || []);
+    }
+    if (method === 'GET' && pathname === '/api/competitors-tracked') {
+      return json(res, readJSON('competitors-tracked.json') || []);
+    }
+    if (method === 'GET' && pathname === '/api/expiring-content') {
+      return json(res, readJSON('expiring-content.json') || []);
+    }
+    if (method === 'GET' && pathname === '/api/calendar-insights') {
+      return json(res, readJSON('calendar-insights.json') || {});
+    }
+    if (method === 'GET' && pathname === '/api/weekly-digest') {
+      return json(res, readJSON('weekly-digest.json') || {});
+    }
+    if (method === 'GET' && pathname === '/api/workflow-rules') {
+      return json(res, readJSON('workflow-rules.json') || []);
+    }
+    if (method === 'GET' && pathname === '/api/youtube-pipelines') {
+      return json(res, readJSON('youtube-pipelines.json') || []);
+    }
+    if (method === 'GET' && pathname === '/api/engagement-dashboard') {
+      return json(res, readJSON('engagement-dashboard.json') || {});
+    }
+    if (method === 'GET' && pathname === '/api/content-audit') {
+      return json(res, readJSON('content-audit.json') || { total_audited: 0 });
+    }
+    if (method === 'GET' && pathname === '/api/engagement-booster') {
+      return json(res, readJSON('engagement-booster.json') || {});
+    }
+    if (method === 'GET' && pathname === '/api/profile-optimizer') {
+      return json(res, readJSON('profile-optimizer.json') || {});
+    }
+    if (method === 'GET' && pathname === '/api/golden-hour') {
+      return json(res, readJSON('golden-hour.json') || {});
+    }
+    if (method === 'GET' && pathname === '/api/micro-content') {
+      return json(res, readJSON('micro-content.json') || []);
+    }
+    if (method === 'GET' && pathname === '/api/referral-content') {
+      return json(res, readJSON('referral-content.json') || {});
+    }
+    if (method === 'GET' && pathname === '/api/headline-tester') {
+      return json(res, readJSON('headline-tester.json') || []);
+    }
+    if (method === 'GET' && pathname === '/api/hook-scorer') {
+      return json(res, readJSON('hook-scorer.json') || []);
+    }
+    if (method === 'GET' && pathname === '/api/newsletter-compiler') {
+      return json(res, readJSON('newsletter-compiler.json') || {});
+    }
+    if (method === 'GET' && pathname === '/api/power-hour') {
+      return json(res, readJSON('power-hour.json') || {});
+    }
+    if (method === 'GET' && pathname === '/api/content-matrix-generator') {
+      return json(res, readJSON('content-matrix-generator.json') || {});
+    }
+    if (method === 'GET' && pathname === '/api/funnel-analyzer') {
+      return json(res, readJSON('funnel-analyzer.json') || {});
+    }
+    if (method === 'GET' && pathname === '/api/lead-magnet-funnel') {
+      return json(res, readJSON('lead-magnet-funnel.json') || {});
+    }
+    if (method === 'GET' && pathname === '/api/outbound-sequence') {
+      return json(res, readJSON('outbound-sequence.json') || {});
+    }
+    if (method === 'GET' && pathname === '/api/zero-click-bank') {
+      return json(res, readJSON('zero-click-bank.json') || {});
+    }
+    if (method === 'GET' && pathname === '/api/lead-magnet-generator') {
+      return json(res, readJSON('lead-magnet-generator.json') || {});
+    }
+    if (method === 'GET' && pathname === '/api/trends-analyzer') {
+      return json(res, readJSON('trends-analyzer.json') || {});
+    }
+    if (method === 'GET' && pathname === '/api/batch-generate') {
+      return json(res, readJSON('batch-generate.json') || { results: [] });
     }
 
     // --- Static file serving ---

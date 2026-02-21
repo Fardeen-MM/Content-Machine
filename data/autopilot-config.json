@@ -1,0 +1,12 @@
+{
+  "enabled": false,
+  "settings": {
+    "scrape_time": "06:00",
+    "generate_time": "07:00",
+    "series_time": "07:30",
+    "auto_cta": true,
+    "auto_swipe": true,
+    "max_daily_generates": 10
+  },
+  "updated_at": "2026-02-21T01:20:30.339Z"
+}

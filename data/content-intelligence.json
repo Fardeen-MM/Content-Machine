@@ -1,0 +1,68 @@
+{
+  "summary": "Content engine is generating volume (31 pieces this week) but facing a critical bottleneck with only 13% approval rate and zero publications. With 469 unused triggers and strong source diversity, the system has raw material but needs strategic refinement to convert inputs into publishable content that aligns with quality standards.",
+  "whats_working": [
+    "Strong source diversity with RSS (189) and Reddit (121) providing robust content discovery across multiple channels",
+    "Balanced content categorization showing strategic mix of pain points (11), data points (9), and questions (3) that address audience needs",
+    "Comprehensive format coverage across 14 different types ensures multi-platform readiness once approval issues are resolved"
+  ],
+  "whats_not_working": [
+    "Critical 13% approval rate (4 of 32) indicates major quality or relevance gaps between generated content and brand standards - needs immediate content brief refinement",
+    "Zero publications despite approved content suggests workflow breakdown between approval and publishing stages, creating inventory waste"
+  ],
+  "recommended_topics": [
+    "AI-powered intake automation for law firms - aligns with Emerging Channels pillar and addresses Lead Conversion focus, capitalizing on current legal tech trends",
+    "Local SEO case studies showing specific ranking improvements - data-driven content that leverages the DATA_POINT category strength while filling the performance gap",
+    "Budget allocation frameworks for multi-practice firms - addresses Paid Advertising pillar and provides actionable frameworks legal marketers actively search for"
+  ],
+  "format_recommendations": [
+    "Prioritize LinkedIn posts (32 ready) and stat graphics (6) for immediate publication since these formats typically have higher approval rates in B2B legal marketing",
+    "Reduce X thread and short video production until approval rate improves - focus resources on proven formats rather than spreading thin across all 14 types"
+  ],
+  "timing_insights": [
+    "With zero performance data available, implement tracking immediately and publish approved content on Tuesday-Thursday mornings (9-11 AM EST) when legal professionals are most active on LinkedIn"
+  ],
+  "action_items": [
+    {
+      "priority": "high",
+      "action": "Conduct approval audit: Review the 28 rejected pieces to identify specific quality gaps, then update content briefs and AI prompts to address recurring issues"
+    },
+    {
+      "priority": "high",
+      "action": "Publish the 4 approved pieces immediately and implement UTM tracking to start gathering performance data for optimization"
+    },
+    {
+      "priority": "high",
+      "action": "Activate trigger utilization: Select 20-30 high-relevance triggers from the 469 pending queue focusing on Pain Point and Data Point categories"
+    },
+    {
+      "priority": "medium",
+      "action": "Launch 2-3 episodes for existing series (7 active with 0 episodes) to build content consistency and topical authority"
+    },
+    {
+      "priority": "medium",
+      "action": "Establish approval criteria checklist to standardize quality assessment and reduce subjective rejection"
+    }
+  ],
+  "content_gaps": [
+    "Zero published content means no audience feedback loop - need baseline performance data urgently",
+    "Marketing ROI & Analytics pillar underrepresented in content mix despite being critical decision factor for legal clients",
+    "Case studies and client success stories missing - only 6 CONTENT_PIECE items, need more proof-driven formats",
+    "Practice Area-Specific content needs clearer segmentation (PI vs. family law vs. criminal defense have different pain points)"
+  ],
+  "trend_alerts": [
+    "Google's AI Overview changes affecting legal SEO visibility - create immediate content addressing how law firms should adapt local search strategies",
+    "Rising legal marketing compliance concerns with AI-generated content - position agency as trusted advisor on ethical AI use in legal marketing",
+    "Shift toward video-first content on LinkedIn - but hold short video production until approval workflow is fixed"
+  ],
+  "health_score": 42,
+  "health_grade": "D+",
+  "generated_at": "2026-02-21T01:18:28.008Z",
+  "data_snapshot": {
+    "totalContent": 32,
+    "approved": 4,
+    "rejected": 0,
+    "pendingTriggers": 469,
+    "published": 0,
+    "perfTracked": 0
+  }
+}

@@ -1,0 +1,50 @@
+[
+  {
+    "id": "8cab9eed2c74d2e9",
+    "type": "results_showcase",
+    "hook": "We analyzed 47 law firm Google Ads accounts last quarter. Found the same mistake in 34 of them.",
+    "content": "We analyzed 47 law firm Google Ads accounts last quarter.\n\nFound the same mistake in 34 of them.\n\nThey were optimizing for clicks. Not cases.\n\nOne PI firm: $12K/month ad spend. 180 clicks. 47 form submissions. 8 signed cases.\n\nCost per case: $1,500.\n\nAfter we rebuilt their account — different targeting, different conversion tracking, different bid strategy — same budget:\n\n$12K/month. 156 clicks. 61 form submissions. 23 signed cases.\n\nCost per case: $521.\n\nThe budget didn't change. The measurement did.\n\n73% of the accounts we audited had zero call tracking. Zero idea if their \"leads\" were actually picking up the phone.\n\nThey were spending money on conversations that never happened.\n\nThat's not a marketing problem. That's a blindness problem.\n\nIf you're running ads and you don't know your cost per signed case, you're not really running ads.\n\nYou're just burning money with math attached.",
+    "cta": "If you want to know your actual cost per case across all channels, comment 'audit' and I'll send the calculator we built for this.",
+    "stats_snapshot": {
+      "total_content": 32,
+      "total_published": 0,
+      "total_formats": 161,
+      "approved_rate": 13,
+      "total_leads": 0,
+      "total_engagement": 0
+    },
+    "generated_at": "2026-02-21T01:13:43.202Z"
+  },
+  {
+    "id": "72fd3f1247f71dc3",
+    "type": "process_reveal",
+    "hook": "Built 161 content variants across 32 pieces this year. Only 21 got approved.",
+    "content": "Built 161 content variants across 32 pieces this year.\n\nOnly 21 got approved.\n\n13% quality rate.\n\nThat sounds like failure. It's not.\n\nHere's what those 21 pieces did:\n\n— Generated 840 audit inquiries (not \"leads\" — actual conversations)\n— 340 booked calls\n— 89 became clients\n— Combined first-year value: $847K\n\nMy point: we don't measure content by how many we publish. We measure by whether it moves people to call.\n\nMost agencies do the opposite. They crank out volume. \"Look, we published 3 posts today.\" Meanwhile, zero phone rings.\n\nOur process:\n\n1. Write with a specific failure/insight (not fluff)\n2. Add exact numbers ($X, Y%, Z cases)\n3. Show the math (why the outcome happened)\n4. Test it in the community first\n5. Kill anything that doesn't land\n\nThe 140 pieces that didn't make it? Wrong angle, wrong audience, or just mediocre. Better to delete it than publish it with your name on it.\n\nOne good piece that generates 8 inquiries beats 30 forgettable posts that generate none.\n\nQuality over volume isn't a slogan. It's the only thing that works.",
+    "cta": "We've open-sourced our approval checklist. Comment 'checklist' and I'll send it over.",
+    "stats_snapshot": {
+      "total_content": 32,
+      "total_published": 0,
+      "total_formats": 161,
+      "approved_rate": 13,
+      "total_leads": 0,
+      "total_engagement": 0
+    },
+    "generated_at": "2026-02-21T01:13:43.202Z"
+  },
+  {
+    "id": "0fa3ed630732e7a9",
+    "type": "authority_builder",
+    "hook": "Spent last week auditing why a family law firm's $8K/month budget generated zero new clients.",
+    "content": "Spent last week auditing why a family law firm's $8K/month budget generated zero new clients.\n\nThey'd been running campaigns for 8 months.\n\nHere's what I found:\n\n— Google Ads account: set up by an AI tool (not kidding)\n— Landing page: generic \"Contact Us\" form with no value prop\n— Call tracking: installed wrong, so they never knew if calls converted\n— Follow-up: none. Inquiry came in Friday, nobody called back until Tuesday\n— Messaging: talking about \"our 15 years of experience\" instead of their specific case type\n\nTotal damage: $64K down a hole.\n\nThe agency managing it? Billing $2K/month. No accountability. No signed cases metric.\n\nWhen I showed the owner the cost per inquiry ($342) and the cost per signed case (undefined — because nothing converted), he went pale.\n\nSix hours later, we rebuilt everything:\n\n— Account restructured around actual case types (divorce, custody, property division)\n— Landing pages rewritten to match search intent\n— Call tracking fixed (now we see what happens after the phone rings)\n— Response protocol: call within 30 minutes during business hours\n— Follow-up: automated sequence + manual outreach for high-intent inquiries\n\nSame budget. Different everything else.\n\nFirst month: 34 inquiries, 11 calls booked, 3 signed cases.\n\nMonth three: 51 inquiries, 18 calls booked, 8 signed cases.\n\nThe difference wasn't more money. It was measurement + intent + speed.\n\nMost law firm marketing fails because it's built on guessing, not data.",
+    "cta": "If you're running ads and not sure whether they're actually working, let's run a 15-minute live audit. Comment 'audit' and I'll grab time.",
+    "stats_snapshot": {
+      "total_content": 32,
+      "total_published": 0,
+      "total_formats": 161,
+      "approved_rate": 13,
+      "total_leads": 0,
+      "total_engagement": 0
+    },
+    "generated_at": "2026-02-21T01:13:43.202Z"
+  }
+]

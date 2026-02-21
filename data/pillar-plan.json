@@ -1,0 +1,224 @@
+{
+  "pillars": [
+    {
+      "id": "paid-advertising-optimization",
+      "name": "Paid Advertising & Budget Optimization",
+      "description": "Google Ads, LSAs, cost management, targeting, and ROI measurement for law firm advertising campaigns",
+      "sub_topics": [
+        "Google Ads optimization for PI firms",
+        "Local Service Ads vs traditional PPC",
+        "Negative keywords and budget waste reduction",
+        "Geographic targeting and zip code strategy",
+        "Cost per case benchmarks by practice area",
+        "Landing page optimization for paid traffic"
+      ],
+      "target_frequency": "3-4 posts/week",
+      "best_formats": [
+        "reddit",
+        "linkedin",
+        "blog",
+        "case-study"
+      ],
+      "current_coverage": "high",
+      "gap_areas": [
+        "Facebook/Meta ads for legal",
+        "Display advertising strategies",
+        "Retargeting campaigns",
+        "Budget allocation across multiple channels",
+        "Seasonal spend adjustments"
+      ],
+      "color": "#2563eb"
+    },
+    {
+      "id": "lead-conversion-intake",
+      "name": "Lead Conversion & Intake Optimization",
+      "description": "Speed to lead, intake process, call handling, texting strategies, and converting prospects into retained clients",
+      "sub_topics": [
+        "Speed to lead benchmarks and tactics",
+        "Text messaging for lead response",
+        "After-hours lead capture",
+        "Intake team training and scripts",
+        "Call tracking and quality monitoring",
+        "Lead qualification frameworks"
+      ],
+      "target_frequency": "2-3 posts/week",
+      "best_formats": [
+        "linkedin",
+        "blog",
+        "video",
+        "webinar"
+      ],
+      "current_coverage": "medium",
+      "gap_areas": [
+        "CRM integration and automation",
+        "Multi-touch follow-up sequences",
+        "Lead scoring methodologies",
+        "Intake software comparisons",
+        "Bilingual intake strategies",
+        "Handling low-quality leads"
+      ],
+      "color": "#dc2626"
+    },
+    {
+      "id": "agency-relationship-management",
+      "name": "Agency Selection & Relationship Management",
+      "description": "How to choose, evaluate, and work effectively with marketing agencies; red flags and best practices",
+      "sub_topics": [
+        "Vetting marketing agencies for law firms",
+        "Warning signs of poor agency performance",
+        "Contract terms and expectations setting",
+        "Communication cadence with agencies",
+        "When to fire vs fix agency relationships",
+        "In-house vs agency marketing decisions"
+      ],
+      "target_frequency": "1-2 posts/week",
+      "best_formats": [
+        "blog",
+        "linkedin",
+        "video"
+      ],
+      "current_coverage": "low",
+      "gap_areas": [
+        "Agency contract negotiation",
+        "Onboarding checklist for new agencies",
+        "Performance benchmarks by practice area",
+        "Fractional CMO vs agency model",
+        "Scope creep management",
+        "Technology stack ownership questions"
+      ],
+      "color": "#7c3aed"
+    },
+    {
+      "id": "local-seo-reputation",
+      "name": "Local SEO & Online Reputation",
+      "description": "Google Business Profile, local pack rankings, review generation, and local search visibility",
+      "sub_topics": [
+        "Google Business Profile optimization",
+        "Local pack ranking factors",
+        "Review generation strategies",
+        "Review volume benchmarks",
+        "Responding to negative reviews",
+        "Multi-location SEO for law firms"
+      ],
+      "target_frequency": "2 posts/week",
+      "best_formats": [
+        "blog",
+        "linkedin",
+        "reddit"
+      ],
+      "current_coverage": "medium",
+      "gap_areas": [
+        "Citation building and NAP consistency",
+        "Yelp and Avvo optimization",
+        "Schema markup for attorneys",
+        "Review gating compliance issues",
+        "Local link building strategies",
+        "Voice search optimization"
+      ],
+      "color": "#059669"
+    },
+    {
+      "id": "marketing-roi-analytics",
+      "name": "Marketing ROI & Analytics",
+      "description": "Tracking, attribution, metrics that matter, and data-driven decision making for law firm marketing",
+      "sub_topics": [
+        "Essential KPIs for law firm marketing",
+        "Attribution modeling challenges",
+        "Cost per case calculation",
+        "Marketing spend benchmarks",
+        "Dashboard and reporting setup",
+        "Lead source tracking"
+      ],
+      "target_frequency": "1-2 posts/week",
+      "best_formats": [
+        "blog",
+        "webinar",
+        "case-study"
+      ],
+      "current_coverage": "low",
+      "gap_areas": [
+        "Call tracking implementation",
+        "Multi-touch attribution for legal",
+        "Lifetime value calculations",
+        "Marketing automation reporting",
+        "Integrating case management with marketing data",
+        "Proving ROI to partners/stakeholders"
+      ],
+      "color": "#ea580c"
+    },
+    {
+      "id": "emerging-channels-ai",
+      "name": "Emerging Channels & AI in Legal Marketing",
+      "description": "New platforms, AI tools, Google AI Overviews, video content, and staying ahead of marketing technology trends",
+      "sub_topics": [
+        "AI Overviews impact on legal SEO",
+        "AI tools for content creation",
+        "Video marketing for law firms",
+        "TikTok and social media experimentation",
+        "ChatGPT and search behavior changes",
+        "Marketing automation with AI"
+      ],
+      "target_frequency": "1-2 posts/week",
+      "best_formats": [
+        "blog",
+        "linkedin",
+        "video"
+      ],
+      "current_coverage": "low",
+      "gap_areas": [
+        "YouTube strategy for attorneys",
+        "Podcast marketing for law firms",
+        "AI chatbots for intake",
+        "Ethics of AI in legal marketing",
+        "Instagram and Facebook video tactics",
+        "Webinar marketing strategies"
+      ],
+      "color": "#8b5cf6"
+    },
+    {
+      "id": "practice-area-channels",
+      "name": "Practice Area-Specific Marketing Strategies",
+      "description": "Unique marketing approaches for PI, family law, employment law, estate planning, and other practice areas",
+      "sub_topics": [
+        "Personal injury marketing channels",
+        "Family law client acquisition",
+        "Employment law lead generation",
+        "Estate planning marketing tactics",
+        "Practice area cost benchmarks",
+        "Referral strategies by practice area"
+      ],
+      "target_frequency": "2 posts/week",
+      "best_formats": [
+        "blog",
+        "case-study",
+        "linkedin"
+      ],
+      "current_coverage": "low",
+      "gap_areas": [
+        "Criminal defense marketing",
+        "Immigration law marketing",
+        "Business/corporate law visibility",
+        "Real estate attorney marketing",
+        "Bankruptcy lead generation",
+        "Practice area keyword research"
+      ],
+      "color": "#0891b2"
+    }
+  ],
+  "recommendations": [
+    "Create a comprehensive 'Agency Selection Guide' content series to address the recurring agency frustration theme (4+ mentions in existing content)",
+    "Develop ROI tracking templates and calculators as lead magnets - only 1 piece addresses the widespread issue that 67% of firms don't track marketing ROI",
+    "Launch a 'Marketing Benchmarks Database' comparing costs and results across practice areas - significant demand indicated but minimal current coverage",
+    "Produce video content demonstrating intake optimization tactics since speed-to-lead appears multiple times but lacks actionable how-to content",
+    "Create practice area-specific marketing playbooks - current content is heavily PI-focused with minimal coverage of other practice areas",
+    "Develop an AI readiness assessment tool or guide to capture interest around AI Overviews and ChatGPT impact on legal search",
+    "Build comparison content (LSAs vs Avvo vs referrals vs SEO) since lawyers consistently ask about channel prioritization with limited budgets",
+    "Address the pending trigger content about employment, staffing, and operational challenges - potential pillar around 'Building Marketing Teams' for law firms",
+    "Create intake technology stack recommendations and integration guides to fill the CRM/automation gap",
+    "Develop monthly 'Marketing Spend Audit' content analyzing real campaigns to address budget waste and targeting issues"
+  ],
+  "coverage_summary": "Current content strongly covers paid advertising pain points and tactical quick wins, particularly for personal injury firms. Mid-level coverage exists for local SEO and lead conversion basics. Significant gaps exist in: (1) Agency relationship management despite high frustration levels, (2) Analytics and ROI tracking methodology, (3) Practice area diversity beyond PI, (4) Emerging channels and AI adaptation strategies, (5) Intake technology and automation, and (6) Strategic decision-making frameworks for budget allocation. The content is reactive (pain point-driven) rather than proactive (educational/strategic), creating opportunities for thought leadership in underserved areas.",
+  "generated_at": "2026-02-21T01:08:32.608Z",
+  "content_count": 32,
+  "trigger_count": 472
+}

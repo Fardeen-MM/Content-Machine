@@ -1458,6 +1458,13 @@ const state = {
   generatingPillarPlan: false,
   // Distribution Package
   distributionPackage: null,
+  // Content Intelligence
+  contentIntelligence: null,
+  loadingIntelligence: false,
+  // Leads
+  contentLeads: [],
+  // Auto-pilot
+  autopilot: { enabled: false, settings: {}, today: {}, recent_log: [] },
 };
 
 // --- API Calls ---
@@ -1483,7 +1490,7 @@ async function loadData() {
   state.loading = true;
   render();
   try {
-    const [content, triggers, stats, calendar, monthCal, settings, memory, performance, perfAnalytics, meetings, meetingStats, clients, allActions, chatMessages, healthData, inspirations, pestering, pesteringStages, insights, deals, published, series, predictions, playbooks, ctaLibrary, trending, funnel, publishTracker, leadMagnets, contentHealth, scheduleOptimize, templates, dmSequences, hooks, pillarPlan] = await Promise.all([
+    const [content, triggers, stats, calendar, monthCal, settings, memory, performance, perfAnalytics, meetings, meetingStats, clients, allActions, chatMessages, healthData, inspirations, pestering, pesteringStages, insights, deals, published, series, predictions, playbooks, ctaLibrary, trending, funnel, publishTracker, leadMagnets, contentHealth, scheduleOptimize, templates, dmSequences, hooks, pillarPlan, contentLeads, autopilot] = await Promise.all([
       api('/api/content'),
       api('/api/triggers'),
       api('/api/stats'),
@@ -1518,7 +1525,9 @@ async function loadData() {
       api('/api/templates').catch(() => []),
       api('/api/dm-sequences').catch(() => []),
       api('/api/hooks').catch(() => []),
-      api('/api/pillars').catch(() => null)
+      api('/api/pillars').catch(() => null),
+      api('/api/leads').catch(() => []),
+      api('/api/autopilot/status').catch(() => ({ enabled: false, settings: {}, today: {}, recent_log: [] }))
     ]);
     state.content = content;
     state.triggers = triggers;
@@ -1555,6 +1564,8 @@ async function loadData() {
     state.dmSequences = dmSequences;
     state.hooks = hooks;
     state.pillarPlan = pillarPlan;
+    state.contentLeads = contentLeads;
+    state.autopilot = autopilot;
   } catch (err) {
     console.error('Failed to load data:', err);
     toast('Failed to load data', 'error');
@@ -2691,6 +2702,43 @@ function renderDashboardPage() {
                 } catch (err) { toast('Swipe save failed: ' + err.message, 'error'); }
               }
             }, 'Build Swipe'),
+            h('button', {
+              className: 'btn btn-sm',
+              style: { background: '#7c3aed', color: 'white', border: 'none' },
+              onclick: async () => {
+                state.loadingIntelligence = true; render();
+                try {
+                  state.contentIntelligence = await api('/api/content-intelligence');
+                  toast('Intelligence report generated', 'success');
+                } catch (err) { toast('Failed: ' + err.message, 'error'); }
+                state.loadingIntelligence = false; render();
+              }
+            }, state.loadingIntelligence ? 'Analyzing...' : 'Intelligence'),
+            h('button', {
+              className: 'btn btn-sm',
+              style: { background: state.autopilot?.enabled ? '#059669' : '#64748b', color: 'white', border: 'none' },
+              onclick: async () => {
+                try {
+                  const res = await api('/api/autopilot/enable', { method: 'POST', body: { enabled: !state.autopilot?.enabled } });
+                  state.autopilot = { ...state.autopilot, enabled: res.enabled, settings: res.settings };
+                  toast(res.enabled ? 'Auto-pilot ENABLED' : 'Auto-pilot disabled', res.enabled ? 'success' : 'info');
+                  render();
+                } catch (err) { toast('Failed: ' + err.message, 'error'); }
+              }
+            }, state.autopilot?.enabled ? 'Autopilot ON' : 'Autopilot OFF'),
+            state.autopilot?.enabled ? h('button', {
+              className: 'btn btn-sm',
+              style: { background: '#0ea5e9', color: 'white', border: 'none' },
+              onclick: async () => {
+                toast('Running auto-pilot cycle...', 'info');
+                try {
+                  const res = await api('/api/autopilot/run', { method: 'POST' });
+                  const r = res.results;
+                  toast(`Autopilot: ${r.generate?.generated || 0} generated, ${r.ctas || 0} CTAs, ${r.swipes || 0} swipes`, 'success');
+                  await loadData();
+                } catch (err) { toast('Autopilot run failed: ' + err.message, 'error'); }
+              }
+            }, 'Run Now') : null,
             h('button', { className: 'btn btn-ghost btn-sm', onclick: () => { state.page = 'content'; render(); } }, 'View Content')
           )
         ),
@@ -2745,6 +2793,128 @@ function renderDashboardPage() {
           h('div', { style: { fontSize: '11px', color: '#92400e', marginBottom: '4px' } }, '- ' + r)
         )
       ) : null
+    ) : null,
+    // Content Intelligence Report
+    state.contentIntelligence ? h('div', { style: { marginBottom: '20px' } },
+      h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } },
+          h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)' } }, 'CONTENT INTELLIGENCE'),
+          h('span', {
+            style: {
+              padding: '2px 10px', borderRadius: '12px', fontSize: '12px', fontWeight: '700',
+              background: state.contentIntelligence.health_score >= 70 ? '#dcfce7' : state.contentIntelligence.health_score >= 50 ? '#fef9c3' : '#fef2f2',
+              color: state.contentIntelligence.health_score >= 70 ? '#166534' : state.contentIntelligence.health_score >= 50 ? '#854d0e' : '#991b1b'
+            }
+          }, `${state.contentIntelligence.health_grade} (${state.contentIntelligence.health_score}/100)`)
+        ),
+        h('span', { style: { fontSize: '10px', color: 'var(--gray-400)' } }, state.contentIntelligence.generated_at?.slice(0, 16)?.replace('T', ' ') || '')
+      ),
+      h('div', { style: { background: 'white', borderRadius: 'var(--radius-sm)', padding: '14px', border: '1px solid var(--gray-200)' } },
+        h('div', { style: { fontSize: '12px', color: 'var(--gray-600)', marginBottom: '12px', lineHeight: '1.5' } }, state.contentIntelligence.summary),
+        h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' } },
+          h('div', {},
+            h('div', { style: { fontSize: '11px', fontWeight: '700', color: '#059669', marginBottom: '4px' } }, 'WORKING'),
+            ...(state.contentIntelligence.whats_working || []).map(w =>
+              h('div', { style: { fontSize: '11px', color: 'var(--gray-600)', marginBottom: '3px', paddingLeft: '8px', borderLeft: '2px solid #059669' } }, w)
+            )
+          ),
+          h('div', {},
+            h('div', { style: { fontSize: '11px', fontWeight: '700', color: '#dc2626', marginBottom: '4px' } }, 'NOT WORKING'),
+            ...(state.contentIntelligence.whats_not_working || []).map(w =>
+              h('div', { style: { fontSize: '11px', color: 'var(--gray-600)', marginBottom: '3px', paddingLeft: '8px', borderLeft: '2px solid #dc2626' } }, w)
+            )
+          )
+        ),
+        (state.contentIntelligence.action_items || []).length > 0 ? h('div', {},
+          h('div', { style: { fontSize: '11px', fontWeight: '700', color: 'var(--navy)', marginBottom: '4px' } }, 'ACTION ITEMS'),
+          ...(state.contentIntelligence.action_items || []).map(a =>
+            h('div', { style: { display: 'flex', gap: '6px', alignItems: 'flex-start', marginBottom: '4px' } },
+              h('span', {
+                style: { fontSize: '9px', padding: '1px 5px', borderRadius: '3px', fontWeight: '700', flexShrink: '0',
+                  background: a.priority === 'high' ? '#fef2f2' : '#fef9c3',
+                  color: a.priority === 'high' ? '#991b1b' : '#854d0e' }
+              }, a.priority?.toUpperCase()),
+              h('span', { style: { fontSize: '11px', color: 'var(--gray-600)' } }, a.action)
+            )
+          )
+        ) : null,
+        (state.contentIntelligence.trend_alerts || []).length > 0 ? h('div', { style: { marginTop: '8px' } },
+          h('div', { style: { fontSize: '11px', fontWeight: '700', color: '#7c3aed', marginBottom: '4px' } }, 'TREND ALERTS'),
+          ...(state.contentIntelligence.trend_alerts || []).map(t =>
+            h('div', { style: { fontSize: '11px', color: 'var(--gray-600)', marginBottom: '3px', paddingLeft: '8px', borderLeft: '2px solid #7c3aed' } }, t)
+          )
+        ) : null,
+        (state.contentIntelligence.content_gaps || []).length > 0 ? h('div', { style: { marginTop: '8px' } },
+          h('div', { style: { fontSize: '11px', fontWeight: '700', color: '#d97706', marginBottom: '4px' } }, 'CONTENT GAPS'),
+          ...(state.contentIntelligence.content_gaps || []).map(g =>
+            h('div', { style: { fontSize: '11px', color: 'var(--gray-600)', marginBottom: '3px', paddingLeft: '8px', borderLeft: '2px solid #d97706' } }, g)
+          )
+        ) : null
+      )
+    ) : null,
+    // Autopilot Status
+    state.autopilot?.enabled ? h('div', { style: { marginBottom: '20px' } },
+      h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', gap: '6px' } },
+          h('div', { style: { width: '8px', height: '8px', borderRadius: '50%', background: '#059669', animation: 'pulse 2s infinite' } }),
+          h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)' } }, 'AUTOPILOT ACTIVE')
+        ),
+        h('div', { style: { fontSize: '10px', color: 'var(--gray-500)' } },
+          `Scrape ${state.autopilot.settings?.scrape_time || '06:00'} | Generate ${state.autopilot.settings?.generate_time || '07:00'} | Max ${state.autopilot.settings?.max_daily_generates || 10}/day`
+        )
+      ),
+      h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' } },
+        h('div', { style: { background: '#f0fdf4', borderRadius: 'var(--radius-sm)', padding: '10px', textAlign: 'center', border: '1px solid #bbf7d0' } },
+          h('div', { style: { fontSize: '18px', fontWeight: '700', color: '#059669' } }, String(state.autopilot.today?.scraped || 0)),
+          h('div', { style: { fontSize: '10px', color: '#065f46' } }, 'Scraped')
+        ),
+        h('div', { style: { background: '#eff6ff', borderRadius: 'var(--radius-sm)', padding: '10px', textAlign: 'center', border: '1px solid #bfdbfe' } },
+          h('div', { style: { fontSize: '18px', fontWeight: '700', color: '#2563eb' } }, String(state.autopilot.today?.generated || 0)),
+          h('div', { style: { fontSize: '10px', color: '#1e40af' } }, 'Generated')
+        ),
+        h('div', { style: { background: '#faf5ff', borderRadius: 'var(--radius-sm)', padding: '10px', textAlign: 'center', border: '1px solid #e9d5ff' } },
+          h('div', { style: { fontSize: '18px', fontWeight: '700', color: '#7c3aed' } }, String(state.autopilot.today?.ctas_created || 0)),
+          h('div', { style: { fontSize: '10px', color: '#5b21b6' } }, 'CTAs')
+        ),
+        h('div', { style: { background: '#fffbeb', borderRadius: 'var(--radius-sm)', padding: '10px', textAlign: 'center', border: '1px solid #fde68a' } },
+          h('div', { style: { fontSize: '18px', fontWeight: '700', color: '#d97706' } }, String(state.autopilot.today?.swipes_saved || 0)),
+          h('div', { style: { fontSize: '10px', color: '#92400e' } }, 'Swipes')
+        )
+      )
+    ) : null,
+    // Leads
+    state.contentLeads?.length > 0 ? h('div', { style: { marginBottom: '20px' } },
+      h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
+        h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)' } }, `CONTENT LEADS (${state.contentLeads.length})`),
+        h('div', { style: { fontSize: '11px', color: 'var(--gray-500)' } },
+          `${state.contentLeads.filter(l => l.status === 'hot').length} hot | ${state.contentLeads.reduce((s, l) => s + (l.score || 0), 0)} total score`
+        )
+      ),
+      h('div', { style: { display: 'grid', gap: '6px' } },
+        ...state.contentLeads.sort((a, b) => (b.score || 0) - (a.score || 0)).slice(0, 10).map(lead =>
+          h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 12px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)' } },
+            h('div', {
+              style: {
+                width: '32px', height: '32px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: '12px', fontWeight: '700', color: 'white',
+                background: lead.score >= 20 ? '#dc2626' : lead.score >= 10 ? '#d97706' : '#64748b'
+              }
+            }, String(lead.score || 0)),
+            h('div', { style: { flex: '1' } },
+              h('div', { style: { fontSize: '12px', fontWeight: '600', color: 'var(--navy)' } }, lead.name),
+              h('div', { style: { fontSize: '10px', color: 'var(--gray-500)' } }, `${lead.source} | ${lead.signals?.length || 0} signals | ${lead.email || 'no email'}`)
+            ),
+            h('span', {
+              style: {
+                fontSize: '10px', padding: '2px 8px', borderRadius: '10px', fontWeight: '600',
+                background: lead.status === 'hot' ? '#fef2f2' : lead.status === 'warm' ? '#fffbeb' : '#f1f5f9',
+                color: lead.status === 'hot' ? '#dc2626' : lead.status === 'warm' ? '#d97706' : '#64748b'
+              }
+            }, lead.status || 'new'),
+            lead.dm_sequence ? h('span', { style: { fontSize: '9px', padding: '1px 5px', borderRadius: '3px', background: '#eff6ff', color: '#2563eb' } }, 'DM') : null
+          )
+        )
+      )
     ) : null,
     // Trending Topics
     (state.trending?.trending_topics?.length > 0) ? h('div', { style: { marginBottom: '20px' } },

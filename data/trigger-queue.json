@@ -1032,7 +1032,7 @@
       "comments": 14
     },
     "captured_at": "2026-02-20T23:12:55.767Z",
-    "status": "pending",
+    "status": "used",
     "score": 0
   },
   {
@@ -4251,7 +4251,7 @@
     "thumbnail": "https://i3.ytimg.com/vi/v-67pfutZEk/hqdefault.jpg",
     "category": "DATA_POINT",
     "captured_at": "2026-02-19T05:01:04+00:00",
-    "status": "pending",
+    "status": "used",
     "score": 0
   },
   {
@@ -4342,7 +4342,7 @@
     "thumbnail": "https://i1.ytimg.com/vi/PO9tDji-RyE/hqdefault.jpg",
     "category": "DATA_POINT",
     "captured_at": "2026-02-20T08:24:54+00:00",
-    "status": "pending",
+    "status": "used",
     "score": 0
   },
   {
@@ -4355,7 +4355,7 @@
     "thumbnail": "https://i3.ytimg.com/vi/z8Q1Sn_vWUc/hqdefault.jpg",
     "category": "DATA_POINT",
     "captured_at": "2026-02-18T14:00:06+00:00",
-    "status": "pending",
+    "status": "used",
     "score": 0
   },
   {
@@ -6290,7 +6290,7 @@
     "category": "CONTENT_PIECE",
     "competitive_angle": true,
     "captured_at": "2026-02-17T22:37:09.000Z",
-    "status": "pending",
+    "status": "used",
     "score": 0
   },
   {

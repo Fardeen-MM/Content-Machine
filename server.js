@@ -5297,6 +5297,320 @@ Make posts specific, data-driven, and not braggy. Show results naturally. Each 8
       return json(res, proof);
     }
 
+    // --- Content Intelligence ---
+
+    // GET /api/content-intelligence — AI-generated weekly content intelligence report
+    if (pathname === '/api/content-intelligence' && method === 'GET') {
+      // Check for cached report (refresh every 6 hours)
+      const cached = readJSON('content-intelligence.json', null);
+      if (cached?.generated_at && (Date.now() - new Date(cached.generated_at).getTime()) < 6 * 60 * 60 * 1000) {
+        return json(res, cached);
+      }
+
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+
+      const content = readJSON('content.json');
+      const triggers = readJSON('trigger-queue.json');
+      const perfData = readJSON('performance.json');
+      const published = readJSON('published.json');
+      const series = readJSON('series.json', []);
+      const pillarPlan = readJSON('pillar-plan.json', null);
+
+      // Gather intelligence data
+      const totalContent = content.length;
+      const approved = content.filter(c => c.status === 'approved').length;
+      const rejected = content.filter(c => c.status === 'rejected').length;
+      const pendingTriggers = triggers.filter(t => t.status === 'pending').length;
+      const usedTriggers = triggers.filter(t => t.status === 'used').length;
+      const sources = {};
+      for (const t of triggers) { sources[t.source] = (sources[t.source] || 0) + 1; }
+      const categories = {};
+      for (const c of content) { categories[c.trigger_category] = (categories[c.trigger_category] || 0) + 1; }
+      const formats = {};
+      for (const c of content) { for (const f of Object.keys(c.formats || {})) { formats[f] = (formats[f] || 0) + 1; } }
+      const recentContent = content.filter(c => {
+        const age = (Date.now() - new Date(c.generated_at).getTime()) / (1000 * 60 * 60 * 24);
+        return age <= 7;
+      }).length;
+      const seriesActive = series.filter(s => s.active).length;
+      const totalEpisodes = series.reduce((s, x) => s + (x.episodes || []).length, 0);
+
+      try {
+        const { callClaude, parseJsonResponse, SONNET } = require('./lib/claude');
+
+        const prompt = `Generate a weekly content intelligence report for our legal marketing agency's content engine.
+
+DATA:
+- Total content: ${totalContent} (approved: ${approved}, rejected: ${rejected})
+- Approval rate: ${totalContent > 0 ? Math.round((approved / totalContent) * 100) : 0}%
+- Content generated this week: ${recentContent}
+- Pending triggers: ${pendingTriggers}, Used triggers: ${usedTriggers}
+- Published: ${published.length}
+- Active series: ${seriesActive} (${totalEpisodes} episodes total)
+- Sources: ${JSON.stringify(sources)}
+- Categories: ${JSON.stringify(categories)}
+- Formats: ${JSON.stringify(formats)}
+${pillarPlan ? `- Content pillars: ${pillarPlan.pillars?.map(p => p.name).join(', ')}` : ''}
+- Performance data: ${perfData.length} tracked (${perfData.reduce((s, p) => s + (p.leads || 0), 0)} total leads)
+
+Return JSON (raw, no fences):
+{
+  "summary": "2-3 sentence executive summary",
+  "whats_working": ["insight 1", "insight 2", "insight 3"],
+  "whats_not_working": ["issue 1", "issue 2"],
+  "recommended_topics": ["topic 1 with rationale", "topic 2", "topic 3"],
+  "format_recommendations": ["recommendation 1", "recommendation 2"],
+  "timing_insights": ["insight about posting timing"],
+  "action_items": [
+    { "priority": "high", "action": "specific action to take this week" },
+    { "priority": "medium", "action": "another action" }
+  ],
+  "content_gaps": ["area where we need more content"],
+  "trend_alerts": ["emerging trend to capitalize on"],
+  "health_score": 75,
+  "health_grade": "B+"
+}`;
+
+        const text = await callClaude({ model: SONNET, system: 'You are a content strategist and marketing analyst for a legal marketing agency.', prompt, maxTokens: 2500 });
+        const parsed = parseJsonResponse(text);
+        if (!parsed) return json(res, { error: 'Failed to generate intelligence report' }, 500);
+
+        parsed.generated_at = now();
+        parsed.data_snapshot = { totalContent, approved, rejected, pendingTriggers, published: published.length, perfTracked: perfData.length };
+        writeJSON('content-intelligence.json', parsed);
+
+        return json(res, parsed);
+      } catch (err) {
+        return json(res, { error: err.message }, 500);
+      }
+    }
+
+    // --- Lead Scoring ---
+
+    // GET /api/leads — list content-engaged leads
+    if (pathname === '/api/leads' && method === 'GET') {
+      const leads = readJSON('content-leads.json', []);
+      return json(res, leads.sort((a, b) => (b.score || 0) - (a.score || 0)));
+    }
+
+    // POST /api/leads — add or update a lead
+    if (pathname === '/api/leads' && method === 'POST') {
+      const body = await parseBody(req);
+      if (!body.name) return json(res, { error: 'name required' }, 400);
+
+      const leads = readJSON('content-leads.json', []);
+      const existing = leads.findIndex(l => l.email === body.email || l.name === body.name);
+
+      const lead = existing >= 0 ? leads[existing] : {
+        id: generateId(),
+        name: body.name,
+        email: body.email || '',
+        firm: body.firm || '',
+        source: body.source || 'content',
+        score: 0,
+        signals: [],
+        dm_sequence: null,
+        status: 'new',
+        created_at: now()
+      };
+
+      // Add signal
+      if (body.signal) {
+        const signalScore = {
+          comment: 5, dm_reply: 10, link_click: 3, lead_magnet_download: 15,
+          meeting_booked: 25, repeat_engagement: 8, profile_view: 2
+        };
+        lead.signals.push({
+          type: body.signal,
+          detail: body.detail || '',
+          score: signalScore[body.signal] || 5,
+          timestamp: now()
+        });
+        lead.score = lead.signals.reduce((s, sig) => s + (sig.score || 5), 0);
+        lead.last_signal = now();
+      }
+
+      if (body.status) lead.status = body.status;
+      if (body.dm_sequence) lead.dm_sequence = body.dm_sequence;
+      lead.updated_at = now();
+
+      if (existing >= 0) {
+        leads[existing] = lead;
+      } else {
+        leads.push(lead);
+      }
+
+      writeJSON('content-leads.json', leads);
+      return json(res, { ok: true, lead });
+    }
+
+    // --- Auto-Pilot Mode ---
+
+    // GET /api/autopilot/status — get auto-pilot status and today's activity
+    if (pathname === '/api/autopilot/status' && method === 'GET') {
+      const config = readJSON('autopilot-config.json', { enabled: false, settings: {} });
+      const log = readJSON('autopilot-log.json', []);
+      const today = new Date().toISOString().split('T')[0];
+      const todayLog = log.filter(l => l.timestamp?.startsWith(today));
+
+      return json(res, {
+        enabled: config.enabled,
+        settings: config.settings,
+        today: {
+          actions: todayLog.length,
+          scraped: todayLog.filter(l => l.action === 'scrape').reduce((s, l) => s + (l.result?.new_triggers || 0), 0),
+          generated: todayLog.filter(l => l.action === 'generate').reduce((s, l) => s + (l.result?.generated || 0), 0),
+          ctas_created: todayLog.filter(l => l.action === 'cta').length,
+          swipes_saved: todayLog.filter(l => l.action === 'swipe').reduce((s, l) => s + (l.result?.saved || 0), 0)
+        },
+        recent_log: todayLog.slice(-10)
+      });
+    }
+
+    // POST /api/autopilot/enable — enable or disable auto-pilot
+    if (pathname === '/api/autopilot/enable' && method === 'POST') {
+      const body = await parseBody(req);
+      const config = readJSON('autopilot-config.json', { enabled: false, settings: {} });
+
+      config.enabled = body.enabled !== false;
+      config.settings = {
+        scrape_time: body.scrape_time || '06:00',
+        generate_time: body.generate_time || '07:00',
+        series_time: body.series_time || '07:30',
+        auto_cta: body.auto_cta !== false,
+        auto_swipe: body.auto_swipe !== false,
+        max_daily_generates: body.max_daily_generates || 10,
+        ...config.settings,
+        ...body.settings
+      };
+      config.updated_at = now();
+
+      writeJSON('autopilot-config.json', config);
+      return json(res, { ok: true, ...config });
+    }
+
+    // POST /api/autopilot/run — manually trigger an auto-pilot cycle (for testing)
+    if (pathname === '/api/autopilot/run' && method === 'POST') {
+      const config = readJSON('autopilot-config.json', { enabled: false, settings: {} });
+      if (!config.enabled) return json(res, { error: 'Auto-pilot is not enabled. POST /api/autopilot/enable first.' }, 400);
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+
+      const log = readJSON('autopilot-log.json', []);
+      const results = { scrape: null, generate: null, ctas: 0, swipes: 0 };
+
+      // Step 1: Scrape
+      try {
+        const { runAllScrapers } = require('./scrapers/run-all');
+        const scrapeResult = await runAllScrapers();
+        results.scrape = scrapeResult;
+        log.push({ action: 'scrape', result: scrapeResult, timestamp: now() });
+      } catch (err) {
+        log.push({ action: 'scrape', error: err.message, timestamp: now() });
+      }
+
+      // Step 2: Generate from top triggers
+      try {
+        const { scoreTrigger, selectTopTriggers } = require('./generator/score-triggers');
+        const triggers = readJSON('trigger-queue.json');
+        const top = selectTopTriggers(triggers, config.settings.max_daily_generates || 5);
+
+        if (top.length > 0) {
+          const { generateSocialContent, HAIKU } = require('./lib/claude');
+          const { buildSystemPromptWithMemory } = require('./generator/content-writer');
+          const content = readJSON('content.json');
+          let generated = 0;
+
+          for (const trigger of top.slice(0, 5)) {
+            try {
+              const systemPrompt = buildSystemPromptWithMemory();
+              const formats = await generateSocialContent({
+                title: trigger.title,
+                rawContent: trigger.raw_content || '',
+                systemPrompt
+              });
+              if (formats) {
+                content.push({
+                  id: generateId(),
+                  trigger_title: trigger.title,
+                  trigger_source: trigger.source,
+                  trigger_category: trigger.category || 'CONTENT_PIECE',
+                  trigger_url: trigger.url,
+                  formats,
+                  status: 'review',
+                  generated_at: now(),
+                  generation_mode: 'autopilot'
+                });
+                // Mark trigger as used
+                const allTriggers = readJSON('trigger-queue.json');
+                const tIdx = allTriggers.findIndex(t => t.id === trigger.id);
+                if (tIdx !== -1) { allTriggers[tIdx].status = 'used'; writeJSON('trigger-queue.json', allTriggers); }
+                generated++;
+              }
+            } catch (err) { /* skip failed generation */ }
+          }
+          writeJSON('content.json', content);
+          results.generate = { generated, from_triggers: top.length };
+          log.push({ action: 'generate', result: results.generate, timestamp: now() });
+        }
+      } catch (err) {
+        log.push({ action: 'generate', error: err.message, timestamp: now() });
+      }
+
+      // Step 3: Auto-generate CTAs for new content
+      if (config.settings.auto_cta) {
+        try {
+          const content = readJSON('content.json');
+          const recent = content.filter(c => c.generation_mode === 'autopilot' && !c.comment_ctas);
+          for (const item of recent.slice(0, 3)) {
+            try {
+              const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+              const linkedinContent = item.formats?.linkedin?.content || '';
+              const prompt = `Generate 1 comment-trigger CTA for: "${item.trigger_title}"\nContent preview: ${(typeof linkedinContent === 'string' ? linkedinContent : '').slice(0, 300)}\n\nReturn JSON: { "trigger_keyword": "KEYWORD", "cta_text": "Comment KEYWORD for...", "lead_magnet": "type", "dm_template": "Hey {name}! ...", "first_comment": "..." }`;
+              const text = await callClaude({ model: HAIKU, system: 'Legal marketing CTA copywriter.', prompt, maxTokens: 400 });
+              const parsed = parseJsonResponse(text);
+              if (parsed) {
+                const allContent = readJSON('content.json');
+                const idx = allContent.findIndex(c => c.id === item.id);
+                if (idx !== -1) {
+                  allContent[idx].comment_ctas = { ctas: [parsed], generated_at: now() };
+                  writeJSON('content.json', allContent);
+                  results.ctas++;
+                }
+              }
+            } catch (e) { /* skip */ }
+          }
+          if (results.ctas > 0) log.push({ action: 'cta', result: { count: results.ctas }, timestamp: now() });
+        } catch (err) { /* skip */ }
+      }
+
+      // Step 4: Auto-save to swipe file
+      if (config.settings.auto_swipe) {
+        try {
+          const content = readJSON('content.json');
+          const swipe = readJSON('swipe-file.json', []);
+          const existingIds = new Set(swipe.map(s => s.content_id));
+          const approved = content.filter(c => c.status === 'approved' && !existingIds.has(c.id));
+          let saved = 0;
+          for (const item of approved.slice(0, 10)) {
+            for (const [fmt, data] of Object.entries(item.formats || {})) {
+              if (!data?.content || data.status !== 'approved') continue;
+              const text = typeof data.content === 'string' ? data.content : '';
+              if (text.length < 100) continue;
+              swipe.push({
+                id: generateId(), text: text.split('\n').slice(0, 2).join('\n'), category: 'auto', source: 'autopilot',
+                content_id: item.id, format: fmt, tags: [], notes: 'Auto-pilot saved', created_at: now()
+              });
+              saved++; break;
+            }
+          }
+          if (saved > 0) { writeJSON('swipe-file.json', swipe); results.swipes = saved; log.push({ action: 'swipe', result: { saved }, timestamp: now() }); }
+        } catch (err) { /* skip */ }
+      }
+
+      writeJSON('autopilot-log.json', log);
+      return json(res, { ok: true, results });
+    }
+
     // --- Content Series API ---
 
     // GET /api/series — list all content series

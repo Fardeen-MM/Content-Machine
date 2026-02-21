@@ -1666,11 +1666,9 @@ const state = {
   // Batch 61: AI Review, Trends, Publishing, Authority Score
   trendsAnalysis: null,
   authorityScore: null,
-  // Batch 62: Content Intelligence, Conversion Optimizer
-  contentIntelligence: null,
+  // Batch 62: Conversion Optimizer
   conversionOptimizer: null,
-  // Batch 63: Golden Hour, Content Matrix, Hook Scorer, Depth Optimizer, Zero-Click Bank, Drafting Strategy, Readability
-  contentMatrix: null,
+  // Batch 63: Golden Hour, Hook Scorer, Depth Optimizer, Zero-Click Bank, Drafting Strategy, Readability
   draftingStrategy: null,
   zeroClickBank: null,
   // Batch 64: Content Velocity, Engagement Predictor, Pillar Rotator, Saved Replies, Audience Builder, Profile Optimizer, Weekly Report
@@ -1883,12 +1881,16 @@ const pageDataMap = {
     ['published', '/api/published', []],
     ['funnel', '/api/funnel', { funnel: [], queue: {}, totals: {} }],
     ['meetingStats', '/api/meetings/stats', {}],
+    ['settings', '/api/settings', {}],
+    ['trending', '/api/trending', { trending_topics: [], trending_phrases: [], categories: {}, source_velocity: {} }],
   ],
   content: [
     ['series', '/api/series', []],
     ['published', '/api/published', []],
   ],
-  triggers: [],
+  triggers: [
+    ['settings', '/api/settings', {}],
+  ],
   calendar: 'dynamic',
   analytics: [
     ['performance', '/api/performance', []],
@@ -1931,6 +1933,7 @@ const pageDataMap = {
   ],
   playbooks: [
     ['playbooks', '/api/playbooks', {}],
+    ['ctaLibrary', '/api/cta-library', {}],
   ],
   'publish-tracker': [
     ['publishTracker', '/api/publish-tracker', { items: [], platforms: [] }],
@@ -2892,7 +2895,11 @@ function renderContentActions() {
       ab('Lead Magnet', '#be185d', '/api/lead-magnet-generator', { method: 'POST', body: { type: 'checklist' }, reload: true, successMsg: r => `Lead magnet: "${r.title}"` }),
       ab('Archive', '#dc2626', '/api/content-archive', { reload: true, successMsg: r => `Archived ${r.archived_count} old items` }),
       ab('Newslettr', '#4f46e5', '/api/newsletter-builder', { reload: true, successMsg: r => `Newsletter: "${(r.subject_line || '').slice(0, 40)}"` }),
-      ab('Export Cal', '#059669', '/api/calendar-export', { method: 'GET', successMsg: () => 'Calendar exported!' }),
+      h('button', {
+        className: 'btn btn-sm',
+        style: { background: '#059669', color: 'white', border: 'none', fontSize: '11px', padding: '6px 10px', whiteSpace: 'nowrap' },
+        onclick: () => window.open(API + '/api/calendar-export', '_blank')
+      }, 'Export Cal'),
     ]},
     { id: 'cm-analyze', title: 'Analyze & Score', buttons: [
       ab('Intelligence', '#1e40af', '/api/content-intelligence', { stateKey: 'contentIntelligence' }),
@@ -12296,17 +12303,12 @@ function render() {
 // --- Init ---
 loadData();
 
-// Auto-refresh: reload core + current page data every 2 minutes
+// Auto-refresh: dashboard every 60s, other pages every 120s
 setInterval(() => {
   if (!state.loading && document.visibilityState === 'visible') {
     loadData();
   }
-}, 120000);
-setInterval(() => {
-  if (!state.loading && document.visibilityState === 'visible') {
-    loadData();
-  }
-}, state.page === 'dashboard' ? 60000 : 120000);
+}, 60000); // Check every 60s; loadData() is fast due to pageDataMap
 </script>
 </body>
 </html>

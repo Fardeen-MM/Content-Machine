@@ -1484,7 +1484,9 @@ async function loadData() {
       api('/api/deals').catch(() => []),
       api('/api/published').catch(() => []),
       api('/api/series').catch(() => []),
-      api('/api/predictions').catch(() => ({ predictions: [], has_enough_data: false }))
+      api('/api/predictions').catch(() => ({ predictions: [], has_enough_data: false })),
+      api('/api/playbooks').catch(() => ({})),
+      api('/api/cta-library').catch(() => ({}))
     ]);
     state.content = content;
     state.triggers = triggers;
@@ -1509,6 +1511,8 @@ async function loadData() {
     state.published = published;
     state.series = series;
     state.predictions = predictions;
+    state.playbooks = playbooks;
+    state.ctaLibrary = ctaLibrary;
   } catch (err) {
     console.error('Failed to load data:', err);
     toast('Failed to load data', 'error');
@@ -2172,6 +2176,7 @@ function renderSidebar() {
     { id: 'triggers', icon: icons.triggers, label: 'Triggers', key: 'T' },
     { id: 'calendar', icon: icons.calendar, label: 'Calendar' },
     { id: 'analytics', icon: icons.analytics, label: 'Analytics' },
+    { id: 'playbooks', icon: icons.content, label: 'Playbooks', key: 'P' },
     { id: 'settings', icon: icons.settings, label: 'Settings', key: '9' },
   ];
 
@@ -5193,6 +5198,132 @@ function renderMemoryPage() {
   );
 }
 
+function renderPlaybooksPage() {
+  const pb = state.playbooks || {};
+  const ctas = state.ctaLibrary || {};
+  const platforms = ['linkedin', 'x_single', 'x_thread', 'youtube', 'blog', 'newsletter'];
+  const platformNames = { linkedin: 'LinkedIn', x_single: 'X — Singles', x_thread: 'X — Threads', youtube: 'YouTube', blog: 'Blog / SEO', newsletter: 'Newsletter' };
+  const platformColors = { linkedin: '#0077B5', x_single: '#1DA1F2', x_thread: '#1DA1F2', youtube: '#FF0000', blog: '#10B981', newsletter: '#8B5CF6' };
+
+  if (!state._playbookTab) state._playbookTab = 'linkedin';
+
+  function renderVoiceCard(voice) {
+    return h('div', { style: { padding: '10px 14px', background: 'rgba(37,99,235,0.06)', borderRadius: '8px', marginBottom: '6px' } },
+      h('div', { style: { fontWeight: '600', fontSize: '13px', color: 'var(--navy)' } }, voice.name),
+      h('div', { style: { fontSize: '12px', color: '#64748b', marginTop: '2px' } }, voice.why)
+    );
+  }
+
+  function renderList(items, color) {
+    if (!items || items.length === 0) return null;
+    return h('div', { style: { marginTop: '6px' } },
+      ...items.map(item => h('div', { style: { padding: '6px 0', fontSize: '13px', color: '#334155', borderBottom: '1px solid #f1f5f9', display: 'flex', gap: '8px' } },
+        h('span', { style: { color: color || 'var(--blue)', fontWeight: '700', flexShrink: '0' } }, '\u2022'),
+        h('span', {}, item)
+      ))
+    );
+  }
+
+  const current = pb[state._playbookTab] || {};
+  const currentCtas = ctas[state._playbookTab] || {};
+
+  return h('div', { className: 'page-content' },
+    // Platform tabs
+    h('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '20px' } },
+      ...platforms.map(p => {
+        const isActive = state._playbookTab === p;
+        return h('button', {
+          style: {
+            padding: '8px 16px', borderRadius: '8px', border: 'none', cursor: 'pointer',
+            background: isActive ? (platformColors[p] || 'var(--blue)') : '#f1f5f9',
+            color: isActive ? 'white' : '#64748b', fontSize: '13px', fontWeight: isActive ? '600' : '500',
+            fontFamily: "'Outfit', sans-serif", transition: 'var(--transition)'
+          },
+          onclick: () => { state._playbookTab = p; render(); }
+        }, platformNames[p] || p);
+      })
+    ),
+    // Platform content
+    current.name ? h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', maxWidth: '1100px' } },
+      // Left column: Strategy
+      h('div', {},
+        h('div', { className: 'card', style: { padding: '20px', marginBottom: '16px' } },
+          h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' } },
+            h('h3', { style: { fontSize: '16px', color: 'var(--navy)', margin: '0' } }, current.name),
+            h('span', { style: { fontSize: '11px', padding: '3px 10px', borderRadius: '6px', background: platformColors[state._playbookTab] || 'var(--blue)', color: 'white', fontWeight: '600' } }, 'PLAYBOOK')
+          ),
+          h('div', { style: { fontSize: '14px', color: '#334155', fontWeight: '500', marginBottom: '12px', padding: '8px 12px', background: 'rgba(37,99,235,0.08)', borderRadius: '8px', borderLeft: '3px solid var(--blue)' } },
+            'Goal: ', current.goal || 'N/A'
+          ),
+          // Algorithm insights
+          current.algorithm ? h('div', { style: { marginTop: '12px' } },
+            h('div', { style: { fontSize: '12px', fontWeight: '700', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px' } }, 'Algorithm'),
+            current.algorithm.key_signals ? renderList(current.algorithm.key_signals, platformColors[state._playbookTab]) : null,
+            current.algorithm.best_formats ? h('div', { style: { marginTop: '8px' } },
+              h('div', { style: { fontSize: '11px', fontWeight: '600', color: '#059669', marginBottom: '4px' } }, 'Best formats:'),
+              renderList(current.algorithm.best_formats, '#059669')
+            ) : null,
+            current.algorithm.worst_formats ? h('div', { style: { marginTop: '8px' } },
+              h('div', { style: { fontSize: '11px', fontWeight: '600', color: '#DC2626', marginBottom: '4px' } }, 'Avoid:'),
+              renderList(current.algorithm.worst_formats, '#DC2626')
+            ) : null
+          ) : null
+        ),
+        // Hook formulas
+        (current.content_rules?.hook_formulas) ? h('div', { className: 'card', style: { padding: '20px', marginBottom: '16px' } },
+          h('h4', { style: { fontSize: '14px', color: 'var(--navy)', marginBottom: '10px' } }, 'Hook Formulas'),
+          ...current.content_rules.hook_formulas.map(hook =>
+            h('div', { style: { padding: '8px 12px', background: '#fffbeb', borderRadius: '6px', marginBottom: '6px', fontSize: '13px', color: '#92400e', fontStyle: 'italic', borderLeft: '3px solid #f59e0b' } }, hook)
+          )
+        ) : null
+      ),
+      // Right column: Conversion + CTAs + Voices
+      h('div', {},
+        // Meeting conversion
+        (current.content_rules?.meeting_conversion) ? h('div', { className: 'card', style: { padding: '20px', marginBottom: '16px' } },
+          h('h4', { style: { fontSize: '14px', color: 'var(--navy)', marginBottom: '10px' } }, 'Meeting Conversion Tactics'),
+          ...current.content_rules.meeting_conversion.map(tactic =>
+            h('div', { style: { padding: '6px 0', fontSize: '13px', color: '#334155', borderBottom: '1px solid #f1f5f9', display: 'flex', gap: '8px' } },
+              h('span', { style: { color: '#059669', fontWeight: '700' } }, '\u2713'),
+              h('span', {}, tactic)
+            )
+          )
+        ) : null,
+        // CTA Library
+        Object.keys(currentCtas).length > 0 ? h('div', { className: 'card', style: { padding: '20px', marginBottom: '16px' } },
+          h('h4', { style: { fontSize: '14px', color: 'var(--navy)', marginBottom: '10px' } }, 'CTA Library'),
+          ...Object.entries(currentCtas).map(([category, items]) =>
+            h('div', { style: { marginBottom: '10px' } },
+              h('div', { style: { fontSize: '11px', fontWeight: '700', color: '#64748b', textTransform: 'uppercase', marginBottom: '4px' } }, category.replace(/_/g, ' ')),
+              ...(Array.isArray(items) ? items : [items]).map(item =>
+                h('div', { style: { padding: '6px 10px', background: 'rgba(16,185,129,0.08)', borderRadius: '6px', marginBottom: '4px', fontSize: '12px', color: '#065f46', fontStyle: 'italic' } },
+                  typeof item === 'string' ? item : JSON.stringify(item))
+              )
+            )
+          )
+        ) : null,
+        // Voices to study
+        current.voices_to_study ? h('div', { className: 'card', style: { padding: '20px' } },
+          h('h4', { style: { fontSize: '14px', color: 'var(--navy)', marginBottom: '10px' } }, 'Voices to Study'),
+          ...current.voices_to_study.map(renderVoiceCard)
+        ) : null,
+        // Key metrics
+        current.key_metrics ? h('div', { className: 'card', style: { padding: '20px', marginTop: '16px' } },
+          h('h4', { style: { fontSize: '14px', color: 'var(--navy)', marginBottom: '10px' } }, 'Key Metrics'),
+          ...Object.entries(current.key_metrics).map(([k, v]) =>
+            h('div', { style: { display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid #f1f5f9', fontSize: '13px' } },
+              h('span', { style: { color: '#64748b' } }, k.replace(/_/g, ' ')),
+              h('span', { style: { fontWeight: '600', color: 'var(--navy)' } }, v)
+            )
+          )
+        ) : null
+      )
+    ) : h('div', { className: 'card', style: { padding: '40px', textAlign: 'center' } },
+      h('p', { style: { color: '#64748b' } }, 'No playbook data for this platform yet.')
+    )
+  );
+}
+
 function renderSettingsPage() {
   const settings = state.settings || {};
 
@@ -6962,6 +7093,7 @@ function render() {
         : state.page === 'analytics' ? renderAnalyticsPage()
         : state.page === 'inspirations' ? renderInspirationsPage()
         : state.page === 'performance' ? renderPerformancePage()
+        : state.page === 'playbooks' ? renderPlaybooksPage()
         : state.page === 'settings' ? renderSettingsPage()
         : state.page === 'memory' ? renderMemoryPage()
         : state.page === 'save-url' ? renderSaveUrlPage()

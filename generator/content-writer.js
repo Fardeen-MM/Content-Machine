@@ -229,6 +229,60 @@ function buildSystemPromptWithMemory() {
   } catch (err) {
     // Performance data not available — skip
   }
+  // Add platform playbook context
+  try {
+    const playbooks = readJSON('playbooks.json');
+    if (playbooks.linkedin || playbooks.x_single) {
+      prompt += '\n\nPLATFORM PLAYBOOKS (research-backed best practices for each platform):\n';
+      if (playbooks.linkedin) {
+        const li = playbooks.linkedin;
+        prompt += `\nLINKEDIN — Goal: ${li.goal}\n`;
+        prompt += `- Best formats: ${li.algorithm.best_formats.slice(0, 3).join(', ')}\n`;
+        prompt += `- Posting: ${li.algorithm.posting_times.slice(0, 2).join(', ')}\n`;
+        prompt += `- Hook rules: ${li.content_rules.post_structure.slice(0, 3).join('; ')}\n`;
+        prompt += `- Meeting conversion: ${li.content_rules.meeting_conversion.slice(0, 2).join('; ')}\n`;
+      }
+      if (playbooks.x_single) {
+        const x = playbooks.x_single;
+        prompt += `\nX/TWITTER — Goal: ${x.goal}\n`;
+        prompt += `- Algorithm: ${x.algorithm.key_signals.slice(0, 2).join('; ')}\n`;
+        prompt += `- Meeting conversion: ${x.content_rules.meeting_conversion.slice(0, 2).join('; ')}\n`;
+      }
+      if (playbooks.youtube) {
+        const yt = playbooks.youtube;
+        prompt += `\nYOUTUBE — Goal: ${yt.goal}\n`;
+        prompt += `- Script structure: ${yt.content_rules.script_structure.slice(0, 3).join(' → ')}\n`;
+        prompt += `- Meeting conversion: ${yt.content_rules.meeting_conversion.slice(0, 2).join('; ')}\n`;
+      }
+    }
+  } catch (err) {
+    // Playbooks not available — skip
+  }
+  // Add CTA library for meeting-focused calls to action
+  try {
+    const ctas = readJSON('cta-library.json');
+    if (ctas.linkedin || ctas.x_single) {
+      prompt += '\n\nCTA LIBRARY (use these meeting-booking CTAs — rotate, don\'t repeat):\n';
+      if (ctas.linkedin?.soft) {
+        const randomCta = ctas.linkedin.soft[Math.floor(Math.random() * ctas.linkedin.soft.length)];
+        prompt += `- LinkedIn soft CTA example: "${randomCta}"\n`;
+      }
+      if (ctas.linkedin?.value_first) {
+        const randomCta = ctas.linkedin.value_first[Math.floor(Math.random() * ctas.linkedin.value_first.length)];
+        prompt += `- LinkedIn value-first CTA example: "${randomCta}"\n`;
+      }
+      if (ctas.x_single?.soft) {
+        const randomCta = ctas.x_single.soft[Math.floor(Math.random() * ctas.x_single.soft.length)];
+        prompt += `- X soft CTA example: "${randomCta}"\n`;
+      }
+      if (ctas.meeting_hooks) {
+        prompt += `- Audit hook: "${ctas.meeting_hooks.audit_offer}"\n`;
+      }
+      prompt += '- IMPORTANT: Weave CTAs naturally. Don\'t end every post with "DM me." Use comment-keyword patterns, value-first offers, and soft closes.\n';
+    }
+  } catch (err) {
+    // CTA library not available — skip
+  }
   _cachedPrompt = prompt;
   _cachedPromptAt = Date.now();
   return prompt;

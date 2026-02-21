@@ -1,0 +1,218 @@
+{
+  "linkedin": {
+    "name": "LinkedIn",
+    "goal": "Build authority → drive DMs → book audit calls",
+    "algorithm": {
+      "key_signals": ["comments weighted 15x more than likes", "first 60-90 min determines 70% of reach", "12h minimum gap between posts"],
+      "best_formats": ["PDF carousels (6.6% engagement)", "document posts (6.1%)", "polls (200%+ reach)", "text posts (900-1500 chars)"],
+      "worst_formats": ["video (reach dropped 200% vs 2024)", "external link posts"],
+      "posting_times": ["Tue-Thu 8-10AM", "Mon/Fri 12-2PM", "weekends 50% lower"],
+      "frequency": "3-5 posts/week minimum, 6-10 for growth"
+    },
+    "content_rules": {
+      "hook_formulas": [
+        "Contrarian: \"[Conventional wisdom] is wrong. Here's what actually works:\"",
+        "Data bomb: \"I analyzed [number] [things]. Here's what [audience] needs to know:\"",
+        "Pain confession: \"For [time], [struggle]. Then I discovered [solution]:\"",
+        "Before/after: \"[Time ago], [past]. Today, [current]. The shift:\"",
+        "Myth buster: \"[Number] myths I wish I'd stopped believing earlier:\""
+      ],
+      "post_structure": [
+        "Hook under 200 chars (before 'See more' cutoff)",
+        "One thought per line with aggressive line breaks",
+        "Specific numbers: $X, Y%, Z cases — never round numbers",
+        "End with specific question to drive comments",
+        "No external links in post body — add in first comment"
+      ],
+      "carousel_rules": [
+        "3-10 slides, sweet spot is 5-7",
+        "Slide 1: Bold hook that stops scroll",
+        "One insight per slide, clear visual hierarchy",
+        "Final slide: CTA (comment keyword, save, follow)",
+        "Consistent brand colors + fonts across all slides"
+      ],
+      "meeting_conversion": [
+        "Offer free 15-min audits in comment replies (not post body)",
+        "Use 'comment [keyword] and I'll send it' pattern",
+        "Post free tools/templates that showcase expertise",
+        "Reference the link in comments, not the post",
+        "75%+ comment reply rate — respond to every comment"
+      ]
+    },
+    "voices_to_study": [
+      {"name": "Justin Welsh", "why": "472M impressions, $12M profit. Content Matrix system. 45-min morning engagement routine."},
+      {"name": "Adam Robinson", "why": "125K followers in 2 years, $5M ARR. 100% traffic from LinkedIn. 25% of writing time on hooks."},
+      {"name": "Chris Walker", "why": "Zero-click content strategy. Optimize for native consumption. $20 pipeline per $1 ad spend."},
+      {"name": "Alex Hormozi", "why": "2x audience in 1 year. Direct tone, no jargon. Juxtaposes success vs failure archetypes."}
+    ],
+    "key_metrics": {
+      "target_engagement": "0.3%+ comment rate",
+      "hook_investment": "25% of writing time on first 2 lines",
+      "response_rate": "75%+ of comments get a reply"
+    }
+  },
+  "x_single": {
+    "name": "X (Twitter) — Single Tweets",
+    "goal": "Start conversations → build following → DM qualified prospects",
+    "algorithm": {
+      "key_signals": ["replies to replies 75x a like", "direct replies 13-27x a like", "profile clicks 12x a like", "first 30-60 min velocity critical"],
+      "best_formats": ["native video under 2:20", "image carousels (4 images)", "text with line breaks", "polls"],
+      "worst_formats": ["external links in tweet body (kills reach)", "3+ hashtags (spam penalty)"],
+      "posting_times": ["when your audience is active", "15-30 posts/day for growth"],
+      "frequency": "minimum 5/day, ideal 15-30/day"
+    },
+    "content_rules": {
+      "hook_formulas": [
+        "Contrarian: \"You don't need [popular thing]. You need [better alternative]\"",
+        "Bold claim: \"[Bold statement]. Here's why: [numbered list]\"",
+        "Hard truth: \"Hard truth about [topic]: [uncomfortable reality]\"",
+        "Before/after: \"I went from [start] to [result] in [time]. Here's how:\"",
+        "Data insight: \"I analyzed [number] [things] and found [surprise]:\"",
+        "Stop/start: \"Stop [bad practice]. Start [alternative]. You'll see [benefit]\""
+      ],
+      "post_structure": [
+        "Each sentence on its own line, parallel structure",
+        "Punchy — every word earns its place",
+        "One longer line for the punchline/payoff",
+        "Direct, no jargon, from lived experience",
+        "Provocative enough to get quote tweets and replies"
+      ],
+      "meeting_conversion": [
+        "Reply 'audit' and I'll DM you the template",
+        "Pin high-value thread with CTA in last tweet",
+        "Engage 10-20 replies to your own tweets (150x multiplier)",
+        "Mix public signals (likes/replies) before DMing prospects",
+        "Track: reply rate → positive reply rate → meetings booked → revenue"
+      ]
+    },
+    "voices_to_study": [
+      {"name": "Alex Hormozi", "why": "7K+ likes on top tweets. Direct, no jargon. Money/results focused. Juxtaposes rich vs poor archetypes."},
+      {"name": "Ship30for30", "why": "Thread hook mastery. 5 headline elements: clear, WHO, WHAT, WHY, twist the knife."}
+    ]
+  },
+  "x_thread": {
+    "name": "X (Twitter) — Threads",
+    "goal": "Deep value delivery → thread goes viral → profile visits → DMs",
+    "content_rules": {
+      "hook_formulas": [
+        "Specificity: \"I [achieved result with exact numbers] in [timeframe]. Here's the [X]-step system:\"",
+        "Question: \"Why do [surprising observation]? The answer isn't what you think.\"",
+        "Bold claim: \"[Controversial statement]. Here's the proof.\"",
+        "Curiosity gap: \"I discovered [number] [tactics] that [result]. Most people don't know about #[number].\""
+      ],
+      "thread_structure": [
+        "Tweet 1: Hook with specific numbers + curiosity gap",
+        "Tweet 2: Context establishing credibility",
+        "Tweets 3-6: Core content (one insight per tweet, numbered)",
+        "Tweet 7: Engagement driver (question or action request)",
+        "Tweet 8: Clear CTA (reply keyword for DM, repost request)"
+      ],
+      "meeting_conversion": [
+        "Last tweet: 'Reply [keyword] and I'll DM you the full template'",
+        "Second-to-last: 'If useful, repost — a firm owner needs to see this'",
+        "Each tweet stands alone but builds narrative arc"
+      ]
+    }
+  },
+  "youtube": {
+    "name": "YouTube",
+    "goal": "Build trust through depth → funnel to landing page → book calls",
+    "algorithm": {
+      "key_signals": ["watch time is #1 ranking factor", "CTR from thumbnails determines initial distribution", "session watch time rewards longer content"],
+      "best_formats": ["tutorials/how-tos", "case study breakdowns", "mistake analysis", "framework walkthroughs"],
+      "video_length": "8-15 minutes for main content, under 60s for Shorts",
+      "thumbnail_rules": ["emotional face expression (30% CTR boost)", "1-3 words of text max", "high contrast colors", "curiosity gap in image"]
+    },
+    "content_rules": {
+      "script_structure": [
+        "Hook (0-30s): Open with surprising data or bold claim",
+        "Problem (30s-2min): Agitate the pain — make them feel it",
+        "Content (2-10min): Deliver framework with examples",
+        "Proof (10-12min): Case study or results demonstration",
+        "CTA (last 30s): Direct to free resource in description"
+      ],
+      "mid_roll_cta": "Before step 3: 'If this is your firm — free audit link in description. No pitch, just data.'",
+      "end_screen_cta": "Direct to specific next video + audit booking link",
+      "description_strategy": [
+        "First 2 lines: CTA + link BEFORE 'Show more' cutoff",
+        "Pinned comment: Repeat CTA with direct link",
+        "Reference lead magnet verbally at start AND end of video",
+        "UTM parameters on all links for tracking"
+      ],
+      "meeting_conversion": [
+        "Mention free audit 2x per video (mid-roll + end)",
+        "Description link to Calendly/booking page",
+        "Pinned comment with booking link",
+        "Use YouTube Cards at mid-roll CTA moment",
+        "Mix Shorts (discovery) → long-form (trust) → booking (conversion)"
+      ]
+    },
+    "voices_to_study": [
+      {"name": "Wes McDowell", "why": "300K subs built on client conversion. 'Perfect Script Formula' — 5 videos in 3 weeks system."},
+      {"name": "Alex Hormozi", "why": "Give away secrets free. Whiteboard sessions, teardowns, real-time documentary feel."},
+      {"name": "Sam Ovens", "why": "High-ticket consulting funnel. Long-form authority content → booking page."}
+    ],
+    "key_metrics": {
+      "target_ctr": "8-12% thumbnail CTR",
+      "watch_time": "50%+ average view duration",
+      "conversion": "track description link clicks → bookings via UTM"
+    }
+  },
+  "blog": {
+    "name": "Blog / SEO",
+    "goal": "Rank for high-intent keywords → capture leads → nurture to call",
+    "content_rules": {
+      "structure": [
+        "Title: keyword + compelling angle (not clickbait)",
+        "H2s contain keyword variations",
+        "1500-2500 words, every section earns the next",
+        "Inline CTAs every 500 words",
+        "Bottom CTA: full audit offer with link"
+      ],
+      "seo_focus": [
+        "Target 'law firm marketing' + practice area + location variations",
+        "Internal linking between related posts",
+        "Schema markup for FAQ sections",
+        "Featured snippet optimization with direct answers in first paragraph"
+      ],
+      "meeting_conversion": [
+        "Inline CTA: 'Want to know your exact cost per signed case? Free 15-min audit →'",
+        "Bottom CTA: 2-3 next steps including audit booking",
+        "Sidebar/sticky: calculator or scorecard lead magnet",
+        "Exit intent: free resource popup"
+      ]
+    }
+  },
+  "newsletter": {
+    "name": "Newsletter / Email",
+    "goal": "Nurture subscribers → build trust weekly → convert to calls",
+    "content_rules": {
+      "structure": [
+        "Subject line: specific number or contrarian take",
+        "Opening: one specific insight or story",
+        "Body: actionable framework (3-5 steps)",
+        "Close: soft CTA (reply, forward, or book)"
+      ],
+      "meeting_conversion": [
+        "Soft close: 'Hit reply if you have questions — I read every email'",
+        "Forward hook: 'Know a firm owner who needs this? Forward this email'",
+        "Occasional direct offer: 'I have 3 audit slots open this week'"
+      ]
+    }
+  },
+  "meta": {
+    "version": 1,
+    "last_updated": "2026-02-21",
+    "research_sources": [
+      "Justin Welsh — 472M impressions, $12M profit LinkedIn playbook",
+      "Adam Robinson — 125K followers, $5M ARR via LinkedIn only",
+      "Chris Walker — zero-click demand creation, $20 pipeline/$1 ad spend",
+      "Alex Hormozi — $100M content strategy, give-away-value approach",
+      "Ship30for30 — viral thread hook formulas",
+      "Postiv.ai — 2M+ LinkedIn post analysis",
+      "ConnectSafely.ai — LinkedIn post templates with data",
+      "Wes McDowell — YouTube to Clients Academy, 300K subs",
+      "Twitter algorithm analysis — engagement signal weights"
+    ]
+  }
+}

@@ -1801,6 +1801,18 @@ async function handleRequest(req, res) {
       });
     }
 
+    // GET /api/playbooks — platform playbook data
+    if (pathname === '/api/playbooks' && method === 'GET') {
+      const playbooks = readJSON('playbooks.json', {});
+      return json(res, playbooks);
+    }
+
+    // GET /api/cta-library — CTA library data
+    if (pathname === '/api/cta-library' && method === 'GET') {
+      const ctas = readJSON('cta-library.json', {});
+      return json(res, ctas);
+    }
+
     // POST /api/triggers/add — manually add a trigger
     if (pathname === '/api/triggers/add' && method === 'POST') {
       const body = await parseBody(req);

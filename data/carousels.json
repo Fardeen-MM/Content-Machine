@@ -1,0 +1,82 @@
+[
+  {
+    "id": "ebf07c6689930197",
+    "content_id": "4aa23b276fa5218b",
+    "title": "5,000 Days Running Crisp: The Math Nobody Talks About",
+    "slide_count": 8,
+    "slides": [
+      {
+        "slide_number": 1,
+        "type": "cover",
+        "headline": "5,000 Days. One Marketing Agency.",
+        "subtext": "The brutal lessons nobody tells you.",
+        "visual_note": "Dark background, white bold text, subtle calendar icon showing '5,000' in large numerals"
+      },
+      {
+        "slide_number": 2,
+        "type": "content",
+        "headline": "Lesson 1: Survival Is About Speed",
+        "body": "Day 1,247: Lost a $180K/year client on Monday.\nSigned a $220K client by Friday.\n\nWhy we survived:\n• 48-hour response time on all inbound\n• No 'let me check with my team'\n• Proposals sent same day",
+        "stat_highlight": "48 hours",
+        "visual_note": "Speedometer graphic or clock icon, emphasize '48 hours' in accent color"
+      },
+      {
+        "slide_number": 3,
+        "type": "content",
+        "headline": "Lesson 2: Fire 20% Every Year",
+        "body": "Not clients. Systems.\n\n• 73 tools tested since 2010\n• Currently use 11\n• Killed: Hubspot, Marketo, 4 CRMs\n\nThe bloat will kill you before the competition does.",
+        "stat_highlight": "73 → 11",
+        "visual_note": "Visual of tools/apps being crossed out, funnel narrowing from 73 to 11"
+      },
+      {
+        "slide_number": 4,
+        "type": "content",
+        "headline": "Lesson 3: Track Revenue Per Hour",
+        "body": "We fired a $15K/month client.\n\nThe math:\n• 47 hours/month managing them\n• $319/hour effective rate\n\nOur target: $500/hour\n\nTime is inventory. You can't make more of it.",
+        "stat_highlight": "$319 vs $500",
+        "visual_note": "Calculator or spreadsheet aesthetic, highlight the hourly rate comparison"
+      },
+      {
+        "slide_number": 5,
+        "type": "content",
+        "headline": "Lesson 4: The 'Expert' Trap",
+        "body": "Year 3: Tried to be experts at everything.\nResult: Mediocre at 9 things.\n\nYear 8: Picked one vertical. Law firms.\nResult: 3x revenue. Half the stress.\n\nSpecialization isn't limiting. It's profitable.",
+        "stat_highlight": "3x revenue",
+        "visual_note": "Before/after visual — scattered services vs. focused target icon"
+      },
+      {
+        "slide_number": 6,
+        "type": "content",
+        "headline": "Lesson 5: Pricing Is a Filter",
+        "body": "Raised prices 40% in 2019.\n\n• Lost 8 clients\n• Signed 12 new ones\n• Cut 160 hours/month of pain\n\nLow prices attract clients who blame you when THEIR business fails.",
+        "stat_highlight": "40% increase",
+        "visual_note": "Filter/funnel graphic showing quality clients vs. problem clients"
+      },
+      {
+        "slide_number": 7,
+        "type": "content",
+        "headline": "The One Thing That Never Changed",
+        "body": "We answer the phone.\n\nDay 1 to Day 5,000:\n• Calls forwarded to my cell\n• Under 2-ring pickup average\n• No 'leave a message' in business hours\n\nSpeed to lead isn't a tactic. It's the business.",
+        "stat_highlight": "2 rings",
+        "visual_note": "Phone icon with '2 rings' prominently displayed, stopwatch element"
+      },
+      {
+        "slide_number": 8,
+        "type": "cta",
+        "headline": "Your Turn",
+        "body": "5,000 days = 13.7 years.\n\nWe've audited 200+ law firm marketing systems.\n\nThe firms that grow: fast intake, lean tech stack, specialized positioning.\n\nComment 'AUDIT' for a free 15-min breakdown of your current setup.",
+        "cta_text": "Comment AUDIT",
+        "visual_note": "Clean design with Mortar Metrics logo, accent color box around 'AUDIT', professional but approachable"
+      }
+    ],
+    "design_guidelines": {
+      "color_primary": "#1A1A1A",
+      "color_accent": "#FF6B35",
+      "font_style": "Bold sans-serif (Montserrat or Inter), all headlines 32pt+, body text 18pt minimum for mobile readability",
+      "brand_element": "Mortar Metrics logo bottom-right corner on all slides, subtle watermark style"
+    },
+    "companion_post": "5,000 days running a marketing agency.\n\nThe lessons nobody talks about →\n\n(Swipe for the math on survival, firing clients, and why we still answer the phone ourselves.)\n\n#LegalMarketing #LawFirmGrowth #MarketingStrategy",
+    "status": "draft",
+    "created_at": "2026-02-21T02:36:33.770Z"
+  }
+]

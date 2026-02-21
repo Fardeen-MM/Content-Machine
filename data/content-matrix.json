@@ -1,0 +1,345 @@
+{
+  "mantra": "Law firms deserve marketing that actually generates signed cases, not vanity metrics.",
+  "pillars": [
+    {
+      "id": "lead_generation",
+      "name": "Lead Generation",
+      "concepts": [
+        {
+          "belief": "Speed to lead matters more than ad budget — most firms lose cases in the first 60 seconds",
+          "posts": [
+            {
+              "type": "teaching",
+              "hook": "How to build a 60-second response system that signs 3x more cases.",
+              "outline": "Answer calls <60s, overflow service setup, CRM automation, intake script framework, tracking metrics."
+            },
+            {
+              "type": "contrarian",
+              "hook": "Unpopular opinion: Your intake team is costing you more than your ads.",
+              "outline": "Data shows 52% of leads unanswered/abandoned vs ad waste — fix intake before budget."
+            },
+            {
+              "type": "case_study",
+              "hook": "A PI firm cut response time from 8min to 45sec. Revenue up 340%.",
+              "outline": "Before/after metrics, system changes (overflow + CRM), 12mo revenue comparison, exact costs."
+            },
+            {
+              "type": "listicle",
+              "hook": "5 reasons your law firm loses leads before the phone even rings.",
+              "outline": "Slow answer time, no after-hours, voicemail black hole, long hold, untrained intake."
+            },
+            {
+              "type": "teardown",
+              "hook": "I called 15 PI firms as a lead. 9 went to voicemail. Here's the data.",
+              "outline": "Ring time analysis, voicemail rates, callback speed, what winners did differently."
+            }
+          ]
+        },
+        {
+          "belief": "Call tracking isn't optional — if you can't measure it, you're guessing with $50K+/year",
+          "posts": [
+            {
+              "type": "teaching",
+              "hook": "How to set up call tracking in 47 minutes (CallRail walkthrough).",
+              "outline": "Account setup, number pools, source tracking, CRM integration, dashboard configuration."
+            },
+            {
+              "type": "contrarian",
+              "hook": "Unpopular opinion: Google Analytics is useless for law firms.",
+              "outline": "Page views don't equal cases — only phone calls and form fills matter for conversion tracking."
+            },
+            {
+              "type": "case_study",
+              "hook": "Call tracking found $4,183/month in wasted ad spend. Here's how.",
+              "outline": "Unanswered call data, cost-per-call math, budget reallocation, 90-day ROI impact."
+            },
+            {
+              "type": "listicle",
+              "hook": "3 call tracking mistakes that make your data worthless.",
+              "outline": "Not tracking source, ignoring ring time, no recording review process."
+            },
+            {
+              "type": "teardown",
+              "hook": "Audited a family law firm's calls. 67% never became consultations.",
+              "outline": "Call volume vs consultation rate, failure points in funnel, exact revenue lost."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "digital_advertising",
+      "name": "Digital Advertising",
+      "concepts": [
+        {
+          "belief": "Most law firms waste 40%+ of their Google Ads budget on the wrong keywords and bad targeting",
+          "posts": [
+            {
+              "type": "teaching",
+              "hook": "How to audit your Google Ads account in 18 minutes (find the waste).",
+              "outline": "Search terms report analysis, negative keyword additions, geo-targeting review, device bid adjustments."
+            },
+            {
+              "type": "contrarian",
+              "hook": "Unpopular opinion: Broad match keywords work better than exact match.",
+              "outline": "2024 algorithm changes favor broad + audience signals vs old exact match strategy."
+            },
+            {
+              "type": "case_study",
+              "hook": "Cut ad spend 30%, signed cases up 40%. Same traffic, better targeting.",
+              "outline": "Budget reallocation from brand to high-intent, negative keywords added, geo-fence tightening, results."
+            },
+            {
+              "type": "listicle",
+              "hook": "5 Google Ads settings draining your budget right now.",
+              "outline": "Search partners enabled, display network on, auto-apply on, wrong locations, mobile overbid."
+            },
+            {
+              "type": "teardown",
+              "hook": "Analyzed 47 law firm ad accounts. 73% had this fatal mistake.",
+              "outline": "Search partner network waste data, CPCs compared, conversion rates, annual cost impact."
+            }
+          ]
+        },
+        {
+          "belief": "LSAs (Local Service Ads) beat Google Ads for most practice areas — but firms set them up wrong",
+          "posts": [
+            {
+              "type": "teaching",
+              "hook": "How to dominate LSAs: profile optimization to dispute management.",
+              "outline": "Profile completeness, review strategy, budget setting, lead quality filtering, dispute process."
+            },
+            {
+              "type": "contrarian",
+              "hook": "Unpopular opinion: LSAs are better than SEO for criminal defense firms.",
+              "outline": "Speed + trust signals + lower cost-per-case vs 6mo SEO timeline for urgent-need practice."
+            },
+            {
+              "type": "case_study",
+              "hook": "LSAs generated 34 signed cases at $127 each. Google Ads? $891 each.",
+              "outline": "90-day comparison, cost-per-lead vs cost-per-case, quality differences, budget allocation decision."
+            },
+            {
+              "type": "listicle",
+              "hook": "3 LSA settings that tank your lead quality (and how to fix them).",
+              "outline": "Service area too wide, wrong job types enabled, budget too low for visibility."
+            },
+            {
+              "type": "teardown",
+              "hook": "Why this immigration firm's LSA profile gets 12x more leads than competitors.",
+              "outline": "Profile elements analyzed, review response rate, photo quality, hours of operation impact."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "content_seo",
+      "name": "Content & SEO",
+      "concepts": [
+        {
+          "belief": "SEO for law firms is about dominating 5-10 local keywords, not publishing 100 blog posts",
+          "posts": [
+            {
+              "type": "teaching",
+              "hook": "How to rank for 'city + practice area' in 90 days or less.",
+              "outline": "Keyword research focus, GMB optimization, citation building, on-page structure, backlink strategy."
+            },
+            {
+              "type": "contrarian",
+              "hook": "Unpopular opinion: Your blog is a waste of time (do this instead).",
+              "outline": "Practice area pages + case results + attorney bios outperform generic blog content for rankings."
+            },
+            {
+              "type": "case_study",
+              "hook": "Mandall Law: 0 to 30+ cases/month from organic in 6 months.",
+              "outline": "Starting position, keyword targets, content strategy, GMB optimization, traffic/conversion data."
+            },
+            {
+              "type": "listicle",
+              "hook": "5 SEO mistakes keeping your law firm off page 1.",
+              "outline": "Thin content, no schema markup, slow site speed, missing GMB posts, weak internal linking."
+            },
+            {
+              "type": "teardown",
+              "hook": "Why this 2-attorney firm outranks 50-lawyer firms in search.",
+              "outline": "On-page optimization quality, GMB activity, review velocity, content depth comparison."
+            }
+          ]
+        },
+        {
+          "belief": "Google Business Profile is the highest-ROI SEO investment — most firms ignore it completely",
+          "posts": [
+            {
+              "type": "teaching",
+              "hook": "The 15-minute weekly GMB routine that generates 20+ leads/month.",
+              "outline": "Weekly posts, review responses, Q&A monitoring, photo uploads, service updates."
+            },
+            {
+              "type": "contrarian",
+              "hook": "Unpopular opinion: GMB matters more than your website for local leads.",
+              "outline": "Map pack visibility + direct calls vs website click-through rates — data comparison."
+            },
+            {
+              "type": "case_study",
+              "hook": "GMB optimization added 47 calls/month. Zero ad spend required.",
+              "outline": "Before/after impressions, actions data, optimization steps taken, call tracking proof."
+            },
+            {
+              "type": "listicle",
+              "hook": "3 GMB features 90% of law firms don't use (but should).",
+              "outline": "Services menu, booking button, messaging, posts with CTAs."
+            },
+            {
+              "type": "teardown",
+              "hook": "Compared 12 PI firm GMB profiles. The winner does this differently.",
+              "outline": "Photo quantity/quality, post frequency, review response rate, services detail level."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "business_of_law",
+      "name": "Business of Law",
+      "concepts": [
+        {
+          "belief": "Law firms are terrible at math — they don't know their true cost-per-case or lifetime value",
+          "posts": [
+            {
+              "type": "teaching",
+              "hook": "How to calculate your real cost-per-signed-case (spreadsheet included).",
+              "outline": "Track all marketing spend, measure signed cases not leads, include salary costs, LTV calculation."
+            },
+            {
+              "type": "contrarian",
+              "hook": "Unpopular opinion: Retainer fees are killing your family law growth.",
+              "outline": "High upfront cost filters good clients — payment plans increase close rate data."
+            },
+            {
+              "type": "case_study",
+              "hook": "Tracked every dollar for 12 months. Here's what we learned.",
+              "outline": "Revenue per source, true CAC by channel, LTV by case type, budget reallocation decisions."
+            },
+            {
+              "type": "listicle",
+              "hook": "5 metrics every law firm owner should check weekly (not monthly).",
+              "outline": "New leads by source, conversion rate, cost-per-case, average case value, cash collected."
+            },
+            {
+              "type": "teardown",
+              "hook": "This firm thought Google Ads was profitable. The math said otherwise.",
+              "outline": "Surface-level metrics vs true CAC analysis, hidden costs revealed, decision outcome."
+            }
+          ]
+        },
+        {
+          "belief": "CRMs are useless if your intake process is broken — fix the people before the software",
+          "posts": [
+            {
+              "type": "teaching",
+              "hook": "How to build an intake process that converts 60%+ of qualified leads.",
+              "outline": "Speed benchmark, script framework, objection handling, follow-up cadence, automation points."
+            },
+            {
+              "type": "contrarian",
+              "hook": "Unpopular opinion: Your $400/mo CRM is making things worse, not better.",
+              "outline": "Over-automation kills conversion — human touch + simple tools beats complex workflows."
+            },
+            {
+              "type": "case_study",
+              "hook": "Rebuilt intake process. Conversion rate: 34% → 61% in 60 days.",
+              "outline": "Identified failure points, script changes, training program, measurement system, results."
+            },
+            {
+              "type": "listicle",
+              "hook": "3 intake scripts that lose cases before you say hello.",
+              "outline": "Asking for details first, no empathy, rushing qualification, weak value prop."
+            },
+            {
+              "type": "teardown",
+              "hook": "Secret-shopped 20 criminal defense firms. Only 3 passed basic intake.",
+              "outline": "Call quality scoring criteria, common failures, what top performers did differently."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "industry_trends",
+      "name": "Industry Trends",
+      "concepts": [
+        {
+          "belief": "AI will replace bad marketers but make great operators 10x more effective",
+          "posts": [
+            {
+              "type": "teaching",
+              "hook": "5 AI tools that actually save law firms 10+ hours/week.",
+              "outline": "ChatGPT for drafting, Otter.ai for notes, Jasper for ad copy, Descript for video, workflows."
+            },
+            {
+              "type": "contrarian",
+              "hook": "Unpopular opinion: AI-written content is already better than most agencies.",
+              "outline": "Quality comparison, speed advantage, where human editing still matters for legal."
+            },
+            {
+              "type": "case_study",
+              "hook": "Used AI to write 40 GMB posts in 90 minutes. Engagement up 340%.",
+              "outline": "Tool used, prompts, editing process, performance data vs human-written baseline."
+            },
+            {
+              "type": "listicle",
+              "hook": "3 ways AI is already being used by top law firms (you're late).",
+              "outline": "Intake chatbots, document automation, ad copy generation."
+            },
+            {
+              "type": "teardown",
+              "hook": "Tested 7 AI legal chatbots. Only 1 didn't destroy the client experience.",
+              "outline": "Response quality scoring, accuracy issues, best-in-class example, implementation advice."
+            }
+          ]
+        },
+        {
+          "belief": "The legal marketing industry is full of scammers — most 'agencies' are just reselling the same garbage",
+          "posts": [
+            {
+              "type": "teaching",
+              "hook": "How to audit your marketing agency (questions they can't dodge).",
+              "outline": "Demand account access, ask for search terms report, request call tracking data, check contracts."
+            },
+            {
+              "type": "contrarian",
+              "hook": "Unpopular opinion: Most 'legal marketing experts' have never run a campaign.",
+              "outline": "Certification vs real results, how to vet expertise, red flags in sales calls."
+            },
+            {
+              "type": "case_study",
+              "hook": "Fired their agency, hired us. Found $23K/year wasted in 3 hours.",
+              "outline": "Audit findings, specific waste categories, recovery actions, 6-month performance comparison."
+            },
+            {
+              "type": "listicle",
+              "hook": "5 red flags your marketing agency is ripping you off.",
+              "outline": "No account access, vanity metrics only, locked contracts, no call tracking, generic strategies."
+            },
+            {
+              "type": "teardown",
+              "hook": "Analyzed contracts from 8 legal marketing firms. This clause is criminal.",
+              "outline": "Contract clause analysis, ownership issues, termination traps, what to demand instead."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "total_posts": 50,
+  "weeks_of_content": 10,
+  "recommended_schedule": {
+    "monday": "lead_generation (teaching or case_study) — start week with tactical value",
+    "tuesday": "digital_advertising (contrarian or teardown) — spark engagement mid-week",
+    "wednesday": "content_seo (teaching or listicle) — educational depth for hump day",
+    "thursday": "business_of_law (case_study or teardown) — strategic thinking content",
+    "friday": "industry_trends (contrarian or listicle) — lighter, thought-provoking to end week"
+  },
+  "built_at": "2026-02-21T02:35:55.780Z"
+}

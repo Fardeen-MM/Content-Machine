@@ -8693,6 +8693,454 @@ Add the series hashtag ${s.hashtag || ''} naturally at the end of social posts.`
       return json(res, { items: tracker, platforms });
     }
 
+    // --- Batch 49: YouTube Pipeline + Carousel Generator + Content Matrix + Hook Analyzer + CTA Strategy ---
+
+    // POST /api/youtube/pipeline — full YouTube video pipeline (script + thumbnail + SEO + Shorts)
+    const ytPipelineMatch = pathname.match(/^\/api\/content\/([a-f0-9]+)\/youtube-pipeline$/);
+    if (ytPipelineMatch && method === 'POST') {
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      const id = ytPipelineMatch[1];
+      const allContent = readJSON('content.json', []);
+      const item = allContent.find(c => c.id === id);
+      if (!item) return json(res, { error: 'Content not found' }, 404);
+
+      const { callClaude, parseJsonResponse, SONNET } = require('./lib/claude');
+      const { BRAND_SYSTEM_PROMPT } = require('./generator/content-writer');
+      const topic = item.trigger_title || 'Untitled';
+      const rawContent = item.formats?.blog?.content || item.formats?.linkedin?.content || '';
+
+      const prompt = `You are a YouTube content strategist for a legal marketing agency. Create a COMPLETE YouTube video pipeline for this topic:
+
+Topic: ${topic}
+Source content: ${rawContent.slice(0, 3000)}
+
+Return a JSON object with this structure:
+{
+  "script": {
+    "title": "Video title (under 70 chars, primary keyword in first 40 chars)",
+    "hook": "First 10 seconds — bold claim, specific number, or pattern interrupt",
+    "intro": "30 seconds — credibility flash + what they'll learn",
+    "body_sections": [
+      { "heading": "section name", "duration": "2-3 min", "content": "detailed script with [VISUAL:] and [CUT TO:] markers", "key_point": "one takeaway" }
+    ],
+    "mid_roll_cta": "CTA placed right after biggest value moment — soft, reciprocity-based",
+    "case_study": "2 min proof section with specific results",
+    "end_cta": "Final 30s CTA with specific offer",
+    "estimated_duration": "10-15 min"
+  },
+  "thumbnail": {
+    "concept": "describe the thumbnail layout",
+    "text_overlay": "2-4 words max for thumbnail text",
+    "emotion": "which facial expression to use (surprise/shock/concern/excitement)",
+    "color_scheme": "2 contrasting colors",
+    "visual_element": "what to show besides face (dashboard, metrics, before/after)"
+  },
+  "seo": {
+    "title_options": ["title 1", "title 2", "title 3"],
+    "description_first_2_lines": "CTA + link area (shown before 'Show More')",
+    "full_description": "200+ word description with natural keyword usage",
+    "tags": ["tag1", "tag2", "tag3", "tag4", "tag5"],
+    "chapters": [{ "timestamp": "0:00", "label": "chapter name" }]
+  },
+  "shorts": [
+    {
+      "clip_title": "title for this Short",
+      "clip_script": "15-60 second script — one key insight with dynamic caption markers",
+      "hook": "first 2 seconds text hook",
+      "timestamp_range": "where in long-form this comes from"
+    }
+  ],
+  "cta_strategy": {
+    "pinned_comment": "text for pinned comment with CTA",
+    "description_cta": "CTA for first 2 lines of description",
+    "verbal_ctas": ["mid-roll CTA", "end CTA"],
+    "lead_magnet_tie_in": "what free resource to offer"
+  }
+}`;
+
+      try {
+        const text = await callClaude({ model: SONNET, system: BRAND_SYSTEM_PROMPT, prompt, maxTokens: 6000 });
+        const parsed = parseJsonResponse(text);
+        if (!parsed) return json(res, { error: 'Failed to generate pipeline', raw_preview: (text || '').slice(0, 300) }, 500);
+
+        const pipelines = readJSON('youtube-pipelines.json', []);
+        const pipeline = {
+          id: generateId(),
+          content_id: id,
+          title: topic,
+          ...parsed,
+          status: 'draft',
+          created_at: now()
+        };
+        pipelines.push(pipeline);
+        writeJSON('youtube-pipelines.json', pipelines);
+        return json(res, { ok: true, pipeline });
+      } catch (err) {
+        return json(res, { error: err.message }, 500);
+      }
+    }
+
+    // GET /api/youtube/pipelines — list all YouTube pipelines
+    if (pathname === '/api/youtube/pipelines' && method === 'GET') {
+      return json(res, readJSON('youtube-pipelines.json', []));
+    }
+
+    // POST /api/content/:id/carousel-slides — generate structured carousel slides
+    const carouselMatch = pathname.match(/^\/api\/content\/([a-f0-9]+)\/carousel-slides$/);
+    if (carouselMatch && method === 'POST') {
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      const id = carouselMatch[1];
+      const allContent = readJSON('content.json', []);
+      const item = allContent.find(c => c.id === id);
+      if (!item) return json(res, { error: 'Content not found' }, 404);
+
+      const { callClaude, parseJsonResponse, SONNET } = require('./lib/claude');
+      const { BRAND_SYSTEM_PROMPT } = require('./generator/content-writer');
+      const topic = item.trigger_title || 'Untitled';
+      const source = item.formats?.linkedin?.content || item.formats?.blog?.content || '';
+
+      const prompt = `Create a LinkedIn carousel (PDF-style) from this content. LinkedIn carousels have the HIGHEST engagement rate (6.60%) of any format.
+
+Topic: ${topic}
+Source: ${source.slice(0, 3000)}
+
+Return a JSON object:
+{
+  "title": "carousel title",
+  "slide_count": 6-10,
+  "slides": [
+    {
+      "slide_number": 1,
+      "type": "cover",
+      "headline": "bold hook headline (max 8 words)",
+      "subtext": "supporting line",
+      "visual_note": "design suggestion"
+    },
+    {
+      "slide_number": 2,
+      "type": "content",
+      "headline": "slide headline",
+      "body": "2-3 bullet points or short paragraph",
+      "stat_highlight": "key number if applicable",
+      "visual_note": "icon/graphic suggestion"
+    },
+    ...
+    {
+      "slide_number": N,
+      "type": "cta",
+      "headline": "takeaway or CTA",
+      "body": "what to do next",
+      "cta_text": "Comment AUDIT for free analysis",
+      "visual_note": "design suggestion"
+    }
+  ],
+  "design_guidelines": {
+    "color_primary": "#hex",
+    "color_accent": "#hex",
+    "font_style": "bold sans-serif",
+    "brand_element": "Mortar Metrics logo bottom-right"
+  },
+  "companion_post": "LinkedIn text post to accompany the carousel (200-400 chars with hook)"
+}
+
+Rules:
+- Slide 1 must be an irresistible hook (curiosity gap)
+- Each slide should be self-contained — one idea per slide
+- Use specific numbers/stats on at least 3 slides
+- Final slide is ALWAYS a CTA
+- Write for mobile — short text, large fonts implied
+- 6-10 slides total (sweet spot for engagement)`;
+
+      try {
+        const text = await callClaude({ model: SONNET, system: BRAND_SYSTEM_PROMPT, prompt, maxTokens: 4000 });
+        const parsed = parseJsonResponse(text);
+        if (!parsed) return json(res, { error: 'Failed to generate carousel', raw_preview: (text || '').slice(0, 300) }, 500);
+
+        const carousels = readJSON('carousels.json', []);
+        const carousel = {
+          id: generateId(),
+          content_id: id,
+          title: topic,
+          ...parsed,
+          status: 'draft',
+          created_at: now()
+        };
+        carousels.push(carousel);
+        writeJSON('carousels.json', carousels);
+        return json(res, { ok: true, carousel });
+      } catch (err) {
+        return json(res, { error: err.message }, 500);
+      }
+    }
+
+    // GET /api/carousels — list all carousels
+    if (pathname === '/api/carousels' && method === 'GET') {
+      return json(res, readJSON('carousels.json', []));
+    }
+
+    // POST /api/content-matrix/build — Justin Welsh's content matrix system
+    if (pathname === '/api/content-matrix/build' && method === 'POST') {
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      const { callClaude, parseJsonResponse, SONNET } = require('./lib/claude');
+      const { BRAND_SYSTEM_PROMPT } = require('./generator/content-writer');
+
+      const body = await parseBody(req);
+      const mantra = body.mantra || 'Law firms deserve marketing that actually generates signed cases, not vanity metrics.';
+      const pillars = body.pillars || ['lead_generation', 'digital_advertising', 'content_seo', 'business_of_law', 'industry_trends'];
+
+      const prompt = `Build a Content Matrix (Justin Welsh's framework) for a legal marketing agency.
+
+Mantra: "${mantra}"
+Pillars: ${JSON.stringify(pillars)}
+
+For each pillar, create 2 "core concepts" (strong opinions). Then for each concept, generate 5 post types:
+1. Teaching — how-to
+2. Contrarian — "Unpopular opinion: ..."
+3. Case study — results-driven
+4. Listicle — "5 things..." or "3 mistakes..."
+5. Teardown — audit/critique
+
+IMPORTANT: Keep hooks under 80 chars. Outlines must be ONE sentence max. Be concise.
+
+Return JSON (no markdown fences):
+{"mantra":"...","pillars":[{"id":"pillar_id","name":"Pillar Name","concepts":[{"belief":"the opinion","posts":[{"type":"teaching","hook":"first line"},{"type":"contrarian","hook":"..."},{"type":"case_study","hook":"..."},{"type":"listicle","hook":"..."},{"type":"teardown","hook":"..."}]}]}],"total_posts":50,"weeks_of_content":10,"recommended_schedule":{"monday":"pillar+type","tuesday":"pillar+type","wednesday":"pillar+type","thursday":"pillar+type","friday":"pillar+type"}}`;
+
+      try {
+        const text = await callClaude({ model: SONNET, system: BRAND_SYSTEM_PROMPT, prompt, maxTokens: 8000 });
+        const parsed = parseJsonResponse(text);
+        if (!parsed) return json(res, { error: 'Failed to build matrix', raw_preview: (text || '').slice(0, 300) }, 500);
+
+        writeJSON('content-matrix.json', { ...parsed, built_at: now() });
+        return json(res, { ok: true, matrix: parsed });
+      } catch (err) {
+        return json(res, { error: err.message }, 500);
+      }
+    }
+
+    // GET /api/content-matrix — get the content matrix
+    if (pathname === '/api/content-matrix' && method === 'GET') {
+      return json(res, readJSON('content-matrix.json', null));
+    }
+
+    // POST /api/content-matrix/generate-post — generate a full post from a matrix cell
+    if (pathname === '/api/content-matrix/generate-post' && method === 'POST') {
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+      const { BRAND_SYSTEM_PROMPT } = require('./generator/content-writer');
+      const body = await parseBody(req);
+      if (!body.hook || !body.outline) return json(res, { error: 'hook and outline required' }, 400);
+
+      const prompt = `Write a LinkedIn post using this hook and outline:
+
+Hook: ${body.hook}
+Outline: ${body.outline}
+Post type: ${body.type || 'general'}
+Pillar: ${body.pillar || 'general'}
+
+Write a complete LinkedIn post (800-1300 characters). Use the hook as the opening line. Follow the Mortar Metrics voice: blunt, specific, operator-style. Include specific numbers. End with a soft engagement CTA (question, not "DM me").
+
+Return JSON: { "content": "the full post", "hashtags": ["tag1", "tag2", "tag3"], "cta_tier": "conversation|keyword_comment|link_in_comments", "estimated_engagement": "low|medium|high" }`;
+
+      try {
+        const text = await callClaude({ model: HAIKU, system: BRAND_SYSTEM_PROMPT, prompt, maxTokens: 1500 });
+        const parsed = parseJsonResponse(text);
+        if (!parsed) return json(res, { error: 'Failed to generate post', raw_preview: (text || '').slice(0, 200) }, 500);
+        return json(res, { ok: true, post: parsed });
+      } catch (err) {
+        return json(res, { error: err.message }, 500);
+      }
+    }
+
+    // POST /api/hooks/analyze — analyze and score hooks
+    if (pathname === '/api/hooks/analyze' && method === 'POST') {
+      const body = await parseBody(req);
+      const hooks = body.hooks || [];
+      if (!hooks.length) {
+        // Analyze hooks from existing content
+        const content = readJSON('content.json', []);
+        for (const item of content.slice(0, 20)) {
+          const linkedin = item.formats?.linkedin?.content;
+          if (linkedin) {
+            const firstLine = linkedin.split('\n').find(l => l.trim()) || '';
+            hooks.push({ content_id: item.id, title: item.trigger_title, hook: firstLine });
+          }
+        }
+      }
+
+      const results = hooks.map(h => {
+        const hook = h.hook || '';
+        let score = 0;
+        const signals = [];
+
+        // 1. Specific number in hook (+3)
+        if (/\$[\d,]+|\d+%|\d+x|\d+ (cases|clients|leads|firms|calls|months|years|days)/.test(hook)) {
+          score += 3; signals.push('specific_number');
+        }
+        // 2. Information gap (+2)
+        if (/but|however|except|the problem|what nobody|the truth|here'?s what|turns out/i.test(hook)) {
+          score += 2; signals.push('information_gap');
+        }
+        // 3. Contrarian frame (+2)
+        if (/wrong|myth|stop|don'?t|isn'?t|won'?t work|unpopular|everyone says/i.test(hook)) {
+          score += 2; signals.push('contrarian');
+        }
+        // 4. Short and punchy — under 80 chars (+1)
+        if (hook.length > 10 && hook.length < 80) {
+          score += 1; signals.push('concise');
+        }
+        // 5. Pain point / emotional (+2)
+        if (/wast|lost|bleed|fail|broke|mistake|terrible|brutal|panic|fired/i.test(hook)) {
+          score += 2; signals.push('emotional_pain');
+        }
+        // 6. Specificity — named tools, companies, locations (+1)
+        if (/Google|CallRail|Clio|HubSpot|Salesforce|law firm|PI firm|personal injury/i.test(hook)) {
+          score += 1; signals.push('specific_reference');
+        }
+        // 7. Story opener — time/place marker (+1)
+        if (/last (week|month|year|thursday|monday)|yesterday|at \d|in \d{4}|a \w+ firm/i.test(hook)) {
+          score += 1; signals.push('story_opener');
+        }
+        // 8. Direct address (+1)
+        if (/^(I |We |A |The |"|\d|Last|\$)/.test(hook.trim())) {
+          score += 1; signals.push('strong_opener');
+        }
+
+        const maxScore = 13;
+        const pct = Math.round((score / maxScore) * 100);
+        let grade = 'F';
+        if (pct >= 85) grade = 'A';
+        else if (pct >= 70) grade = 'B';
+        else if (pct >= 55) grade = 'C';
+        else if (pct >= 40) grade = 'D';
+
+        // Formula detection
+        let formula = 'generic';
+        if (signals.includes('specific_number') && signals.includes('emotional_pain')) formula = 'specific_result';
+        else if (signals.includes('contrarian')) formula = 'contrarian_take';
+        else if (signals.includes('story_opener')) formula = 'story_opener';
+        else if (signals.includes('specific_number')) formula = 'bold_claim_with_data';
+        else if (signals.includes('emotional_pain')) formula = 'pain_point_confession';
+        else if (signals.includes('information_gap')) formula = 'curiosity_gap';
+
+        return { ...h, score, max_score: maxScore, percentage: pct, grade, formula, signals };
+      });
+
+      const avgScore = results.length ? Math.round(results.reduce((s, r) => s + r.percentage, 0) / results.length) : 0;
+      return json(res, {
+        hooks: results.sort((a, b) => b.percentage - a.percentage),
+        average_score: avgScore,
+        best_hook: results[0] || null,
+        formulas_used: [...new Set(results.map(r => r.formula))],
+        improvement_tips: [
+          avgScore < 50 ? 'Add specific numbers ($X, Y%, Z cases) to your hooks' : null,
+          !results.some(r => r.signals.includes('contrarian')) ? 'Try contrarian hooks — they drive 2-3x more comments' : null,
+          !results.some(r => r.signals.includes('story_opener')) ? 'Add story openers with time markers ("Last month, a PI firm...")' : null,
+          !results.some(r => r.signals.includes('emotional_pain')) ? 'Use pain language (wasted, lost, bleeding) — it stops the scroll' : null,
+          results.filter(r => r.hook.length > 100).length > results.length / 2 ? 'Shorten your hooks — under 80 chars performs best' : null
+        ].filter(Boolean)
+      });
+    }
+
+    // GET /api/cta-strategy — track value:ask ratio and CTA tier usage
+    if (pathname === '/api/cta-strategy' && method === 'GET') {
+      const content = readJSON('content.json', []);
+      const published = readJSON('published.json', []);
+
+      let valuePostCount = 0;
+      let ctaPostCount = 0;
+      const ctaTiers = { conversation: 0, keyword_comment: 0, link_in_comments: 0, soft_dm: 0, resource_offer: 0, direct_ask: 0 };
+
+      for (const item of content) {
+        const linkedin = item.formats?.linkedin?.content || '';
+        const hasCta = /DM me|link in|comment .{1,20} (and|to)|book a|sign up|download|grab the|check out/i.test(linkedin);
+        if (hasCta) {
+          ctaPostCount++;
+          if (/comment .{1,20} (and|to) I/i.test(linkedin)) ctaTiers.keyword_comment++;
+          else if (/link in (the )?comment/i.test(linkedin)) ctaTiers.link_in_comments++;
+          else if (/DM me/i.test(linkedin)) ctaTiers.soft_dm++;
+          else if (/book a|sign up|schedule/i.test(linkedin)) ctaTiers.direct_ask++;
+          else if (/download|grab|check out/i.test(linkedin)) ctaTiers.resource_offer++;
+          else ctaTiers.conversation++;
+        } else {
+          valuePostCount++;
+        }
+      }
+
+      const ratio = ctaPostCount > 0 ? (valuePostCount / ctaPostCount).toFixed(1) : 'Infinity';
+      const idealRatio = 4; // Amanda Natividad's 4:1 rule
+      const ratioHealth = parseFloat(ratio) >= idealRatio ? 'healthy' :
+                          parseFloat(ratio) >= 2 ? 'borderline' : 'too_aggressive';
+
+      return json(res, {
+        value_posts: valuePostCount,
+        cta_posts: ctaPostCount,
+        ratio: `${ratio}:1`,
+        ideal_ratio: '4:1',
+        ratio_health: ratioHealth,
+        cta_tiers: ctaTiers,
+        recommendation: ratioHealth === 'too_aggressive'
+          ? 'You are asking too often. Add more zero-click value posts before your next CTA.'
+          : ratioHealth === 'borderline'
+          ? 'Getting close to ask fatigue. Next 2-3 posts should be pure value.'
+          : 'Good balance. You have earned the right to include a CTA in your next post.',
+        next_cta_suggestion: ctaTiers.keyword_comment === 0
+          ? 'Try a keyword-comment CTA next: "Comment AUDIT and I\'ll DM you a free analysis"'
+          : ctaTiers.link_in_comments === 0
+          ? 'Try dropping a link in comments instead of the post body (avoids 60% reach penalty)'
+          : 'Rotate between tiers to keep CTAs fresh',
+        total_published: published.length
+      });
+    }
+
+    // POST /api/content/:id/generate-shorts — generate YouTube Shorts scripts from long-form content
+    const shortsMatch = pathname.match(/^\/api\/content\/([a-f0-9]+)\/generate-shorts$/);
+    if (shortsMatch && method === 'POST') {
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      const id = shortsMatch[1];
+      const allContent = readJSON('content.json', []);
+      const item = allContent.find(c => c.id === id);
+      if (!item) return json(res, { error: 'Content not found' }, 404);
+
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+      const { BRAND_SYSTEM_PROMPT } = require('./generator/content-writer');
+      const source = item.formats?.youtube_script?.content || item.formats?.blog?.content || item.formats?.linkedin?.content || '';
+
+      const prompt = `Extract 3-5 YouTube Shorts (15-60 seconds each) from this content:
+
+Title: ${item.trigger_title}
+Content: ${source.slice(0, 4000)}
+
+Each Short should be the single best moment — one powerful insight, stat, or story beat.
+
+Return JSON: {
+  "shorts": [
+    {
+      "title": "Short title (under 50 chars)",
+      "hook": "first 2 seconds — text overlay that stops scroll",
+      "script": "full 15-60 second script with [CAPTION: key phrase] markers for dynamic captions",
+      "duration_seconds": 30,
+      "hashtags": ["tag1", "tag2"],
+      "cta": "Follow for more / Full breakdown on the channel"
+    }
+  ]
+}
+
+Rules:
+- Each Short must work as standalone content
+- Hook must grab attention in first 2 seconds
+- Add [CAPTION: highlighted word] for dynamic caption emphasis (50% watch without audio)
+- End each Short with a channel CTA`;
+
+      try {
+        const text = await callClaude({ model: HAIKU, system: BRAND_SYSTEM_PROMPT, prompt, maxTokens: 3000 });
+        const parsed = parseJsonResponse(text);
+        if (!parsed) return json(res, { error: 'Failed to generate shorts', raw_preview: (text || '').slice(0, 200) }, 500);
+        return json(res, { ok: true, content_id: id, ...parsed });
+      } catch (err) {
+        return json(res, { error: err.message }, 500);
+      }
+    }
+
     // --- Static file serving ---
 
     // Serve dashboard

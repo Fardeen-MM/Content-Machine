@@ -1504,6 +1504,12 @@ const state = {
   weeklyDigest: null,
   splitTests: [],
   workflowRules: null,
+  // Batch 49: YouTube Pipeline + Carousel + Content Matrix + Hooks + CTA
+  youtubePipelines: [],
+  carousels: [],
+  contentMatrix: null,
+  hookAnalysis: null,
+  ctaStrategy: null,
 };
 
 // --- API Calls ---
@@ -1590,7 +1596,11 @@ async function loadData() {
       api('/api/calendar/insights').catch(() => null),
       api('/api/analytics/weekly-digest').catch(() => null),
       api('/api/split-tests').catch(() => []),
-      api('/api/workflow/rules').catch(() => null)
+      api('/api/workflow/rules').catch(() => null),
+      api('/api/youtube/pipelines').catch(() => []),
+      api('/api/carousels').catch(() => []),
+      api('/api/content-matrix').catch(() => null),
+      api('/api/cta-strategy').catch(() => null)
     ]);
     state.content = content;
     state.triggers = triggers;
@@ -1653,6 +1663,10 @@ async function loadData() {
     state.weeklyDigest = weeklyDigest;
     state.splitTests = splitTests;
     state.workflowRules = workflowRules;
+    state.youtubePipelines = youtubePipelines;
+    state.carousels = carousels;
+    state.contentMatrix = contentMatrix;
+    state.ctaStrategy = ctaStrategy;
   } catch (err) {
     console.error('Failed to load data:', err);
     toast('Failed to load data', 'error');
@@ -2864,6 +2878,32 @@ function renderDashboardPage() {
                 } catch (err) { toast('Digest failed: ' + err.message, 'error'); }
               }
             }, 'Digest'),
+            h('button', {
+              className: 'btn btn-sm',
+              style: { background: '#0891b2', color: 'white', border: 'none' },
+              onclick: async () => {
+                toast('Building content matrix (50+ post ideas)...', 'info');
+                try {
+                  const res = await api('/api/content-matrix/build', { method: 'POST' });
+                  state.contentMatrix = res.matrix;
+                  toast(`Matrix built: ${res.matrix?.total_posts || 0} posts across ${res.matrix?.pillars?.length || 0} pillars`, 'success');
+                  render();
+                } catch (err) { toast('Matrix build failed: ' + err.message, 'error'); }
+              }
+            }, 'Matrix'),
+            h('button', {
+              className: 'btn btn-sm',
+              style: { background: '#7c3aed', color: 'white', border: 'none' },
+              onclick: async () => {
+                toast('Analyzing hooks...', 'info');
+                try {
+                  const res = await api('/api/hooks/analyze', { method: 'POST' });
+                  state.hookAnalysis = res;
+                  toast(`Hooks analyzed: avg ${res.average_score}% | Best: ${res.best_hook?.grade || '?'}`, 'success');
+                  render();
+                } catch (err) { toast('Hook analysis failed: ' + err.message, 'error'); }
+              }
+            }, 'Hooks'),
             h('button', { className: 'btn btn-ghost btn-sm', onclick: () => { state.page = 'content'; render(); } }, 'View Content')
           )
         ),
@@ -3038,6 +3078,107 @@ function renderDashboardPage() {
         )
       )
     ) : null,
+    // CTA Strategy Tracker
+    state.ctaStrategy ? h('div', { style: { marginBottom: '20px' } },
+      h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)', marginBottom: '8px' } }, 'CTA STRATEGY'),
+      h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', marginBottom: '8px' } },
+        h('div', { style: { background: '#f0fdf4', borderRadius: 'var(--radius-sm)', padding: '10px', textAlign: 'center', border: '1px solid #bbf7d0' } },
+          h('div', { style: { fontSize: '18px', fontWeight: '700', color: '#059669' } }, String(state.ctaStrategy.value_posts || 0)),
+          h('div', { style: { fontSize: '10px', color: '#065f46' } }, 'Value Posts')
+        ),
+        h('div', { style: { background: '#fef3c7', borderRadius: 'var(--radius-sm)', padding: '10px', textAlign: 'center', border: '1px solid #fde68a' } },
+          h('div', { style: { fontSize: '18px', fontWeight: '700', color: '#d97706' } }, String(state.ctaStrategy.cta_posts || 0)),
+          h('div', { style: { fontSize: '10px', color: '#92400e' } }, 'CTA Posts')
+        ),
+        h('div', { style: { background: state.ctaStrategy.ratio_health === 'healthy' ? '#f0fdf4' : state.ctaStrategy.ratio_health === 'borderline' ? '#fffbeb' : '#fef2f2', borderRadius: 'var(--radius-sm)', padding: '10px', textAlign: 'center', border: `1px solid ${state.ctaStrategy.ratio_health === 'healthy' ? '#bbf7d0' : state.ctaStrategy.ratio_health === 'borderline' ? '#fde68a' : '#fecaca'}` } },
+          h('div', { style: { fontSize: '18px', fontWeight: '700', color: state.ctaStrategy.ratio_health === 'healthy' ? '#059669' : state.ctaStrategy.ratio_health === 'borderline' ? '#d97706' : '#dc2626' } }, state.ctaStrategy.ratio || '0:1'),
+          h('div', { style: { fontSize: '10px', color: 'var(--gray-500)' } }, `Ratio (ideal: ${state.ctaStrategy.ideal_ratio})`)
+        )
+      ),
+      h('div', { style: { fontSize: '11px', color: 'var(--gray-600)', padding: '8px 10px', background: '#f8fafc', borderRadius: '6px', lineHeight: '1.4' } }, state.ctaStrategy.recommendation || ''),
+      state.ctaStrategy.next_cta_suggestion ? h('div', { style: { fontSize: '10px', color: '#7c3aed', marginTop: '4px', fontStyle: 'italic' } }, state.ctaStrategy.next_cta_suggestion) : null
+    ) : null,
+
+    // Hook Analysis
+    state.hookAnalysis ? h('div', { style: { marginBottom: '20px' } },
+      h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
+        h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)' } }, `HOOK ANALYSIS (avg: ${state.hookAnalysis.average_score}%)`),
+        h('div', { style: { fontSize: '11px', color: 'var(--gray-500)' } }, `${state.hookAnalysis.hooks?.length || 0} hooks scored`)
+      ),
+      h('div', { style: { display: 'grid', gap: '4px', marginBottom: '8px' } },
+        ...(state.hookAnalysis.hooks || []).slice(0, 5).map(h2 =>
+          h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 10px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)' } },
+            h('div', { style: { width: '28px', height: '28px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: '700', color: 'white', background: h2.grade === 'A' ? '#059669' : h2.grade === 'B' ? '#2563eb' : h2.grade === 'C' ? '#d97706' : '#dc2626', flexShrink: 0 } }, h2.grade),
+            h('div', { style: { flex: 1, minWidth: 0 } },
+              h('div', { style: { fontSize: '11px', fontWeight: '500', color: 'var(--navy)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, h2.hook || ''),
+              h('div', { style: { fontSize: '9px', color: 'var(--gray-400)' } }, `${h2.formula} | ${h2.signals?.join(', ') || ''}`)
+            ),
+            h('div', { style: { fontSize: '11px', fontWeight: '600', color: 'var(--gray-500)', flexShrink: 0 } }, `${h2.percentage}%`)
+          )
+        )
+      ),
+      (state.hookAnalysis.improvement_tips || []).length > 0 ? h('div', { style: { padding: '8px 10px', background: '#fef3c7', borderRadius: '6px', border: '1px solid #fde68a' } },
+        h('div', { style: { fontSize: '10px', fontWeight: '700', color: '#92400e', marginBottom: '4px' } }, 'IMPROVEMENT TIPS'),
+        ...(state.hookAnalysis.improvement_tips || []).map(tip =>
+          h('div', { style: { fontSize: '10px', color: '#78350f', marginBottom: '2px' } }, `- ${tip}`)
+        )
+      ) : null
+    ) : null,
+
+    // Content Matrix
+    state.contentMatrix ? h('div', { style: { marginBottom: '20px' } },
+      h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)', marginBottom: '8px' } },
+        `CONTENT MATRIX (${state.contentMatrix.total_posts || 0} posts across ${state.contentMatrix.pillars?.length || 0} pillars)`
+      ),
+      h('div', { style: { display: 'grid', gap: '6px' } },
+        ...(state.contentMatrix.pillars || []).map(p =>
+          h('div', { style: { padding: '8px 12px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
+            h('div', {},
+              h('div', { style: { fontSize: '12px', fontWeight: '600', color: 'var(--navy)' } }, p.name || p.id),
+              h('div', { style: { fontSize: '10px', color: 'var(--gray-500)' } }, `${p.concepts?.length || 0} concepts, ${(p.concepts || []).reduce((s, c) => s + (c.posts?.length || 0), 0)} posts`)
+            ),
+            h('div', { style: { fontSize: '10px', padding: '2px 8px', background: '#eff6ff', borderRadius: '10px', color: '#2563eb', fontWeight: '600' } }, p.id)
+          )
+        )
+      )
+    ) : null,
+
+    // YouTube Pipelines
+    state.youtubePipelines?.length > 0 ? h('div', { style: { marginBottom: '20px' } },
+      h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)', marginBottom: '8px' } }, `YOUTUBE PIPELINES (${state.youtubePipelines.length})`),
+      h('div', { style: { display: 'grid', gap: '6px' } },
+        ...state.youtubePipelines.slice(0, 5).map(p =>
+          h('div', { style: { padding: '10px 14px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)' } },
+            h('div', { style: { fontSize: '12px', fontWeight: '600', color: 'var(--navy)', marginBottom: '4px' } }, (p.script?.title || p.title || '').slice(0, 60)),
+            h('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap' } },
+              h('span', { style: { fontSize: '9px', padding: '2px 6px', background: '#fef2f2', color: '#dc2626', borderRadius: '8px', fontWeight: '600' } }, `${p.script?.estimated_duration || '?'}`),
+              h('span', { style: { fontSize: '9px', padding: '2px 6px', background: '#f0fdf4', color: '#059669', borderRadius: '8px', fontWeight: '600' } }, `${p.shorts?.length || 0} Shorts`),
+              h('span', { style: { fontSize: '9px', padding: '2px 6px', background: '#eff6ff', color: '#2563eb', borderRadius: '8px', fontWeight: '600' } }, `${p.seo?.tags?.length || 0} tags`),
+              h('span', { style: { fontSize: '9px', padding: '2px 6px', background: '#faf5ff', color: '#7c3aed', borderRadius: '8px', fontWeight: '600' } }, p.thumbnail?.emotion || 'no thumb')
+            )
+          )
+        )
+      )
+    ) : null,
+
+    // Carousels
+    state.carousels?.length > 0 ? h('div', { style: { marginBottom: '20px' } },
+      h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)', marginBottom: '8px' } }, `LINKEDIN CAROUSELS (${state.carousels.length})`),
+      h('div', { style: { display: 'grid', gap: '6px' } },
+        ...state.carousels.slice(0, 5).map(c =>
+          h('div', { style: { padding: '10px 14px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)' } },
+            h('div', { style: { fontSize: '12px', fontWeight: '600', color: 'var(--navy)', marginBottom: '4px' } }, (c.title || '').slice(0, 60)),
+            h('div', { style: { display: 'flex', gap: '6px', alignItems: 'center' } },
+              h('span', { style: { fontSize: '9px', padding: '2px 6px', background: '#fff7ed', color: '#c2410c', borderRadius: '8px', fontWeight: '600' } }, `${c.slide_count || c.slides?.length || 0} slides`),
+              c.design_guidelines?.color_primary ? h('span', { style: { width: '14px', height: '14px', borderRadius: '3px', background: c.design_guidelines.color_primary, border: '1px solid var(--gray-200)' } }) : null,
+              c.design_guidelines?.color_accent ? h('span', { style: { width: '14px', height: '14px', borderRadius: '3px', background: c.design_guidelines.color_accent, border: '1px solid var(--gray-200)' } }) : null,
+              c.companion_post ? h('span', { style: { fontSize: '9px', padding: '2px 6px', background: '#f0fdf4', color: '#059669', borderRadius: '8px', fontWeight: '600' } }, 'has companion post') : null
+            )
+          )
+        )
+      )
+    ) : null,
+
     // Autopilot Status
     state.autopilot?.enabled ? h('div', { style: { marginBottom: '20px' } },
       h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
@@ -3998,6 +4139,53 @@ function renderContentCard(content) {
                 } catch (err) { toast('Plan failed: ' + err.message, 'error'); }
               }
             }, 'Dist Plan')
+          : null,
+        // YouTube Pipeline button
+        Object.values(content.formats || {}).some(f => f.content)
+          ? h('button', {
+              className: 'btn btn-outline btn-sm',
+              style: { color: '#dc2626', borderColor: '#dc2626', fontSize: '11px', background: '#fef2f2' },
+              onclick: async (e) => {
+                e.stopPropagation();
+                toast('Building YouTube pipeline...', 'info');
+                try {
+                  const res = await api(`/api/content/${content.id}/youtube-pipeline`, { method: 'POST' });
+                  toast(`YouTube pipeline created: ${res.pipeline?.script?.title || 'Done'}`, 'success');
+                  loadData();
+                } catch (err) { toast('YouTube pipeline failed: ' + err.message, 'error'); }
+              }
+            }, 'YT Pipeline')
+          : null,
+        // Carousel Slides button
+        (content.formats?.linkedin?.content || content.formats?.blog?.content)
+          ? h('button', {
+              className: 'btn btn-outline btn-sm',
+              style: { color: '#c2410c', borderColor: '#c2410c', fontSize: '11px' },
+              onclick: async (e) => {
+                e.stopPropagation();
+                toast('Generating carousel slides...', 'info');
+                try {
+                  const res = await api(`/api/content/${content.id}/carousel-slides`, { method: 'POST' });
+                  toast(`${res.carousel?.slide_count || res.carousel?.slides?.length || 0}-slide carousel created!`, 'success');
+                  loadData();
+                } catch (err) { toast('Carousel failed: ' + err.message, 'error'); }
+              }
+            }, 'Carousel')
+          : null,
+        // Shorts button
+        (content.formats?.youtube_script?.content || content.formats?.blog?.content || content.formats?.linkedin?.content)
+          ? h('button', {
+              className: 'btn btn-outline btn-sm',
+              style: { color: '#7c3aed', borderColor: '#7c3aed', fontSize: '11px' },
+              onclick: async (e) => {
+                e.stopPropagation();
+                toast('Generating YouTube Shorts...', 'info');
+                try {
+                  const res = await api(`/api/content/${content.id}/generate-shorts`, { method: 'POST' });
+                  toast(`${res.shorts?.length || 0} YouTube Shorts created!`, 'success');
+                } catch (err) { toast('Shorts failed: ' + err.message, 'error'); }
+              }
+            }, 'Shorts')
           : null,
         content.trigger_url
           ? h('a', {

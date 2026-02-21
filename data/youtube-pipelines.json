@@ -1,0 +1,138 @@
+[
+  {
+    "id": "84eb16f7e9216223",
+    "content_id": "942509da1ea4f8",
+    "title": "Hired 3 marketing agencies in 2 years — all terrible. What am I doing wrong?",
+    "script": {
+      "title": "I Hired 3 Marketing Agencies. All Failed. ($57K Wasted)",
+      "hook": "A law firm owner spent fifty-seven thousand dollars on three different marketing agencies over two years. Total signed cases? Twelve. That's four thousand, seven hundred fifty dollars per case. [PAUSE] Here's why they all failed — and what you need to ask before you hire anyone.",
+      "intro": "I'm with Mortar Metrics. We build systems that generate signed cases for law firms. And I've seen this pattern at least a dozen times this year: firm hires agency, spends thousands, gets nothing, fires them, repeats. [PAUSE] Today I'm walking through the three agencies this firm hired, exactly what went wrong with each one, and the three questions you need to ask before you sign another contract. Because the problem usually isn't the agencies being malicious — it's that they're measuring the wrong thing entirely.",
+      "body_sections": [
+        {
+          "heading": "Agency #1: The Ghost Agency",
+          "duration": "2-3 min",
+          "content": "[VISUAL: Screenshot of contract showing '20 leads/month guaranteed'] Agency number one promised twenty leads per month. The firm signed a six-month contract at two thousand dollars a month. Twelve thousand total. [PAUSE] First month: three leads. Second month: two. By month three, the firm is asking for reports. The agency sends a PDF with Google Analytics screenshots — sessions up, bounce rate down. [CUT TO: Close-up] But no call tracking. No lead source attribution. No way to know if those three leads even came from the ads. [PAUSE] When the firm pushed back, the agency said 'leads take time to mature.' That's code for 'we have no idea what we're doing.' [VISUAL: Email exchange] The firm finally got access to the Google Ads account in month five. [PAUSE] The campaigns were running. Spending money. But the conversion tracking? Never set up. Not once. For five months, they were flying blind, billing two grand a month, and calling website form fills 'leads' even though half of them were spam. Total signed cases from Agency 1: zero.",
+          "key_point": "No call tracking = no accountability. If they won't install it, they're hiding something."
+        },
+        {
+          "heading": "Agency #2: The Vanity Metrics Specialists",
+          "duration": "3 min",
+          "content": "[VISUAL: Dashboard with arrows pointing up] Agency two had beautiful reports. I mean, really beautiful. Branded PDFs, charts, graphs, month-over-month comparisons. Clicks were up fourteen percent. Click-through rate improved from two-point-one to two-point-eight percent. Cost per click down six percent. [PAUSE] The firm owner is looking at this thinking, 'Okay, we're making progress.' [CUT TO: Serious tone] Except signed cases went DOWN. From four cases per month to two. [PAUSE] Here's what was happening: Agency 2 was optimizing for CTR. Click-through rate. They kept tweaking ads to get more people to click. But they weren't asking: are these the RIGHT people? [VISUAL: Ad examples] They were running ads like 'Injured? Call now!' Super broad. High CTR because everyone clicks. But the people calling? Fender benders. Cases the firm doesn't take. Cases worth five hundred bucks when the firm needs five-figure injuries. [PAUSE] The agency celebrated the CTR improvement in every monthly call. Meanwhile, the firm spent eighteen thousand dollars over nine months and signed eight cases. Most of those cases? Came from referrals, not ads. [CUT TO: Key point] This is the most common failure mode I see: agencies optimizing metrics that don't correlate with revenue. Impressions, clicks, CTR — none of that matters if cases aren't going up.",
+          "key_point": "Clicks don't pay your salary. Signed cases do. If the agency isn't tracking case volume, fire them."
+        },
+        {
+          "heading": "Agency #3: The Geographic Catastrophe",
+          "duration": "2-3 min",
+          "content": "[VISUAL: Map showing wrong service area] Agency three. This one's almost hard to believe. The firm does personal injury in Miami-Dade County. [PAUSE] Agency 3 ran Google Ads targeting Broward County — the county north of them — for four months straight. Two thousand dollars a month. Eight grand total. [CUT TO: Incredulous look] How does this happen? The agency set up the campaigns, copy-pasted a template from another client, never updated the location settings. And because the firm didn't have direct access to the account, they couldn't see it. [PAUSE] The agency sent reports every month. 'Calls are steady. We're seeing good engagement.' What they didn't mention: ninety percent of those calls were from people asking, 'Do you practice in Broward?' Firm says no. Caller hangs up. [VISUAL: Call tracking log] When the firm finally demanded account access and logged in, they saw it immediately. Location targeting: Broward County and West Palm Beach. Not a single zip code in Miami-Dade. [PAUSE] The agency's response? 'That was a setup error. We've corrected it now.' No refund. No apology. Just 'it's fixed.' Total signed cases from Agency 3: four. And three of those came from organic search, not paid ads.",
+          "key_point": "If you don't have login access to YOUR Google Ads account, you don't own the relationship with your leads. Non-negotiable."
+        },
+        {
+          "heading": "The Real Problem: Nobody Was Measuring What Matters",
+          "duration": "2 min",
+          "content": "[CUT TO: Direct to camera] Here's the thing. All three agencies were doing SOMETHING. They were running ads, writing copy, tweaking bids. But none of them were accountable to the only metric that matters: signed cases. [PAUSE] Agency 1 didn't track calls. Agency 2 optimized CTR instead of case quality. Agency 3 didn't even check the targeting. And the firm? They trusted the reports. They assumed the agencies knew what they were doing. [VISUAL: Spreadsheet showing costs] Fifty-seven thousand dollars. Twelve signed cases. Four thousand, seven hundred fifty per case. For context, a good PI case acquisition cost is twelve hundred to two thousand dollars. This firm was paying four times that. [PAUSE] The problem isn't just bad agencies. It's that most law firms don't know what to ask for. So agencies optimize whatever makes them look good — impressions, clicks, engagement — instead of what makes YOU money.",
+          "key_point": "Agencies will optimize whatever you measure. If you don't define success as 'signed cases,' they'll celebrate clicks."
+        }
+      ],
+      "mid_roll_cta": "By the way — if you want a free audit of your current marketing setup, I'll record a Loom video walking through your Google Ads account, your call tracking, and whether you're measuring the right stuff. Link's in the description. No pitch, just a breakdown of what's working and what's not. [PAUSE] Alright, here's what you actually need to ask before you hire anyone.",
+      "case_study": "[VISUAL: Before/after case study graphic] Let me show you what this looks like when it's done right. We worked with an immigration law firm — Mandall Law. When they came to us, they were spending four thousand a month on Google Ads with another agency. They were getting leads, but the conversion rate from lead to signed case was eleven percent. Terrible. [PAUSE] We installed call tracking first. Within two weeks, we found the problem: forty-two percent of calls were going to voicemail. The firm didn't have after-hours coverage, and most leads called outside business hours. [CUT TO: Dashboard screenshot] We added an overflow answering service for two hundred bucks a month. Response time dropped from four hours to under sixty seconds. Conversion rate went from eleven percent to thirty-four percent. Same ad budget. Same traffic volume. Triple the signed cases. [PAUSE] Six months later, they're doing thirty-plus signed cases a month. Revenue went from twenty-three thousand to ninety-two thousand per month. We didn't increase the ad budget until month four. The entire first three months was just fixing intake and tracking what actually mattered: speed to lead and signed case volume.",
+      "end_cta": "So here's what to do. If you're working with an agency right now, or you're thinking about hiring one, send them this video and ask the three questions I'm about to put on screen. [VISUAL: Text overlay of 3 questions] If they dodge any of them, that's your answer. [PAUSE] And if you want help auditing your current setup — whether you work with us or not — link's in the description for a free teardown. I'll show you exactly what's broken and what to fix first. [PAUSE] Thanks for watching. I'll see you in the next one.",
+      "estimated_duration": "12-14 min"
+    },
+    "thumbnail": {
+      "concept": "Split-screen: Left side shows a frustrated law firm owner (hand on forehead, concern/shock expression). Right side shows a red X over a stack of contracts/invoices with '$57K' in bold.",
+      "text_overlay": "$57K WASTED",
+      "emotion": "Shock/concern — wide eyes, slight head tilt, hand gesture showing disbelief",
+      "color_scheme": "Red and black (urgency, loss, warning)",
+      "visual_element": "Stack of contracts or invoices with red X, dollar amount in bold yellow or white text"
+    },
+    "seo": {
+      "title_options": [
+        "I Hired 3 Marketing Agencies. All Failed. ($57K Wasted)",
+        "Law Firm Spent $57K on Marketing Agencies — Got 12 Cases",
+        "$57K on 3 Agencies, 12 Cases Total (What Went Wrong)"
+      ],
+      "description_first_2_lines": "Want a free audit of your law firm's marketing? I'll record a Loom teardown of your Google Ads + call tracking: https://mortarmetrics.com/audit\n\nA law firm spent $57,000 on three agencies in two years. Total signed cases: 12.",
+      "full_description": "A law firm spent $57,000 on three different marketing agencies over two years. Total signed cases: 12. That's $4,750 per case — nearly 4X what a good cost-per-case should be.\n\nIn this video, I break down exactly what went wrong with each agency:\n\n• Agency #1: Promised 20 leads/month, delivered 3, never set up conversion tracking\n• Agency #2: Beautiful reports, clicks up, CTR up... but cases went DOWN\n• Agency #3: Ran ads to the wrong zip code for 4 months straight\n\nThe real problem? None of them measured what matters: signed cases.\n\nI'll show you the 3 questions you NEED to ask before hiring any marketing agency:\n1. How do you define a lead?\n2. What's my cost per signed case?\n3. Can I access all accounts directly?\n\nIf an agency can't answer these, or won't give you account access, run.\n\nI also walk through a case study of a law firm that went from $23K/month to $92K/month in revenue — same ad budget, just fixed what was broken.\n\nChapters:\n0:00 - Hook: $57K on 3 agencies, 12 cases\n0:45 - Why most agencies fail law firms\n1:30 - Agency #1: The Ghost Agency\n4:00 - Agency #2: Vanity Metrics Trap\n7:15 - Agency #3: Wrong zip code disaster\n10:00 - What to ask before hiring anyone\n11:30 - Case study: 3X case volume, same budget\n13:00 - Next steps\n\nFree audit: https://mortarmetrics.com/audit\n\n#LawFirmMarketing #GoogleAds #PersonalInjuryMarketing #LegalMarketing #MarketingAgency",
+      "tags": [
+        "law firm marketing",
+        "google ads for lawyers",
+        "marketing agency",
+        "personal injury marketing",
+        "legal marketing",
+        "cost per case",
+        "law firm growth",
+        "lawyer advertising",
+        "attorney marketing",
+        "marketing ROI",
+        "call tracking",
+        "lead generation for lawyers",
+        "digital marketing for law firms"
+      ],
+      "chapters": [
+        {
+          "timestamp": "0:00",
+          "label": "Hook: $57K Wasted on 3 Agencies"
+        },
+        {
+          "timestamp": "0:45",
+          "label": "Why Most Agencies Fail Law Firms"
+        },
+        {
+          "timestamp": "1:30",
+          "label": "Agency #1: The Ghost Agency"
+        },
+        {
+          "timestamp": "4:00",
+          "label": "Agency #2: Vanity Metrics Specialists"
+        },
+        {
+          "timestamp": "7:15",
+          "label": "Agency #3: Wrong Zip Code Disaster"
+        },
+        {
+          "timestamp": "10:00",
+          "label": "The Real Problem: Wrong Metrics"
+        },
+        {
+          "timestamp": "11:30",
+          "label": "Case Study: 3X Cases, Same Budget"
+        },
+        {
+          "timestamp": "13:00",
+          "label": "3 Questions to Ask Before Hiring"
+        }
+      ]
+    },
+    "shorts": [
+      {
+        "clip_title": "Agency Ran Ads to Wrong Zip Code for 4 Months",
+        "clip_script": "[TEXT: \"Agency billed $8K...\"] A personal injury firm in Miami hired an agency. [PAUSE] The agency ran Google Ads for four months. Two thousand a month. [TEXT: \"...while targeting the WRONG county\"] Except they were targeting Broward County. Not Miami-Dade. [PAUSE] Ninety percent of calls: 'Do you practice in Broward?' [TEXT: \"90% of calls were USELESS\"] No. Click. [PAUSE] The agency never checked. Just sent reports saying 'calls are steady.' [TEXT: \"Always demand account access\"] Eight grand. Gone. [PAUSE] If you don't have login access to YOUR ads account? [TEXT: \"You don't own the relationship\"] You don't own the relationship with your leads.",
+        "hook": "Agency billed $8K...",
+        "timestamp_range": "7:15 - 9:45"
+      },
+      {
+        "clip_title": "$4,750 Per Case (Because They Measured Clicks)",
+        "clip_script": "[TEXT: \"Law firm spent $57K on agencies\"] Fifty-seven thousand dollars. Three agencies. Two years. [PAUSE] Total signed cases? [TEXT: \"12 cases total\"] Twelve. [PAUSE] That's four thousand, seven hundred fifty dollars per case. [TEXT: \"$4,750 per case\"] Here's why: [PAUSE] None of them tracked signed cases. [TEXT: \"They optimized CLICKS\"] They optimized clicks. Impressions. CTR. [PAUSE] Clicks don't pay your rent. [TEXT: \"Signed cases do.\"] If your agency celebrates CTR going up while your cases go down? [TEXT: \"Fire them.\"] Fire them.",
+        "hook": "Law firm spent $57K on agencies",
+        "timestamp_range": "0:00 - 1:30"
+      },
+      {
+        "clip_title": "3 Questions Before You Hire a Marketing Agency",
+        "clip_script": "[TEXT: \"Before you hire ANY agency...\"] Before you sign a contract, ask three questions. [PAUSE] One: How do you define a lead? [TEXT: \"1. How do you define a lead?\"] If they say clicks or impressions, run. [PAUSE] Two: What's my cost per signed case? [TEXT: \"2. Cost per signed case?\"] If they don't know, they're not tracking it. Run. [PAUSE] Three: Can I access all accounts? [TEXT: \"3. Do I get account access?\"] Google Ads, call tracking, analytics. If they say no? [TEXT: \"If NO = RUN\"] Run. [PAUSE] Good agencies welcome accountability. [TEXT: \"Good agencies WANT accountability\"] Bad ones hide behind impressions.",
+        "hook": "Before you hire ANY agency...",
+        "timestamp_range": "10:00 - 11:15"
+      }
+    ],
+    "cta_strategy": {
+      "pinned_comment": "Want me to audit YOUR law firm's marketing setup? I'll record a free Loom walkthrough of your Google Ads account, call tracking, and whether you're measuring the right metrics. No sales pitch — just a breakdown of what's working and what's broken. Link: https://mortarmetrics.com/audit",
+      "description_cta": "Free marketing audit (Google Ads + call tracking teardown): https://mortarmetrics.com/audit",
+      "verbal_ctas": [
+        "If you want a free audit of your current marketing setup, I'll record a Loom video walking through your Google Ads account, your call tracking, and whether you're measuring the right stuff. Link's in the description.",
+        "If you want help auditing your current setup — whether you work with us or not — link's in the description for a free teardown. I'll show you exactly what's broken and what to fix first."
+      ],
+      "lead_magnet_tie_in": "Free Marketing Audit — Loom video breakdown of Google Ads, call tracking, and whether current agency is measuring signed cases or vanity metrics. Includes cost-per-case calculation and 3 immediate fixes."
+    },
+    "status": "draft",
+    "created_at": "2026-02-21T02:38:15.031Z"
+  }
+]

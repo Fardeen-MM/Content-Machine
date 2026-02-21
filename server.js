@@ -15058,6 +15058,409 @@ Keep LinkedIn 1300-2000 chars. Tweet under 280. Thread 3-5 tweets. Caption under
       });
     }
 
+    // ============================================================
+    // Batch 70: A/B Variants, Viral Score, CTA Generator,
+    //           Content Gap Finder, Audience Growth, Batch Generator,
+    //           Performance Benchmarks
+    // ============================================================
+
+    // POST /api/content/:id/ab-variants — Generate A/B test variants
+    const abMatch = pathname.match(/^\/api\/content\/([a-f0-9]+)\/ab-variants$/);
+    if (abMatch && method === 'POST') {
+      const id = abMatch[1];
+      const content = readJSON('content.json', []);
+      const item = content.find(c => c.id === id);
+      if (!item) return json(res, { error: 'Content not found' }, 404);
+
+      const body = await parseBody(req);
+      const targetFormat = body.format || 'linkedin';
+      const formats = item.formats || {};
+      const sourceText = formats[targetFormat]?.content || formats.linkedin_post?.content || formats.linkedin?.content || '';
+      if (!sourceText || sourceText.length < 50) return json(res, { error: `No ${targetFormat} content to create variants from` }, 400);
+
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+      const result = await callClaude({
+        model: HAIKU,
+        system: 'You are an A/B testing expert for social media content. Create meaningful variations that test specific hypotheses. Return JSON only.',
+        prompt: `Create 3 A/B test variants of this ${targetFormat} content. Each variant should test a different element.
+
+Original: ${sourceText.slice(0, 2000)}
+Topic: ${item.trigger_title}
+
+Return COMPACT JSON:
+{
+  "original": "${sourceText.slice(0, 50).replace(/"/g, '\\"')}...",
+  "variants": [
+    { "name": "Variant A", "hypothesis": "what we're testing", "element_changed": "hook|cta|format|tone|length", "content": "full variant text", "expected_lift": "10-20%" },
+    { "name": "Variant B", "hypothesis": "...", "element_changed": "...", "content": "...", "expected_lift": "..." },
+    { "name": "Variant C", "hypothesis": "...", "element_changed": "...", "content": "...", "expected_lift": "..." }
+  ],
+  "testing_plan": "how to run the test"
+}
+Keep variants roughly same length as original.`,
+        maxTokens: 3000
+      });
+      const parsed = parseJsonResponse(result);
+      if (!parsed || !parsed.variants) return json(res, { error: 'Failed to generate variants', raw_preview: (result || '').slice(0, 200) }, 500);
+
+      // Save to content item
+      const idx = content.findIndex(c => c.id === id);
+      if (idx >= 0) {
+        if (!content[idx].ab_variants) content[idx].ab_variants = {};
+        content[idx].ab_variants[targetFormat] = { variants: parsed.variants, testing_plan: parsed.testing_plan, created_at: now() };
+        writeJSON('content.json', content);
+      }
+      return json(res, { ok: true, content_id: id, format: targetFormat, ...parsed });
+    }
+
+    // POST /api/content/:id/viral-score — Score content's viral potential
+    const viralMatch = pathname.match(/^\/api\/content\/([a-f0-9]+)\/viral-score$/);
+    if (viralMatch && method === 'POST') {
+      const id = viralMatch[1];
+      const content = readJSON('content.json', []);
+      const item = content.find(c => c.id === id);
+      if (!item) return json(res, { error: 'Content not found' }, 404);
+
+      const formats = item.formats || {};
+      let sourceText = '';
+      for (const [, v] of Object.entries(formats)) {
+        const t = typeof v?.content === 'string' ? v.content : '';
+        if (t.length > sourceText.length) sourceText = t;
+      }
+      if (!sourceText) return json(res, { error: 'No content to score' }, 400);
+
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+      const result = await callClaude({
+        model: HAIKU,
+        system: 'You are a viral content analyst. Score content based on shareability, emotional resonance, and platform fit. Return JSON only.',
+        prompt: `Score this content's viral potential (0-100).
+
+Content: ${sourceText.slice(0, 2000)}
+Topic: ${item.trigger_title}
+
+Score each factor 0-100 and calculate overall viral score.
+
+Return COMPACT JSON:
+{
+  "viral_score": 75,
+  "factors": {
+    "hook_strength": { "score": 80, "note": "why" },
+    "emotional_trigger": { "score": 70, "note": "why" },
+    "shareability": { "score": 75, "note": "why" },
+    "controversy": { "score": 60, "note": "why" },
+    "practical_value": { "score": 85, "note": "why" },
+    "story_element": { "score": 65, "note": "why" }
+  },
+  "viral_type": "educational|controversial|inspirational|data-driven|story",
+  "boost_suggestions": ["suggestion 1", "suggestion 2", "suggestion 3"],
+  "best_platform": "linkedin|x|youtube|instagram"
+}`,
+        maxTokens: 1500
+      });
+      const parsed = parseJsonResponse(result);
+      if (!parsed || !parsed.viral_score) return json(res, { error: 'Failed to score', raw_preview: (result || '').slice(0, 200) }, 500);
+
+      const idx = content.findIndex(c => c.id === id);
+      if (idx >= 0) {
+        content[idx].viral_score = parsed.viral_score;
+        content[idx].viral_type = parsed.viral_type;
+        writeJSON('content.json', content);
+      }
+      return json(res, { ok: true, content_id: id, ...parsed });
+    }
+
+    // POST /api/content/:id/cta-generate — Generate platform-specific CTAs
+    const ctaGen2Match = pathname.match(/^\/api\/content\/([a-f0-9]+)\/cta-generate$/);
+    if (ctaGen2Match && method === 'POST') {
+      const id = ctaGen2Match[1];
+      const content = readJSON('content.json', []);
+      const item = content.find(c => c.id === id);
+      if (!item) return json(res, { error: 'Content not found' }, 404);
+
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+      const result = await callClaude({
+        model: HAIKU,
+        system: 'You are a CTA copywriting expert for B2B marketing. Create CTAs that drive engagement and conversions. Return JSON only.',
+        prompt: `Generate 5 CTAs for this content across different platforms and goals.
+
+Content topic: ${item.trigger_title}
+Format: ${Object.keys(item.formats || {}).join(', ')}
+
+Return COMPACT JSON:
+{
+  "ctas": [
+    { "text": "CTA text", "type": "engagement|lead_gen|traffic|booking", "platform": "linkedin|x|email|all", "placement": "end|first_comment|bio_link" }
+  ],
+  "comment_cta": { "keyword": "AUDIT", "post_text": "Comment AUDIT to get...", "dm_template": "Hey! Here's your..." },
+  "first_comment": "what to put as the first comment under the post"
+}`,
+        maxTokens: 1500
+      });
+      const parsed = parseJsonResponse(result);
+      if (!parsed || !parsed.ctas) return json(res, { error: 'Failed to generate CTAs', raw_preview: (result || '').slice(0, 200) }, 500);
+      return json(res, { ok: true, content_id: id, ...parsed, generated_at: now() });
+    }
+
+    // POST /api/content-gap-finder — Analyze content coverage and find topic gaps
+    if (method === 'POST' && pathname === '/api/content-gap-finder') {
+      const content = readJSON('content.json', []);
+      const triggers = readJSON('trigger-queue.json', []);
+      const published = readJSON('published.json', []);
+
+      // Categorize covered topics
+      const coveredTopics = {};
+      const allItems = [...content, ...published];
+      for (const item of allItems) {
+        const title = (item.trigger_title || item.title || '').toLowerCase();
+        const categories = ['seo', 'ppc', 'google ads', 'web design', 'intake', 'branding', 'social media', 'email', 'content', 'reviews', 'referral', 'ai', 'analytics', 'conversion', 'lead gen', 'retention', 'video'];
+        for (const cat of categories) {
+          if (title.includes(cat)) {
+            coveredTopics[cat] = (coveredTopics[cat] || 0) + 1;
+          }
+        }
+      }
+
+      // Find uncovered categories
+      const allCategories = ['seo', 'ppc', 'google ads', 'web design', 'intake', 'branding', 'social media', 'email marketing', 'content marketing', 'reviews', 'referral', 'ai', 'analytics', 'conversion optimization', 'lead generation', 'client retention', 'video marketing', 'local seo', 'reputation management', 'call tracking', 'landing pages', 'crm', 'automation'];
+      const gaps = allCategories.filter(cat => !coveredTopics[cat] && !coveredTopics[cat.split(' ')[0]]);
+
+      // Find format gaps
+      const formatCounts = {};
+      for (const item of content) {
+        for (const fmt of Object.keys(item.formats || {})) {
+          formatCounts[fmt] = (formatCounts[fmt] || 0) + 1;
+        }
+      }
+      const expectedFormats = ['linkedin_post', 'linkedin', 'x_single', 'x_thread', 'blog', 'newsletter', 'youtube_script', 'carousel', 'short_video', 'case_study'];
+      const formatGaps = expectedFormats.filter(f => !formatCounts[f] || formatCounts[f] < 3);
+
+      // Find trigger source gaps
+      const sourceCounts = {};
+      for (const t of triggers) {
+        sourceCounts[t.source] = (sourceCounts[t.source] || 0) + 1;
+      }
+
+      const result = {
+        topic_coverage: coveredTopics,
+        topic_gaps: gaps,
+        format_coverage: formatCounts,
+        format_gaps: formatGaps,
+        source_coverage: sourceCounts,
+        total_content: content.length,
+        total_published: published.length,
+        coverage_score: Math.round((Object.keys(coveredTopics).length / allCategories.length) * 100),
+        recommendations: [
+          gaps.length > 5 ? `Cover ${gaps.slice(0, 3).join(', ')} — these topics have zero content` : 'Good topic coverage',
+          formatGaps.length > 3 ? `Missing formats: ${formatGaps.slice(0, 3).join(', ')}` : 'Good format diversity',
+          content.filter(c => c.status === 'approved').length > 5 ? 'Publish approved content — you have items waiting' : 'Pipeline is flowing'
+        ],
+        generated_at: now()
+      };
+      writeJSON('content-gap-finder.json', result);
+      return json(res, { ok: true, ...result });
+    }
+
+    // GET /api/content-gap-finder
+    if (method === 'GET' && pathname === '/api/content-gap-finder') {
+      return json(res, readJSON('content-gap-finder.json', null));
+    }
+
+    // POST /api/audience-growth-tracker — Log follower/subscriber metrics
+    if (method === 'POST' && pathname === '/api/audience-growth-tracker') {
+      const body = await parseBody(req);
+      const { platform, followers, subscribers, engagement_rate, date } = body || {};
+      if (!platform) return json(res, { error: 'platform required' }, 400);
+
+      const tracker = readJSON('audience-growth-tracker.json', []);
+      const entry = {
+        id: generateId(),
+        platform,
+        followers: Number(followers) || 0,
+        subscribers: Number(subscribers) || 0,
+        engagement_rate: Number(engagement_rate) || 0,
+        date: date || now().split('T')[0],
+        logged_at: now()
+      };
+      tracker.push(entry);
+      writeJSON('audience-growth-tracker.json', tracker);
+
+      // Calculate growth
+      const platformEntries = tracker.filter(e => e.platform === platform).sort((a, b) => new Date(a.date) - new Date(b.date));
+      let growth = null;
+      if (platformEntries.length >= 2) {
+        const prev = platformEntries[platformEntries.length - 2];
+        const curr = entry;
+        growth = {
+          followers_change: curr.followers - prev.followers,
+          followers_pct: prev.followers > 0 ? Math.round((curr.followers - prev.followers) / prev.followers * 10000) / 100 : 0,
+          period: `${prev.date} to ${curr.date}`
+        };
+      }
+
+      return json(res, { ok: true, entry, growth });
+    }
+
+    // GET /api/audience-growth-tracker — Get audience growth data
+    if (method === 'GET' && pathname === '/api/audience-growth-tracker') {
+      const tracker = readJSON('audience-growth-tracker.json', []);
+      const byPlatform = {};
+      for (const e of tracker) {
+        if (!byPlatform[e.platform]) byPlatform[e.platform] = [];
+        byPlatform[e.platform].push(e);
+      }
+      // Calculate growth rates per platform
+      const summary = {};
+      for (const [platform, entries] of Object.entries(byPlatform)) {
+        const sorted = entries.sort((a, b) => new Date(a.date) - new Date(b.date));
+        const latest = sorted[sorted.length - 1];
+        const first = sorted[0];
+        summary[platform] = {
+          current_followers: latest.followers,
+          total_growth: latest.followers - first.followers,
+          entries: sorted.length,
+          latest_date: latest.date,
+          engagement_rate: latest.engagement_rate
+        };
+      }
+      return json(res, { total_entries: tracker.length, platforms: summary, history: tracker.slice(-30) });
+    }
+
+    // POST /api/batch-generate — Generate a week of content in one batch
+    if (method === 'POST' && pathname === '/api/batch-generate') {
+      const triggers = readJSON('trigger-queue.json', []);
+      const pending = triggers.filter(t => t.status === 'pending').sort((a, b) => (b.score || 0) - (a.score || 0));
+
+      if (pending.length === 0) return json(res, { error: 'No pending triggers to generate from' }, 400);
+
+      const body = await parseBody(req);
+      const count = Math.min(Number(body.count) || 7, 15);
+      const selected = pending.slice(0, count);
+
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+      const { BRAND_SYSTEM_PROMPT } = require('./generator/content-writer');
+      const results = [];
+      let successes = 0;
+      let failures = 0;
+
+      for (const trigger of selected) {
+        try {
+          const result = await callClaude({
+            model: HAIKU,
+            system: BRAND_SYSTEM_PROMPT + '\nReturn JSON only.',
+            prompt: `Generate 3 social media posts for this topic. Return COMPACT JSON:
+{
+  "linkedin": "full linkedin post (1300-2000 chars, professional, line breaks)",
+  "x_single": "tweet under 280 chars",
+  "x_thread": ["tweet 1", "tweet 2", "tweet 3"]
+}
+
+Topic: ${trigger.title}
+Source: ${trigger.source}
+${trigger.summary ? `Summary: ${trigger.summary.slice(0, 300)}` : ''}
+
+Make each feel native to its platform. LinkedIn should have line breaks and storytelling. Tweet should be punchy. Thread should build an argument.`,
+            maxTokens: 2500
+          });
+          const parsed = parseJsonResponse(result);
+          if (parsed) {
+            const content = readJSON('content.json', []);
+            const newItem = {
+              id: generateId(),
+              trigger_id: trigger.id,
+              trigger_title: trigger.title,
+              status: 'review',
+              formats: {},
+              created_at: now(),
+              batch_generated: true
+            };
+            if (parsed.linkedin) newItem.formats.linkedin_post = { content: parsed.linkedin, status: 'review' };
+            if (parsed.x_single) newItem.formats.x_single = { content: parsed.x_single, status: 'review' };
+            if (parsed.x_thread) newItem.formats.x_thread = { content: Array.isArray(parsed.x_thread) ? parsed.x_thread.join('\n\n---\n\n') : parsed.x_thread, status: 'review' };
+            content.push(newItem);
+            writeJSON('content.json', content);
+
+            // Mark trigger as used
+            const triggerIdx = triggers.findIndex(t => t.id === trigger.id);
+            if (triggerIdx >= 0) { triggers[triggerIdx].status = 'used'; }
+
+            results.push({ trigger_id: trigger.id, title: trigger.title, content_id: newItem.id, formats: Object.keys(newItem.formats).length });
+            successes++;
+          } else { failures++; }
+        } catch (err) {
+          failures++;
+          results.push({ trigger_id: trigger.id, title: trigger.title, error: err.message });
+        }
+      }
+
+      writeJSON('trigger-queue.json', triggers);
+      return json(res, { ok: true, requested: count, successes, failures, results, generated_at: now() });
+    }
+
+    // POST /api/performance-benchmarks — Compare metrics against industry benchmarks
+    if (method === 'POST' && pathname === '/api/performance-benchmarks') {
+      const content = readJSON('content.json', []);
+      const published = readJSON('published.json', []);
+      const tracker = readJSON('engagement-tracker.json', []);
+
+      // Industry benchmarks for legal marketing on social media
+      const benchmarks = {
+        linkedin: { avg_engagement_rate: 3.5, avg_impressions: 500, good_engagement_rate: 5.0, viral_threshold: 10.0 },
+        x: { avg_engagement_rate: 1.5, avg_impressions: 300, good_engagement_rate: 3.0, viral_threshold: 8.0 },
+        instagram: { avg_engagement_rate: 2.0, avg_impressions: 400, good_engagement_rate: 4.0, viral_threshold: 12.0 },
+        youtube: { avg_engagement_rate: 4.0, avg_impressions: 200, good_engagement_rate: 6.0, viral_threshold: 15.0 }
+      };
+
+      // Calculate actual metrics
+      const actualMetrics = {};
+      for (const e of tracker) {
+        if (!actualMetrics[e.platform]) actualMetrics[e.platform] = { total_engagement_rate: 0, entries: 0, total_impressions: 0 };
+        actualMetrics[e.platform].total_engagement_rate += e.engagement_rate || 0;
+        actualMetrics[e.platform].entries++;
+        actualMetrics[e.platform].total_impressions += e.impressions || 0;
+      }
+
+      const comparison = {};
+      for (const [platform, bench] of Object.entries(benchmarks)) {
+        const actual = actualMetrics[platform];
+        const avgRate = actual ? Math.round(actual.total_engagement_rate / actual.entries * 100) / 100 : 0;
+        comparison[platform] = {
+          benchmark_rate: bench.avg_engagement_rate,
+          your_rate: avgRate,
+          vs_benchmark: actual ? (avgRate >= bench.good_engagement_rate ? 'above' : avgRate >= bench.avg_engagement_rate ? 'average' : 'below') : 'no data',
+          data_points: actual?.entries || 0,
+          good_threshold: bench.good_engagement_rate,
+          viral_threshold: bench.viral_threshold
+        };
+      }
+
+      // Content production benchmarks
+      const daysActive = content.length > 0 ? Math.max(1, Math.ceil((new Date() - new Date(content[content.length - 1]?.created_at || new Date())) / 86400000)) : 1;
+      const production = {
+        total_created: content.length,
+        total_published: published.length,
+        daily_rate: Math.round(content.length / daysActive * 100) / 100,
+        publish_rate: content.length > 0 ? Math.round(published.length / content.length * 100) : 0,
+        benchmark_daily_rate: 1.5,
+        benchmark_publish_rate: 60,
+        vs_production: content.length / daysActive >= 1.5 ? 'above' : 'below',
+        vs_publish: published.length / Math.max(1, content.length) * 100 >= 60 ? 'above' : 'below'
+      };
+
+      const result = {
+        engagement_benchmarks: comparison,
+        production_benchmarks: production,
+        overall_grade: Object.values(comparison).filter(c => c.vs_benchmark === 'above').length >= 2 && production.vs_production === 'above' ? 'A' : Object.values(comparison).filter(c => c.vs_benchmark !== 'below').length >= 2 ? 'B' : 'C',
+        generated_at: now()
+      };
+      writeJSON('performance-benchmarks.json', result);
+      return json(res, { ok: true, ...result });
+    }
+
+    // GET /api/performance-benchmarks
+    if (method === 'GET' && pathname === '/api/performance-benchmarks') {
+      return json(res, readJSON('performance-benchmarks.json', null));
+    }
+
     // --- Static file serving ---
 
     // Serve dashboard

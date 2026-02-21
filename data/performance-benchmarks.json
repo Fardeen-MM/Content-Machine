@@ -1,0 +1,48 @@
+{
+  "engagement_benchmarks": {
+    "linkedin": {
+      "benchmark_rate": 3.5,
+      "your_rate": 2.72,
+      "vs_benchmark": "below",
+      "data_points": 1,
+      "good_threshold": 5,
+      "viral_threshold": 10
+    },
+    "x": {
+      "benchmark_rate": 1.5,
+      "your_rate": 0,
+      "vs_benchmark": "no data",
+      "data_points": 0,
+      "good_threshold": 3,
+      "viral_threshold": 8
+    },
+    "instagram": {
+      "benchmark_rate": 2,
+      "your_rate": 0,
+      "vs_benchmark": "no data",
+      "data_points": 0,
+      "good_threshold": 4,
+      "viral_threshold": 12
+    },
+    "youtube": {
+      "benchmark_rate": 4,
+      "your_rate": 0,
+      "vs_benchmark": "no data",
+      "data_points": 0,
+      "good_threshold": 6,
+      "viral_threshold": 15
+    }
+  },
+  "production_benchmarks": {
+    "total_created": 41,
+    "total_published": 1,
+    "daily_rate": 41,
+    "publish_rate": 2,
+    "benchmark_daily_rate": 1.5,
+    "benchmark_publish_rate": 60,
+    "vs_production": "above",
+    "vs_publish": "below"
+  },
+  "overall_grade": "B",
+  "generated_at": "2026-02-21T14:27:18.173Z"
+}

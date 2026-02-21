@@ -11452,6 +11452,389 @@ Return JSON (no markdown fences):
       });
     }
 
+    // ======= BATCH 58: LinkedIn Optimizer, Content Recycler, Comment Strategy, Newsletter Compiler, A/B Variants =======
+
+    // POST /api/content/:id/linkedin-optimize — Optimize content specifically for LinkedIn algorithm
+    if (method === 'POST' && pathname.match(/^\/api\/content\/([^/]+)\/linkedin-optimize$/)) {
+      const contentId = pathname.split('/')[3];
+      const allContent = readJSON('content.json', []);
+      const item = allContent.find(c => c.id === contentId);
+      if (!item) return json(res, { error: 'Content not found' }, 404);
+      const body = await parseBody(req);
+      const formatKey = body.format || Object.keys(item.formats || {}).find(k => k.includes('linkedin')) || 'linkedin_post';
+      const text = item.formats?.[formatKey]?.text || item.formats?.[formatKey];
+      if (!text) return json(res, { error: 'No LinkedIn content found' }, 400);
+
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+      const result = await callClaude({
+        model: HAIKU,
+        system: 'You are a LinkedIn algorithm expert. You know that: dwell time is the #1 signal (long-form beats short), native document/carousel posts get 2-3x reach, first 3 lines must hook (before "see more"), posts with 0-3 hashtags perform best, external links kill reach by 50%+, commenting on your own post within first hour boosts it, posting between 7-9 AM local time is optimal, tagging 3-5 people increases distribution, polls get highest engagement rate but lowest quality. Return JSON only.',
+        prompt: `Optimize this LinkedIn post for maximum reach and engagement. Return JSON:
+{
+  "optimized_post": "the full optimized post text",
+  "hook_line": "compelling first line before see-more cutoff (max 150 chars)",
+  "hashtags": ["3 optimal hashtags"],
+  "self_comment": "your first comment to boost engagement",
+  "tag_suggestions": ["types of people to tag, not specific names"],
+  "posting_time": "optimal posting window",
+  "format_recommendation": "text|carousel|poll|document",
+  "dwell_time_tricks": ["techniques to increase time-on-post"],
+  "engagement_bait": "question or CTA to drive comments",
+  "predicted_reach_multiplier": "1.5x-3x estimate vs original"
+}
+
+Original post:
+${typeof text === 'string' ? text.slice(0, 3000) : JSON.stringify(text).slice(0, 3000)}`,
+        maxTokens: 3000
+      });
+      const parsed = parseJsonResponse(result);
+      return json(res, { ok: true, content_id: contentId, ...parsed });
+    }
+
+    // POST /api/content-recycler — Find old approved content that can be refreshed and reposted
+    if (method === 'POST' && pathname === '/api/content-recycler') {
+      const allContent = readJSON('content.json', []);
+      const published = readJSON('published.json', []);
+      const now_ts = Date.now();
+      const thirtyDaysAgo = now_ts - 30 * 24 * 60 * 60 * 1000;
+
+      // Find content that was published 30+ days ago or approved but never published
+      const recyclable = allContent.filter(c => {
+        if (c.status === 'approved') {
+          const pubEntry = published.find(p => p.content_id === c.id);
+          if (!pubEntry) return true; // approved but never published
+          const pubDate = new Date(pubEntry.published_at || pubEntry.date).getTime();
+          return pubDate < thirtyDaysAgo;
+        }
+        return false;
+      }).slice(0, 10);
+
+      if (recyclable.length === 0) return json(res, { ok: true, recyclable: [], message: 'No content ready to recycle yet' });
+
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+      const summaries = recyclable.map(c => {
+        const firstFormat = Object.keys(c.formats || {})[0];
+        const text = c.formats?.[firstFormat]?.text || c.formats?.[firstFormat] || '';
+        return { id: c.id, trigger: c.trigger_title || c.title || 'Untitled', format: firstFormat, snippet: (typeof text === 'string' ? text : '').slice(0, 200) };
+      });
+
+      const result = await callClaude({
+        model: HAIKU,
+        system: 'You are a content recycling expert. Help refresh old content with new angles, updated stats, and fresh hooks. Return JSON only.',
+        prompt: `These content pieces are ready to be recycled. For each, suggest a fresh angle, updated hook, and what to change. Return JSON array:
+[{
+  "id": "content_id",
+  "original_topic": "what it was about",
+  "fresh_angle": "new perspective or updated take",
+  "new_hook": "updated first line that feels new",
+  "changes_needed": ["list of specific updates"],
+  "best_platform": "where to repost first",
+  "recycle_score": 1-10
+}]
+
+Content to recycle:
+${JSON.stringify(summaries, null, 2)}`,
+        maxTokens: 3000
+      });
+      const parsed = parseJsonResponse(result);
+      const recycled = { suggestions: Array.isArray(parsed) ? parsed : parsed.suggestions || [], generated_at: now() };
+      writeJSON('content-recycler.json', recycled);
+      return json(res, { ok: true, ...recycled });
+    }
+
+    // GET /api/content-recycler
+    if (method === 'GET' && pathname === '/api/content-recycler') {
+      return json(res, readJSON('content-recycler.json', { suggestions: [] }));
+    }
+
+    // POST /api/comment-strategy — Generate strategic commenting plan for borrowed audience growth
+    if (method === 'POST' && pathname === '/api/comment-strategy') {
+      const triggers = readJSON('trigger-queue.json', []);
+      const recentTopics = triggers.slice(0, 20).map(t => t.title || t.topic).join(', ');
+
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+      const result = await callClaude({
+        model: HAIKU,
+        system: 'You are a social media growth strategist specializing in comment-based growth. Strategic commenting on larger accounts is the fastest way to grow from 0 to 10K followers. A great comment gets more visibility than a great post because it rides the original post\'s distribution. Return JSON only.',
+        prompt: `Create a daily commenting strategy for a legal marketing agency. We discuss: ${recentTopics.slice(0, 500)}
+
+Return JSON:
+{
+  "daily_targets": [
+    {
+      "account_type": "type of account to target",
+      "platform": "linkedin or x",
+      "why": "why their audience overlaps ours",
+      "comment_approach": "what kind of comment to leave",
+      "example_comment": "a specific example",
+      "timing": "when to comment relative to their post"
+    }
+  ],
+  "comment_templates": [
+    {
+      "trigger": "when to use this",
+      "template": "comment structure with [BLANKS]",
+      "goal": "what this achieves"
+    }
+  ],
+  "rules": ["golden rules for commenting"],
+  "daily_quota": { "linkedin": 5, "x": 10 },
+  "time_budget": "minutes per day",
+  "growth_projection": "expected follower growth per month"
+}`,
+        maxTokens: 3000
+      });
+      const parsed = parseJsonResponse(result);
+      const strategy = { ...parsed, generated_at: now() };
+      writeJSON('comment-strategy.json', strategy);
+      return json(res, { ok: true, ...strategy });
+    }
+
+    // GET /api/comment-strategy
+    if (method === 'GET' && pathname === '/api/comment-strategy') {
+      return json(res, readJSON('comment-strategy.json', null));
+    }
+
+    // POST /api/newsletter-compiler — Compile a weekly newsletter from best content
+    if (method === 'POST' && pathname === '/api/newsletter-compiler') {
+      const allContent = readJSON('content.json', []);
+      const approved = allContent.filter(c => c.status === 'approved').slice(0, 20);
+      const triggers = readJSON('trigger-queue.json', []);
+      const topTriggers = triggers.filter(t => (t.score || 0) >= 60).slice(0, 5);
+
+      if (approved.length === 0 && topTriggers.length === 0) return json(res, { error: 'No content to compile — approve some content first' }, 400);
+
+      const contentSummaries = approved.map(c => {
+        const fmts = Object.keys(c.formats || {});
+        const firstText = c.formats?.[fmts[0]]?.text || c.formats?.[fmts[0]] || '';
+        return { title: c.trigger_title || c.title, text: (typeof firstText === 'string' ? firstText : '').slice(0, 300) };
+      });
+
+      const { callClaude, parseJsonResponse, SONNET } = require('./lib/claude');
+      const result = await callClaude({
+        model: SONNET,
+        system: 'You are a newsletter editor for Mortar Metrics, a legal marketing agency. Write newsletters that feel like a personal letter from a smart friend, not a corporate email. Short paragraphs. Punchy insights. One CTA. No fluff. Return JSON only.',
+        prompt: `Compile a weekly newsletter from this content. Format it for email delivery.
+
+Available content:
+${JSON.stringify(contentSummaries.slice(0, 10), null, 2)}
+
+Trending topics this week:
+${topTriggers.map(t => t.title).join('\n')}
+
+Return JSON:
+{
+  "subject_line": "compelling subject line (under 50 chars, no spam words)",
+  "preview_text": "email preview text (under 90 chars)",
+  "greeting": "casual opening line",
+  "main_story": {
+    "headline": "primary story headline",
+    "body": "2-3 paragraph main story with data/insight",
+    "cta": "what to do with this info"
+  },
+  "quick_hits": [
+    { "headline": "short headline", "one_liner": "one sentence insight", "link_text": "Read more" }
+  ],
+  "data_point": {
+    "stat": "one surprising number",
+    "context": "why it matters"
+  },
+  "closer": "sign-off paragraph with soft CTA",
+  "ps_line": "P.S. line (creates urgency or curiosity)",
+  "estimated_read_time": "X min"
+}`,
+        maxTokens: 4000
+      });
+      const parsed = parseJsonResponse(result);
+      const newsletters = readJSON('newsletters.json', []);
+      const newsletter = { id: generateId(), ...parsed, compiled_at: now() };
+      newsletters.unshift(newsletter);
+      writeJSON('newsletters.json', newsletters);
+      return json(res, { ok: true, ...newsletter });
+    }
+
+    // GET /api/newsletters
+    if (method === 'GET' && pathname === '/api/newsletters') {
+      return json(res, readJSON('newsletters.json', []));
+    }
+
+    // POST /api/content/:id/ab-variants — Generate A/B test variants for a piece of content
+    if (method === 'POST' && pathname.match(/^\/api\/content\/([^/]+)\/ab-variants$/)) {
+      const contentId = pathname.split('/')[3];
+      const allContent = readJSON('content.json', []);
+      const item = allContent.find(c => c.id === contentId);
+      if (!item) return json(res, { error: 'Content not found' }, 404);
+      const body = await parseBody(req);
+      const formatKey = body.format || Object.keys(item.formats || {}).find(k => k.includes('linkedin') || k.includes('x_')) || Object.keys(item.formats || {})[0];
+      const text = item.formats?.[formatKey]?.text || item.formats?.[formatKey];
+      if (!text) return json(res, { error: 'No content for this format' }, 400);
+
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+      const result = await callClaude({
+        model: HAIKU,
+        system: 'You are a content testing expert. Create meaningful A/B variants that test specific hypotheses about what drives engagement. Each variant should change ONE variable while keeping everything else constant. Return JSON only.',
+        prompt: `Create A/B test variants for this content. Each variant tests a different hypothesis.
+
+Original (Version A):
+${typeof text === 'string' ? text.slice(0, 2000) : JSON.stringify(text).slice(0, 2000)}
+
+Return JSON:
+{
+  "original_label": "Version A — [what it tests]",
+  "variants": [
+    {
+      "label": "Version B — [what it changes]",
+      "hypothesis": "what we're testing",
+      "content": "full rewritten content",
+      "change_description": "exactly what changed and why",
+      "expected_impact": "what we expect to happen"
+    },
+    {
+      "label": "Version C — [what it changes]",
+      "hypothesis": "what we're testing",
+      "content": "full rewritten content",
+      "change_description": "exactly what changed and why",
+      "expected_impact": "what we expect to happen"
+    }
+  ],
+  "testing_plan": "how to run this test (post both within same week, measure X)"
+}`,
+        maxTokens: 3000
+      });
+      const parsed = parseJsonResponse(result);
+      return json(res, { ok: true, content_id: contentId, format: formatKey, ...parsed });
+    }
+
+    // POST /api/content/:id/viral-hook — Rewrite content with a viral hook formula
+    if (method === 'POST' && pathname.match(/^\/api\/content\/([^/]+)\/viral-hook$/)) {
+      const contentId = pathname.split('/')[3];
+      const allContent = readJSON('content.json', []);
+      const item = allContent.find(c => c.id === contentId);
+      if (!item) return json(res, { error: 'Content not found' }, 404);
+      const body = await parseBody(req);
+      const formatKey = body.format || Object.keys(item.formats || {})[0];
+      const text = item.formats?.[formatKey]?.text || item.formats?.[formatKey];
+      if (!text) return json(res, { error: 'No content for this format' }, 400);
+
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+      const result = await callClaude({
+        model: HAIKU,
+        system: 'You are a viral content architect. You study hooks from the most shared posts on LinkedIn and X. The best hooks create curiosity gaps, pattern interrupts, or emotional jolts in the first 8 words. Return JSON only.',
+        prompt: `Rewrite this content with 5 different viral hook formulas. Keep the body mostly the same but completely rewrite the opening.
+
+Original:
+${typeof text === 'string' ? text.slice(0, 2000) : JSON.stringify(text).slice(0, 2000)}
+
+Return JSON:
+{
+  "hooks": [
+    {
+      "formula": "name of the hook formula",
+      "hook": "the new opening (first 2-3 sentences)",
+      "full_rewrite": "complete post with new hook + adapted body",
+      "why_it_works": "psychology behind this hook",
+      "best_for": "linkedin|x|both"
+    }
+  ],
+  "recommended": 0,
+  "hook_analysis_of_original": "what was wrong/right with the original hook"
+}
+
+Use these proven formulas:
+1. Curiosity Gap ("I spent $50K on X. Here's what nobody tells you.")
+2. Bold Contrarian ("Everyone says X. They're wrong.")
+3. Specific Number ("347 law firms taught me one thing.")
+4. Before/After ("Last year I was doing X. Now I do Y.")
+5. Question Hook ("Why do 80% of law firms fail at marketing?")`,
+        maxTokens: 4000
+      });
+      const parsed = parseJsonResponse(result);
+      return json(res, { ok: true, content_id: contentId, format: formatKey, ...parsed });
+    }
+
+    // POST /api/engagement-booster — Get daily engagement tasks to grow audience
+    if (method === 'POST' && pathname === '/api/engagement-booster') {
+      const replyStrategy = readJSON('reply-strategy.json', null);
+      const commentStrategy = readJSON('comment-strategy.json', null);
+      const dmScripts = readJSON('dm-scripts.json', []);
+      const published = readJSON('published.json', []);
+
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+      const result = await callClaude({
+        model: HAIKU,
+        system: 'You are a social media engagement coach. Create a specific, time-blocked daily engagement routine that takes 30-45 minutes and maximizes audience growth. Focus on activities with the highest ROI: replying to comments, strategic commenting on larger accounts, DM conversations, and community participation. Return JSON only.',
+        prompt: `Create today's engagement action plan for a legal marketing agency on LinkedIn and X.
+
+We have ${published.length} published posts, ${dmScripts.length > 0 ? 'DM scripts ready' : 'no DM scripts yet'}, ${replyStrategy ? 'a reply strategy' : 'no reply strategy'}, ${commentStrategy ? 'a commenting strategy' : 'no commenting strategy'}.
+
+Return JSON:
+{
+  "morning_block": {
+    "time": "8:00-8:15 AM",
+    "tasks": [
+      { "action": "specific task", "platform": "linkedin|x", "duration": "5 min", "priority": "high|medium" }
+    ]
+  },
+  "midday_block": {
+    "time": "12:00-12:15 PM",
+    "tasks": [{ "action": "...", "platform": "...", "duration": "...", "priority": "..." }]
+  },
+  "evening_block": {
+    "time": "5:00-5:15 PM",
+    "tasks": [{ "action": "...", "platform": "...", "duration": "...", "priority": "..." }]
+  },
+  "weekly_tasks": ["things to do once per week"],
+  "metrics_to_track": ["what to measure daily"],
+  "todays_focus": "one sentence focus for today"
+}`,
+        maxTokens: 2500
+      });
+      const parsed = parseJsonResponse(result);
+      return json(res, { ok: true, ...parsed, generated_at: now() });
+    }
+
+    // POST /api/content/:id/carousel-builder — Build a visual carousel with slide-by-slide content
+    if (method === 'POST' && pathname.match(/^\/api\/content\/([^/]+)\/carousel-builder$/)) {
+      const contentId = pathname.split('/')[3];
+      const allContent = readJSON('content.json', []);
+      const item = allContent.find(c => c.id === contentId);
+      if (!item) return json(res, { error: 'Content not found' }, 404);
+      const formatKey = Object.keys(item.formats || {}).find(k => k.includes('linkedin') || k.includes('carousel')) || Object.keys(item.formats || {})[0];
+      const text = item.formats?.[formatKey]?.text || item.formats?.[formatKey];
+      if (!text) return json(res, { error: 'No content found' }, 400);
+
+      const { callClaude, parseJsonResponse, SONNET } = require('./lib/claude');
+      const result = await callClaude({
+        model: SONNET,
+        system: 'You are a LinkedIn carousel designer. Carousels get 2-3x the reach of text posts. Each slide should have: a headline (max 8 words), 2-3 bullet points or a short paragraph, and a visual direction note. First slide is the hook (must stop the scroll). Last slide is the CTA. Aim for 8-12 slides. Return JSON only.',
+        prompt: `Convert this content into a LinkedIn carousel (document post). Design each slide.
+
+Content:
+${typeof text === 'string' ? text.slice(0, 3000) : JSON.stringify(text).slice(0, 3000)}
+
+Return JSON:
+{
+  "title": "carousel title for the document",
+  "slides": [
+    {
+      "slide_number": 1,
+      "type": "hook|content|data|quote|cta",
+      "headline": "big text on slide (max 8 words)",
+      "body": "supporting text (2-3 short lines)",
+      "visual_note": "design direction for this slide",
+      "background_color": "hex color suggestion"
+    }
+  ],
+  "caption": "the LinkedIn post text that accompanies the carousel",
+  "hashtags": ["3 hashtags"],
+  "posting_notes": "best time and day to post carousels"
+}`,
+        maxTokens: 4000
+      });
+      const parsed = parseJsonResponse(result);
+      return json(res, { ok: true, content_id: contentId, ...parsed });
+    }
+
     // --- Static file serving ---
 
     // Serve dashboard

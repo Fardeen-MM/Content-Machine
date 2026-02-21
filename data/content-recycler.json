@@ -1,0 +1,66 @@
+{
+  "suggestions": [
+    {
+      "id": "dd33fd2be463cf5f",
+      "original_topic": "Low ROI on Google Ads spend for PI firm",
+      "fresh_angle": "Cost-per-acquisition breakdown in legal vertical + shift to account-based marketing for high-value cases",
+      "new_hook": "My PI firm burned $30K in Google Ads before discovering we were bidding on the wrong intent. Here's what changed.",
+      "changes_needed": [
+        "Add 2024 legal industry CPA benchmarks (vs 2023 data if original used older stats)",
+        "Include specific keyword mistakes (e.g., bidding on 'personal injury lawyer near me' vs 'car accident attorney [specific city]')",
+        "Reframe as case study with before/after metrics",
+        "Add 1-2 sentence on landing page conversion rates (often the real culprit)",
+        "Include alternative channel performance (local SEO, referral networks, retargeting)"
+      ],
+      "best_platform": "LinkedIn (with repurpose to legal marketing communities on Reddit, Slack communities)",
+      "recycle_score": 8
+    },
+    {
+      "id": "4c20a864324032bb",
+      "original_topic": "Marketing agency error targeting wrong locations",
+      "fresh_angle": "Red flags to spot before hiring an agency + audit checklist for existing campaigns",
+      "new_hook": "An agency wasted 6 months of my budget targeting the wrong markets. Here are the 5 questions that would've prevented it.",
+      "changes_needed": [
+        "Create downloadable audit checklist/template",
+        "Add specific red flags to watch for during agency onboarding",
+        "Include cost recovery conversation (did they refund? how to negotiate?)",
+        "Reframe as 'how to vet agencies' rather than 'agency failed me'",
+        "Add 2024 agency transparency standards/contracts best practices"
+      ],
+      "best_platform": "LinkedIn + email nurture sequence (downloadable resource angle)",
+      "recycle_score": 9
+    },
+    {
+      "id": "942509da1ea4f8",
+      "original_topic": "Poor results cycling through multiple marketing agencies",
+      "fresh_angle": "Internal marketing skills/processes were the real problem, not the agencies + self-audit framework",
+      "new_hook": "I fired 3 agencies in 2 years. The problem wasn't them—it was that I had no marketing strategy.",
+      "changes_needed": [
+        "Flip narrative: focus on what the business owner wasn't doing (strategic brief, KPIs, monthly reviews)",
+        "Create 'Marketing Readiness Checklist' for professional services",
+        "Add data on how long campaigns need to prove ROI (60-90 days typical)",
+        "Include cost of agency hopping (onboarding time, setup, learning curve)",
+        "Highlight difference between 'bad agency' vs 'misaligned expectations'"
+      ],
+      "best_platform": "LinkedIn (thought leadership angle) + YouTube Short (humorous take on mistakes)",
+      "recycle_score": 8
+    },
+    {
+      "id": "6e4f84de57065",
+      "original_topic": "Skepticism about TikTok for law firm branding",
+      "fresh_angle": "2024 legal TikTok case studies + Gen Z legal client behavior shifts + professional positioning strategies",
+      "new_hook": "Law firms dismissing TikTok are missing 40% of under-35 clients who research attorneys there. Here's how to do it right.",
+      "changes_needed": [
+        "Add 2024 statistics on Gen Z legal service searches and social discovery",
+        "Include examples of successful lawyer TikTok accounts (education vs selling angle)",
+        "Address professionalism concern with 'educational content' framing",
+        "Compare reach/cost vs traditional channels for this demographic",
+        "Add brief on TikTok for legal educational content (not just case wins)",
+        "Include compliance considerations for regulated professions"
+      ],
+      "best_platform": "LinkedIn + TikTok itself (ironic/meta angle) + legal marketing communities",
+      "recycle_score": 8
+    }
+  ],
+  "generated_at": "2026-02-21T07:45:41.108Z"
+}

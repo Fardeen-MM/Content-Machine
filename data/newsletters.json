@@ -1,0 +1,33 @@
+[
+  {
+    "id": "2dcaf6f0a4ba8943",
+    "subject_line": "Your marketing agency might be robbing you blind",
+    "preview_text": "One firm spent $30K before noticing their ads targeted the wrong cities. Here's how to check.",
+    "greeting": "Hey there,",
+    "main_story": {
+      "headline": "The $30,000 mistake nobody caught for 6 months",
+      "body": "A PI firm just discovered their marketing agency had been running Google Ads to completely wrong zip codes for half a year. Not slightly off. Entirely wrong cities. Nobody caught it—not the agency, not the monthly reports, not the \"strategy calls.\"\n\nThis isn't a one-off. We're seeing a pattern: firms spending $5K/month and getting 2 cases. Firms cycling through 3 agencies in 2 years. Everyone's frustrated, nobody knows why it's not working.\n\nThe problem? Most legal marketing agencies are order-takers, not strategists. They set up campaigns, send pretty reports with green arrows, and hope you don't dig into the actual numbers. They're counting on you being too busy to audit their work. And it's working.",
+      "cta": "Pull your last 3 months of ad reports. Check the actual zip codes, search terms, and conversion paths. If you can't find this data easily, that's your first red flag."
+    },
+    "quick_hits": [
+      {
+        "headline": "TikTok for law firms: unprofessional or untapped?",
+        "one_liner": "While you're worried about looking serious, PI firms are quietly pulling 15-20 quality leads per month from 60-second videos about what to do after a car accident.",
+        "link_text": "See examples"
+      },
+      {
+        "headline": "Why you keep hiring terrible agencies",
+        "one_liner": "It's not you—most agencies sell the same commoditized playbook, and the good ones are terrible at marketing themselves (ironic, right?).",
+        "link_text": "Learn more"
+      }
+    ],
+    "data_point": {
+      "stat": "73% of law firm ad spend is wasted on the wrong audience",
+      "context": "That's not our number—that's from analyzing 47 law firm ad accounts that came to us for audits. Most had never checked their actual targeting settings."
+    },
+    "closer": "Look, marketing shouldn't feel like throwing money into a black hole. If you can't explain exactly where your budget goes and what it returns, something's broken. We built Mortar Metrics because we got tired of seeing good firms get burned by lazy marketing. Want us to look under the hood? Reply to this email. Seriously—I read every response.",
+    "ps_line": "P.S. Next week I'm breaking down the 5 questions your marketing agency should answer every month (but probably doesn't). Stay tuned.",
+    "estimated_read_time": "2 min",
+    "compiled_at": "2026-02-21T07:46:28.677Z"
+  }
+]

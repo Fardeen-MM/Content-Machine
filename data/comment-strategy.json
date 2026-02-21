@@ -1,0 +1,121 @@
+{
+  "daily_targets": [
+    {
+      "account_type": "Personal Injury Law Firms",
+      "platform": "linkedin",
+      "why": "They struggle with lead quality and speed-to-lead conversion - our exact pain point to solve",
+      "comment_approach": "Acknowledge their conversion challenge, offer specific insight about response time",
+      "example_comment": "The 30-second hang-up issue is brutal. We saw PI firms cut abandonment rates 40% just by having someone pick up within 20 seconds. What's your current answer rate looking like?",
+      "timing": "Within 2 hours of post (when engagement is climbing)"
+    },
+    {
+      "account_type": "Legal Marketing Agencies & Consultants",
+      "platform": "linkedin",
+      "why": "They influence law firms buying marketing services; partnership/referral potential",
+      "comment_approach": "Build on their insights, add data-backed perspective from legal sector",
+      "example_comment": "21 years in legal marketing and AI is definitely reshaping discovery. The biggest edge we're seeing: firms using AI to qualify leads before human contact. Cuts wasted calls dramatically.",
+      "timing": "Within 4 hours of post (before algorithm cools)"
+    },
+    {
+      "account_type": "Solopreneurs & Newer Lawyers",
+      "platform": "linkedin",
+      "why": "Budget-conscious, DIY mindset, most likely to need affordable marketing solutions",
+      "comment_approach": "Be the helpful mentor, position as guide not salesperson",
+      "example_comment": "Great post. For newer lawyers on limited budgets: before spending on ads, nail your phone intake process. We've seen solos convert 3x better by just improving how they answer calls. Worth auditing first.",
+      "timing": "Within 6 hours of post (catch the intentional seekers)"
+    },
+    {
+      "account_type": "Employment & Real Estate Law Specialists",
+      "platform": "linkedin",
+      "why": "Different practice areas = different lead sources; content signals they're investing in business growth",
+      "comment_approach": "Show you understand their niche challenges",
+      "example_comment": "Employment law hiring is competitive right now. If you're scaling, the paralegal role quality matters—they're often first voice clients hear. Have you optimized how your intake team qualifies candidates?",
+      "timing": "Within 3 hours of post"
+    },
+    {
+      "account_type": "Legal Tech & Practice Management Tool Companies",
+      "platform": "linkedin",
+      "why": "They serve lawyers; co-marketing and referral partnerships possible",
+      "comment_approach": "Complement their solution, show integration value",
+      "example_comment": "Tools like this solve intake workflow, but we're seeing the real bottleneck is pre-intake: getting calls answered fast. Firms using [tool name] + optimized phone systems see 2x better lead conversion.",
+      "timing": "Within 8 hours of post"
+    },
+    {
+      "account_type": "Divorce & Family Law Practitioners",
+      "platform": "x",
+      "why": "Highly localized, niche practice = need geo-specific marketing; active on X with case-related posts",
+      "comment_approach": "Quick, helpful, location-aware",
+      "example_comment": "County residency rules matter for divorce, but your lead SOURCE doesn't have to be local. We're helping NJ family law firms pull leads from statewide searches. Worth exploring if geo-targeting is costing you cases.",
+      "timing": "Within 1 hour of post (X moves faster)"
+    }
+  ],
+  "comment_templates": [
+    {
+      "trigger": "Post about lead cost / ROI challenges",
+      "template": "[Account name], your $5K/month spend sounds typical. Before scaling budget, audit this: what % of your callers hang up in first 30 seconds? We see firms cut cost-per-case 35% just by answering faster. Worth measuring before your next ad spend.",
+      "goal": "Position as problem-solver, create credibility, invite DM conversation"
+    },
+    {
+      "trigger": "Post about hiring legal staff / paralegal roles",
+      "template": "Quality intake staff = quality leads. Seen too many firms hire based on legal knowledge when they should hire on phone/communication skills first. Your first conversation sets case quality. What's your intake training like currently?",
+      "goal": "Show expertise, open dialogue, identify if they're growth-stage"
+    },
+    {
+      "trigger": "Post about legal marketing trends / AI / new strategies",
+      "template": "[Account/insight mentioned]. Agreed. We're tracking this in [practice area] and seeing [specific outcome]. The advantage goes to firms who [actionable insight]. Have you implemented this angle yet?",
+      "goal": "Build authority, show real data, position as insider"
+    },
+    {
+      "trigger": "Post about geographic/jurisdictional legal questions",
+      "template": "Good question. Location matters for compliance, but DON'T let it limit your lead generation strategy. Smart firms in [state] are pulling clients from broader regions then handling local requirements. Might be leaving money on table otherwise.",
+      "goal": "Reframe limitation, offer bigger-picture thinking"
+    },
+    {
+      "trigger": "Post about practice growth / scaling challenges",
+      "template": "Scaling is hard because [insight]. Most firms focus on getting more leads when they should focus on [conversion metric]. We worked with a firm doing exactly what you're doing—turned it around by [specific change]. Happy to share what worked.",
+      "goal": "Offer specific help, build relationship, set up potential consultation"
+    },
+    {
+      "trigger": "Post about specific practice area (PI, employment, family law, real estate, etc.)",
+      "template": "[Practice area] firms we work with struggle most with [specific problem]. The ones winning are doing [specific tactic]. If you're not doing this already, worth a test.",
+      "goal": "Show niche expertise, suggest immediate action"
+    }
+  ],
+  "rules": [
+    "NEVER mention your service/product directly in comment—only mention in natural follow-up DMs",
+    "Always ask a question at the end—drives engagement, boosts comment visibility",
+    "Use specific numbers/data—'35% improvement' beats 'significant results'",
+    "Reference their post directly by name/detail—shows you actually read it",
+    "Reply to replies within 2 hours—compounds algorithmic lift",
+    "Comment on accounts with 500-50K followers (sweet spot for reach without algorithms favoring size)",
+    "Never comment on the same account more than 2x per week (avoid seeming spammy)",
+    "Match tone to platform: LinkedIn = professional/insightful, X = conversational/quick",
+    "Add value FIRST, relationship-building second, selling never in comments",
+    "Target posts 1-48 hours old (freshest engagement window)"
+  ],
+  "daily_quota": {
+    "linkedin": 5,
+    "x": 10
+  },
+  "time_budget": "25 minutes per day",
+  "breakdown": {
+    "linkedin": "5-7 min per comment (read, think, craft)",
+    "x": "1.5-2 min per comment (shorter format)",
+    "reply_engagement": "10 minutes (responding to your comment replies)",
+    "buffer": "2-3 minutes"
+  },
+  "growth_projection": {
+    "month_1": "12-18 followers (building credibility)",
+    "month_2": "35-50 followers (comments gaining traction)",
+    "month_3": "75-120 followers (consistent engagement patterns recognized)",
+    "month_6": "300-500 followers (algorithm amplification + DM conversions)",
+    "caveat": "Growth compounds when you convert comments → DMs → calls. Real ROI is leads, not follower count."
+  },
+  "success_metrics": {
+    "track_daily": "comments per day, replies received, DM inquiries",
+    "track_weekly": "follower growth, total engagements, which comment types perform",
+    "track_monthly": "DMs that converted to calls, calls that converted to cases",
+    "goal": "10-15 DM conversations per month → 2-4 qualified leads per month"
+  },
+  "generated_at": "2026-02-21T07:46:06.973Z"
+}

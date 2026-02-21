@@ -18485,6 +18485,455 @@ Content: ${firstContent.substring(0, 2000)}`;
       return json(res, readJSON('content-supply-chain.json') || { stages: [], bottleneck: 'Unknown' });
     }
 
+    // --- Content Decay Tracker ---
+    // Track content performance decline over time and suggest refresh/retire actions
+    if (method === 'POST' && pathname === '/api/content-decay-tracker') {
+      const content = readJSON('content.json');
+      const engagement = readJSON('engagement-tracker.json');
+      const engList = Array.isArray(engagement) ? engagement : [];
+
+      const now = Date.now();
+      const dayMs = 86400000;
+      const decayItems = [];
+
+      for (const c of content) {
+        const created = new Date(c.created_at || c.generated_at || 0).getTime();
+        const ageDays = Math.round((now - created) / dayMs);
+        if (ageDays < 7) continue;
+
+        const engForContent = engList.filter(e => e.content_id === c.id);
+        const recentEng = engForContent.filter(e => (now - new Date(e.timestamp || e.created_at || 0).getTime()) < 7 * dayMs);
+        const olderEng = engForContent.filter(e => {
+          const t = now - new Date(e.timestamp || e.created_at || 0).getTime();
+          return t >= 7 * dayMs && t < 30 * dayMs;
+        });
+
+        const recentRate = recentEng.length;
+        const olderRate = olderEng.length / 3.3;
+        const decayRate = olderRate > 0 ? Math.round(((olderRate - recentRate) / olderRate) * 100) : 0;
+
+        let action = 'monitor';
+        if (decayRate > 70) action = 'retire';
+        else if (decayRate > 40) action = 'refresh';
+        else if (decayRate > 20) action = 'boost';
+
+        decayItems.push({
+          id: c.id,
+          title: c.trigger_title || c.title || Object.keys(c.formats || {})[0] || 'Untitled',
+          age_days: ageDays,
+          decay_rate: decayRate,
+          recent_engagement: recentRate,
+          older_engagement: Math.round(olderRate * 10) / 10,
+          action,
+          status: c.status || 'draft'
+        });
+      }
+
+      decayItems.sort((a, b) => b.decay_rate - a.decay_rate);
+      const report = {
+        total_tracked: decayItems.length,
+        needs_refresh: decayItems.filter(d => d.action === 'refresh').length,
+        needs_retire: decayItems.filter(d => d.action === 'retire').length,
+        needs_boost: decayItems.filter(d => d.action === 'boost').length,
+        items: decayItems.slice(0, 50),
+        avg_decay_rate: decayItems.length > 0 ? Math.round(decayItems.reduce((s, d) => s + d.decay_rate, 0) / decayItems.length) : 0,
+        generated_at: new Date().toISOString()
+      };
+
+      writeJSON('content-decay-tracker.json', report);
+      return json(res, report);
+    }
+    if (method === 'GET' && pathname === '/api/content-decay-tracker') {
+      return json(res, readJSON('content-decay-tracker.json') || { total_tracked: 0, items: [] });
+    }
+
+    // --- Headline Analyzer ---
+    // Score headlines for click potential, emotional impact, and SEO value
+    if (method === 'POST' && pathname === '/api/headline-analyzer') {
+      const content = readJSON('content.json');
+      const results = [];
+
+      for (const c of content) {
+        const title = c.trigger_title || c.title || '';
+        if (!title) continue;
+
+        const words = title.split(/\s+/);
+        const wordCount = words.length;
+        let score = 50;
+
+        // Length scoring
+        if (wordCount >= 6 && wordCount <= 12) score += 15;
+        else if (wordCount >= 4 && wordCount <= 15) score += 8;
+        else score -= 10;
+
+        // Power words
+        const powerWords = ['secret', 'proven', 'ultimate', 'exclusive', 'breaking', 'urgent', 'shocking', 'insider', 'mistakes', 'tricks', 'hack', 'free', 'guaranteed', 'instant'];
+        const hasPower = powerWords.some(w => title.toLowerCase().includes(w));
+        if (hasPower) score += 12;
+
+        // Numbers
+        if (/\d/.test(title)) score += 10;
+
+        // Question
+        if (title.includes('?')) score += 8;
+
+        // Emotional triggers
+        const emotionWords = ['love', 'hate', 'fear', 'amazing', 'terrible', 'worst', 'best', 'killing', 'dying', 'fired', 'wrong'];
+        const hasEmotion = emotionWords.some(w => title.toLowerCase().includes(w));
+        if (hasEmotion) score += 10;
+
+        // Specificity
+        if (/\$[\d,]+/.test(title)) score += 8;
+        if (/%/.test(title)) score += 5;
+
+        score = Math.max(0, Math.min(100, score));
+
+        const tips = [];
+        if (!hasPower) tips.push('Add a power word');
+        if (!/\d/.test(title)) tips.push('Add a number for specificity');
+        if (wordCount < 6) tips.push('Headline is too short');
+        if (wordCount > 15) tips.push('Headline is too long');
+        if (!hasEmotion) tips.push('Add emotional triggers');
+
+        results.push({
+          id: c.id,
+          headline: title,
+          score,
+          word_count: wordCount,
+          has_number: /\d/.test(title),
+          has_question: title.includes('?'),
+          has_power_word: hasPower,
+          has_emotion: hasEmotion,
+          tips
+        });
+      }
+
+      results.sort((a, b) => b.score - a.score);
+      const report = {
+        total_analyzed: results.length,
+        avg_score: results.length > 0 ? Math.round(results.reduce((s, r) => s + r.score, 0) / results.length) : 0,
+        top_headlines: results.slice(0, 10),
+        weak_headlines: results.filter(r => r.score < 50).slice(0, 10),
+        common_tips: Object.entries(results.flatMap(r => r.tips).reduce((acc, t) => { acc[t] = (acc[t] || 0) + 1; return acc; }, {})).sort((a, b) => b[1] - a[1]).map(([tip, count]) => ({ tip, count })),
+        generated_at: new Date().toISOString()
+      };
+
+      writeJSON('headline-analyzer.json', report);
+      return json(res, report);
+    }
+    if (method === 'GET' && pathname === '/api/headline-analyzer') {
+      return json(res, readJSON('headline-analyzer.json') || { total_analyzed: 0, top_headlines: [], weak_headlines: [] });
+    }
+
+    // --- Content Cluster Map ---
+    // Group content into topic clusters for internal linking and pillar strategy
+    if (method === 'POST' && pathname === '/api/content-cluster-map') {
+      const content = readJSON('content.json');
+      const clusters = {};
+
+      for (const c of content) {
+        const title = (c.trigger_title || c.title || '').toLowerCase();
+        const tags = c.tags || [];
+
+        // Cluster by keywords
+        const clusterKeywords = {
+          'seo': ['seo', 'search', 'ranking', 'google', 'organic', 'keyword'],
+          'ppc': ['ppc', 'ads', 'google ads', 'paid', 'cpc', 'campaign'],
+          'social': ['social', 'linkedin', 'twitter', 'instagram', 'tiktok', 'facebook'],
+          'website': ['website', 'design', 'landing page', 'conversion', 'ux', 'web'],
+          'intake': ['intake', 'lead', 'phone', 'call', 'response', 'speed'],
+          'reviews': ['review', 'reputation', 'testimonial', 'rating', 'gbp'],
+          'content': ['content', 'blog', 'video', 'podcast', 'newsletter'],
+          'strategy': ['strategy', 'roi', 'budget', 'growth', 'scale', 'agency'],
+          'ai': ['ai', 'automation', 'chatbot', 'artificial intelligence', 'machine learning'],
+          'branding': ['brand', 'authority', 'thought leader', 'positioning']
+        };
+
+        for (const [cluster, keywords] of Object.entries(clusterKeywords)) {
+          if (keywords.some(k => title.includes(k)) || tags.some(t => keywords.includes(t.toLowerCase()))) {
+            if (!clusters[cluster]) clusters[cluster] = { pieces: [], total_engagement: 0 };
+            clusters[cluster].pieces.push({
+              id: c.id,
+              title: c.trigger_title || c.title || 'Untitled',
+              status: c.status || 'draft'
+            });
+          }
+        }
+      }
+
+      const clusterList = Object.entries(clusters).map(([name, data]) => ({
+        cluster: name,
+        piece_count: data.pieces.length,
+        pieces: data.pieces.slice(0, 10),
+        has_pillar: data.pieces.length >= 5,
+        needs_more: Math.max(0, 5 - data.pieces.length)
+      })).sort((a, b) => b.piece_count - a.piece_count);
+
+      const report = {
+        total_clusters: clusterList.length,
+        total_clustered: clusterList.reduce((s, c) => s + c.piece_count, 0),
+        clusters: clusterList,
+        unclustered: content.length - new Set(clusterList.flatMap(c => c.pieces.map(p => p.id))).size,
+        gaps: clusterList.filter(c => !c.has_pillar).map(c => c.cluster),
+        generated_at: new Date().toISOString()
+      };
+
+      writeJSON('content-cluster-map.json', report);
+      return json(res, report);
+    }
+    if (method === 'GET' && pathname === '/api/content-cluster-map') {
+      return json(res, readJSON('content-cluster-map.json') || { total_clusters: 0, clusters: [] });
+    }
+
+    // --- Audience Sentiment Pulse ---
+    // Aggregate sentiment across all content and track sentiment trends
+    if (method === 'POST' && pathname === '/api/audience-sentiment-pulse') {
+      const content = readJSON('content.json');
+      const engagement = readJSON('engagement-tracker.json');
+      const engList = Array.isArray(engagement) ? engagement : [];
+
+      const sentimentKeywords = {
+        positive: ['great', 'love', 'amazing', 'excellent', 'fantastic', 'helpful', 'brilliant', 'perfect', 'awesome'],
+        negative: ['terrible', 'awful', 'hate', 'worst', 'useless', 'waste', 'horrible', 'scam', 'disappointed'],
+        neutral: ['okay', 'fine', 'decent', 'average', 'normal']
+      };
+
+      let positive = 0, negative = 0, neutral = 0;
+      const sentimentByFormat = {};
+
+      for (const c of content) {
+        const formats = c.formats || {};
+        for (const [fmt, fmtData] of Object.entries(formats)) {
+          const text = typeof fmtData === 'string' ? fmtData : (typeof fmtData?.content === 'string' ? fmtData.content : '');
+          const lower = text.toLowerCase();
+          const posCount = sentimentKeywords.positive.filter(w => lower.includes(w)).length;
+          const negCount = sentimentKeywords.negative.filter(w => lower.includes(w)).length;
+
+          if (posCount > negCount) positive++;
+          else if (negCount > posCount) negative++;
+          else neutral++;
+
+          if (!sentimentByFormat[fmt]) sentimentByFormat[fmt] = { positive: 0, negative: 0, neutral: 0 };
+          if (posCount > negCount) sentimentByFormat[fmt].positive++;
+          else if (negCount > posCount) sentimentByFormat[fmt].negative++;
+          else sentimentByFormat[fmt].neutral++;
+        }
+      }
+
+      const total = positive + negative + neutral;
+      const report = {
+        overall: {
+          positive: total > 0 ? Math.round((positive / total) * 100) : 0,
+          negative: total > 0 ? Math.round((negative / total) * 100) : 0,
+          neutral: total > 0 ? Math.round((neutral / total) * 100) : 0,
+          total_analyzed: total,
+          dominant: positive >= negative && positive >= neutral ? 'positive' : negative > positive ? 'negative' : 'neutral'
+        },
+        by_format: sentimentByFormat,
+        engagement_comments: engList.filter(e => e.type === 'comment').length,
+        recommendations: [],
+        generated_at: new Date().toISOString()
+      };
+
+      if (report.overall.negative > 30) report.recommendations.push('High negative sentiment — review content tone');
+      if (report.overall.neutral > 60) report.recommendations.push('Too neutral — add more opinionated/emotional content');
+      if (total === 0) report.recommendations.push('No content analyzed yet — generate content first');
+
+      writeJSON('audience-sentiment-pulse.json', report);
+      return json(res, report);
+    }
+    if (method === 'GET' && pathname === '/api/audience-sentiment-pulse') {
+      return json(res, readJSON('audience-sentiment-pulse.json') || { overall: { positive: 0, negative: 0, neutral: 0 } });
+    }
+
+    // --- Content Workflow Automations ---
+    // Define and manage automated workflow rules (if X then Y)
+    if (method === 'POST' && pathname === '/api/content-workflow-automations') {
+      const body = await parseBody(req);
+      const raw = readJSON('content-workflow-automations.json');
+      const data = (raw && raw.rules) ? raw : { rules: [], execution_log: [] };
+
+      if (body.action === 'add_rule') {
+        const rule = {
+          id: generateId(),
+          name: body.name || 'Untitled Rule',
+          trigger: body.trigger || 'content_approved',
+          conditions: body.conditions || [],
+          actions: body.actions || [],
+          enabled: body.enabled !== false,
+          executions: 0,
+          created_at: new Date().toISOString()
+        };
+        data.rules.push(rule);
+        writeJSON('content-workflow-automations.json', data);
+        return json(res, rule);
+      }
+
+      if (body.action === 'toggle_rule' && body.rule_id) {
+        const rule = data.rules.find(r => r.id === body.rule_id);
+        if (rule) {
+          rule.enabled = !rule.enabled;
+          writeJSON('content-workflow-automations.json', data);
+          return json(res, rule);
+        }
+        return json(res, { error: 'Rule not found' }, 404);
+      }
+
+      if (body.action === 'delete_rule' && body.rule_id) {
+        data.rules = data.rules.filter(r => r.id !== body.rule_id);
+        writeJSON('content-workflow-automations.json', data);
+        return json(res, { ok: true });
+      }
+
+      if (body.action === 'simulate') {
+        const activeRules = data.rules.filter(r => r.enabled);
+        const simResults = activeRules.map(r => ({
+          rule: r.name,
+          trigger: r.trigger,
+          would_fire: true,
+          actions: r.actions
+        }));
+        return json(res, { simulated: simResults.length, results: simResults });
+      }
+
+      return json(res, data);
+    }
+    if (method === 'GET' && pathname === '/api/content-workflow-automations') {
+      const raw = readJSON('content-workflow-automations.json');
+      return json(res, (raw && raw.rules) ? raw : { rules: [], execution_log: [] });
+    }
+
+    // --- Platform Rate Limiter ---
+    // Track posting frequency per platform to avoid spam/throttling
+    if (method === 'POST' && pathname === '/api/platform-rate-limiter') {
+      const published = readJSON('published.json');
+      const pubList = Array.isArray(published) ? published : [];
+      const now = Date.now();
+      const dayMs = 86400000;
+
+      const platforms = ['linkedin', 'x', 'instagram', 'youtube', 'tiktok', 'newsletter', 'blog'];
+      const limits = {
+        linkedin: { daily: 2, weekly: 10, optimal: 1 },
+        x: { daily: 5, weekly: 25, optimal: 3 },
+        instagram: { daily: 3, weekly: 15, optimal: 2 },
+        youtube: { daily: 1, weekly: 3, optimal: 0.5 },
+        tiktok: { daily: 3, weekly: 15, optimal: 2 },
+        newsletter: { daily: 1, weekly: 2, optimal: 0.3 },
+        blog: { daily: 2, weekly: 7, optimal: 1 }
+      };
+
+      const platformStatus = {};
+      for (const p of platforms) {
+        const pPosts = pubList.filter(pub => (pub.platform || pub.format || '').toLowerCase().includes(p));
+        const today = pPosts.filter(pub => (now - new Date(pub.published_at || pub.created_at || 0).getTime()) < dayMs).length;
+        const thisWeek = pPosts.filter(pub => (now - new Date(pub.published_at || pub.created_at || 0).getTime()) < 7 * dayMs).length;
+        const limit = limits[p] || { daily: 3, weekly: 15, optimal: 2 };
+
+        platformStatus[p] = {
+          posts_today: today,
+          posts_this_week: thisWeek,
+          daily_limit: limit.daily,
+          weekly_limit: limit.weekly,
+          optimal_daily: limit.optimal,
+          daily_remaining: Math.max(0, limit.daily - today),
+          weekly_remaining: Math.max(0, limit.weekly - thisWeek),
+          status: today >= limit.daily ? 'at_limit' : today >= limit.optimal ? 'optimal' : 'under',
+          can_post: today < limit.daily
+        };
+      }
+
+      const report = {
+        platforms: platformStatus,
+        total_today: Object.values(platformStatus).reduce((s, p) => s + p.posts_today, 0),
+        total_week: Object.values(platformStatus).reduce((s, p) => s + p.posts_this_week, 0),
+        at_limit: Object.entries(platformStatus).filter(([, p]) => p.status === 'at_limit').map(([name]) => name),
+        can_post: Object.entries(platformStatus).filter(([, p]) => p.can_post).map(([name]) => name),
+        generated_at: new Date().toISOString()
+      };
+
+      writeJSON('platform-rate-limiter.json', report);
+      return json(res, report);
+    }
+    if (method === 'GET' && pathname === '/api/platform-rate-limiter') {
+      return json(res, readJSON('platform-rate-limiter.json') || { platforms: {}, at_limit: [], can_post: [] });
+    }
+
+    // --- Content Performance Tiers ---
+    // Categorize content into performance tiers (S/A/B/C/D/F) based on multi-signal scoring
+    if (method === 'POST' && pathname === '/api/content-performance-tiers') {
+      const content = readJSON('content.json');
+      const engagement = readJSON('engagement-tracker.json');
+      const engList = Array.isArray(engagement) ? engagement : [];
+
+      const tiers = { S: [], A: [], B: [], C: [], D: [], F: [] };
+      const scored = [];
+
+      for (const c of content) {
+        let score = 0;
+        const formats = Object.keys(c.formats || {});
+        const engForC = engList.filter(e => e.content_id === c.id);
+
+        // Format diversity
+        score += Math.min(formats.length * 3, 30);
+
+        // Engagement
+        const totalEng = engForC.reduce((s, e) => s + (e.engagement || e.likes || 0), 0);
+        score += Math.min(totalEng * 5, 25);
+
+        // Status bonus
+        if (c.status === 'published') score += 15;
+        else if (c.status === 'approved') score += 10;
+        else if (c.status === 'scheduled') score += 8;
+
+        // Content length
+        const firstFmt = formats[0];
+        if (firstFmt) {
+          const fmtData = c.formats[firstFmt];
+          const text = typeof fmtData === 'string' ? fmtData : (typeof fmtData?.content === 'string' ? fmtData.content : '');
+          if (text.length > 500) score += 10;
+          else if (text.length > 200) score += 5;
+        }
+
+        // Impressions
+        const totalImp = engForC.reduce((s, e) => s + (e.impressions || 0), 0);
+        if (totalImp > 1000) score += 15;
+        else if (totalImp > 100) score += 8;
+
+        score = Math.min(score, 100);
+        const tier = score >= 90 ? 'S' : score >= 75 ? 'A' : score >= 60 ? 'B' : score >= 40 ? 'C' : score >= 20 ? 'D' : 'F';
+
+        const item = {
+          id: c.id,
+          title: c.trigger_title || c.title || 'Untitled',
+          score,
+          tier,
+          format_count: formats.length,
+          total_engagement: totalEng,
+          total_impressions: totalImp,
+          status: c.status || 'draft'
+        };
+        tiers[tier].push(item);
+        scored.push(item);
+      }
+
+      scored.sort((a, b) => b.score - a.score);
+      const report = {
+        total_scored: scored.length,
+        tier_counts: Object.fromEntries(Object.entries(tiers).map(([t, items]) => [t, items.length])),
+        avg_score: scored.length > 0 ? Math.round(scored.reduce((s, i) => s + i.score, 0) / scored.length) : 0,
+        top_performers: scored.slice(0, 10),
+        bottom_performers: scored.slice(-10).reverse(),
+        tier_distribution: Object.fromEntries(Object.entries(tiers).map(([t, items]) => [t, scored.length > 0 ? Math.round((items.length / scored.length) * 100) : 0])),
+        generated_at: new Date().toISOString()
+      };
+
+      writeJSON('content-performance-tiers.json', report);
+      return json(res, report);
+    }
+    if (method === 'GET' && pathname === '/api/content-performance-tiers') {
+      return json(res, readJSON('content-performance-tiers.json') || { total_scored: 0, tier_counts: {}, top_performers: [] });
+    }
+
     // --- Static file serving ---
 
     // Serve dashboard

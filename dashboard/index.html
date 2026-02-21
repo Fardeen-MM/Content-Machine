@@ -1582,6 +1582,11 @@ const state = {
   icpRefined: null,
   winLossAnalysis: null,
   contentRoi: null,
+  // Batch 67: Content Experiments, Social Listening, Authority Builder, Quick Wins
+  contentExperiments: null,
+  socialListening: null,
+  authorityBuilder: null,
+  quickWins: null,
 };
 
 // --- API Calls ---
@@ -1607,7 +1612,7 @@ async function loadData() {
   state.loading = true;
   render();
   try {
-    const [content, triggers, stats, calendar, monthCal, settings, memory, performance, perfAnalytics, meetings, meetingStats, clients, allActions, chatMessages, healthData, inspirations, pestering, pesteringStages, insights, deals, published, series, predictions, playbooks, ctaLibrary, trending, funnel, publishTracker, leadMagnets, contentHealth, scheduleOptimize, templates, dmSequences, hooks, pillarPlan, contentLeads, autopilot, scheduleQueue, engagementDashboard, contentBriefs, workflowPipeline, personas, calendarWeek, benchmarkReport, contentIdeas, socialProof, roiReport, audienceGrowth, contentThemes, distributionPlans, dmPipelines, competitorsTracked, dripCampaigns, autoResponses, expiringContent, amplifications, leadFunnels, calendarInsights, weeklyDigest, splitTests, workflowRules, youtubePipelines, carousels, contentMatrix, ctaStrategy, seriesTemplates, contentBank, engagementPlaybook, atomizations, platformRules, emailSequences, weeklyContentPlan, repurposeChains, lmFunnels, perfReport, contentPillars, compAnalyses, nurtureCampaigns, authorityPlan, flywheelData, velocityData, audienceSegments, contentDna, topicClusters, voiceProfiles, dmScriptsData, replyStrategyData, systemHealthData, contentRecyclerData, commentStrategyData, newslettersData, distributionEngineData, socialProofEngineData, advancedAnalyticsData, growthPlaybookData, genLeadMagnetsData, funnelAnalysisData, autoRepurposeData, weeklyActionPlanData, trendsAnalysisData, authorityScoreData, contentIntelData, conversionOptData, contentMatrixData, draftingStrategyData, zeroClickBankData, contentVelocityData, pillarRotatorData, savedRepliesData, audienceBuilderData, weeklyReportData, competitiveIntelData, contentScoringData, postSchedulerData, trendHijackerData, leadMagnetFunnelsData, outboundSequencesData, icpRefinedData, winLossData, contentRoiData] = await Promise.all([
+    const [content, triggers, stats, calendar, monthCal, settings, memory, performance, perfAnalytics, meetings, meetingStats, clients, allActions, chatMessages, healthData, inspirations, pestering, pesteringStages, insights, deals, published, series, predictions, playbooks, ctaLibrary, trending, funnel, publishTracker, leadMagnets, contentHealth, scheduleOptimize, templates, dmSequences, hooks, pillarPlan, contentLeads, autopilot, scheduleQueue, engagementDashboard, contentBriefs, workflowPipeline, personas, calendarWeek, benchmarkReport, contentIdeas, socialProof, roiReport, audienceGrowth, contentThemes, distributionPlans, dmPipelines, competitorsTracked, dripCampaigns, autoResponses, expiringContent, amplifications, leadFunnels, calendarInsights, weeklyDigest, splitTests, workflowRules, youtubePipelines, carousels, contentMatrix, ctaStrategy, seriesTemplates, contentBank, engagementPlaybook, atomizations, platformRules, emailSequences, weeklyContentPlan, repurposeChains, lmFunnels, perfReport, contentPillars, compAnalyses, nurtureCampaigns, authorityPlan, flywheelData, velocityData, audienceSegments, contentDna, topicClusters, voiceProfiles, dmScriptsData, replyStrategyData, systemHealthData, contentRecyclerData, commentStrategyData, newslettersData, distributionEngineData, socialProofEngineData, advancedAnalyticsData, growthPlaybookData, genLeadMagnetsData, funnelAnalysisData, autoRepurposeData, weeklyActionPlanData, trendsAnalysisData, authorityScoreData, contentIntelData, conversionOptData, contentMatrixData, draftingStrategyData, zeroClickBankData, contentVelocityData, pillarRotatorData, savedRepliesData, audienceBuilderData, weeklyReportData, competitiveIntelData, contentScoringData, postSchedulerData, trendHijackerData, leadMagnetFunnelsData, outboundSequencesData, icpRefinedData, winLossData, contentRoiData, contentExperimentsData, socialListeningData, authorityBuilderData, quickWinsData] = await Promise.all([
       api('/api/content'),
       api('/api/triggers'),
       api('/api/stats'),
@@ -1727,7 +1732,11 @@ async function loadData() {
       api('/api/outbound-sequences').catch(() => []),
       api('/api/icp-refiner').catch(() => null),
       api('/api/win-loss-analysis').catch(() => null),
-      api('/api/content-roi').catch(() => null)
+      api('/api/content-roi').catch(() => null),
+      api('/api/content-experiments').catch(() => null),
+      api('/api/social-listening').catch(() => null),
+      api('/api/authority-builder').catch(() => null),
+      api('/api/quick-wins').catch(() => null)
     ]);
     state.content = content;
     state.triggers = triggers;
@@ -1849,6 +1858,10 @@ async function loadData() {
     state.icpRefined = icpRefinedData;
     state.winLossAnalysis = winLossData;
     state.contentRoi = contentRoiData;
+    state.contentExperiments = contentExperimentsData;
+    state.socialListening = socialListeningData;
+    state.authorityBuilder = authorityBuilderData;
+    state.quickWins = quickWinsData;
   } catch (err) {
     console.error('Failed to load data:', err);
     toast('Failed to load data', 'error');
@@ -3584,6 +3597,33 @@ function renderDashboardPage() {
                 render();
               } catch (err) { toast('Win/loss failed: ' + err.message, 'error'); }
             }}, 'Win/Loss'),
+            h('button', { className: 'btn btn-outline btn-sm', style: { color: '#059669', borderColor: '#059669' }, onclick: async () => {
+              toast('Finding quick wins...', 'info');
+              try {
+                const res = await api('/api/quick-wins', { method: 'POST' });
+                state.quickWins = res;
+                toast(`Wins: ${res.quick_wins?.length || 0} found — ${res.one_thing_today?.slice(0, 50)}`, 'success');
+                render();
+              } catch (err) { toast('Quick wins failed: ' + err.message, 'error'); }
+            }}, 'Wins'),
+            h('button', { className: 'btn btn-outline btn-sm', style: { color: '#7c2d12', borderColor: '#7c2d12' }, onclick: async () => {
+              toast('Scanning social signals...', 'info');
+              try {
+                const res = await api('/api/social-listening', { method: 'POST' });
+                state.socialListening = res;
+                toast(`Listening: ${res.total_signals} signals, ${res.dominant_sentiment} sentiment`, 'success');
+                render();
+              } catch (err) { toast('Listening failed: ' + err.message, 'error'); }
+            }}, 'Listen'),
+            h('button', { className: 'btn btn-outline btn-sm', style: { color: '#6d28d9', borderColor: '#6d28d9' }, onclick: async () => {
+              toast('Building authority plan...', 'info');
+              try {
+                const res = await api('/api/authority-builder', { method: 'POST' });
+                state.authorityBuilder = res;
+                toast(`Authority: ${res.current_stage || 'plan built'} — 30 days mapped`, 'success');
+                render();
+              } catch (err) { toast('Authority failed: ' + err.message, 'error'); }
+            }}, 'Authority'),
             h('button', { className: 'btn btn-ghost btn-sm', onclick: () => { state.page = 'content'; render(); } }, 'View Content')
           )
         ),
@@ -4720,6 +4760,62 @@ function renderDashboardPage() {
       ),
       h('div', { style: { fontSize: '10px', color: 'var(--gray-500)' } }, state.contentRoi.break_even || ''),
       h('div', { style: { fontSize: '10px', color: 'var(--gray-600)', marginTop: '2px', fontStyle: 'italic' } }, state.contentRoi.recommendation || '')
+    ) : null,
+
+    // Quick Wins (Batch 67)
+    state.quickWins?.quick_wins ? h('div', { style: { marginBottom: '20px' } },
+      h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)', marginBottom: '8px' } }, 'QUICK WINS'),
+      state.quickWins.one_thing_today ? h('div', { style: { padding: '6px 10px', background: '#eff6ff', borderRadius: 'var(--radius-sm)', border: '1px solid #bfdbfe', fontSize: '10px', color: '#1d4ed8', fontWeight: '600', marginBottom: '4px' } }, state.quickWins.one_thing_today) : null,
+      h('div', { style: { display: 'grid', gap: '2px' } },
+        ...(state.quickWins.quick_wins || []).slice(0, 3).map(w =>
+          h('div', { style: { padding: '4px 10px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px', display: 'flex', justifyContent: 'space-between' } },
+            h('span', { style: { color: 'var(--gray-600)', flex: 1 } }, w.action || w),
+            h('span', { style: { fontSize: '9px', padding: '1px 5px', borderRadius: '4px', background: w.impact === 'high' ? '#dcfce7' : '#fef3c7', color: w.impact === 'high' ? '#059669' : '#d97706' } }, w.time || '')
+          )
+        )
+      )
+    ) : null,
+
+    // Social Listening (Batch 67)
+    state.socialListening ? h('div', { style: { marginBottom: '20px' } },
+      h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
+        h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)' } }, 'LISTENING'),
+        h('div', { style: { fontSize: '12px', fontWeight: '700', padding: '2px 8px', borderRadius: '8px', background: state.socialListening.dominant_sentiment === 'positive' ? '#dcfce7' : state.socialListening.dominant_sentiment === 'negative' ? '#fee2e2' : '#fef3c7', color: state.socialListening.dominant_sentiment === 'positive' ? '#059669' : state.socialListening.dominant_sentiment === 'negative' ? '#dc2626' : '#d97706' } }, `${state.socialListening.dominant_sentiment} (${state.socialListening.total_signals})`)
+      ),
+      h('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap' } },
+        ...(state.socialListening.trending_up || []).slice(0, 6).map(w =>
+          h('span', { style: { fontSize: '9px', padding: '1px 5px', borderRadius: '4px', background: '#ede9fe', color: '#7c3aed' } }, w)
+        )
+      )
+    ) : null,
+
+    // Authority Builder (Batch 67)
+    state.authorityBuilder ? h('div', { style: { marginBottom: '20px' } },
+      h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
+        h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)' } }, 'AUTHORITY PLAN'),
+        h('div', { style: { fontSize: '12px', fontWeight: '700', padding: '2px 8px', borderRadius: '8px', background: '#dbeafe', color: '#2563eb' } }, state.authorityBuilder.current_stage || 'building')
+      ),
+      state.authorityBuilder.daily_habits ? h('div', { style: { display: 'grid', gap: '2px' } },
+        ...(state.authorityBuilder.daily_habits || []).slice(0, 3).map(h2 =>
+          h('div', { style: { padding: '3px 10px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px', color: 'var(--gray-600)' } }, h2)
+        )
+      ) : null
+    ) : null,
+
+    // Content Experiments (Batch 67)
+    state.contentExperiments?.experiments ? h('div', { style: { marginBottom: '20px' } },
+      h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
+        h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)' } }, 'EXPERIMENTS'),
+        h('div', { style: { fontSize: '12px', fontWeight: '700', padding: '2px 8px', borderRadius: '8px', background: '#fef3c7', color: '#d97706' } }, `${state.contentExperiments.experiments?.length || 0} tests`)
+      ),
+      h('div', { style: { display: 'grid', gap: '2px' } },
+        ...(state.contentExperiments.experiments || []).slice(0, 3).map(e =>
+          h('div', { style: { padding: '4px 10px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px' } },
+            h('div', { style: { fontWeight: '600', color: 'var(--navy)' } }, e.name || ''),
+            h('div', { style: { color: 'var(--gray-500)', marginTop: '1px' } }, e.hypothesis || '')
+          )
+        )
+      )
     ) : null,
 
     // Autopilot Status
@@ -6731,6 +6827,19 @@ function renderFormatContent(content, formatKey, fmt) {
               } catch (err) { toast('Voice check failed: ' + err.message, 'error'); }
             }
           }, 'Voice')
+        : null,
+      // Compliance Check button (for any format with 100+ chars)
+      typeof text === 'string' && text.length >= 100
+        ? h('button', {
+            className: 'btn btn-outline btn-sm',
+            style: { color: '#0f766e', borderColor: '#0f766e' },
+            onclick: async () => {
+              try {
+                const res = await api(`/api/content/${content.id}/compliance-check`, { method: 'POST', body: { format: formatKey } });
+                toast(`Compliance: ${res.compliance_score}/100 — ${res.verdict} (${res.issues?.length || 0} issues)`, res.compliance_score >= 70 ? 'success' : 'error');
+              } catch (err) { toast('Compliance check failed: ' + err.message, 'error'); }
+            }
+          }, 'Legal')
         : null,
       // AI Improve button
       typeof text === 'string' && fmt.status === 'review' ? h('button', {

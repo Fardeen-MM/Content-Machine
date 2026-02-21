@@ -14155,6 +14155,268 @@ Return COMPACT JSON:
       return json(res, { ok: true, content_id: contentId, format: formatKey, ...(parsed || {}) });
     }
 
+    // ========== BATCH 67: Content Experiments, Social Listening Sim, Authority Builder, Content Compliance, Repurpose Chain, Warm-up Planner, Quick Win Finder ==========
+
+    // POST /api/content-experiments — Design content experiments to test hypotheses
+    if (method === 'POST' && pathname === '/api/content-experiments') {
+      const content = readJSON('content.json', []);
+      const published = readJSON('published.json', []);
+
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+      const result = await callClaude({
+        model: HAIKU,
+        system: 'You are a content experimentation strategist. Design A/B experiments for content marketing that test specific hypotheses about audience behavior. Return JSON only.',
+        prompt: `Design 4 content experiments for a legal marketing agency.
+
+Content library: ${content.length} pieces, ${published.length} published
+Formats used: ${[...new Set(content.flatMap(c => Object.keys(c.formats || {})))].join(', ')}
+
+Return COMPACT JSON:
+{
+  "experiments": [
+    {
+      "name": "experiment name",
+      "hypothesis": "if we X, then Y",
+      "control": "what we do now",
+      "variant": "what we test",
+      "metric": "what we measure",
+      "duration": "how long to run",
+      "sample_size": "posts needed"
+    }
+  ],
+  "priority_experiment": "which to run first and why"
+}`,
+        maxTokens: 2000
+      });
+      const parsed = parseJsonResponse(result);
+      const experiments = { ...(parsed || {}), generated_at: now() };
+      writeJSON('content-experiments.json', experiments);
+      return json(res, { ok: true, ...experiments });
+    }
+
+    // GET /api/content-experiments
+    if (method === 'GET' && pathname === '/api/content-experiments') {
+      return json(res, readJSON('content-experiments.json', null));
+    }
+
+    // POST /api/social-listening — Simulate social listening insights from trigger data
+    if (method === 'POST' && pathname === '/api/social-listening') {
+      const triggers = readJSON('trigger-queue.json', []);
+      const sources = {};
+      triggers.forEach(t => {
+        const src = t.source || 'unknown';
+        sources[src] = (sources[src] || 0) + 1;
+      });
+
+      const topTopics = {};
+      triggers.forEach(t => {
+        const words = (t.title || '').toLowerCase().split(/\s+/);
+        words.forEach(w => {
+          if (w.length > 4 && !['about', 'their', 'would', 'could', 'should', 'these', 'those', 'which', 'where', 'there', 'every'].includes(w)) {
+            topTopics[w] = (topTopics[w] || 0) + 1;
+          }
+        });
+      });
+      const sorted = Object.entries(topTopics).sort((a, b) => b[1] - a[1]).slice(0, 15);
+
+      const sentimentIndicators = {
+        positive: triggers.filter(t => /grow|success|win|revenue|increase|improve/i.test(t.title)).length,
+        negative: triggers.filter(t => /fail|struggle|cost|waste|problem|crisis|lose/i.test(t.title)).length,
+        neutral: triggers.length - triggers.filter(t => /grow|success|win|revenue|increase|improve|fail|struggle|cost|waste|problem|crisis|lose/i.test(t.title)).length
+      };
+
+      const result = {
+        total_signals: triggers.length,
+        by_source: sources,
+        top_keywords: sorted.map(([word, count]) => ({ word, count })),
+        sentiment: sentimentIndicators,
+        dominant_sentiment: sentimentIndicators.positive > sentimentIndicators.negative ? 'positive' : sentimentIndicators.negative > sentimentIndicators.positive ? 'negative' : 'mixed',
+        trending_up: sorted.slice(0, 5).map(([word]) => word),
+        generated_at: now()
+      };
+      writeJSON('social-listening.json', result);
+      return json(res, { ok: true, ...result });
+    }
+
+    // GET /api/social-listening
+    if (method === 'GET' && pathname === '/api/social-listening') {
+      return json(res, readJSON('social-listening.json', null));
+    }
+
+    // POST /api/authority-builder — Step-by-step authority building plan
+    if (method === 'POST' && pathname === '/api/authority-builder') {
+      const published = readJSON('published.json', []);
+      const authorityScore = readJSON('authority-score.json', null);
+
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+      const result = await callClaude({
+        model: HAIKU,
+        system: 'You are a personal brand authority strategist. Create a 30-day plan to establish thought leadership in legal marketing. Return JSON only.',
+        prompt: `Build a 30-day authority building plan.
+
+Current: ${published.length} published pieces
+${authorityScore ? `Authority score: ${authorityScore.total_score}/100` : 'No authority score yet'}
+
+Return COMPACT JSON:
+{
+  "current_stage": "unknown|emerging|growing|established|authority",
+  "thirty_day_plan": [
+    { "week": 1, "theme": "theme", "actions": ["a1", "a2", "a3"], "milestone": "what success looks like" }
+  ],
+  "daily_habits": ["habit 1", "habit 2", "habit 3"],
+  "quick_authority_wins": ["win 1", "win 2", "win 3"]
+}`,
+        maxTokens: 2000
+      });
+      const parsed = parseJsonResponse(result);
+      const plan = { ...(parsed || {}), generated_at: now() };
+      writeJSON('authority-builder.json', plan);
+      return json(res, { ok: true, ...plan });
+    }
+
+    // GET /api/authority-builder
+    if (method === 'GET' && pathname === '/api/authority-builder') {
+      return json(res, readJSON('authority-builder.json', null));
+    }
+
+    // POST /api/content-compliance — Check content for legal/ethical compliance issues
+    if (method === 'POST' && pathname.match(/^\/api\/content\/([^/]+)\/compliance-check$/)) {
+      const contentId = pathname.match(/^\/api\/content\/([^/]+)\/compliance-check$/)[1];
+      const content = readJSON('content.json', []);
+      const item = content.find(c => c.id === contentId);
+      if (!item) return json(res, { error: 'Content not found' }, 404);
+
+      const body = await parseBody(req);
+      const formatKey = body.format || 'linkedin_post';
+      const text = typeof item.formats?.[formatKey] === 'string' ? item.formats[formatKey] : item.formats?.[formatKey]?.content || '';
+      if (!text) return json(res, { error: `No content in format ${formatKey}` }, 400);
+
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+      const result = await callClaude({
+        model: HAIKU,
+        system: 'You are a content compliance reviewer for a legal marketing agency. Check for misleading claims, unsubstantiated statistics, false promises, bar association advertising rule violations, and FTC compliance issues. Return JSON only.',
+        prompt: `Check this content for compliance issues:
+
+"${text.slice(0, 1500)}"
+
+Return COMPACT JSON:
+{
+  "compliance_score": 0-100,
+  "issues": [{ "type": "type", "detail": "what the issue is", "severity": "high|medium|low" }],
+  "verdict": "safe|review|risky",
+  "fixes": ["fix 1", "fix 2"]
+}`,
+        maxTokens: 1500
+      });
+      const parsed = parseJsonResponse(result);
+      return json(res, { ok: true, content_id: contentId, format: formatKey, ...(parsed || {}) });
+    }
+
+    // POST /api/repurpose-chain — Generate a full repurpose chain from one piece of content
+    if (method === 'POST' && pathname.match(/^\/api\/content\/([^/]+)\/repurpose-chain$/)) {
+      const contentId = pathname.match(/^\/api\/content\/([^/]+)\/repurpose-chain$/)[1];
+      const content = readJSON('content.json', []);
+      const item = content.find(c => c.id === contentId);
+      if (!item) return json(res, { error: 'Content not found' }, 404);
+
+      const text = typeof item.formats?.linkedin_post === 'string' ? item.formats.linkedin_post : item.formats?.linkedin_post?.content || item.formats?.blog?.content || '';
+      if (!text || text.length < 100) return json(res, { error: 'Need content with 100+ chars' }, 400);
+
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+      const result = await callClaude({
+        model: HAIKU,
+        system: 'You are a content repurposing expert. Turn one piece into a full chain of 8 content pieces across platforms. Return JSON only.',
+        prompt: `Create a repurpose chain from this content:
+
+"${text.slice(0, 1500)}"
+
+Return COMPACT JSON:
+{
+  "chain": [
+    { "step": 1, "format": "format name", "platform": "platform", "adaptation": "how to adapt (under 30 words)" }
+  ],
+  "total_reach_multiplier": "Nx",
+  "production_time": "total time for all 8"
+}`,
+        maxTokens: 2000
+      });
+      const parsed = parseJsonResponse(result);
+      return json(res, { ok: true, content_id: contentId, ...(parsed || {}) });
+    }
+
+    // POST /api/warmup-planner — Build a social media warmup plan for cold accounts
+    if (method === 'POST' && pathname === '/api/warmup-planner') {
+      const body = await parseBody(req);
+      const platform = body.platform || 'linkedin';
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+      const result = await callClaude({
+        model: HAIKU,
+        system: `You are a ${platform} account warmup expert. Create a plan to build engagement and reach from zero. Return JSON only.`,
+        prompt: `Create a 14-day ${platform} warmup plan for a legal marketing agency starting from low engagement.
+
+Return COMPACT JSON:
+{
+  "days": [
+    { "day": 1, "actions": ["action 1", "action 2"], "goal": "what to achieve" }
+  ],
+  "rules": ["rule 1", "rule 2"],
+  "expected_by_day_14": "what metrics to expect"
+}`,
+        maxTokens: 2000
+      });
+      const parsed = parseJsonResponse(result);
+      const plan = { platform, ...(parsed || {}), generated_at: now() };
+      writeJSON('warmup-planner.json', plan);
+      return json(res, { ok: true, ...plan });
+    }
+
+    // GET /api/warmup-planner
+    if (method === 'GET' && pathname === '/api/warmup-planner') {
+      return json(res, readJSON('warmup-planner.json', null));
+    }
+
+    // POST /api/quick-wins — Find the fastest content wins from existing data
+    if (method === 'POST' && pathname === '/api/quick-wins') {
+      const content = readJSON('content.json', []);
+      const triggers = readJSON('trigger-queue.json', []);
+      const published = readJSON('published.json', []);
+
+      const approvedUnpublished = content.filter(c => c.status === 'approved').length;
+      const highScoreTriggers = triggers.filter(t => t.status === 'pending' && (t.score || 0) > 60).length;
+
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+      const result = await callClaude({
+        model: HAIKU,
+        system: 'You are a content marketing quick-wins advisor. Identify the fastest, highest-impact actions from existing content and data. Return JSON only.',
+        prompt: `Find quick wins from this content system:
+
+- ${approvedUnpublished} approved but unpublished pieces
+- ${highScoreTriggers} high-score pending triggers
+- ${published.length} total published
+- ${content.length} total content pieces
+- ${triggers.filter(t => t.status === 'pending').length} pending triggers
+
+Return COMPACT JSON:
+{
+  "quick_wins": [
+    { "action": "what to do", "impact": "high|medium", "time": "minutes needed", "why": "short reason" }
+  ],
+  "biggest_bottleneck": "what's slowing you down most",
+  "one_thing_today": "the single most important action right now"
+}`,
+        maxTokens: 1500
+      });
+      const parsed = parseJsonResponse(result);
+      const wins = { ...(parsed || {}), generated_at: now() };
+      writeJSON('quick-wins.json', wins);
+      return json(res, { ok: true, ...wins });
+    }
+
+    // GET /api/quick-wins
+    if (method === 'GET' && pathname === '/api/quick-wins') {
+      return json(res, readJSON('quick-wins.json', null));
+    }
+
     // --- Static file serving ---
 
     // Serve dashboard

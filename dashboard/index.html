@@ -3479,6 +3479,23 @@ function renderFormatContent(content, formatKey, fmt) {
             }
           }, 'Atomize')
         : null,
+      // AI Improve button
+      typeof text === 'string' && fmt.status === 'review' ? h('button', {
+        className: 'btn btn-outline btn-sm',
+        style: { color: 'var(--amber)', borderColor: 'var(--amber)', fontSize: '11px' },
+        onclick: async () => {
+          toast('Improving content...', 'info');
+          try {
+            const res = await api(`/api/content/${content.id}/improve`, { method: 'POST', body: { format: formatKey } });
+            if (res.improved) {
+              toast(`Improved! Fixed: ${res.weaknesses.length} issues`, 'success');
+              loadData();
+            } else {
+              toast(res.message || 'Already great quality!', 'info');
+            }
+          } catch (err) { toast('Improve failed: ' + err.message, 'error'); }
+        }
+      }, 'Improve') : null,
       // Quality flags
       content.quality_score?.flags?.length > 0 && (formatKey === 'linkedin' || formatKey === 'x_single')
         ? h('span', {

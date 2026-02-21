@@ -3622,6 +3622,164 @@ Return JSON array (no fences):
       }
     }
 
+    // --- Content Quality Improver ---
+
+    // POST /api/content/:id/improve — AI-powered content quality improvement
+    const improveMatch = pathname.match(/^\/api\/content\/([a-f0-9]+)\/improve$/);
+    if (improveMatch && method === 'POST') {
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      const body = await parseBody(req);
+      const format = body.format;
+      if (!format) return json(res, { error: 'format required' }, 400);
+
+      const content = readJSON('content.json');
+      const idx = content.findIndex(c => c.id === improveMatch[1]);
+      if (idx === -1) return json(res, { error: 'Not found' }, 404);
+
+      const currentContent = content[idx].formats?.[format]?.content;
+      if (!currentContent) return json(res, { error: 'No content in this format' }, 400);
+
+      try {
+        const { callClaude, HAIKU } = require('./lib/claude');
+        const { buildSystemPromptWithMemory } = require('./generator/content-writer');
+        const { scoreHook, scoreSpecificity, scoreEmotionalValence } = require('./generator/score-triggers');
+        const systemPrompt = buildSystemPromptWithMemory();
+
+        const contentStr = typeof currentContent === 'string' ? currentContent : JSON.stringify(currentContent);
+
+        // Analyze current quality
+        const hookScore = scoreHook(contentStr);
+        const specScore = scoreSpecificity(contentStr);
+        const emoScore = scoreEmotionalValence(contentStr);
+
+        const weaknesses = [];
+        if (hookScore < 4) weaknesses.push('WEAK HOOK — needs a specific number, data point, or contrarian framing in the opening line');
+        if (specScore < 3) weaknesses.push('LOW SPECIFICITY — add exact dollar amounts, percentages, named tools, or case counts');
+        if (emoScore < 2) weaknesses.push('LOW EMOTIONAL VALENCE — add frustration, surprise, or urgency signals');
+        if (!/comment|reply|dm|book|audit|free|checklist/i.test(contentStr)) weaknesses.push('MISSING CTA — add a natural call-to-action');
+        if (contentStr.length < 400 && format === 'linkedin') weaknesses.push('TOO SHORT — LinkedIn posts perform best at 800-1300 chars');
+
+        if (weaknesses.length === 0) {
+          return json(res, { ok: true, improved: false, message: 'Content already scores well — no improvements needed' });
+        }
+
+        const prompt = `Improve this ${format} content. Fix these specific issues:
+
+${weaknesses.map((w, i) => `${i + 1}. ${w}`).join('\n')}
+
+CURRENT CONTENT:
+${contentStr.slice(0, 3000)}
+
+RULES:
+- Keep the core message and data points intact
+- Only fix the identified weaknesses
+- Don't change the overall structure or tone
+- If adding numbers, use realistic but specific ones (e.g., "$4,183/month" not "thousands")
+- If strengthening the hook, make it shorter and more specific
+- If adding a CTA, use "comment [keyword] and I'll send..." pattern for LinkedIn
+
+Return ONLY the improved content (no JSON wrapper, no explanation). Keep the same format as the original.`;
+
+        const improved = await callClaude({ model: HAIKU, system: systemPrompt, prompt, maxTokens: 3000 });
+
+        // Store improved version
+        content[idx].formats[format].content = improved;
+        content[idx].formats[format].improved_at = now();
+        content[idx].formats[format].improvements = weaknesses;
+        writeJSON('content.json', content);
+
+        return json(res, { ok: true, improved: true, weaknesses, format });
+      } catch (err) {
+        return json(res, { error: err.message }, 500);
+      }
+    }
+
+    // GET /api/content/:id/quality — get detailed quality analysis
+    const qualityMatch = pathname.match(/^\/api\/content\/([a-f0-9]+)\/quality$/);
+    if (qualityMatch && method === 'GET') {
+      const content = readJSON('content.json');
+      const item = content.find(c => c.id === qualityMatch[1]);
+      if (!item) return json(res, { error: 'Not found' }, 404);
+
+      const { scoreHook, scoreSpecificity, scoreEmotionalValence } = require('./generator/score-triggers');
+      const analysis = {};
+
+      for (const [fmt, fmtData] of Object.entries(item.formats || {})) {
+        const text = typeof fmtData.content === 'string' ? fmtData.content : JSON.stringify(fmtData.content || '');
+        const hookScore = scoreHook(text);
+        const specScore = scoreSpecificity(text);
+        const emoScore = scoreEmotionalValence(text);
+        const hasCta = /comment|reply|dm|book|audit|free|checklist|link/i.test(text);
+        const hasNumbers = /\$[\d,]+|\d+%|\d+x/.test(text);
+        const hasLineBreaks = (text.match(/\n\n/g) || []).length >= 3;
+
+        const total = hookScore + specScore + emoScore + (hasCta ? 3 : 0) + (hasNumbers ? 2 : 0) + (hasLineBreaks ? 1 : 0);
+        const maxScore = 8 + 5 + 4 + 3 + 2 + 1; // 23
+        const percentage = Math.round((total / maxScore) * 100);
+
+        analysis[fmt] = {
+          overall: percentage,
+          hook: { score: hookScore, max: 8, label: hookScore >= 5 ? 'Strong' : hookScore >= 3 ? 'Moderate' : 'Weak' },
+          specificity: { score: specScore, max: 5, label: specScore >= 3 ? 'High' : specScore >= 2 ? 'Medium' : 'Low' },
+          emotion: { score: emoScore, max: 4, label: emoScore >= 2 ? 'Engaging' : 'Neutral' },
+          cta: hasCta,
+          numbers: hasNumbers,
+          line_breaks: hasLineBreaks,
+          char_count: text.length,
+          improvements_available: percentage < 70
+        };
+      }
+
+      return json(res, analysis);
+    }
+
+    // --- Engagement Feedback ---
+
+    // GET /api/engagement-stats — performance-weighted source/category rankings
+    if (pathname === '/api/engagement-stats' && method === 'GET') {
+      const perfData = readJSON('performance.json');
+      const published = readJSON('published.json');
+      const content = readJSON('content.json');
+
+      // Aggregate engagement by source and category
+      const bySource = {};
+      const byCategory = {};
+      const byFormat = {};
+
+      for (const perf of perfData) {
+        const contentItem = content.find(c => c.id === perf.content_id);
+        if (!contentItem) continue;
+        const src = contentItem.trigger_source || 'unknown';
+        const cat = contentItem.trigger_category || 'unknown';
+        const fmt = perf.format || 'unknown';
+        const engScore = (perf.engagement || 0) * 1 + (perf.clicks || 0) * 3 + (perf.leads || 0) * 10;
+
+        if (!bySource[src]) bySource[src] = { total: 0, pieces: 0, avg: 0 };
+        bySource[src].total += engScore;
+        bySource[src].pieces++;
+
+        if (!byCategory[cat]) byCategory[cat] = { total: 0, pieces: 0, avg: 0 };
+        byCategory[cat].total += engScore;
+        byCategory[cat].pieces++;
+
+        if (!byFormat[fmt]) byFormat[fmt] = { total: 0, pieces: 0, avg: 0 };
+        byFormat[fmt].total += engScore;
+        byFormat[fmt].pieces++;
+      }
+
+      // Calculate averages
+      for (const key of Object.keys(bySource)) { bySource[key].avg = bySource[key].pieces > 0 ? Math.round(bySource[key].total / bySource[key].pieces) : 0; }
+      for (const key of Object.keys(byCategory)) { byCategory[key].avg = byCategory[key].pieces > 0 ? Math.round(byCategory[key].total / byCategory[key].pieces) : 0; }
+      for (const key of Object.keys(byFormat)) { byFormat[key].avg = byFormat[key].pieces > 0 ? Math.round(byFormat[key].total / byFormat[key].pieces) : 0; }
+
+      return json(res, {
+        by_source: Object.entries(bySource).sort((a, b) => b[1].avg - a[1].avg).map(([k, v]) => ({ source: k, ...v })),
+        by_category: Object.entries(byCategory).sort((a, b) => b[1].avg - a[1].avg).map(([k, v]) => ({ category: k, ...v })),
+        by_format: Object.entries(byFormat).sort((a, b) => b[1].avg - a[1].avg).map(([k, v]) => ({ format: k, ...v })),
+        total_tracked: perfData.length
+      });
+    }
+
     // --- Content Atomizer ---
 
     // POST /api/content/:id/atomize — break a pillar piece into 10-20 micro-content atoms
@@ -4456,6 +4614,76 @@ cron.schedule('0 */4 * * *', async () => {
     console.error('[cron] Queue auto-generation failed:', err.message);
   }
 });
+
+// --- Auto-generate today's series episode every morning at 7:30 AM ---
+cron.schedule('30 7 * * *', async () => {
+  if (!process.env.ANTHROPIC_API_KEY) return;
+  try {
+    const series = readJSON('series.json', []);
+    const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+    const today = days[new Date().getDay()];
+    const dueSeries = series.filter(s => s.active && s.day === today);
+    if (dueSeries.length === 0) { console.log(`[cron-series] No series due on ${today}`); return; }
+
+    const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+    const { buildSystemPromptWithMemory } = require('./generator/content-writer');
+    const { scoreTrigger } = require('./generator/score-triggers');
+    const systemPrompt = buildSystemPromptWithMemory();
+    const triggers = readJSON('trigger-queue.json');
+    const content = readJSON('content.json');
+
+    for (const s of dueSeries) {
+      const episodeNum = (s.episodes || []).length + 1;
+      // Pick top ungenerated trigger
+      const candidates = triggers
+        .filter(t => t.status === 'pending')
+        .map(t => ({ ...t, score: scoreTrigger(t, triggers) }))
+        .sort((a, b) => b.score - a.score);
+      const sourceTrigger = candidates[0];
+      if (!sourceTrigger) { console.log(`[cron-series] No triggers available for ${s.name}`); continue; }
+
+      const prompt = `Generate episode #${episodeNum} of "${s.name}" series.
+SERIES: ${s.description}
+TEMPLATE: ${s.template_prompt}
+SOURCE: ${sourceTrigger.title}\n${(sourceTrigger.raw_content || '').slice(0, 1500)}
+
+Return JSON: { "episode_title": "title", ${s.formats.map(f => `"${f}": "content for ${f}"`).join(', ')} }`;
+
+      const text = await callClaude({ model: HAIKU, system: systemPrompt, prompt, maxTokens: 3000 });
+      const parsed = parseJsonResponse(text);
+      if (!parsed) { console.log(`[cron-series] Failed to parse ${s.name} episode`); continue; }
+
+      const contentId = generateId();
+      const formats = {};
+      for (const fmt of s.formats) {
+        if (parsed[fmt]) formats[fmt] = { content: parsed[fmt], status: 'review', edited: false };
+      }
+      content.push({
+        id: contentId, trigger_id: sourceTrigger.id,
+        trigger_title: parsed.episode_title || sourceTrigger.title,
+        trigger_source: 'series', trigger_category: s.pillar?.toUpperCase() || 'CONTENT_PIECE',
+        series_id: s.id, series_episode: episodeNum, formats, status: 'review', created_at: now()
+      });
+
+      const sIdx = series.findIndex(x => x.id === s.id);
+      if (sIdx !== -1) {
+        series[sIdx].episodes = series[sIdx].episodes || [];
+        series[sIdx].episodes.push({ number: episodeNum, content_id: contentId, title: parsed.episode_title || `Episode ${episodeNum}`, generated_at: now() });
+      }
+
+      // Mark trigger used
+      const tIdx = triggers.findIndex(t => t.id === sourceTrigger.id);
+      if (tIdx !== -1) { triggers[tIdx].status = 'used'; triggers[tIdx].used_at = now(); }
+
+      console.log(`[cron-series] Generated ${s.name} #${episodeNum}: ${parsed.episode_title || 'Untitled'}`);
+    }
+    writeJSON('content.json', content);
+    writeJSON('series.json', series);
+    writeJSON('trigger-queue.json', triggers);
+  } catch (err) {
+    console.error('[cron-series] Error:', err.message);
+  }
+}, { timezone: 'America/New_York' });
 
 // --- Start server ---
 

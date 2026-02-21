@@ -14648,6 +14648,416 @@ Return COMPACT JSON:
       return json(res, readJSON('daily-briefing.json', null));
     }
 
+    // ============================================================
+    // Batch 69: Engagement Tracker, Comment-to-DM Pipeline,
+    //           Content Series Planner, Hook Bank, Platform Adapter,
+    //           Engagement Scorer, Conversion Tracker
+    // ============================================================
+
+    // POST /api/engagement-tracker — Log engagement metrics for published content
+    if (method === 'POST' && pathname === '/api/engagement-tracker') {
+      const body = await parseBody(req);
+      const { content_id, platform, likes, comments, shares, saves, impressions, clicks, date } = body || {};
+      if (!content_id || !platform) return json(res, { error: 'content_id and platform required' }, 400);
+
+      const tracker = readJSON('engagement-tracker.json', []);
+      const entry = {
+        id: generateId(),
+        content_id,
+        platform,
+        likes: Number(likes) || 0,
+        comments: Number(comments) || 0,
+        shares: Number(shares) || 0,
+        saves: Number(saves) || 0,
+        impressions: Number(impressions) || 0,
+        clicks: Number(clicks) || 0,
+        engagement_rate: 0,
+        date: date || now(),
+        logged_at: now()
+      };
+      const totalEngagement = entry.likes + entry.comments + entry.shares + entry.saves;
+      entry.engagement_rate = entry.impressions > 0 ? Math.round((totalEngagement / entry.impressions) * 10000) / 100 : 0;
+
+      tracker.push(entry);
+      writeJSON('engagement-tracker.json', tracker);
+
+      // Update content item with latest engagement
+      const content = readJSON('content.json', []);
+      const item = content.find(c => c.id === content_id);
+      if (item) {
+        if (!item.engagement) item.engagement = {};
+        item.engagement[platform] = { likes: entry.likes, comments: entry.comments, shares: entry.shares, saves: entry.saves, impressions: entry.impressions, clicks: entry.clicks, engagement_rate: entry.engagement_rate, updated: now() };
+        writeJSON('content.json', content);
+      }
+
+      return json(res, { ok: true, entry });
+    }
+
+    // GET /api/engagement-tracker — Get all engagement data with aggregates
+    if (method === 'GET' && pathname === '/api/engagement-tracker') {
+      const tracker = readJSON('engagement-tracker.json', []);
+      const byPlatform = {};
+      const byContent = {};
+      for (const e of tracker) {
+        if (!byPlatform[e.platform]) byPlatform[e.platform] = { entries: 0, total_likes: 0, total_comments: 0, total_shares: 0, total_impressions: 0, avg_engagement_rate: 0, rates: [] };
+        const p = byPlatform[e.platform];
+        p.entries++;
+        p.total_likes += e.likes || 0;
+        p.total_comments += e.comments || 0;
+        p.total_shares += e.shares || 0;
+        p.total_impressions += e.impressions || 0;
+        p.rates.push(e.engagement_rate || 0);
+
+        if (!byContent[e.content_id]) byContent[e.content_id] = [];
+        byContent[e.content_id].push(e);
+      }
+      for (const p of Object.values(byPlatform)) {
+        p.avg_engagement_rate = p.rates.length ? Math.round(p.rates.reduce((a, b) => a + b, 0) / p.rates.length * 100) / 100 : 0;
+        delete p.rates;
+      }
+      return json(res, { total_entries: tracker.length, by_platform: byPlatform, by_content: byContent, recent: tracker.slice(-20).reverse() });
+    }
+
+    // POST /api/comment-to-dm — Create/update a comment-to-DM pipeline rule
+    if (method === 'POST' && pathname === '/api/comment-to-dm') {
+      const body = await parseBody(req);
+      const { trigger_keyword, dm_template, platform, content_id, active } = body || {};
+      if (!trigger_keyword || !dm_template) return json(res, { error: 'trigger_keyword and dm_template required' }, 400);
+
+      const pipelines = readJSON('comment-to-dm.json', []);
+      const pipeline = {
+        id: generateId(),
+        trigger_keyword: trigger_keyword.toLowerCase().trim(),
+        dm_template,
+        platform: platform || 'all',
+        content_id: content_id || null,
+        active: active !== false,
+        triggers_count: 0,
+        dms_sent: 0,
+        conversions: 0,
+        created_at: now()
+      };
+      pipelines.push(pipeline);
+      writeJSON('comment-to-dm.json', pipelines);
+      return json(res, { ok: true, pipeline });
+    }
+
+    // GET /api/comment-to-dm — List all comment-to-DM pipelines
+    if (method === 'GET' && pathname === '/api/comment-to-dm') {
+      return json(res, readJSON('comment-to-dm.json', []));
+    }
+
+    // POST /api/comment-to-dm/trigger — Log a comment trigger event
+    const ctdTriggerMatch = pathname.match(/^\/api\/comment-to-dm\/trigger$/);
+    if (ctdTriggerMatch && method === 'POST') {
+      const body = await parseBody(req);
+      const { pipeline_id, commenter_name, comment_text, platform } = body || {};
+      if (!pipeline_id) return json(res, { error: 'pipeline_id required' }, 400);
+
+      const pipelines = readJSON('comment-to-dm.json', []);
+      const pipeline = pipelines.find(p => p.id === pipeline_id);
+      if (!pipeline) return json(res, { error: 'Pipeline not found' }, 404);
+
+      pipeline.triggers_count = (pipeline.triggers_count || 0) + 1;
+      const log = readJSON('comment-to-dm-log.json', []);
+      log.push({ id: generateId(), pipeline_id, commenter_name, comment_text, platform, dm_sent: true, sent_at: now() });
+      writeJSON('comment-to-dm-log.json', log);
+      writeJSON('comment-to-dm.json', pipelines);
+      return json(res, { ok: true, dm_template: pipeline.dm_template, triggers_total: pipeline.triggers_count });
+    }
+
+    // POST /api/content-series-planner — Plan multi-part content series for authority building
+    if (method === 'POST' && pathname === '/api/content-series-planner') {
+      const body = await parseBody(req);
+      const content = readJSON('content.json', []);
+      const published = readJSON('published.json', []);
+      const triggers = readJSON('trigger-queue.json', []);
+
+      // Find top-performing topics
+      const topTopics = content
+        .filter(c => c.status === 'approved' || c.status === 'published')
+        .map(c => c.trigger_title)
+        .slice(0, 10);
+
+      const pendingTriggers = triggers
+        .filter(t => t.status === 'pending')
+        .sort((a, b) => (b.score || 0) - (a.score || 0))
+        .slice(0, 10)
+        .map(t => t.title);
+
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+      const result = await callClaude({
+        model: HAIKU,
+        system: 'You are a content strategist for a legal marketing agency. Plan content series that build authority and keep audiences coming back. Return JSON only.',
+        prompt: `Plan 3 content series for a legal marketing agency (Mortar Metrics) that helps law firms get more signed cases.
+
+Top performing topics: ${topTopics.join(', ') || 'legal marketing, PPC for lawyers, SEO for law firms'}
+Trending ideas: ${pendingTriggers.join(', ') || 'AI in legal, client intake optimization'}
+Published so far: ${published.length} pieces, ${content.length} in pipeline
+
+Return COMPACT JSON:
+{
+  "series": [
+    {
+      "title": "series name",
+      "hook": "why audience should follow this series (1 sentence)",
+      "parts": [
+        { "part": 1, "title": "post title", "platform": "linkedin|x|youtube", "hook": "opening line", "key_point": "main takeaway" }
+      ],
+      "total_parts": 5,
+      "frequency": "2x/week",
+      "expected_outcome": "what this builds"
+    }
+  ],
+  "cross_promotion": "how to link series together"
+}
+Each series should have exactly 5 parts. Keep values SHORT.`,
+        maxTokens: 2500
+      });
+      const parsed = parseJsonResponse(result);
+      if (!parsed || !parsed.series) return json(res, { error: 'Failed to generate series plan', raw_preview: (result || '').slice(0, 200) }, 500);
+
+      const plan = { ...parsed, generated_at: now() };
+      writeJSON('content-series-planner.json', plan);
+      return json(res, { ok: true, ...plan });
+    }
+
+    // GET /api/content-series-planner
+    if (method === 'GET' && pathname === '/api/content-series-planner') {
+      return json(res, readJSON('content-series-planner.json', null));
+    }
+
+    // POST /api/hook-bank — Generate and store categorized hook templates
+    if (method === 'POST' && pathname === '/api/hook-bank') {
+      const content = readJSON('content.json', []);
+      const existingBank = readJSON('hook-bank.json', { hooks: [], categories: {} });
+
+      // Collect existing hooks from content
+      const existingHooks = content
+        .filter(c => c.formats?.linkedin_post?.content || c.formats?.linkedin?.content)
+        .map(c => {
+          const text = c.formats?.linkedin_post?.content || c.formats?.linkedin?.content || '';
+          return text.split('\n')[0]?.slice(0, 100);
+        })
+        .filter(h => h && h.length > 20)
+        .slice(0, 15);
+
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+      const result = await callClaude({
+        model: HAIKU,
+        system: 'You are a copywriting expert specializing in social media hooks. Return JSON only.',
+        prompt: `Generate a hook bank for a legal marketing agency posting on LinkedIn, X, and YouTube.
+
+Existing hooks for reference: ${existingHooks.slice(0, 5).join(' | ') || 'None yet'}
+
+Generate 30 hooks across 6 categories (5 each). Each hook should be a fill-in-the-blank template.
+
+Return COMPACT JSON:
+{
+  "categories": {
+    "contrarian": [{ "template": "hook template with [VARIABLE]", "example": "filled in example", "best_for": "platform" }],
+    "data_driven": [{ "template": "...", "example": "...", "best_for": "..." }],
+    "story": [{ "template": "...", "example": "...", "best_for": "..." }],
+    "question": [{ "template": "...", "example": "...", "best_for": "..." }],
+    "bold_claim": [{ "template": "...", "example": "...", "best_for": "..." }],
+    "curiosity_gap": [{ "template": "...", "example": "...", "best_for": "..." }]
+  },
+  "total_hooks": 30,
+  "usage_tips": ["tip 1", "tip 2", "tip 3"]
+}
+Keep templates under 15 words each.`,
+        maxTokens: 2500
+      });
+      const parsed = parseJsonResponse(result);
+      if (!parsed || !parsed.categories) return json(res, { error: 'Failed to generate hook bank', raw_preview: (result || '').slice(0, 200) }, 500);
+
+      const bank = { ...parsed, generated_at: now() };
+      writeJSON('hook-bank.json', bank);
+      return json(res, { ok: true, ...bank });
+    }
+
+    // GET /api/hook-bank
+    if (method === 'GET' && pathname === '/api/hook-bank') {
+      return json(res, readJSON('hook-bank.json', null));
+    }
+
+    // POST /api/content/:id/platform-adapt — Adapt content natively to all platforms
+    const platformAdaptMatch = pathname.match(/^\/api\/content\/([a-f0-9]+)\/platform-adapt$/);
+    if (platformAdaptMatch && method === 'POST') {
+      const id = platformAdaptMatch[1];
+      const content = readJSON('content.json', []);
+      const item = content.find(c => c.id === id);
+      if (!item) return json(res, { error: 'Content not found' }, 404);
+
+      // Find longest existing format as source
+      const formats = item.formats || {};
+      let sourceFormat = null, sourceText = '';
+      for (const [k, v] of Object.entries(formats)) {
+        const t = typeof v?.content === 'string' ? v.content : '';
+        if (t.length > sourceText.length) { sourceFormat = k; sourceText = t; }
+      }
+      if (!sourceText || sourceText.length < 100) return json(res, { error: 'Need at least one format with 100+ chars' }, 400);
+
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+      const result = await callClaude({
+        model: HAIKU,
+        system: 'You are a social media expert who adapts content to feel NATIVE on each platform. Never copy-paste — rewrite for each platform\'s culture. Return JSON only.',
+        prompt: `Adapt this ${sourceFormat} content to all major platforms. Make each feel native.
+
+Source (${sourceFormat}): ${sourceText.slice(0, 3000)}
+Topic: ${item.trigger_title}
+
+Return COMPACT JSON:
+{
+  "adaptations": {
+    "linkedin": { "content": "full post (1300-2000 chars, professional tone, line breaks)", "hashtags": ["tag1"], "cta": "engagement prompt" },
+    "x_single": { "content": "tweet under 280 chars, punchy", "hashtags": ["tag1"] },
+    "x_thread": { "tweets": ["tweet 1", "tweet 2", "tweet 3"], "hook": "thread hook" },
+    "instagram_caption": { "content": "caption with emojis, story format", "hashtags": ["tag1"] },
+    "youtube_short": { "script": "60-sec script with hook/body/cta", "title": "title" },
+    "email_snippet": { "subject": "email subject", "preview": "first line", "body": "2-3 paragraphs" }
+  },
+  "source_format": "${sourceFormat}"
+}
+Keep LinkedIn 1300-2000 chars. Tweet under 280. Thread 3-5 tweets. Caption under 2200 chars.`,
+        maxTokens: 3000
+      });
+      const parsed = parseJsonResponse(result);
+      if (!parsed || !parsed.adaptations) return json(res, { error: 'Failed to adapt content', raw_preview: (result || '').slice(0, 200) }, 500);
+
+      // Save adaptations to content item
+      const idx = content.findIndex(c => c.id === id);
+      if (idx >= 0) {
+        if (!content[idx].platform_adaptations) content[idx].platform_adaptations = {};
+        content[idx].platform_adaptations = { ...parsed.adaptations, adapted_at: now() };
+        writeJSON('content.json', content);
+      }
+
+      return json(res, { ok: true, content_id: id, ...parsed, adapted_at: now() });
+    }
+
+    // POST /api/engagement-scorer — Score all content based on actual engagement data
+    if (method === 'POST' && pathname === '/api/engagement-scorer') {
+      const tracker = readJSON('engagement-tracker.json', []);
+      const content = readJSON('content.json', []);
+
+      if (tracker.length === 0) {
+        // Generate scores from content metadata if no tracker data
+        const scored = content
+          .filter(c => c.status === 'approved' || c.status === 'published')
+          .map(c => {
+            const formatCount = Object.keys(c.formats || {}).length;
+            const hasLong = ['blog', 'newsletter', 'case_study', 'youtube_script'].some(f => c.formats?.[f]?.content);
+            const hasLinkedin = !!(c.formats?.linkedin_post?.content || c.formats?.linkedin?.content);
+            const score = Math.min(100, (formatCount * 8) + (hasLong ? 20 : 0) + (hasLinkedin ? 15 : 0) + (c.quality_score || 50));
+            return { content_id: c.id, title: c.trigger_title, score: Math.round(score / 2), predicted: true, formats: formatCount };
+          })
+          .sort((a, b) => b.score - a.score);
+
+        const result = { total_scored: scored.length, avg_score: scored.length ? Math.round(scored.reduce((a, b) => a + b.score, 0) / scored.length) : 0, top_10: scored.slice(0, 10), bottom_5: scored.slice(-5), data_source: 'predicted', generated_at: now() };
+        writeJSON('engagement-scorer.json', result);
+        return json(res, { ok: true, ...result });
+      }
+
+      // Score based on real engagement data
+      const contentScores = {};
+      for (const e of tracker) {
+        if (!contentScores[e.content_id]) contentScores[e.content_id] = { likes: 0, comments: 0, shares: 0, impressions: 0, entries: 0 };
+        const s = contentScores[e.content_id];
+        s.likes += e.likes || 0;
+        s.comments += e.comments || 0;
+        s.shares += e.shares || 0;
+        s.impressions += e.impressions || 0;
+        s.entries++;
+      }
+
+      const scored = Object.entries(contentScores).map(([id, s]) => {
+        const item = content.find(c => c.id === id);
+        const totalEng = s.likes + (s.comments * 3) + (s.shares * 5);
+        const engRate = s.impressions > 0 ? (totalEng / s.impressions) * 100 : 0;
+        const score = Math.min(100, Math.round(engRate * 10 + (s.comments * 2) + (s.shares * 3)));
+        return { content_id: id, title: item?.trigger_title || 'Unknown', score, likes: s.likes, comments: s.comments, shares: s.shares, impressions: s.impressions, engagement_rate: Math.round(engRate * 100) / 100, data_source: 'real' };
+      }).sort((a, b) => b.score - a.score);
+
+      const result = { total_scored: scored.length, avg_score: scored.length ? Math.round(scored.reduce((a, b) => a + b.score, 0) / scored.length) : 0, top_10: scored.slice(0, 10), bottom_5: scored.slice(-5), data_source: 'real', generated_at: now() };
+      writeJSON('engagement-scorer.json', result);
+      return json(res, { ok: true, ...result });
+    }
+
+    // GET /api/engagement-scorer
+    if (method === 'GET' && pathname === '/api/engagement-scorer') {
+      return json(res, readJSON('engagement-scorer.json', null));
+    }
+
+    // POST /api/conversion-tracker — Log a conversion event (CTA click, signup, booking)
+    if (method === 'POST' && pathname === '/api/conversion-tracker') {
+      const body = await parseBody(req);
+      const { content_id, conversion_type, platform, value, lead_email, notes } = body || {};
+      if (!content_id || !conversion_type) return json(res, { error: 'content_id and conversion_type required' }, 400);
+
+      const conversions = readJSON('conversion-tracker.json', []);
+      const entry = {
+        id: generateId(),
+        content_id,
+        conversion_type, // 'cta_click', 'signup', 'booking', 'download', 'reply', 'dm_sent'
+        platform: platform || 'unknown',
+        value: Number(value) || 0,
+        lead_email: lead_email || null,
+        notes: notes || null,
+        converted_at: now()
+      };
+      conversions.push(entry);
+      writeJSON('conversion-tracker.json', conversions);
+
+      // Update content item conversion count
+      const content = readJSON('content.json', []);
+      const item = content.find(c => c.id === content_id);
+      if (item) {
+        item.conversions = (item.conversions || 0) + 1;
+        item.total_conversion_value = (item.total_conversion_value || 0) + entry.value;
+        writeJSON('content.json', content);
+      }
+
+      return json(res, { ok: true, entry });
+    }
+
+    // GET /api/conversion-tracker — Get conversion analytics
+    if (method === 'GET' && pathname === '/api/conversion-tracker') {
+      const conversions = readJSON('conversion-tracker.json', []);
+      const byType = {};
+      const byContent = {};
+      const byPlatform = {};
+      let totalValue = 0;
+
+      for (const c of conversions) {
+        byType[c.conversion_type] = (byType[c.conversion_type] || 0) + 1;
+        if (!byContent[c.content_id]) byContent[c.content_id] = { count: 0, value: 0 };
+        byContent[c.content_id].count++;
+        byContent[c.content_id].value += c.value || 0;
+        byPlatform[c.platform] = (byPlatform[c.platform] || 0) + 1;
+        totalValue += c.value || 0;
+      }
+
+      // Find top converting content
+      const content = readJSON('content.json', []);
+      const topConverting = Object.entries(byContent)
+        .map(([id, data]) => {
+          const item = content.find(c => c.id === id);
+          return { content_id: id, title: item?.trigger_title || 'Unknown', conversions: data.count, value: data.value };
+        })
+        .sort((a, b) => b.conversions - a.conversions)
+        .slice(0, 10);
+
+      return json(res, {
+        total_conversions: conversions.length,
+        total_value: totalValue,
+        by_type: byType,
+        by_platform: byPlatform,
+        top_converting: topConverting,
+        recent: conversions.slice(-15).reverse()
+      });
+    }
+
     // --- Static file serving ---
 
     // Serve dashboard

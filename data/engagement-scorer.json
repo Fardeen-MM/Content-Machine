@@ -1,0 +1,32 @@
+{
+  "total_scored": 1,
+  "avg_score": 96,
+  "top_10": [
+    {
+      "content_id": "4aa23b276fa5218b",
+      "title": "Lessons Learned From 5,000 Days of Crisp — Episode 438",
+      "score": 96,
+      "likes": 45,
+      "comments": 12,
+      "shares": 8,
+      "impressions": 2500,
+      "engagement_rate": 4.84,
+      "data_source": "real"
+    }
+  ],
+  "bottom_5": [
+    {
+      "content_id": "4aa23b276fa5218b",
+      "title": "Lessons Learned From 5,000 Days of Crisp — Episode 438",
+      "score": 96,
+      "likes": 45,
+      "comments": 12,
+      "shares": 8,
+      "impressions": 2500,
+      "engagement_rate": 4.84,
+      "data_source": "real"
+    }
+  ],
+  "data_source": "real",
+  "generated_at": "2026-02-21T14:24:49.584Z"
+}

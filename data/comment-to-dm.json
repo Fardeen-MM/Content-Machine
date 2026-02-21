@@ -1,0 +1,14 @@
+[
+  {
+    "id": "5aa16f893f1e5a59",
+    "trigger_keyword": "test",
+    "dm_template": "hello",
+    "platform": "all",
+    "content_id": null,
+    "active": true,
+    "triggers_count": 1,
+    "dms_sent": 0,
+    "conversions": 0,
+    "created_at": "2026-02-21T14:21:32.395Z"
+  }
+]

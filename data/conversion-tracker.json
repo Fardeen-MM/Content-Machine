@@ -1,0 +1,22 @@
+[
+  {
+    "id": "e1c34855ee776ca6",
+    "content_id": "4aa23b276fa5218b",
+    "conversion_type": "cta_click",
+    "platform": "linkedin",
+    "value": 0,
+    "lead_email": null,
+    "notes": "Clicked audit checklist link",
+    "converted_at": "2026-02-21T14:20:23.723Z"
+  },
+  {
+    "id": "eefec095a0849b64",
+    "content_id": "4aa23b276fa5218b",
+    "conversion_type": "booking",
+    "platform": "linkedin",
+    "value": 3000,
+    "lead_email": "test@lawfirm.com",
+    "notes": "Booked discovery call from LinkedIn post",
+    "converted_at": "2026-02-21T14:20:23.757Z"
+  }
+]

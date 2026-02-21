@@ -2,7 +2,7 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
-const { loadEnv, readJSON, writeJSON, backupJSON, generateId, now } = require('./lib/utils');
+const { loadEnv, readJSON, writeJSON, backupJSON, generateId, now, daysAgo } = require('./lib/utils');
 const jsonStore = require('./lib/json-store');
 const db = require('./lib/db');
 const fireflies = require('./lib/fireflies');
@@ -3620,6 +3620,254 @@ Return JSON array (no fences):
         await transport.handlePostMessage(req, res);
         return;
       }
+    }
+
+    // --- Smart Scheduling ---
+
+    // GET /api/schedule/optimize — suggest best posting times per format
+    if (pathname === '/api/schedule/optimize' && method === 'GET') {
+      const published = readJSON('published.json');
+      const perfData = readJSON('performance.json');
+      const playbooks = readJSON('playbooks.json', {});
+
+      // Platform-specific best times from playbook research
+      const platformTimes = {
+        linkedin: { best_days: ['tuesday', 'wednesday', 'thursday'], best_times: ['8:00 AM', '10:00 AM', '12:00 PM'], worst: 'weekends (50% lower reach)', frequency: '3-5 posts/week', gap: '12h minimum between posts' },
+        x_single: { best_days: ['weekdays'], best_times: ['when audience is active'], worst: 'no specific worst', frequency: '5-15 tweets/day', gap: 'no minimum' },
+        x_thread: { best_days: ['tuesday', 'wednesday'], best_times: ['8:00 AM', '11:00 AM'], worst: 'late evening', frequency: '2-3 threads/week', gap: '4h between threads' },
+        carousel: { best_days: ['tuesday', 'wednesday', 'thursday'], best_times: ['9:00 AM', '11:00 AM'], worst: 'friday afternoon', frequency: '1-2/week', gap: 'alternate with text posts' },
+        short_video: { best_days: ['monday', 'thursday'], best_times: ['7:00 AM', '12:00 PM', '8:00 PM'], worst: 'mid-week afternoon', frequency: '3-5/week', gap: '6h between videos' },
+        blog: { best_days: ['tuesday', 'wednesday'], best_times: ['10:00 AM'], worst: 'weekends', frequency: '1-2/week', gap: '3-4 days between posts' },
+        newsletter: { best_days: ['tuesday', 'thursday'], best_times: ['6:00 AM', '10:00 AM'], worst: 'monday, friday', frequency: '1/week', gap: 'weekly' },
+        youtube_script: { best_days: ['tuesday', 'thursday', 'saturday'], best_times: ['2:00 PM', '5:00 PM'], worst: 'monday morning', frequency: '1-2/week', gap: '3-4 days between uploads' }
+      };
+
+      // Analyze historical performance by day of week
+      const dayPerformance = {};
+      for (const perf of perfData) {
+        const pub = published.find(p => p.content_id === perf.content_id && p.format === perf.format);
+        if (!pub?.published_at) continue;
+        const day = new Date(pub.published_at).toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+        if (!dayPerformance[day]) dayPerformance[day] = { total_engagement: 0, count: 0 };
+        dayPerformance[day].total_engagement += (perf.engagement || 0) + (perf.clicks || 0) * 3;
+        dayPerformance[day].count++;
+      }
+
+      for (const day of Object.keys(dayPerformance)) {
+        dayPerformance[day].avg = dayPerformance[day].count > 0
+          ? Math.round(dayPerformance[day].total_engagement / dayPerformance[day].count)
+          : 0;
+      }
+
+      // Generate next week's optimized schedule
+      const nextWeek = [];
+      const today = new Date();
+      const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+      for (let i = 1; i <= 7; i++) {
+        const date = new Date(today);
+        date.setDate(today.getDate() + i);
+        const dayName = days[date.getDay()];
+        const slots = [];
+
+        // Check series for this day
+        const series = readJSON('series.json', []);
+        const daySeries = series.filter(s => s.active && s.day === dayName);
+        for (const s of daySeries) {
+          slots.push({ type: 'series', format: s.formats[0] || 'linkedin', series: s.name, time: '8:00 AM' });
+        }
+
+        // Add recommended format slots based on day
+        if (['tuesday', 'wednesday', 'thursday'].includes(dayName)) {
+          if (!slots.some(s => s.format === 'linkedin')) slots.push({ type: 'post', format: 'linkedin', time: '10:00 AM' });
+          slots.push({ type: 'post', format: 'x_single', time: '12:00 PM' });
+        }
+        if (['monday', 'thursday'].includes(dayName)) {
+          slots.push({ type: 'post', format: 'short_video', time: '7:00 AM' });
+        }
+        if (dayName === 'tuesday') {
+          slots.push({ type: 'post', format: 'blog', time: '10:00 AM' });
+        }
+
+        nextWeek.push({ date: date.toISOString().split('T')[0], day: dayName, slots });
+      }
+
+      return json(res, { platform_times: platformTimes, day_performance: dayPerformance, next_week: nextWeek });
+    }
+
+    // --- Content Health Overview ---
+
+    // GET /api/content-health — comprehensive content health metrics
+    if (pathname === '/api/content-health' && method === 'GET') {
+      const content = readJSON('content.json');
+      const triggers = readJSON('trigger-queue.json');
+      const published = readJSON('published.json');
+      const perfData = readJSON('performance.json');
+      const series = readJSON('series.json', []);
+      const { scoreHook, scoreSpecificity, scoreEmotionalValence, getQualityTier } = require('./generator/score-triggers');
+
+      // Queue depth
+      const approvedFormats = content.reduce((sum, c) => {
+        return sum + Object.values(c.formats || {}).filter(f => f.status === 'approved' && !f.published_at).length;
+      }, 0);
+      const daysOfContent = Math.floor(approvedFormats / 2);
+
+      // Quality distribution
+      const qualityDist = { excellent: 0, good: 0, fair: 0, poor: 0 };
+      for (const item of content) {
+        for (const [, fmtData] of Object.entries(item.formats || {})) {
+          const text = typeof fmtData.content === 'string' ? fmtData.content : '';
+          const hookS = scoreHook(text);
+          const specS = scoreSpecificity(text);
+          const emoS = scoreEmotionalValence(text);
+          const total = hookS + specS + emoS;
+          if (total >= 12) qualityDist.excellent++;
+          else if (total >= 8) qualityDist.good++;
+          else if (total >= 4) qualityDist.fair++;
+          else qualityDist.poor++;
+        }
+      }
+
+      // Series streaks
+      const seriesHealth = series.filter(s => s.active).map(s => {
+        const eps = s.episodes || [];
+        const lastEp = eps[eps.length - 1];
+        const daysSinceLastEp = lastEp ? Math.floor((Date.now() - new Date(lastEp.generated_at || 0).getTime()) / (24 * 60 * 60 * 1000)) : 999;
+        return { id: s.id, name: s.name, episodes: eps.length, days_since_last: daysSinceLastEp, on_track: daysSinceLastEp <= 7 };
+      });
+
+      // Top formats by approval rate
+      const formatStats = {};
+      for (const item of content) {
+        for (const [fmt, fmtData] of Object.entries(item.formats || {})) {
+          if (!formatStats[fmt]) formatStats[fmt] = { total: 0, approved: 0, published: 0, rejected: 0 };
+          formatStats[fmt].total++;
+          if (fmtData.status === 'approved') formatStats[fmt].approved++;
+          else if (fmtData.status === 'published') formatStats[fmt].published++;
+          else if (fmtData.status === 'rejected') formatStats[fmt].rejected++;
+        }
+      }
+
+      // Trigger freshness
+      const fresh = triggers.filter(t => t.status === 'pending' && daysAgo(t.captured_at) <= 3).length;
+      const aging = triggers.filter(t => t.status === 'pending' && daysAgo(t.captured_at) > 3 && daysAgo(t.captured_at) <= 7).length;
+      const stale = triggers.filter(t => t.status === 'pending' && daysAgo(t.captured_at) > 7).length;
+
+      // Automation status
+      const automations = {
+        daily_scraper: true,
+        auto_series: series.filter(s => s.active).length > 0,
+        auto_queue_fill: daysOfContent < 3,
+        daily_brief: !!process.env.TELEGRAM_BOT_TOKEN,
+        api_key: !!process.env.ANTHROPIC_API_KEY
+      };
+
+      return json(res, {
+        queue: { approved_formats: approvedFormats, days_remaining: daysOfContent, health: daysOfContent >= 7 ? 'healthy' : daysOfContent >= 3 ? 'low' : 'critical' },
+        quality: qualityDist,
+        series: seriesHealth,
+        formats: formatStats,
+        triggers: { fresh, aging, stale, total_pending: fresh + aging + stale },
+        automations,
+        totals: { content: content.length, published: published.length, performance_tracked: perfData.length }
+      });
+    }
+
+    // --- A/B Testing ---
+
+    // POST /api/content/:id/ab-test — create A/B test variant
+    const abTestMatch = pathname.match(/^\/api\/content\/([a-f0-9]+)\/ab-test$/);
+    if (abTestMatch && method === 'POST') {
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      const body = await parseBody(req);
+      const format = body.format;
+      if (!format) return json(res, { error: 'format required' }, 400);
+
+      const content = readJSON('content.json');
+      const idx = content.findIndex(c => c.id === abTestMatch[1]);
+      if (idx === -1) return json(res, { error: 'Not found' }, 404);
+
+      const currentContent = content[idx].formats?.[format]?.content;
+      if (!currentContent) return json(res, { error: 'No content in this format' }, 400);
+
+      try {
+        const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+        const { buildSystemPromptWithMemory } = require('./generator/content-writer');
+        const systemPrompt = buildSystemPromptWithMemory();
+        const contentStr = typeof currentContent === 'string' ? currentContent : JSON.stringify(currentContent);
+
+        const prompt = `Create 2 alternative hook variants for this ${format} content. Keep the body the same but write completely different opening hooks.
+
+ORIGINAL CONTENT:
+${contentStr.slice(0, 2000)}
+
+Create these hook types:
+1. DATA BOMB — lead with a specific, surprising number
+2. STORY — lead with a micro-story or failure scenario
+3. CONTRARIAN — lead with a myth-busting or "everyone is wrong" angle
+
+Return JSON (raw, no fences):
+{
+  "variant_a": {
+    "hook_type": "data_bomb",
+    "hook": "The new opening 2-3 lines",
+    "full_content": "Complete rewritten content with the new hook (keep body similar)"
+  },
+  "variant_b": {
+    "hook_type": "contrarian",
+    "hook": "The new opening 2-3 lines",
+    "full_content": "Complete rewritten content with the new hook (keep body similar)"
+  }
+}`;
+
+        const text = await callClaude({ model: HAIKU, system: systemPrompt, prompt, maxTokens: 3000 });
+        const parsed = parseJsonResponse(text);
+        if (!parsed?.variant_a) return json(res, { error: 'Failed to generate A/B variants' }, 500);
+
+        // Store A/B test on the content item
+        if (!content[idx].ab_tests) content[idx].ab_tests = {};
+        content[idx].ab_tests[format] = {
+          original: contentStr.slice(0, 200),
+          variant_a: { hook_type: parsed.variant_a.hook_type, hook: parsed.variant_a.hook, content: parsed.variant_a.full_content },
+          variant_b: { hook_type: parsed.variant_b.hook_type, hook: parsed.variant_b.hook, content: parsed.variant_b.full_content },
+          created_at: now(),
+          winner: null
+        };
+        writeJSON('content.json', content);
+
+        return json(res, { ok: true, test: content[idx].ab_tests[format] });
+      } catch (err) {
+        return json(res, { error: err.message }, 500);
+      }
+    }
+
+    // POST /api/content/:id/ab-test/select — select A/B test winner
+    const abSelectMatch = pathname.match(/^\/api\/content\/([a-f0-9]+)\/ab-test\/select$/);
+    if (abSelectMatch && method === 'POST') {
+      const body = await parseBody(req);
+      const { format, winner } = body; // winner: 'original', 'variant_a', 'variant_b'
+      if (!format || !winner) return json(res, { error: 'format and winner required' }, 400);
+
+      const content = readJSON('content.json');
+      const idx = content.findIndex(c => c.id === abSelectMatch[1]);
+      if (idx === -1) return json(res, { error: 'Not found' }, 404);
+
+      const test = content[idx].ab_tests?.[format];
+      if (!test) return json(res, { error: 'No A/B test for this format' }, 404);
+
+      // Apply winner content
+      if (winner === 'variant_a' && test.variant_a?.content) {
+        content[idx].formats[format].content = test.variant_a.content;
+        content[idx].formats[format].edited = true;
+      } else if (winner === 'variant_b' && test.variant_b?.content) {
+        content[idx].formats[format].content = test.variant_b.content;
+        content[idx].formats[format].edited = true;
+      }
+      // Mark winner
+      content[idx].ab_tests[format].winner = winner;
+      content[idx].ab_tests[format].selected_at = now();
+      writeJSON('content.json', content);
+
+      return json(res, { ok: true, winner });
     }
 
     // --- Content Quality Improver ---

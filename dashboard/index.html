@@ -1444,6 +1444,9 @@ const state = {
   // Lead Magnets
   leadMagnets: [],
   leadMagnetGenerating: false,
+  // Content Health
+  contentHealth: null,
+  scheduleOptimize: null,
 };
 
 // --- API Calls ---
@@ -1469,7 +1472,7 @@ async function loadData() {
   state.loading = true;
   render();
   try {
-    const [content, triggers, stats, calendar, monthCal, settings, memory, performance, perfAnalytics, meetings, meetingStats, clients, allActions, chatMessages, healthData, inspirations, pestering, pesteringStages, insights, deals, published, series, predictions, playbooks, ctaLibrary, trending, funnel, publishTracker, leadMagnets] = await Promise.all([
+    const [content, triggers, stats, calendar, monthCal, settings, memory, performance, perfAnalytics, meetings, meetingStats, clients, allActions, chatMessages, healthData, inspirations, pestering, pesteringStages, insights, deals, published, series, predictions, playbooks, ctaLibrary, trending, funnel, publishTracker, leadMagnets, contentHealth, scheduleOptimize] = await Promise.all([
       api('/api/content'),
       api('/api/triggers'),
       api('/api/stats'),
@@ -1498,7 +1501,9 @@ async function loadData() {
       api('/api/trending').catch(() => ({ trending_topics: [], trending_phrases: [], categories: {}, source_velocity: {} })),
       api('/api/funnel').catch(() => ({ funnel: [], queue: {}, totals: {} })),
       api('/api/publish-tracker').catch(() => ({ items: [], platforms: [] })),
-      api('/api/lead-magnets').catch(() => [])
+      api('/api/lead-magnets').catch(() => []),
+      api('/api/content-health').catch(() => null),
+      api('/api/schedule/optimize').catch(() => null)
     ]);
     state.content = content;
     state.triggers = triggers;
@@ -1529,6 +1534,8 @@ async function loadData() {
     state.funnel = funnel;
     state.publishTracker = publishTracker;
     state.leadMagnets = leadMagnets;
+    state.contentHealth = contentHealth;
+    state.scheduleOptimize = scheduleOptimize;
   } catch (err) {
     console.error('Failed to load data:', err);
     toast('Failed to load data', 'error');
@@ -2701,6 +2708,51 @@ function renderDashboardPage() {
         )
       )
     ) : null,
+    // Content Health Summary
+    state.contentHealth ? h('div', { style: { marginBottom: '20px' } },
+      h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)', marginBottom: '8px' } }, 'CONTENT HEALTH'),
+      h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' } },
+        // Quality distribution
+        h('div', { className: 'card', style: { padding: '12px', textAlign: 'center' } },
+          h('div', { style: { fontSize: '20px', fontWeight: '700', fontFamily: "'Fraunces', serif", color: 'var(--green)' } },
+            String(state.contentHealth.quality?.excellent || 0)),
+          h('div', { style: { fontSize: '10px', color: 'var(--gray-500)', fontWeight: '600' } }, 'EXCELLENT'),
+          h('div', { style: { display: 'flex', gap: '4px', justifyContent: 'center', marginTop: '4px' } },
+            h('span', { style: { fontSize: '9px', color: 'var(--blue)' } }, `${state.contentHealth.quality?.good || 0} good`),
+            h('span', { style: { fontSize: '9px', color: 'var(--amber)' } }, `${state.contentHealth.quality?.fair || 0} fair`)
+          )
+        ),
+        // Trigger freshness
+        h('div', { className: 'card', style: { padding: '12px', textAlign: 'center' } },
+          h('div', { style: { fontSize: '20px', fontWeight: '700', fontFamily: "'Fraunces', serif", color: state.contentHealth.triggers?.fresh > 10 ? 'var(--green)' : 'var(--amber)' } },
+            String(state.contentHealth.triggers?.fresh || 0)),
+          h('div', { style: { fontSize: '10px', color: 'var(--gray-500)', fontWeight: '600' } }, 'FRESH TRIGGERS'),
+          h('div', { style: { display: 'flex', gap: '4px', justifyContent: 'center', marginTop: '4px' } },
+            h('span', { style: { fontSize: '9px', color: 'var(--amber)' } }, `${state.contentHealth.triggers?.aging || 0} aging`),
+            h('span', { style: { fontSize: '9px', color: 'var(--red)' } }, `${state.contentHealth.triggers?.stale || 0} stale`)
+          )
+        ),
+        // Series health
+        h('div', { className: 'card', style: { padding: '12px', textAlign: 'center' } },
+          h('div', { style: { fontSize: '20px', fontWeight: '700', fontFamily: "'Fraunces', serif", color: 'var(--blue)' } },
+            String((state.contentHealth.series || []).filter(s => s.on_track).length) + '/' + String((state.contentHealth.series || []).length)),
+          h('div', { style: { fontSize: '10px', color: 'var(--gray-500)', fontWeight: '600' } }, 'SERIES ON TRACK'),
+          h('div', { style: { fontSize: '9px', color: 'var(--gray-400)', marginTop: '4px' } },
+            `${(state.contentHealth.series || []).reduce((s, x) => s + x.episodes, 0)} total episodes`)
+        ),
+        // Automations
+        h('div', { className: 'card', style: { padding: '12px', textAlign: 'center' } },
+          h('div', { style: { fontSize: '20px', fontWeight: '700', fontFamily: "'Fraunces', serif", color: 'var(--green)' } },
+            String(Object.values(state.contentHealth.automations || {}).filter(Boolean).length) + '/' + String(Object.keys(state.contentHealth.automations || {}).length)),
+          h('div', { style: { fontSize: '10px', color: 'var(--gray-500)', fontWeight: '600' } }, 'AUTOMATIONS'),
+          h('div', { style: { display: 'flex', gap: '2px', justifyContent: 'center', marginTop: '4px' } },
+            ...Object.entries(state.contentHealth.automations || {}).map(([k, v]) =>
+              h('span', { style: { width: '8px', height: '8px', borderRadius: '50%', background: v ? 'var(--green)' : 'var(--gray-300)' }, title: k })
+            )
+          )
+        )
+      )
+    ) : null,
     // Recent meetings
     recentMeetings.length > 0 ? h('div', { style: { marginBottom: '20px' } },
       h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
@@ -3496,6 +3548,50 @@ function renderFormatContent(content, formatKey, fmt) {
           } catch (err) { toast('Improve failed: ' + err.message, 'error'); }
         }
       }, 'Improve') : null,
+      // A/B Test button (for social formats)
+      typeof text === 'string' && ['linkedin', 'x_single', 'x_thread'].includes(formatKey) ? h('button', {
+        className: 'btn btn-outline btn-sm',
+        style: { color: 'var(--blue)', borderColor: 'var(--blue)', fontSize: '11px' },
+        onclick: async () => {
+          toast('Generating A/B variants...', 'info');
+          try {
+            const res = await api(`/api/content/${content.id}/ab-test`, { method: 'POST', body: { format: formatKey } });
+            toast('A/B test created! Check variants below.', 'success');
+            loadData();
+          } catch (err) { toast('A/B test failed: ' + err.message, 'error'); }
+        }
+      }, 'A/B Test') : null,
+      // Show A/B test variants if they exist
+      content.ab_tests?.[formatKey] && !content.ab_tests[formatKey].winner
+        ? h('div', { style: { display: 'flex', gap: '4px', marginTop: '4px' } },
+            h('button', {
+              className: 'btn btn-sm',
+              style: { fontSize: '10px', padding: '2px 8px', background: '#dbeafe', color: '#2563eb', border: 'none', borderRadius: '4px', cursor: 'pointer' },
+              title: content.ab_tests[formatKey].variant_a?.hook || '',
+              onclick: async () => {
+                await api(`/api/content/${content.id}/ab-test/select`, { method: 'POST', body: { format: formatKey, winner: 'variant_a' } });
+                toast('Variant A selected!', 'success'); loadData();
+              }
+            }, `A: ${content.ab_tests[formatKey].variant_a?.hook_type || 'variant'}`),
+            h('button', {
+              className: 'btn btn-sm',
+              style: { fontSize: '10px', padding: '2px 8px', background: '#fce7f3', color: '#be185d', border: 'none', borderRadius: '4px', cursor: 'pointer' },
+              title: content.ab_tests[formatKey].variant_b?.hook || '',
+              onclick: async () => {
+                await api(`/api/content/${content.id}/ab-test/select`, { method: 'POST', body: { format: formatKey, winner: 'variant_b' } });
+                toast('Variant B selected!', 'success'); loadData();
+              }
+            }, `B: ${content.ab_tests[formatKey].variant_b?.hook_type || 'variant'}`),
+            h('button', {
+              className: 'btn btn-sm',
+              style: { fontSize: '10px', padding: '2px 8px', background: 'var(--gray-100)', color: 'var(--gray-600)', border: 'none', borderRadius: '4px', cursor: 'pointer' },
+              onclick: async () => {
+                await api(`/api/content/${content.id}/ab-test/select`, { method: 'POST', body: { format: formatKey, winner: 'original' } });
+                toast('Original kept!', 'success'); loadData();
+              }
+            }, 'Keep Original')
+          )
+        : null,
       // Quality flags
       content.quality_score?.flags?.length > 0 && (formatKey === 'linkedin' || formatKey === 'x_single')
         ? h('span', {

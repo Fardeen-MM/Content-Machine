@@ -1,8 +1,8 @@
 {
-  "total_analyzed": 61,
+  "total_analyzed": 66,
   "highly_evergreen": 0,
   "evergreen": 3,
-  "semi_evergreen": 57,
+  "semi_evergreen": 62,
   "time_sensitive": 1,
   "top_evergreen": [
     {
@@ -27,6 +27,6 @@
       "category": "evergreen"
     }
   ],
-  "avg_score": 50,
-  "generated_at": "2026-02-21T19:49:38.377Z"
+  "avg_score": 49,
+  "generated_at": "2026-02-21T21:11:05.208Z"
 }

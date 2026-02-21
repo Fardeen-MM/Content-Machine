@@ -1,12 +1,12 @@
 {
   "period": {
-    "start": "2026-02-14T19:49:38.349Z",
-    "end": "2026-02-21T19:49:38.349Z"
+    "start": "2026-02-14T21:11:05.176Z",
+    "end": "2026-02-21T21:11:05.176Z"
   },
   "content": {
-    "created": 53,
+    "created": 58,
     "previous_week": 4,
-    "change": 49,
+    "change": 54,
     "trend": "up"
   },
   "publishing": {
@@ -24,8 +24,8 @@
     "cold": 1
   },
   "highlights": [
-    "Content creation up 49 pieces vs last week",
+    "Content creation up 54 pieces vs last week",
     "Strong content production week"
   ],
-  "generated_at": "2026-02-21T19:49:38.349Z"
+  "generated_at": "2026-02-21T21:11:05.176Z"
 }

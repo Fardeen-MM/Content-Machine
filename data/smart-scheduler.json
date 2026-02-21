@@ -7,7 +7,7 @@
       "platform": "x",
       "date": "2026-02-23",
       "day": "Monday",
-      "time": "9:00 AM",
+      "time": "5:00 PM",
       "status": "scheduled"
     },
     {
@@ -16,7 +16,7 @@
       "platform": "instagram",
       "date": "2026-02-23",
       "day": "Monday",
-      "time": "1:00 PM",
+      "time": "11:00 AM",
       "status": "scheduled"
     },
     {
@@ -61,7 +61,7 @@
       "platform": "x",
       "date": "2026-02-25",
       "day": "Wednesday",
-      "time": "12:00 PM",
+      "time": "5:00 PM",
       "status": "scheduled"
     },
     {
@@ -79,7 +79,7 @@
       "platform": "instagram",
       "date": "2026-02-26",
       "day": "Thursday",
-      "time": "11:00 AM",
+      "time": "1:00 PM",
       "status": "scheduled"
     },
     {
@@ -88,7 +88,7 @@
       "platform": "youtube",
       "date": "2026-02-26",
       "day": "Thursday",
-      "time": "2:00 PM",
+      "time": "4:00 PM",
       "status": "scheduled"
     },
     {
@@ -106,7 +106,7 @@
       "platform": "x",
       "date": "2026-02-27",
       "day": "Friday",
-      "time": "9:00 AM",
+      "time": "12:00 PM",
       "status": "scheduled"
     }
   ],
@@ -117,5 +117,5 @@
     "youtube",
     "email"
   ],
-  "generated_at": "2026-02-21T19:49:40.033Z"
+  "generated_at": "2026-02-21T21:11:07.842Z"
 }

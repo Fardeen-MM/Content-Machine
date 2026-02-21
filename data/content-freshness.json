@@ -1,10 +1,10 @@
 {
-  "total_scanned": 62,
-  "fresh": 61,
+  "total_scanned": 67,
+  "fresh": 66,
   "mature": 0,
   "aging": 0,
   "stale": 1,
-  "freshness_score": 98,
+  "freshness_score": 99,
   "needs_attention": [
     {
       "title": "",
@@ -18,5 +18,5 @@
   "recommendations": [
     "1 pieces are stale (90+ days) — consider rewriting"
   ],
-  "generated_at": "2026-02-21T19:49:38.207Z"
+  "generated_at": "2026-02-21T21:11:05.037Z"
 }

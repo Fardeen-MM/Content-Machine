@@ -1,17 +1,17 @@
 {
-  "total_content": 61,
+  "total_content": 66,
   "format_distribution": {
-    "linkedin": 55,
-    "x_single": 53,
-    "x_thread": 52,
-    "short_video": 46,
-    "carousel": 27,
-    "hot_take": 33,
-    "poll": 27,
-    "quote_cards": 31,
-    "stat_graphic": 31,
-    "before_after": 31,
-    "listicle": 26,
+    "linkedin": 60,
+    "x_single": 58,
+    "x_thread": 57,
+    "short_video": 51,
+    "carousel": 32,
+    "hot_take": 38,
+    "poll": 32,
+    "quote_cards": 36,
+    "stat_graphic": 36,
+    "before_after": 36,
+    "listicle": 31,
     "blog": 3,
     "youtube_script": 3,
     "lead_magnet": 3,
@@ -52,6 +52,10 @@
     },
     {
       "word": "month",
+      "count": 10
+    },
+    {
+      "word": "what",
       "count": 9
     },
     {
@@ -60,10 +64,6 @@
     },
     {
       "word": "marketing",
-      "count": 8
-    },
-    {
-      "word": "what",
       "count": 8
     },
     {
@@ -87,6 +87,10 @@
       "count": 6
     },
     {
+      "word": "here",
+      "count": 6
+    },
+    {
       "word": "insight",
       "count": 6
     },
@@ -95,12 +99,8 @@
       "count": 5
     },
     {
-      "word": "here",
-      "count": 5
-    },
-    {
       "word": "intake",
-      "count": 4
+      "count": 5
     }
   ],
   "top_performers": [
@@ -111,5 +111,5 @@
   ],
   "optimal_length": "medium (500-1500 chars)",
   "dominant_hook": "statement",
-  "generated_at": "2026-02-21T19:49:39.730Z"
+  "generated_at": "2026-02-21T21:11:07.408Z"
 }

@@ -1,12 +1,12 @@
 {
-  "total_analyzed": 61,
-  "avg_consistency": 52,
+  "total_analyzed": 66,
+  "avg_consistency": 51,
   "on_brand": 18,
-  "off_brand": 43,
+  "off_brand": 48,
   "tone_breakdown": {
     "professional": 9,
     "casual": 22,
-    "neutral": 30
+    "neutral": 35
   },
   "top_consistent": [
     {
@@ -92,6 +92,46 @@
   ],
   "least_consistent": [
     {
+      "id": "8497a3bda78df727",
+      "title": "The Hidden Intake Gaps",
+      "consistency_score": 40,
+      "detected_tone": "neutral",
+      "brand_mentions": 0,
+      "on_brand": false
+    },
+    {
+      "id": "14c3d4870291333a",
+      "title": "CCPA/CPRA: Privacy Policy and Disclaimers for Law Firms. Whew!",
+      "consistency_score": 40,
+      "detected_tone": "neutral",
+      "brand_mentions": 0,
+      "on_brand": false
+    },
+    {
+      "id": "65998bc68ac70829",
+      "title": "i turned down 3 prospects this month because they weren't ready for cold email",
+      "consistency_score": 40,
+      "detected_tone": "neutral",
+      "brand_mentions": 0,
+      "on_brand": false
+    },
+    {
+      "id": "4622f91c5cc0ab5a",
+      "title": "$2,000 in ads. 100s of leads. But still 0 buyers.",
+      "consistency_score": 40,
+      "detected_tone": "neutral",
+      "brand_mentions": 0,
+      "on_brand": false
+    },
+    {
+      "id": "cf6b5b4f2ff227ab",
+      "title": "your revenue number means less than you think. here's what buyers actually see.",
+      "consistency_score": 40,
+      "detected_tone": "neutral",
+      "brand_mentions": 0,
+      "on_brand": false
+    },
+    {
       "id": "942bdcb1159acca7",
       "title": "Running a US home service business remotely – scalable model or risky dependency?",
       "consistency_score": 40,
@@ -130,47 +170,7 @@
       "detected_tone": "neutral",
       "brand_mentions": 0,
       "on_brand": false
-    },
-    {
-      "id": "513a096e8f85b7e4",
-      "title": "I tracked every growth tactic I tried for 14 months. Here's the data on what actually converts vs. what just generates vanity metrics.",
-      "consistency_score": 40,
-      "detected_tone": "neutral",
-      "brand_mentions": 0,
-      "on_brand": false
-    },
-    {
-      "id": "d64ba39c4f8e539a",
-      "title": "Top LinkedIn Automation/Outreach Tools - tested so you don't have to",
-      "consistency_score": 40,
-      "detected_tone": "neutral",
-      "brand_mentions": 0,
-      "on_brand": false
-    },
-    {
-      "id": "4add6462ca87fe85",
-      "title": "Performance dropped after launching new LP for google Ads",
-      "consistency_score": 40,
-      "detected_tone": "neutral",
-      "brand_mentions": 0,
-      "on_brand": false
-    },
-    {
-      "id": "d909646e5debf56e",
-      "title": "Google Ads: Issue with tracking purchases through third party &amp; more",
-      "consistency_score": 40,
-      "detected_tone": "neutral",
-      "brand_mentions": 0,
-      "on_brand": false
-    },
-    {
-      "id": "bf57ce881734c656",
-      "title": "From 0 to $56 MRR as a solo dev — lessons learned building a mobile SaaS in fintech",
-      "consistency_score": 40,
-      "detected_tone": "neutral",
-      "brand_mentions": 0,
-      "on_brand": false
     }
   ],
-  "generated_at": "2026-02-21T19:49:38.443Z"
+  "generated_at": "2026-02-21T21:11:05.288Z"
 }

@@ -2138,66 +2138,41 @@
     "trigger_category": "DATA_POINT",
     "trigger_url": "https://youtube.com/watch?v=z8Q1Sn_vWUc",
     "formats": {
-      "linkedin_post": "Eric Gros-Dubois grew his law firm revenue 59% while the lead count dropped. Not through hustle theater or hiring more junior associates. Through ruthlessly fixing what most firms ignore: conversion. He went from chasing every ping to qualifying harder upfront, improving case quality, and structuring his sales process like a business instead of a practice. The math: fewer leads × higher close rate × better case mix = more revenue with less chaos. If your firm is drowning in tire-kickers but the revenue stays flat, this is the gap. Start here: Audit your last 20 closed cases—what do they have in common? Score your leads against that profile before the first call. Stop measuring pipeline size; measure pipeline quality. Track close rate by practice area. Raise your baseline case value.",
-      "linkedin_hooks": [
-        "Eric built a $X million firm by turning away 40% of incoming leads. His revenue jumped 59% the same year.",
-        "59% revenue growth with FEWER leads. Most firms are doing the opposite and wondering why they're burnt out.",
-        "Myth: More leads = more revenue. Reality: Better leads × better conversion = exponential growth."
-      ],
-      "x_single": "Most law firms optimize for lead volume. Eric optimized for lead quality. 59% revenue jump. Same year his lead count dropped.",
-      "x_hooks": [
-        "59% revenue growth while turning away leads sounds impossible. It's not. It's math.",
-        "Your firm is measuring the wrong thing. Lead count is vanity. Close rate is currency.",
-        "Eric said no to 40% of prospects. His revenue said yes to 59% growth."
-      ],
-      "x_thread": [
-        "Eric's law firm grew revenue 59% in a year. The wild part? Lead volume actually dropped. This breaks every 'growth hacking' playbook.",
-        "Most firms are trapped in a loop: more leads → higher close costs → lower margins → need MORE leads to compensate.",
-        "Eric flipped it. Better qualification → higher close rate → better case mix → more revenue from fewer opportunities.",
-        "The insight people miss: Lead quality and conversion are levers. Most firms only pull the lead generation lever until it breaks.",
-        "Start auditing which prospects actually close. Build a profile. Stop chasing everything with a pulse. Follow for the law firm metrics that actually move the needle."
-      ],
-      "short_video_script": "If you're running a law firm and you're obsessed with lead generation, we need to talk. [PAUSE] Eric Gros-Dubois grew his firm revenue by 59%—and his lead count went DOWN. Not because he got lucky. Because he fixed conversion. [PAUSE] He started qualifying harder upfront. He tracked which cases actually made money. He stopped saying yes to everything. [PAUSE] Most firms do the opposite. They chase volume, burn out, and wonder why revenue plateaus. [PAUSE] The real play: fewer better leads, higher close rate, better case quality. That's the math of sustainable growth. [PAUSE] Start with this—audit your last 20 closed cases. What do they have in common? Build your ideal client profile around THAT, not around who called you back fastest.",
-      "linkedin_carousel": [
-        "59% revenue growth with fewer leads",
-        "Most firms chase lead volume. Eric fixed conversion instead.",
-        "Why this works: quality compounds, quantity exhausts.",
-        "Step 1: Score your last 20 closed cases for patterns",
-        "Step 2: Qualify prospects against those patterns before outreach",
-        "Result: Higher close rate, better margins, less chaos",
-        "Save this breakdown + follow for more law firm math"
-      ],
-      "linkedin_poll": {
-        "question": "Should law firms prioritize lead volume or lead quality? (Choose what you actually do, not what sounds good.)",
-        "options": [
-          "More leads, higher volume, accept lower conversion",
-          "Fewer leads, higher quality, optimize conversion rate",
-          "Both equally—we need scale AND quality",
-          "Depends on practice area"
-        ],
-        "post_text": "Eric just proved what the data already showed: law firms chasing lead volume hit a ceiling. Revenue growth stalls, margins compress, team burns out. But firms that flip the lever—prioritizing lead quality and conversion—see 2-3x faster scaling. Which approach are you actually running?"
+      "linkedin": {
+        "content": "Eric Gros-Dubois grew his law firm revenue 59% while the lead count dropped. Not through hustle theater or hiring more junior associates. Through ruthlessly fixing what most firms ignore: conversion. He went from chasing every ping to qualifying harder upfront, improving case quality, and structuring his sales process like a business instead of a practice. The math: fewer leads × higher close rate × better case mix = more revenue with less chaos. If your firm is drowning in tire-kickers but the revenue stays flat, this is the gap. Start here: Audit your last 20 closed cases—what do they have in common? Score your leads against that profile before the first call. Stop measuring pipeline size; measure pipeline quality. Track close rate by practice area. Raise your baseline case value.",
+        "status": "review",
+        "edited": false
       },
-      "quote_cards": [
-        "More leads without better conversion is just faster failure.",
-        "Your close rate is more valuable than your lead rate."
-      ],
-      "stat_graphic": {
-        "number": "59%",
-        "label": "Revenue growth with fewer leads",
-        "context": "Eric Gros-Dubois proved that lead quality and conversion optimization outpace lead volume chasing in law firm growth."
+      "x_single": {
+        "content": "Most law firms optimize for lead volume. Eric optimized for lead quality. 59% revenue jump. Same year his lead count dropped.",
+        "status": "review",
+        "edited": false
       },
-      "hot_take": "Law firm marketing has sold you a lie: that more leads solve growth. The truth is uglier—most firms use lead volume to avoid fixing their conversion problem. Until you know which prospects actually close and why, generating more leads is just throwing gas on a fire.",
-      "before_after": {
-        "before": "Chasing every lead, lower conversion rate, mixed case quality, flat revenue despite high activity",
-        "after": "Qualifying harder upfront, higher close rate, premium case mix, 59% revenue growth with fewer opportunities"
+      "x_thread": {
+        "content": "Eric's law firm grew revenue 59% in a year. The wild part? Lead volume actually dropped. This breaks every 'growth hacking' playbook.\n\n---\n\nMost firms are trapped in a loop: more leads → higher close costs → lower margins → need MORE leads to compensate.\n\n---\n\nEric flipped it. Better qualification → higher close rate → better case mix → more revenue from fewer opportunities.\n\n---\n\nThe insight people miss: Lead quality and conversion are levers. Most firms only pull the lead generation lever until it breaks.\n\n---\n\nStart auditing which prospects actually close. Build a profile. Stop chasing everything with a pulse. Follow for the law firm metrics that actually move the needle.",
+        "status": "review",
+        "edited": false
       },
-      "listicle_post": "1. Audit your last 20 closed cases—map the common traits (practice area, client size, case value, decision timeline). 2. Score every inbound lead against that profile before the first call—kill tire-kickers early. 3. Track close rate by practice area, not just total pipeline. 4. Measure average case value per practice area—some leads are worth 3x more than others. 5. Raise your baseline case acceptance threshold by 20% and track margin impact over 60 days.",
-      "image_prompt": "Clean minimal design with navy blue (#1e3a5f) background, white text. Center stat '59%' in large sans-serif font. Subtitle: 'Revenue Growth With Fewer Leads.' Small supporting text: 'Quality > Quantity.' Geometric accent lines in white framing the stat.",
-      "blog_keyword": "law firm lead quality conversion",
-      "youtube_topic": "How One Law Firm Grew 59% While Turning Away Leads (The Math)",
-      "lead_magnet_topic": "Law Firm Lead Scoring Checklist: Qualify Prospects Before Your First Call",
-      "linkedin_cta": "Comment 'scoring' and I'll send the lead qualification framework Eric uses.",
-      "x_cta": "Reply 'quality' if your firm is ready to stop chasing volume."
+      "short_video": {
+        "content": "If you're running a law firm and you're obsessed with lead generation, we need to talk. [PAUSE] Eric Gros-Dubois grew his firm revenue by 59%—and his lead count went DOWN. Not because he got lucky. Because he fixed conversion. [PAUSE] He started qualifying harder upfront. He tracked which cases actually made money. He stopped saying yes to everything. [PAUSE] Most firms do the opposite. They chase volume, burn out, and wonder why revenue plateaus. [PAUSE] The real play: fewer better leads, higher close rate, better case quality. That's the math of sustainable growth. [PAUSE] Start with this—audit your last 20 closed cases. What do they have in common? Build your ideal client profile around THAT, not around who called you back fastest.",
+        "status": "review",
+        "edited": false
+      },
+      "quote_cards": {
+        "content": "More leads without better conversion is just faster failure.\n\n---\n\nYour close rate is more valuable than your lead rate.",
+        "status": "review",
+        "edited": false
+      },
+      "hot_take": {
+        "content": "Law firm marketing has sold you a lie: that more leads solve growth. The truth is uglier—most firms use lead volume to avoid fixing their conversion problem. Until you know which prospects actually close and why, generating more leads is just throwing gas on a fire.",
+        "status": "review",
+        "edited": false
+      },
+      "listicle": {
+        "content": "1. Audit your last 20 closed cases—map the common traits (practice area, client size, case value, decision timeline). 2. Score every inbound lead against that profile before the first call—kill tire-kickers early. 3. Track close rate by practice area, not just total pipeline. 4. Measure average case value per practice area—some leads are worth 3x more than others. 5. Raise your baseline case acceptance threshold by 20% and track margin impact over 60 days.",
+        "status": "review",
+        "edited": false
+      }
     },
     "status": "review",
     "generated_at": "2026-02-21T01:18:51.041Z",
@@ -2213,7 +2188,32 @@
         }
       ],
       "generated_at": "2026-02-21T01:20:16.697Z"
-    }
+    },
+    "linkedin_hooks": [
+      "Eric built a $X million firm by turning away 40% of incoming leads. His revenue jumped 59% the same year.",
+      "59% revenue growth with FEWER leads. Most firms are doing the opposite and wondering why they're burnt out.",
+      "Myth: More leads = more revenue. Reality: Better leads × better conversion = exponential growth."
+    ],
+    "x_hooks": [
+      "59% revenue growth while turning away leads sounds impossible. It's not. It's math.",
+      "Your firm is measuring the wrong thing. Lead count is vanity. Close rate is currency.",
+      "Eric said no to 40% of prospects. His revenue said yes to 59% growth."
+    ],
+    "linkedin_carousel": [
+      "59% revenue growth with fewer leads",
+      "Most firms chase lead volume. Eric fixed conversion instead.",
+      "Why this works: quality compounds, quantity exhausts.",
+      "Step 1: Score your last 20 closed cases for patterns",
+      "Step 2: Qualify prospects against those patterns before outreach",
+      "Result: Higher close rate, better margins, less chaos",
+      "Save this breakdown + follow for more law firm math"
+    ],
+    "image_prompt": "Clean minimal design with navy blue (#1e3a5f) background, white text. Center stat '59%' in large sans-serif font. Subtitle: 'Revenue Growth With Fewer Leads.' Small supporting text: 'Quality > Quantity.' Geometric accent lines in white framing the stat.",
+    "blog_keyword": "law firm lead quality conversion",
+    "youtube_topic": "How One Law Firm Grew 59% While Turning Away Leads (The Math)",
+    "lead_magnet_topic": "Law Firm Lead Scoring Checklist: Qualify Prospects Before Your First Call",
+    "linkedin_cta": "Comment 'scoring' and I'll send the lead qualification framework Eric uses.",
+    "x_cta": "Reply 'quality' if your firm is ready to stop chasing volume."
   },
   {
     "id": "34f0159edc64e457",
@@ -2222,67 +2222,41 @@
     "trigger_category": "CONTENT_PIECE",
     "trigger_url": "https://jurisdigital.com/guides/law-firm-marketing-costs-2025/",
     "formats": {
-      "linkedin_post": "A partner at a 12-lawyer firm told me last week: 'Our Google Ads bill tripled. Our conversions stayed the same.' That's the 2025 legal marketing story nobody wants to admit.\n\nHere's what happened: Platform costs went up 40-60% across search and social. AI commoditized cheap leads. Client acquisition jumped from $800 to $2,100 per case. And most firms just... kept spending the same way.\n\nThe math that breaks: If you're getting 15 cases/month at $800 CAC, that's $12,000 spend. In 2025, those same 15 cases cost $31,500. Same output. 2.6x the budget.\n\nWhat comes next isn't 'spend smarter.' It's 'stop buying from the wrong channels entirely.'\n\nThree moves:\n1. Audit which channels actually close cases (not which ones generate 'leads')\n2. Shift budget from awareness to conversion optimization—you're already visible\n3. Build one owned channel (content, referral, community) that doesn't depend on platform algorithms",
-      "linkedin_hooks": [
-        "A partner at a 12-lawyer firm told me last week: 'Our Google Ads bill tripled. Our conversions stayed the same.'\nThat's the 2025 legal marketing story nobody wants to admit.",
-        "Legal marketing costs jumped 40-60% in 2025. But here's what's worse: most firms have no idea if they're getting ROI.",
-        "Everyone's blaming AI for ruining legal marketing. They're wrong. The real problem started three years ago, and 2025 just made it visible."
-      ],
-      "x_single": "Law firms are paying 2.6x more for the same case. Not because marketing got harder—because they're still using 2024 playbooks.",
-      "x_hooks": [
-        "Your Google Ads spend jumped 40%+ this year. Your case count didn't. Here's why.",
-        "Most law firms blame 'the market.' Really, they just don't know their actual CAC.",
-        "A partner told me their lead cost tripled. They asked what to do. I asked: 'Do you know which leads close?'"
-      ],
-      "x_thread": [
-        "A 12-lawyer firm's Google Ads bill went from $12k/month to $31.5k/month. Case volume: unchanged. Welcome to 2025 legal marketing.",
-        "This isn't new. Costs have been creeping up for 3 years. But 2025 hit different—40-60% jumps across search and social platforms all at once.",
-        "The real damage: most firms don't track which channel actually closes cases. They chase vanity metrics (leads, clicks, impressions) instead of CAC per closed matter.",
-        "Here's what's obvious once you look: awareness-stage spending is dead. Nobody new finds you from ads. Your ideal clients already know you exist.",
-        "The fix: Stop buying visibility. Start buying conversion. Build one owned channel that doesn't rely on ad platforms. Your 2025 marketing budget depends on it.",
-        "Reply AUDIT and I'll send the framework we use to map channel-to-close for law firms."
-      ],
-      "short_video_script": "If you're running a law firm and your ad spend jumped 40, 50, maybe 60 percent this year but your cases stayed the same... you're not alone. [PAUSE]\n\nHere's what happened: Every platform—Google, Facebook, LinkedIn—their costs went up massively. But here's the thing most firms miss. [PAUSE] They don't actually know which channel closes cases. They just know which one generates the most noise.\n\nSo they keep spending more on the same broken channels. [PAUSE]\n\nThe fix is simple but uncomfortable: Stop buying awareness. You're already visible. Buy conversion instead. And build one channel—could be referrals, content, your own community—that doesn't depend on some algorithm changing overnight.\n\nThat one move? It'll cut your wasted spend in half.",
-      "linkedin_carousel": [
-        "Law firm marketing costs jumped 40-60% in 2025",
-        "Most firms see zero case increase. That's $19.5k wasted per month for a 12-person shop.",
-        "They blame 'the market.' Real reason: they measure leads, not closes.",
-        "Step 1: Map every channel to actual closed cases (not inquiries).",
-        "Step 2: Kill the channels where CAC exceeds case value by 30%+.",
-        "Step 3: Redirect that budget to owned channels and referral systems.",
-        "Save this. Your 2025 budget depends on it. Follow for the playbook."
-      ],
-      "linkedin_poll": {
-        "question": "Your ad spend jumped 40% this year. Your cases didn't. What do you cut first?",
-        "options": [
-          "Kill the most expensive channel immediately",
-          "Wait and see if conversion improves next quarter",
-          "Blame the algorithm and double down on 'brand awareness'",
-          "Audit CAC per closed case before cutting anything"
-        ],
-        "post_text": "2025 forced this choice on every firm. Most choose wrong. Here's why: they're measuring the wrong metrics. Platform costs are up 40-60%. But that's not the real problem—it's that firms have no idea which channels actually close cases. The audit (option D) takes 2 hours. Guessing wrong costs you six figures."
+      "linkedin": {
+        "content": "A partner at a 12-lawyer firm told me last week: 'Our Google Ads bill tripled. Our conversions stayed the same.' That's the 2025 legal marketing story nobody wants to admit.\n\nHere's what happened: Platform costs went up 40-60% across search and social. AI commoditized cheap leads. Client acquisition jumped from $800 to $2,100 per case. And most firms just... kept spending the same way.\n\nThe math that breaks: If you're getting 15 cases/month at $800 CAC, that's $12,000 spend. In 2025, those same 15 cases cost $31,500. Same output. 2.6x the budget.\n\nWhat comes next isn't 'spend smarter.' It's 'stop buying from the wrong channels entirely.'\n\nThree moves:\n1. Audit which channels actually close cases (not which ones generate 'leads')\n2. Shift budget from awareness to conversion optimization—you're already visible\n3. Build one owned channel (content, referral, community) that doesn't depend on platform algorithms",
+        "status": "review",
+        "edited": false
       },
-      "quote_cards": [
-        "You're not paying more for better leads. You're paying more for the same ones.",
-        "Awareness-stage marketing is dead. Your ideal clients already know you exist. Stop reminding them. Start converting them."
-      ],
-      "stat_graphic": {
-        "number": "40-60%",
-        "label": "Legal ad costs increased in 2025",
-        "context": "Yet case volume remained flat for most firms, meaning CAC per closed matter jumped 2.6x—and most firms don't know it."
+      "x_single": {
+        "content": "Law firms are paying 2.6x more for the same case. Not because marketing got harder—because they're still using 2024 playbooks.",
+        "status": "review",
+        "edited": false
       },
-      "hot_take": "Billing for contingency cases but spending like a BigLaw firm on awareness marketing is financial self-sabotage. Every dollar should map to a closed case, not an impression. Most firms are one bad quarter away from realizing this, and they'll panic instead of pivot.",
-      "before_after": {
-        "before": "2024: 12-lawyer firm spending $12k/month on ads, closing 15 cases/month. CAC: $800. Feels fine.",
-        "after": "2025: Same firm now spending $31.5k/month on ads for the same 15 cases. CAC: $2,100. Margin gets crushed unless you know which channels to kill and which owned channels to build."
+      "x_thread": {
+        "content": "A 12-lawyer firm's Google Ads bill went from $12k/month to $31.5k/month. Case volume: unchanged. Welcome to 2025 legal marketing.\n\n---\n\nThis isn't new. Costs have been creeping up for 3 years. But 2025 hit different—40-60% jumps across search and social platforms all at once.\n\n---\n\nThe real damage: most firms don't track which channel actually closes cases. They chase vanity metrics (leads, clicks, impressions) instead of CAC per closed matter.\n\n---\n\nHere's what's obvious once you look: awareness-stage spending is dead. Nobody new finds you from ads. Your ideal clients already know you exist.\n\n---\n\nThe fix: Stop buying visibility. Start buying conversion. Build one owned channel that doesn't rely on ad platforms. Your 2025 marketing budget depends on it.\n\n---\n\nReply AUDIT and I'll send the framework we use to map channel-to-close for law firms.",
+        "status": "review",
+        "edited": false
       },
-      "listicle_post": "1. Pull your actual closed cases from last 90 days. Map which ad channel/referral source/content piece brought them in.\n2. Calculate CAC per closed case by channel (not by lead—by case).\n3. Kill any channel where CAC exceeds 25% of case value.\n4. Redirect that spend to one owned channel: referral program, newsletter, local partnerships.\n5. Measure again in 30 days. Repeat monthly.",
-      "image_prompt": "Navy blue background (#1e3a5f), white minimal design. Split-screen layout: left side shows '2024: $12K spend → 15 cases' in bold white sans-serif; right side shows '2025: $31.5K spend → 15 cases' in red sans-serif. Center the stat '2.6X CAC increase' in massive numbers. Bottom line: 'Know your channel math or die.'",
-      "blog_keyword": "law firm marketing ROI 2025",
-      "youtube_topic": "Why Your Law Firm's Ad Spend Doubled (But Your Cases Didn't)",
-      "lead_magnet_topic": "Channel-to-Close Audit Template: Map which marketing source actually closes cases for your firm in 30 minutes",
-      "linkedin_cta": "Comment CHANNEL AUDIT and I'll send the template we use to map which sources actually close cases for law firms.",
-      "x_cta": "Reply AUDIT for the 30-min framework that shows which channel is actually closing your cases."
+      "short_video": {
+        "content": "If you're running a law firm and your ad spend jumped 40, 50, maybe 60 percent this year but your cases stayed the same... you're not alone. [PAUSE]\n\nHere's what happened: Every platform—Google, Facebook, LinkedIn—their costs went up massively. But here's the thing most firms miss. [PAUSE] They don't actually know which channel closes cases. They just know which one generates the most noise.\n\nSo they keep spending more on the same broken channels. [PAUSE]\n\nThe fix is simple but uncomfortable: Stop buying awareness. You're already visible. Buy conversion instead. And build one channel—could be referrals, content, your own community—that doesn't depend on some algorithm changing overnight.\n\nThat one move? It'll cut your wasted spend in half.",
+        "status": "review",
+        "edited": false
+      },
+      "quote_cards": {
+        "content": "You're not paying more for better leads. You're paying more for the same ones.\n\n---\n\nAwareness-stage marketing is dead. Your ideal clients already know you exist. Stop reminding them. Start converting them.",
+        "status": "review",
+        "edited": false
+      },
+      "hot_take": {
+        "content": "Billing for contingency cases but spending like a BigLaw firm on awareness marketing is financial self-sabotage. Every dollar should map to a closed case, not an impression. Most firms are one bad quarter away from realizing this, and they'll panic instead of pivot.",
+        "status": "review",
+        "edited": false
+      },
+      "listicle": {
+        "content": "1. Pull your actual closed cases from last 90 days. Map which ad channel/referral source/content piece brought them in.\n2. Calculate CAC per closed case by channel (not by lead—by case).\n3. Kill any channel where CAC exceeds 25% of case value.\n4. Redirect that spend to one owned channel: referral program, newsletter, local partnerships.\n5. Measure again in 30 days. Repeat monthly.",
+        "status": "review",
+        "edited": false
+      }
     },
     "status": "review",
     "generated_at": "2026-02-21T01:19:13.355Z",
@@ -2298,7 +2272,32 @@
         }
       ],
       "generated_at": "2026-02-21T01:20:20.674Z"
-    }
+    },
+    "linkedin_hooks": [
+      "A partner at a 12-lawyer firm told me last week: 'Our Google Ads bill tripled. Our conversions stayed the same.'\nThat's the 2025 legal marketing story nobody wants to admit.",
+      "Legal marketing costs jumped 40-60% in 2025. But here's what's worse: most firms have no idea if they're getting ROI.",
+      "Everyone's blaming AI for ruining legal marketing. They're wrong. The real problem started three years ago, and 2025 just made it visible."
+    ],
+    "x_hooks": [
+      "Your Google Ads spend jumped 40%+ this year. Your case count didn't. Here's why.",
+      "Most law firms blame 'the market.' Really, they just don't know their actual CAC.",
+      "A partner told me their lead cost tripled. They asked what to do. I asked: 'Do you know which leads close?'"
+    ],
+    "linkedin_carousel": [
+      "Law firm marketing costs jumped 40-60% in 2025",
+      "Most firms see zero case increase. That's $19.5k wasted per month for a 12-person shop.",
+      "They blame 'the market.' Real reason: they measure leads, not closes.",
+      "Step 1: Map every channel to actual closed cases (not inquiries).",
+      "Step 2: Kill the channels where CAC exceeds case value by 30%+.",
+      "Step 3: Redirect that budget to owned channels and referral systems.",
+      "Save this. Your 2025 budget depends on it. Follow for the playbook."
+    ],
+    "image_prompt": "Navy blue background (#1e3a5f), white minimal design. Split-screen layout: left side shows '2024: $12K spend → 15 cases' in bold white sans-serif; right side shows '2025: $31.5K spend → 15 cases' in red sans-serif. Center the stat '2.6X CAC increase' in massive numbers. Bottom line: 'Know your channel math or die.'",
+    "blog_keyword": "law firm marketing ROI 2025",
+    "youtube_topic": "Why Your Law Firm's Ad Spend Doubled (But Your Cases Didn't)",
+    "lead_magnet_topic": "Channel-to-Close Audit Template: Map which marketing source actually closes cases for your firm in 30 minutes",
+    "linkedin_cta": "Comment CHANNEL AUDIT and I'll send the template we use to map which sources actually close cases for law firms.",
+    "x_cta": "Reply AUDIT for the 30-min framework that shows which channel is actually closing your cases."
   },
   {
     "id": "5b24a722678acc8b",
@@ -2307,66 +2306,41 @@
     "trigger_category": "DATA_POINT",
     "trigger_url": "https://youtube.com/watch?v=PO9tDji-RyE",
     "formats": {
-      "linkedin_post": "I watched a partner bill $180K last year while working 60-hour weeks. His associate billed $240K in 35 hours.\n\nThe difference? He delegated everything that wasn't billable to him specifically.\n\nMost firm owners confuse 'lazy' with 'smart.' They think staying in the weeds means control. It means $50K+ in lost revenue annually per attorney.\n\nHere's the math: If your top lawyer does their own scheduling, email management, and case admin—they're trading $300/hour work for $75/hour work. Over a year, that's the difference between scaling and stalling.\n\nCameron Herold calls this 'productive laziness.' It's not about doing less. It's about doing only what generates your highest ROI.\n\nThree moves:\n1. Audit your calendar for non-billable tasks (you'll find 8-12 hours weekly)\n2. Document each one in a simple SOP\n3. Delegate to your lowest-cost team member who can handle it\n\nThat's $20-40K back in your pocket. Per attorney. Per year.",
-      "linkedin_hooks": [
-        "I watched a partner bill $180K while working 60 hours. His junior associate billed $240K in 35 hours. The difference wasn't talent—it was delegation.",
-        "Most lawyers are trading $300/hour work for $75/hour work. The math alone should terrify you. Here's how to stop.",
-        "Your best attorneys staying 'busy' is actually code for 'we're leaving money on the table.' The fix is counterintuitive."
-      ],
-      "x_single": "You're not lazy if you delegate. You're leaving $40K/year per attorney on the table if you don't.",
-      "x_hooks": [
-        "A partner working 60 hours billed $180K. His associate in 35 hours billed $240K. One knew how to delegate.",
-        "Delegation isn't about working less. It's about your $300/hour work not getting buried in $50/hour admin.",
-        "Your best lawyer doing their own scheduling is like paying a surgeon to organize their supply closet."
-      ],
-      "x_thread": [
-        "A law partner I know worked 60 hours last year and billed $180K. His associate? 35 hours, $240K billed. Same firm. Same client base. Different system.",
-        "The partner was managing schedules, responding to every email, pulling documents, coordinating with staff. The associate only did billable work and delegated the rest.",
-        "Do the math: If your top lawyer spends 8 hours/week on admin at $75/hour work instead of $300/hour billable work, that's $18K/year in lost revenue. Multiply by 4 attorneys—you're hemorrhaging $72K annually.",
-        "Most firms call this 'staying in control.' Cameron Herold calls it 'productive laziness'—doing ONLY what you're uniquely positioned to do, and outsourcing the rest ruthlessly.",
-        "Action: Audit your calendar this week. Mark every non-billable hour. Document one task. Delegate it. Watch what happens to your revenue next quarter."
-      ],
-      "short_video_script": "If you're running a law firm and your best attorneys are spending 5+ hours a week on scheduling, emails, and admin—you're literally leaving money on the table.\n\n[PAUSE]\n\nI'm talking $20 to $40K per attorney, per year.\n\nHere's what most firm owners get wrong: They think delegation means loss of control. It actually means control over what matters—client work, strategy, revenue.\n\n[PAUSE]\n\nOne firm I know had a partner working 60 hours billed $180K. His associate worked 35 hours and billed $240K. Same clients. Different workflow.\n\nThe difference? The associate delegated everything that wasn't billable work. The partner didn't.\n\n[PAUSE]\n\nYour move: This week, write down every task you do that someone else could handle. Just one. Delegate it. See what your billable hours look like next month.\n\nThat's productive laziness.",
-      "linkedin_carousel": [
-        "Your best attorney is working admin jobs.",
-        "Partner: 60 hours, $180K billed. Associate: 35 hours, $240K billed. Same firm.",
-        "You're confusing 'staying busy' with 'staying profitable.' They're opposites.",
-        "Audit your non-billable hours. You'll find 8-12 per week buried in emails and scheduling.",
-        "Document one task. Delegate it to your lowest-cost team member. Measure the impact.",
-        "Result: $20-40K in recovered revenue per attorney annually. Actual number from firms doing this.",
-        "Save this. Your Q1 revenue depends on decisions you make in January."
-      ],
-      "linkedin_poll": {
-        "question": "Should senior attorneys handle their own scheduling/admin, or is that a waste of billable capacity?",
-        "options": [
-          "Handle it themselves—control matters more",
-          "Delegate everything—maximize billable hours",
-          "Split the difference—some admin is non-negotiable",
-          "Hire an executive assistant for each partner"
-        ],
-        "post_text": "This one splits law firms 50/50, but the data is clear: Partners delegating admin tasks bill 30-40% more annually. Not because they're better lawyers—because their time aligns with their rate. Where does your firm stand?"
+      "linkedin": {
+        "content": "I watched a partner bill $180K last year while working 60-hour weeks. His associate billed $240K in 35 hours.\n\nThe difference? He delegated everything that wasn't billable to him specifically.\n\nMost firm owners confuse 'lazy' with 'smart.' They think staying in the weeds means control. It means $50K+ in lost revenue annually per attorney.\n\nHere's the math: If your top lawyer does their own scheduling, email management, and case admin—they're trading $300/hour work for $75/hour work. Over a year, that's the difference between scaling and stalling.\n\nCameron Herold calls this 'productive laziness.' It's not about doing less. It's about doing only what generates your highest ROI.\n\nThree moves:\n1. Audit your calendar for non-billable tasks (you'll find 8-12 hours weekly)\n2. Document each one in a simple SOP\n3. Delegate to your lowest-cost team member who can handle it\n\nThat's $20-40K back in your pocket. Per attorney. Per year.",
+        "status": "review",
+        "edited": false
       },
-      "quote_cards": [
-        "Staying busy isn't the same as staying profitable. One is noise. One is revenue.",
-        "Delegation isn't about doing less work. It's about doing the right work."
-      ],
-      "stat_graphic": {
-        "number": "$40,000",
-        "label": "Annual revenue recovered per attorney",
-        "context": "When a partner stops handling non-billable admin and focuses only on billable work—actual recovery from firms using this delegation model."
+      "x_single": {
+        "content": "You're not lazy if you delegate. You're leaving $40K/year per attorney on the table if you don't.",
+        "status": "review",
+        "edited": false
       },
-      "hot_take": "Most law firm partners would rather work 60 hours and feel 'in control' than work 40 hours, delegate ruthlessly, and actually make more money. It's not a system problem—it's an ego problem.",
-      "before_after": {
-        "before": "Partner: 60 hours/week, handling own scheduling, emails, document pulls. Billable: $180K/year. Margin: Squeezed.",
-        "after": "Partner: 40 hours/week, focusing only on client work and strategy. Assistant handles admin. Billable: $280K/year. Margin: Healthy."
+      "x_thread": {
+        "content": "A law partner I know worked 60 hours last year and billed $180K. His associate? 35 hours, $240K billed. Same firm. Same client base. Different system.\n\n---\n\nThe partner was managing schedules, responding to every email, pulling documents, coordinating with staff. The associate only did billable work and delegated the rest.\n\n---\n\nDo the math: If your top lawyer spends 8 hours/week on admin at $75/hour work instead of $300/hour billable work, that's $18K/year in lost revenue. Multiply by 4 attorneys—you're hemorrhaging $72K annually.\n\n---\n\nMost firms call this 'staying in control.' Cameron Herold calls it 'productive laziness'—doing ONLY what you're uniquely positioned to do, and outsourcing the rest ruthlessly.\n\n---\n\nAction: Audit your calendar this week. Mark every non-billable hour. Document one task. Delegate it. Watch what happens to your revenue next quarter.",
+        "status": "review",
+        "edited": false
       },
-      "listicle_post": "1. Calendar audit: Block 2 hours. Mark every task that isn't billable work. You'll find 8-12 hours weekly of $50-75/hour work.\n\n2. Create one SOP: Pick the most time-consuming task (scheduling, email triage, document pulls). Document the exact steps. Takes 30 minutes.\n\n3. Delegate to your lowest-cost capable person: Not necessarily your paralegal. Could be an admin assistant or virtual support. Cost: $25-35/hour.\n\n4. Track billable hours for 30 days: Measure before/after. Most firms see +10-15% immediately.\n\n5. Rinse and repeat: Delegate one new task per month. After 6 months, you've freed up 40+ billable hours.",
-      "image_prompt": "Navy blue (#1e3a5f) and white minimal design. Split-screen comparison: Left side shows '60 hrs, $180K' with a stressed attorney icon. Right side shows '35 hrs, $240K' with a calm attorney icon. Bold sans-serif. Clean, corporate law firm aesthetic.",
-      "blog_keyword": "law firm delegation strategies revenue growth",
-      "youtube_topic": "Why Your Best Lawyers Are Broke (And It's Not What You Think)",
-      "lead_magnet_topic": "Law Firm Delegation Audit Template: Find Your Hidden Billable Hours (spreadsheet that calculates recovered revenue based on hours freed up + billing rate)",
-      "linkedin_cta": "Comment 'DELEGATION' and I'll send you the audit template we use with firms—shows exactly where those 8-12 hidden billable hours are hiding.",
-      "x_cta": "Reply 'AUDIT' and I'll send the spreadsheet. Takes 30 minutes to identify your $20-40K."
+      "short_video": {
+        "content": "If you're running a law firm and your best attorneys are spending 5+ hours a week on scheduling, emails, and admin—you're literally leaving money on the table.\n\n[PAUSE]\n\nI'm talking $20 to $40K per attorney, per year.\n\nHere's what most firm owners get wrong: They think delegation means loss of control. It actually means control over what matters—client work, strategy, revenue.\n\n[PAUSE]\n\nOne firm I know had a partner working 60 hours billed $180K. His associate worked 35 hours and billed $240K. Same clients. Different workflow.\n\nThe difference? The associate delegated everything that wasn't billable work. The partner didn't.\n\n[PAUSE]\n\nYour move: This week, write down every task you do that someone else could handle. Just one. Delegate it. See what your billable hours look like next month.\n\nThat's productive laziness.",
+        "status": "review",
+        "edited": false
+      },
+      "quote_cards": {
+        "content": "Staying busy isn't the same as staying profitable. One is noise. One is revenue.\n\n---\n\nDelegation isn't about doing less work. It's about doing the right work.",
+        "status": "review",
+        "edited": false
+      },
+      "hot_take": {
+        "content": "Most law firm partners would rather work 60 hours and feel 'in control' than work 40 hours, delegate ruthlessly, and actually make more money. It's not a system problem—it's an ego problem.",
+        "status": "review",
+        "edited": false
+      },
+      "listicle": {
+        "content": "1. Calendar audit: Block 2 hours. Mark every task that isn't billable work. You'll find 8-12 hours weekly of $50-75/hour work.\n\n2. Create one SOP: Pick the most time-consuming task (scheduling, email triage, document pulls). Document the exact steps. Takes 30 minutes.\n\n3. Delegate to your lowest-cost capable person: Not necessarily your paralegal. Could be an admin assistant or virtual support. Cost: $25-35/hour.\n\n4. Track billable hours for 30 days: Measure before/after. Most firms see +10-15% immediately.\n\n5. Rinse and repeat: Delegate one new task per month. After 6 months, you've freed up 40+ billable hours.",
+        "status": "review",
+        "edited": false
+      }
     },
     "status": "review",
     "generated_at": "2026-02-21T01:19:35.052Z",
@@ -2382,7 +2356,32 @@
         }
       ],
       "generated_at": "2026-02-21T01:20:25.056Z"
-    }
+    },
+    "linkedin_hooks": [
+      "I watched a partner bill $180K while working 60 hours. His junior associate billed $240K in 35 hours. The difference wasn't talent—it was delegation.",
+      "Most lawyers are trading $300/hour work for $75/hour work. The math alone should terrify you. Here's how to stop.",
+      "Your best attorneys staying 'busy' is actually code for 'we're leaving money on the table.' The fix is counterintuitive."
+    ],
+    "x_hooks": [
+      "A partner working 60 hours billed $180K. His associate in 35 hours billed $240K. One knew how to delegate.",
+      "Delegation isn't about working less. It's about your $300/hour work not getting buried in $50/hour admin.",
+      "Your best lawyer doing their own scheduling is like paying a surgeon to organize their supply closet."
+    ],
+    "linkedin_carousel": [
+      "Your best attorney is working admin jobs.",
+      "Partner: 60 hours, $180K billed. Associate: 35 hours, $240K billed. Same firm.",
+      "You're confusing 'staying busy' with 'staying profitable.' They're opposites.",
+      "Audit your non-billable hours. You'll find 8-12 per week buried in emails and scheduling.",
+      "Document one task. Delegate it to your lowest-cost team member. Measure the impact.",
+      "Result: $20-40K in recovered revenue per attorney annually. Actual number from firms doing this.",
+      "Save this. Your Q1 revenue depends on decisions you make in January."
+    ],
+    "image_prompt": "Navy blue (#1e3a5f) and white minimal design. Split-screen comparison: Left side shows '60 hrs, $180K' with a stressed attorney icon. Right side shows '35 hrs, $240K' with a calm attorney icon. Bold sans-serif. Clean, corporate law firm aesthetic.",
+    "blog_keyword": "law firm delegation strategies revenue growth",
+    "youtube_topic": "Why Your Best Lawyers Are Broke (And It's Not What You Think)",
+    "lead_magnet_topic": "Law Firm Delegation Audit Template: Find Your Hidden Billable Hours (spreadsheet that calculates recovered revenue based on hours freed up + billing rate)",
+    "linkedin_cta": "Comment 'DELEGATION' and I'll send you the audit template we use with firms—shows exactly where those 8-12 hidden billable hours are hiding.",
+    "x_cta": "Reply 'AUDIT' and I'll send the spreadsheet. Takes 30 minutes to identify your $20-40K."
   },
   {
     "id": "8ba52566277d9674",
@@ -2391,70 +2390,70 @@
     "trigger_category": "DATA_POINT",
     "trigger_url": "https://reddit.com/r/socialmedia/comments/1r90dl8/1_month_178k_followers_213m_views_500000_revenue/",
     "formats": {
-      "linkedin_post": "A creator hit $500k revenue in 30 days with 178k followers and 213M views. The math: that's $2.80 per thousand views. Most agencies I talk to are doing $0.14 per thousand. The difference isn't luck—it's monetization strategy. They weren't optimizing for views. They were optimizing for conversions. They had a product people actually wanted to buy. They had scarcity. They had urgency. They had a funnel. Here's what changes the game: (1) Stop chasing vanity metrics—track revenue per view instead. (2) Build a waiting list before you launch. (3) Create artificial scarcity with limited spots or early-bird pricing. (4) Test your offer with 1% of your audience first. (5) Measure everything: cost to acquire that follower vs. lifetime value.",
-      "linkedin_hooks": [
-        "A creator made $500k in 30 days. Most creators making 10x the views earn nothing. Here's why.",
-        "$500k in 30 days on 213M views = $2.80 per thousand. Your clients are probably at $0.14.",
-        "Everyone talks about going viral. Nobody talks about monetizing viral. This creator did both."
-      ],
-      "x_single": "Most creators optimize for views. This one optimized for revenue. $500k in 30 days on the same traffic everyone else is getting.",
-      "x_hooks": [
-        "$500k / 213M views = $2.80 CPM. Your funnel is leaving 95% of money on the table.",
-        "178k followers, 30 days, $500k. Tell me again why you're chasing subscriber count?",
-        "He didn't go more viral than you. He just monetized better."
-      ],
-      "x_thread": [
-        "A creator made $500,000 in one month. 213 million views. 178k followers. The wild part? This isn't a record. It's repeatable.",
-        "Here's the setup: everyone measures success by views and followers. They chase the vanity metrics. This creator chased something else.",
-        "Math: $500k ÷ 213M views = $2.35 per thousand views. Most creators at this scale earn $0.08-0.15 CPM. 15x difference.",
-        "The gap isn't traffic. It's conversion. He had: (1) A proven product (2) Genuine scarcity (3) A qualified audience (4) A real funnel. Not guesses.",
-        "If you're building an audience—stop optimizing for views. Optimize for revenue per view. Track it weekly. Everything changes after that. Follow for more."
-      ],
-      "short_video_script": "If you're a service provider or course creator and you're measuring success by follower count, you're already losing. [PAUSE] This creator hit half a million dollars in revenue in 30 days. 213 million views. 178k followers. And here's what most people miss—that's not an outlier. That's what happens when you stop chasing vanity metrics and start building a real funnel. [PAUSE] Most creators at that scale are making pennies per thousand views. This one made dollars. The difference? They weren't optimizing for eyeballs. They were optimizing for conversions. They had a product. They had scarcity. They had an audience that actually wanted to buy. [PAUSE] So here's your one takeaway: stop counting followers. Start counting revenue per view. That number changes everything.",
-      "linkedin_carousel": [
-        "Stop counting followers. Count revenue.",
-        "$500k in 30 days sounds lucky. It's not.",
-        "Most creators at 213M views earn $0.14 per thousand. This one earned $2.80.",
-        "Step 1: Audit your funnel. Where are conversions happening?",
-        "Step 2: Build scarcity. Waiting lists, limited spots, early-bird pricing.",
-        "$500k in 30 days. Same traffic, different strategy.",
-        "Save this carousel. The math works at any scale."
-      ],
-      "linkedin_poll": {
-        "question": "What matters more: 1M followers with weak monetization, or 50k followers with $500k/month revenue?",
-        "options": [
-          "The 1M followers every time",
-          "The $500k revenue setup",
-          "Both equally (depends on goals)",
-          "This is a false choice"
-        ],
-        "post_text": "Most creators optimize for followers first, revenue second. This creator flipped it. One approach scales to exit value. One scales to burnout. The data is clear on which one actually works—but watch how people answer."
+      "linkedin": {
+        "content": "A creator hit $500k revenue in 30 days with 178k followers and 213M views. The math: that's $2.80 per thousand views. Most agencies I talk to are doing $0.14 per thousand. The difference isn't luck—it's monetization strategy. They weren't optimizing for views. They were optimizing for conversions. They had a product people actually wanted to buy. They had scarcity. They had urgency. They had a funnel. Here's what changes the game: (1) Stop chasing vanity metrics—track revenue per view instead. (2) Build a waiting list before you launch. (3) Create artificial scarcity with limited spots or early-bird pricing. (4) Test your offer with 1% of your audience first. (5) Measure everything: cost to acquire that follower vs. lifetime value.",
+        "status": "review",
+        "edited": false
       },
-      "quote_cards": [
-        "Views are vanity. Revenue per view is survival.",
-        "Everyone chases 10 million followers. Nobody tracks $10 per thousand views."
-      ],
-      "stat_graphic": {
-        "number": "$2.80",
-        "label": "Revenue per thousand views",
-        "context": "While most creators at this scale earn $0.08-0.15 CPM, this creator's monetization strategy generated 15-35x higher value from identical traffic."
+      "x_single": {
+        "content": "Most creators optimize for views. This one optimized for revenue. $500k in 30 days on the same traffic everyone else is getting.",
+        "status": "review",
+        "edited": false
       },
-      "hot_take": "Course creators and agencies obsess over 'scaling an audience' before they've proven a $5k-$10k/month funnel with their existing one. You don't have an audience problem. You have a monetization problem.",
-      "before_after": {
-        "before": "213M views, 178k followers, $0 revenue (typical creator). Spending time on content, zero payoff.",
-        "after": "$500k revenue from the same 213M views. Same traffic. Different funnel. Different outcome."
+      "x_thread": {
+        "content": "A creator made $500,000 in one month. 213 million views. 178k followers. The wild part? This isn't a record. It's repeatable.\n\n---\n\nHere's the setup: everyone measures success by views and followers. They chase the vanity metrics. This creator chased something else.\n\n---\n\nMath: $500k ÷ 213M views = $2.35 per thousand views. Most creators at this scale earn $0.08-0.15 CPM. 15x difference.\n\n---\n\nThe gap isn't traffic. It's conversion. He had: (1) A proven product (2) Genuine scarcity (3) A qualified audience (4) A real funnel. Not guesses.\n\n---\n\nIf you're building an audience—stop optimizing for views. Optimize for revenue per view. Track it weekly. Everything changes after that. Follow for more.",
+        "status": "review",
+        "edited": false
       },
-      "listicle_post": "1. Track revenue per thousand views (not follower count). 2. Build a waiting list before launch—urgency increases conversion by 30-60%. 3. Create artificial scarcity: limited spots, early-bird pricing, or closing after X days. 4. Segment your audience and test offers on 1% before rolling out to all. 5. Document your funnel: where do viewers go? Which step leaks? 6. Price based on perceived value, not guessing. Charge 10x what you think is fair, then measure response.",
-      "image_prompt": "Navy blue background (#1e3a5f) with white minimal design. Center: large number '$2.80' in bold white. Subtitle below: 'Revenue per thousand views.' Thin accent line. No gradients. Clean, corporate, repeatable.",
-      "blog_keyword": "how to monetize audience faster",
-      "youtube_topic": "Why Your Views Don't Convert (And How This Creator Made $500k Anyway)",
-      "lead_magnet_topic": "Revenue Per View Calculator: Benchmark your funnel against creator benchmarks + identify your #1 leaking conversion step",
-      "linkedin_cta": "Comment 'funnel' and I'll send you the exact monetization audit template this creator likely used.",
-      "x_cta": "Reply 'revenue per view' and I'll send the benchmark data showing where your funnel is leaking."
+      "short_video": {
+        "content": "If you're a service provider or course creator and you're measuring success by follower count, you're already losing. [PAUSE] This creator hit half a million dollars in revenue in 30 days. 213 million views. 178k followers. And here's what most people miss—that's not an outlier. That's what happens when you stop chasing vanity metrics and start building a real funnel. [PAUSE] Most creators at that scale are making pennies per thousand views. This one made dollars. The difference? They weren't optimizing for eyeballs. They were optimizing for conversions. They had a product. They had scarcity. They had an audience that actually wanted to buy. [PAUSE] So here's your one takeaway: stop counting followers. Start counting revenue per view. That number changes everything.",
+        "status": "review",
+        "edited": false
+      },
+      "quote_cards": {
+        "content": "Views are vanity. Revenue per view is survival.\n\n---\n\nEveryone chases 10 million followers. Nobody tracks $10 per thousand views.",
+        "status": "review",
+        "edited": false
+      },
+      "hot_take": {
+        "content": "Course creators and agencies obsess over 'scaling an audience' before they've proven a $5k-$10k/month funnel with their existing one. You don't have an audience problem. You have a monetization problem.",
+        "status": "review",
+        "edited": false
+      },
+      "listicle": {
+        "content": "1. Track revenue per thousand views (not follower count). 2. Build a waiting list before launch—urgency increases conversion by 30-60%. 3. Create artificial scarcity: limited spots, early-bird pricing, or closing after X days. 4. Segment your audience and test offers on 1% before rolling out to all. 5. Document your funnel: where do viewers go? Which step leaks? 6. Price based on perceived value, not guessing. Charge 10x what you think is fair, then measure response.",
+        "status": "review",
+        "edited": false
+      }
     },
     "status": "review",
     "generated_at": "2026-02-21T01:19:53.383Z",
-    "generation_mode": "autopilot"
+    "generation_mode": "autopilot",
+    "linkedin_hooks": [
+      "A creator made $500k in 30 days. Most creators making 10x the views earn nothing. Here's why.",
+      "$500k in 30 days on 213M views = $2.80 per thousand. Your clients are probably at $0.14.",
+      "Everyone talks about going viral. Nobody talks about monetizing viral. This creator did both."
+    ],
+    "x_hooks": [
+      "$500k / 213M views = $2.80 CPM. Your funnel is leaving 95% of money on the table.",
+      "178k followers, 30 days, $500k. Tell me again why you're chasing subscriber count?",
+      "He didn't go more viral than you. He just monetized better."
+    ],
+    "linkedin_carousel": [
+      "Stop counting followers. Count revenue.",
+      "$500k in 30 days sounds lucky. It's not.",
+      "Most creators at 213M views earn $0.14 per thousand. This one earned $2.80.",
+      "Step 1: Audit your funnel. Where are conversions happening?",
+      "Step 2: Build scarcity. Waiting lists, limited spots, early-bird pricing.",
+      "$500k in 30 days. Same traffic, different strategy.",
+      "Save this carousel. The math works at any scale."
+    ],
+    "image_prompt": "Navy blue background (#1e3a5f) with white minimal design. Center: large number '$2.80' in bold white. Subtitle below: 'Revenue per thousand views.' Thin accent line. No gradients. Clean, corporate, repeatable.",
+    "blog_keyword": "how to monetize audience faster",
+    "youtube_topic": "Why Your Views Don't Convert (And How This Creator Made $500k Anyway)",
+    "lead_magnet_topic": "Revenue Per View Calculator: Benchmark your funnel against creator benchmarks + identify your #1 leaking conversion step",
+    "linkedin_cta": "Comment 'funnel' and I'll send you the exact monetization audit template this creator likely used.",
+    "x_cta": "Reply 'revenue per view' and I'll send the benchmark data showing where your funnel is leaking."
   },
   {
     "id": "4aa23b276fa5218b",
@@ -2463,66 +2462,41 @@
     "trigger_category": "DATA_POINT",
     "trigger_url": "https://youtube.com/watch?v=v-67pfutZEk",
     "formats": {
-      "linkedin_post": "5,000 days running Crisp. 13+ years watching law firms make the same mistake: ignoring their backend. Outdated case management. Manual billing. Lost email chains. A 50-person firm running like 10 people. One attorney wasting 5 hours/week on admin? $52,000/year in lost billables. Multiply that across your team. The fix: (1) Audit actual time spent—no guessing. (2) Map top three time-sucks to software solutions. (3) Implement ONE system this quarter. (4) Train properly or it fails. (5) Measure monthly time saved. Your backend is your profit margin.",
-      "linkedin_hooks": [
-        "We just hit 5,000 days running Crisp. And the biggest mistake we've seen isn't what you think. Most law firms treat their backend operations like they don't matter.",
-        "A 50-person firm operating like a 10-person shop. That's what happens when your case management system is outdated and billing is still manual. We've watched this play out 5,000 times.",
-        "Lawyers are trained to ignore operational efficiency. It's costing you $52,000+ per attorney per year. And it's fixable in 90 days."
-      ],
-      "x_single": "Most law firms waste $52k/attorney/year on admin work software could handle. Your backend isn't boring—it's your profit margin.",
-      "x_hooks": [
-        "$52,000/year per attorney. That's what manual processes actually cost you. Most firms have no idea.",
-        "Stop calling your backend 'operations.' Call it what it is: hidden profit you're leaving on the table.",
-        "We watched a 50-person firm operate like 10 people for two years. One software implementation changed everything."
-      ],
-      "x_thread": [
-        "5,000 days running Crisp taught us something most law firms won't admit: your backend is where the money goes to die. One attorney, one firm, one week of wasted admin time = $1,000 in lost billable revenue. Most firms have 5-15 attorneys doing this daily.",
-        "Here's what we see: case management is outdated. Billing requires manual data entry. Client communication lives in email threads. Reporting takes 8 hours monthly instead of 2. Nobody's tracking where time actually goes.",
-        "The data is brutal. A 50-person firm we worked with lost $780k/year to operational drag. Not a single attorney was bad at their job. The system was just broken.",
-        "Most firms think the fix is 'work harder' or 'hire more admin staff.' Wrong. The fix is: stop doing work software should do. One system. Proper training. Measure the time saved.",
-        "Don't call it efficiency. Call it profit recovery. 90 days, one software audit, one implementation. Reply 'backend audit' and we'll send the framework."
-      ],
-      "short_video_script": "If you're a solo or small firm and you're still manually entering time, billing clients in spreadsheets, or searching through emails for case history — you're leaving money on the table. [PAUSE] We just hit 13 years of watching law firms do this exact thing. And we finally mapped what it costs. One attorney wasting just 5 hours a week on admin work — that's $52,000 a year. Not a salary. Just time you could've billed. [PAUSE] Now multiply that by your team. Here's what actually works: audit where your team spends time, map it to software that exists right now, and implement one system this quarter. Not five. One. [PAUSE] Your backend isn't boring. It's your most expensive problem. Fix it.",
-      "linkedin_carousel": [
-        "5,000 days. One brutal pattern.",
-        "Attorneys spending 5+ hours weekly on admin. $52k/year per person lost.",
-        "Firms think they need more staff. They need better software. Huge difference.",
-        "Step 1: Time audit. Where does your team actually spend time? Document it.",
-        "Step 2: Pick one system. Case management. Billing. Communication. Fix the biggest leak first.",
-        "Result: 50-person firm operating like 50 people again. $300k+ recovered annually.",
-        "Save this. Follow @mortarmetrics for the backend audit framework."
-      ],
-      "linkedin_poll": {
-        "question": "Your backend operations are costing you more than hiring. True or uncomfortable?",
-        "options": [
-          "True. I've calculated it.",
-          "Probably true but I haven't measured.",
-          "I don't think so.",
-          "I have no idea where my time goes."
-        ],
-        "post_text": "We tracked 5,000 days of law firms and found something uncomfortable: most attorneys waste 5+ hours weekly on admin work software could handle. That's $52,000/year per person. The scary part? Most firms have never actually measured where their time goes. This poll isn't about judgment—it's about where you actually stand."
+      "linkedin": {
+        "content": "5,000 days running Crisp. 13+ years watching law firms make the same mistake: ignoring their backend. Outdated case management. Manual billing. Lost email chains. A 50-person firm running like 10 people. One attorney wasting 5 hours/week on admin? $52,000/year in lost billables. Multiply that across your team. The fix: (1) Audit actual time spent—no guessing. (2) Map top three time-sucks to software solutions. (3) Implement ONE system this quarter. (4) Train properly or it fails. (5) Measure monthly time saved. Your backend is your profit margin.",
+        "status": "review",
+        "edited": false
       },
-      "quote_cards": [
-        "Your backend isn't boring. It's your profit margin.",
-        "Stop hiring admin staff. Start fixing your systems."
-      ],
-      "stat_graphic": {
-        "number": "$52,000",
-        "label": "Lost billable time per attorney annually",
-        "context": "The cost of manual processes that software could handle in hours instead of days."
+      "x_single": {
+        "content": "Most law firms waste $52k/attorney/year on admin work software could handle. Your backend isn't boring—it's your profit margin.",
+        "status": "review",
+        "edited": false
       },
-      "hot_take": "Most law firms hire their way out of operational problems instead of fixing their systems. It's cheaper and faster to implement better software than hire another admin person. But software doesn't feel like work, so firms ignore it.",
-      "before_after": {
-        "before": "Manual case management, spreadsheet billing, email-based communication, 8-hour monthly reporting cycle, $52k/attorney/year lost to admin work.",
-        "after": "Automated intake to invoice, centralized case history, time-tracked communication, 2-hour monthly reporting, $52k/attorney/year recovered for billable work."
+      "x_thread": {
+        "content": "5,000 days running Crisp taught us something most law firms won't admit: your backend is where the money goes to die. One attorney, one firm, one week of wasted admin time = $1,000 in lost billable revenue. Most firms have 5-15 attorneys doing this daily.\n\n---\n\nHere's what we see: case management is outdated. Billing requires manual data entry. Client communication lives in email threads. Reporting takes 8 hours monthly instead of 2. Nobody's tracking where time actually goes.\n\n---\n\nThe data is brutal. A 50-person firm we worked with lost $780k/year to operational drag. Not a single attorney was bad at their job. The system was just broken.\n\n---\n\nMost firms think the fix is 'work harder' or 'hire more admin staff.' Wrong. The fix is: stop doing work software should do. One system. Proper training. Measure the time saved.\n\n---\n\nDon't call it efficiency. Call it profit recovery. 90 days, one software audit, one implementation. Reply 'backend audit' and we'll send the framework.",
+        "status": "review",
+        "edited": false
       },
-      "listicle_post": "5 Steps to Stop Wasting $52K/Attorney/Year on Manual Processes: (1) Conduct a time audit — have three attorneys track their actual time for one week in 30-minute increments, categorizing billable vs. admin. (2) Identify the biggest leak — is it case management, billing, or communication? (3) Research software designed for your specific practice area, not generic CRM tools. (4) Implement one system this quarter with proper training — not a software graveyard of half-adopted tools. (5) Measure time saved monthly and tie it to recovered billable hours. If you're not measuring, you're guessing.",
-      "image_prompt": "Navy blue (#1e3a5f) and white minimal design: Large bold stat '$52,000' centered, subtext 'Lost per attorney annually to manual processes' below, small 'crisp' logo bottom right, clean sans-serif typography, subtle background grid pattern",
-      "blog_keyword": "law firm operational efficiency software",
-      "youtube_topic": "Why Small Law Firms Waste $500K/Year Without Realizing It (And How to Stop)",
-      "lead_magnet_topic": "Law Firm Time Audit Template: Identify exactly where your team's hours actually go (spreadsheet + framework)",
-      "linkedin_cta": "Comment 'audit' and I'll send the time tracking template we use to show firms where the money actually goes.",
-      "x_cta": "Reply 'backend audit' and we'll send the framework that helped a 50-person firm recover $780k in lost time.",
+      "short_video": {
+        "content": "If you're a solo or small firm and you're still manually entering time, billing clients in spreadsheets, or searching through emails for case history — you're leaving money on the table. [PAUSE] We just hit 13 years of watching law firms do this exact thing. And we finally mapped what it costs. One attorney wasting just 5 hours a week on admin work — that's $52,000 a year. Not a salary. Just time you could've billed. [PAUSE] Now multiply that by your team. Here's what actually works: audit where your team spends time, map it to software that exists right now, and implement one system this quarter. Not five. One. [PAUSE] Your backend isn't boring. It's your most expensive problem. Fix it.",
+        "status": "review",
+        "edited": false
+      },
+      "quote_cards": {
+        "content": "Your backend isn't boring. It's your profit margin.\n\n---\n\nStop hiring admin staff. Start fixing your systems.",
+        "status": "review",
+        "edited": false
+      },
+      "hot_take": {
+        "content": "Most law firms hire their way out of operational problems instead of fixing their systems. It's cheaper and faster to implement better software than hire another admin person. But software doesn't feel like work, so firms ignore it.",
+        "status": "review",
+        "edited": false
+      },
+      "listicle": {
+        "content": "5 Steps to Stop Wasting $52K/Attorney/Year on Manual Processes: (1) Conduct a time audit — have three attorneys track their actual time for one week in 30-minute increments, categorizing billable vs. admin. (2) Identify the biggest leak — is it case management, billing, or communication? (3) Research software designed for your specific practice area, not generic CRM tools. (4) Implement one system this quarter with proper training — not a software graveyard of half-adopted tools. (5) Measure time saved monthly and tie it to recovered billable hours. If you're not measuring, you're guessing.",
+        "status": "review",
+        "edited": false
+      },
       "x_thread_optimized": {
         "content": [
           "I've run a legal marketing agency for 13+ years. Managed millions in ad spend. The biggest lesson? 90% of what we obsess over doesn't matter. Here's the 10% that does:",
@@ -2670,7 +2644,32 @@
       "legal-marketing",
       "seo",
       "high-priority"
-    ]
+    ],
+    "linkedin_hooks": [
+      "We just hit 5,000 days running Crisp. And the biggest mistake we've seen isn't what you think. Most law firms treat their backend operations like they don't matter.",
+      "A 50-person firm operating like a 10-person shop. That's what happens when your case management system is outdated and billing is still manual. We've watched this play out 5,000 times.",
+      "Lawyers are trained to ignore operational efficiency. It's costing you $52,000+ per attorney per year. And it's fixable in 90 days."
+    ],
+    "x_hooks": [
+      "$52,000/year per attorney. That's what manual processes actually cost you. Most firms have no idea.",
+      "Stop calling your backend 'operations.' Call it what it is: hidden profit you're leaving on the table.",
+      "We watched a 50-person firm operate like 10 people for two years. One software implementation changed everything."
+    ],
+    "linkedin_carousel": [
+      "5,000 days. One brutal pattern.",
+      "Attorneys spending 5+ hours weekly on admin. $52k/year per person lost.",
+      "Firms think they need more staff. They need better software. Huge difference.",
+      "Step 1: Time audit. Where does your team actually spend time? Document it.",
+      "Step 2: Pick one system. Case management. Billing. Communication. Fix the biggest leak first.",
+      "Result: 50-person firm operating like 50 people again. $300k+ recovered annually.",
+      "Save this. Follow @mortarmetrics for the backend audit framework."
+    ],
+    "image_prompt": "Navy blue (#1e3a5f) and white minimal design: Large bold stat '$52,000' centered, subtext 'Lost per attorney annually to manual processes' below, small 'crisp' logo bottom right, clean sans-serif typography, subtle background grid pattern",
+    "blog_keyword": "law firm operational efficiency software",
+    "youtube_topic": "Why Small Law Firms Waste $500K/Year Without Realizing It (And How to Stop)",
+    "lead_magnet_topic": "Law Firm Time Audit Template: Identify exactly where your team's hours actually go (spreadsheet + framework)",
+    "linkedin_cta": "Comment 'audit' and I'll send the time tracking template we use to show firms where the money actually goes.",
+    "x_cta": "Reply 'backend audit' and we'll send the framework that helped a 50-person firm recover $780k in lost time."
   },
   {
     "id": "0290f613483e7695",
@@ -4399,6 +4398,436 @@
     "trigger_category": "DATA_POINT",
     "trigger_url": "https://reddit.com/r/LeadGeneration/comments/1r7xnhe/running_a_us_home_service_business_remotely/",
     "generated_at": "2026-02-21T19:49:38.192Z",
+    "status": "review",
+    "formats": {
+      "linkedin": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "x_single": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "x_thread": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "short_video": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "carousel": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "poll": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "quote_cards": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "stat_graphic": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "hot_take": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "before_after": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "listicle": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      }
+    },
+    "hook_variants": {
+      "linkedin": [],
+      "x": []
+    },
+    "image_prompt": null,
+    "image_url": null,
+    "blog_keyword": null,
+    "youtube_topic": null,
+    "lead_magnet_topic": null,
+    "blog_post": null,
+    "youtube_script": null,
+    "quality_score": {
+      "score": 0,
+      "max": 0,
+      "earned": 0,
+      "flags": []
+    },
+    "notes": "",
+    "quality_scores": {}
+  },
+  {
+    "id": "cf6b5b4f2ff227ab",
+    "trigger_id": "reddit-1raou36",
+    "trigger_title": "your revenue number means less than you think. here's what buyers actually see.",
+    "trigger_source": "reddit",
+    "trigger_category": "DATA_POINT",
+    "trigger_url": "https://reddit.com/r/EntrepreneurRideAlong/comments/1raou36/your_revenue_number_means_less_than_you_think/",
+    "generated_at": "2026-02-21T21:11:04.606Z",
+    "status": "review",
+    "formats": {
+      "linkedin": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "x_single": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "x_thread": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "short_video": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "carousel": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "poll": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "quote_cards": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "stat_graphic": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "hot_take": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "before_after": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "listicle": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      }
+    },
+    "hook_variants": {
+      "linkedin": [],
+      "x": []
+    },
+    "image_prompt": null,
+    "image_url": null,
+    "blog_keyword": null,
+    "youtube_topic": null,
+    "lead_magnet_topic": null,
+    "blog_post": null,
+    "youtube_script": null,
+    "quality_score": {
+      "score": 0,
+      "max": 0,
+      "earned": 0,
+      "flags": []
+    },
+    "notes": "",
+    "quality_scores": {}
+  },
+  {
+    "id": "4622f91c5cc0ab5a",
+    "trigger_id": "reddit-1ravdjy",
+    "trigger_title": "$2,000 in ads. 100s of leads. But still 0 buyers.",
+    "trigger_source": "reddit",
+    "trigger_category": "DATA_POINT",
+    "trigger_url": "https://reddit.com/r/FacebookAds/comments/1ravdjy/2000_in_ads_100s_of_leads_but_still_0_buyers/",
+    "generated_at": "2026-02-21T21:11:04.730Z",
+    "status": "review",
+    "formats": {
+      "linkedin": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "x_single": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "x_thread": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "short_video": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "carousel": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "poll": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "quote_cards": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "stat_graphic": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "hot_take": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "before_after": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "listicle": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      }
+    },
+    "hook_variants": {
+      "linkedin": [],
+      "x": []
+    },
+    "image_prompt": null,
+    "image_url": null,
+    "blog_keyword": null,
+    "youtube_topic": null,
+    "lead_magnet_topic": null,
+    "blog_post": null,
+    "youtube_script": null,
+    "quality_score": {
+      "score": 0,
+      "max": 0,
+      "earned": 0,
+      "flags": []
+    },
+    "notes": "",
+    "quality_scores": {}
+  },
+  {
+    "id": "65998bc68ac70829",
+    "trigger_id": "reddit-1r9pae4",
+    "trigger_title": "i turned down 3 prospects this month because they weren't ready for cold email",
+    "trigger_source": "reddit",
+    "trigger_category": "PAIN_POINT",
+    "trigger_url": "https://reddit.com/r/EntrepreneurRideAlong/comments/1r9pae4/i_turned_down_3_prospects_this_month_because_they/",
+    "generated_at": "2026-02-21T21:11:04.821Z",
+    "status": "review",
+    "formats": {
+      "linkedin": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "x_single": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "x_thread": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "short_video": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "carousel": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "poll": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "quote_cards": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "stat_graphic": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "hot_take": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "before_after": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "listicle": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      }
+    },
+    "hook_variants": {
+      "linkedin": [],
+      "x": []
+    },
+    "image_prompt": null,
+    "image_url": null,
+    "blog_keyword": null,
+    "youtube_topic": null,
+    "lead_magnet_topic": null,
+    "blog_post": null,
+    "youtube_script": null,
+    "quality_score": {
+      "score": 0,
+      "max": 0,
+      "earned": 0,
+      "flags": []
+    },
+    "notes": "",
+    "quality_scores": {}
+  },
+  {
+    "id": "14c3d4870291333a",
+    "trigger_id": "comp-aHR0cHM6Ly93d3cu",
+    "trigger_title": "CCPA/CPRA: Privacy Policy and Disclaimers for Law Firms. Whew!",
+    "trigger_source": "competitor",
+    "trigger_category": "CONTENT_PIECE",
+    "trigger_url": "https://www.paperstreet.com/blog/ccpa-cpra-privacy-disclaimers/",
+    "generated_at": "2026-02-21T21:11:04.925Z",
+    "status": "review",
+    "formats": {
+      "linkedin": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "x_single": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "x_thread": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "short_video": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "carousel": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "poll": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "quote_cards": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "stat_graphic": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "hot_take": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "before_after": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "listicle": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      }
+    },
+    "hook_variants": {
+      "linkedin": [],
+      "x": []
+    },
+    "image_prompt": null,
+    "image_url": null,
+    "blog_keyword": null,
+    "youtube_topic": null,
+    "lead_magnet_topic": null,
+    "blog_post": null,
+    "youtube_script": null,
+    "quality_score": {
+      "score": 0,
+      "max": 0,
+      "earned": 0,
+      "flags": []
+    },
+    "notes": "",
+    "quality_scores": {}
+  },
+  {
+    "id": "8497a3bda78df727",
+    "trigger_id": "comp-aHR0cHM6Ly93d3cu",
+    "trigger_title": "The Hidden Intake Gaps",
+    "trigger_source": "competitor",
+    "trigger_category": "CONTENT_PIECE",
+    "trigger_url": "https://www.martindale-avvo.com/blog/the-hidden-intake-gaps/",
+    "generated_at": "2026-02-21T21:11:05.025Z",
     "status": "review",
     "formats": {
       "linkedin": {

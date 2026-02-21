@@ -3,16 +3,16 @@
   "formats": [
     {
       "format": "linkedin",
-      "count": 55,
+      "count": 60,
       "published": 0,
       "total_engagement": 45,
       "total_impressions": 2500,
-      "avg_engagement": 0.82,
+      "avg_engagement": 0.75,
       "engagement_rate": 1.8
     },
     {
       "format": "x_single",
-      "count": 53,
+      "count": 58,
       "published": 1,
       "total_engagement": 0,
       "total_impressions": 0,
@@ -21,7 +21,7 @@
     },
     {
       "format": "x_thread",
-      "count": 52,
+      "count": 57,
       "published": 1,
       "total_engagement": 0,
       "total_impressions": 0,
@@ -30,7 +30,7 @@
     },
     {
       "format": "short_video",
-      "count": 46,
+      "count": 51,
       "published": 0,
       "total_engagement": 0,
       "total_impressions": 0,
@@ -39,7 +39,7 @@
     },
     {
       "format": "carousel",
-      "count": 27,
+      "count": 32,
       "published": 0,
       "total_engagement": 0,
       "total_impressions": 0,
@@ -48,7 +48,7 @@
     },
     {
       "format": "hot_take",
-      "count": 33,
+      "count": 38,
       "published": 1,
       "total_engagement": 0,
       "total_impressions": 0,
@@ -57,7 +57,7 @@
     },
     {
       "format": "poll",
-      "count": 27,
+      "count": 32,
       "published": 0,
       "total_engagement": 0,
       "total_impressions": 0,
@@ -66,7 +66,7 @@
     },
     {
       "format": "quote_cards",
-      "count": 31,
+      "count": 36,
       "published": 1,
       "total_engagement": 0,
       "total_impressions": 0,
@@ -75,7 +75,7 @@
     },
     {
       "format": "stat_graphic",
-      "count": 31,
+      "count": 36,
       "published": 1,
       "total_engagement": 0,
       "total_impressions": 0,
@@ -84,7 +84,7 @@
     },
     {
       "format": "before_after",
-      "count": 31,
+      "count": 36,
       "published": 1,
       "total_engagement": 0,
       "total_impressions": 0,
@@ -93,7 +93,7 @@
     },
     {
       "format": "listicle",
-      "count": 26,
+      "count": 31,
       "published": 0,
       "total_engagement": 0,
       "total_impressions": 0,
@@ -256,5 +256,5 @@
   ],
   "best_format": "linkedin",
   "worst_format": "x_thread_optimized",
-  "generated_at": "2026-02-21T19:49:38.433Z"
+  "generated_at": "2026-02-21T21:11:05.279Z"
 }

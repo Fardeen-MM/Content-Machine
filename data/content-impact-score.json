@@ -1,11 +1,11 @@
 {
-  "impact_score": 30,
+  "impact_score": 31,
   "grade": "F",
   "breakdown": {
     "volume": {
-      "score": 12,
+      "score": 13,
       "max": 20,
-      "detail": "61 pieces"
+      "detail": "66 pieces"
     },
     "publishing": {
       "score": 1,
@@ -15,7 +15,7 @@
     "diversity": {
       "score": 10,
       "max": 20,
-      "detail": "8 avg formats"
+      "detail": "8.2 avg formats"
     },
     "engagement": {
       "score": 2,
@@ -33,5 +33,5 @@
     "Low publishing rate",
     "Limited reach — promote more"
   ],
-  "generated_at": "2026-02-21T19:49:38.453Z"
+  "generated_at": "2026-02-21T21:11:05.301Z"
 }

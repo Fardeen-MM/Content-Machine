@@ -1,9 +1,9 @@
 {
-  "total_content": 61,
+  "total_content": 66,
   "avg_recency_score": 93,
   "grade": "A",
   "buckets": {
-    "fresh": 41,
+    "fresh": 46,
     "recent": 18,
     "aging": 2,
     "stale": 0,
@@ -37,7 +37,7 @@
     {
       "id": "c4c23c4858e12fc8",
       "title": "My web designer charges $300/mo and my site looks like it's from 2005",
-      "age_days": 6,
+      "age_days": 7,
       "recency_score": 80,
       "bucket": "recent",
       "status": "review"
@@ -93,40 +93,40 @@
   ],
   "freshest_content": [
     {
-      "id": "942bdcb1159acca7",
-      "title": "Running a US home service business remotely – scalable model or risky dependency?",
+      "id": "8497a3bda78df727",
+      "title": "The Hidden Intake Gaps",
       "age_days": 0,
       "recency_score": 100,
       "bucket": "fresh",
       "status": "review"
     },
     {
-      "id": "5e6555b1ae727932",
-      "title": "Google ads",
+      "id": "14c3d4870291333a",
+      "title": "CCPA/CPRA: Privacy Policy and Disclaimers for Law Firms. Whew!",
       "age_days": 0,
       "recency_score": 100,
       "bucket": "fresh",
       "status": "review"
     },
     {
-      "id": "75f380d0e3a8ce07",
-      "title": "Got paid to fix a client's ads. turns out the ads werent the problem",
+      "id": "65998bc68ac70829",
+      "title": "i turned down 3 prospects this month because they weren't ready for cold email",
       "age_days": 0,
       "recency_score": 100,
       "bucket": "fresh",
       "status": "review"
     },
     {
-      "id": "5b9f0c694cd43836",
-      "title": "Landing Page Experience and Conversion Rates",
+      "id": "4622f91c5cc0ab5a",
+      "title": "$2,000 in ads. 100s of leads. But still 0 buyers.",
       "age_days": 0,
       "recency_score": 100,
       "bucket": "fresh",
       "status": "review"
     },
     {
-      "id": "75e110476877693b",
-      "title": "How I Generated $2,795 from 2,150 Organic Visitors",
+      "id": "cf6b5b4f2ff227ab",
+      "title": "your revenue number means less than you think. here's what buyers actually see.",
       "age_days": 0,
       "recency_score": 100,
       "bucket": "fresh",
@@ -134,5 +134,5 @@
     }
   ],
   "recommendations": [],
-  "generated_at": "2026-02-21T19:49:38.414Z"
+  "generated_at": "2026-02-21T21:11:05.254Z"
 }

@@ -2,8 +2,8 @@
   "topic_coverage": {
     "google ads": 9,
     "web design": 1,
-    "ai": 9,
-    "intake": 4,
+    "ai": 11,
+    "intake": 5,
     "conversion": 2,
     "seo": 2,
     "referral": 1,
@@ -11,12 +11,12 @@
     "reviews": 1,
     "content": 1,
     "video": 1,
-    "lead gen": 1
+    "lead gen": 1,
+    "email": 1
   },
   "topic_gaps": [
     "branding",
     "social media",
-    "email marketing",
     "analytics",
     "lead generation",
     "client retention",
@@ -28,17 +28,17 @@
     "automation"
   ],
   "format_coverage": {
-    "linkedin": 55,
-    "x_single": 53,
-    "x_thread": 52,
-    "short_video": 46,
-    "carousel": 27,
-    "hot_take": 33,
-    "poll": 27,
-    "quote_cards": 31,
-    "stat_graphic": 31,
-    "before_after": 31,
-    "listicle": 26,
+    "linkedin": 60,
+    "x_single": 58,
+    "x_thread": 57,
+    "short_video": 51,
+    "carousel": 32,
+    "hot_take": 38,
+    "poll": 32,
+    "quote_cards": 36,
+    "stat_graphic": 36,
+    "before_after": 36,
+    "listicle": 31,
     "blog": 3,
     "youtube_script": 3,
     "lead_magnet": 3,
@@ -62,21 +62,21 @@
     "case_study"
   ],
   "source_coverage": {
-    "reddit": 121,
+    "reddit": 174,
     "google-news": 1,
     "rss": 189,
-    "youtube": 77,
+    "youtube": 78,
     "hackernews": 42,
     "competitor": 45,
     "content-ideas": 1
   },
-  "total_content": 61,
+  "total_content": 66,
   "total_published": 1,
-  "coverage_score": 52,
+  "coverage_score": 57,
   "recommendations": [
-    "Cover branding, social media, email marketing — these topics have zero content",
+    "Cover branding, social media, analytics — these topics have zero content",
     "Good format diversity",
     "Pipeline is flowing"
   ],
-  "generated_at": "2026-02-21T19:49:41.810Z"
+  "generated_at": "2026-02-21T21:11:09.483Z"
 }

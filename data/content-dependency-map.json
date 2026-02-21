@@ -1,6 +1,6 @@
 {
-  "total_nodes": 61,
-  "total_edges": 38,
+  "total_nodes": 66,
+  "total_edges": 39,
   "nodes": [
     {
       "id": "dd33fd2be463cf5f",
@@ -365,6 +365,36 @@
     {
       "id": "942bdcb1159acca7",
       "title": "Running a US home service business remotely – scalable model or risky dependency?",
+      "status": "review",
+      "format_count": 11
+    },
+    {
+      "id": "cf6b5b4f2ff227ab",
+      "title": "your revenue number means less than you think. here's what buyers actually see.",
+      "status": "review",
+      "format_count": 11
+    },
+    {
+      "id": "4622f91c5cc0ab5a",
+      "title": "$2,000 in ads. 100s of leads. But still 0 buyers.",
+      "status": "review",
+      "format_count": 11
+    },
+    {
+      "id": "65998bc68ac70829",
+      "title": "i turned down 3 prospects this month because they weren't ready for cold email",
+      "status": "review",
+      "format_count": 11
+    },
+    {
+      "id": "14c3d4870291333a",
+      "title": "CCPA/CPRA: Privacy Policy and Disclaimers for Law Firms. Whew!",
+      "status": "review",
+      "format_count": 11
+    },
+    {
+      "id": "8497a3bda78df727",
+      "title": "The Hidden Intake Gaps",
       "status": "review",
       "format_count": 11
     }
@@ -784,6 +814,16 @@
         "startup"
       ],
       "strength": 2
+    },
+    {
+      "from": "513a096e8f85b7e4",
+      "to": "cf6b5b4f2ff227ab",
+      "relationship": "keyword_overlap",
+      "shared_keywords": [
+        "here's",
+        "actually"
+      ],
+      "strength": 2
     }
   ],
   "most_connected": [
@@ -851,13 +891,13 @@
       "connections": 3
     },
     {
-      "id": "4c20a864324032bb",
-      "title": "Just found out my marketing agency was running ads to the wrong zip codes for 6 months",
-      "status": "approved",
-      "format_count": 4,
-      "connections": 2
+      "id": "513a096e8f85b7e4",
+      "title": "I tracked every growth tactic I tried for 14 months. Here's the data on what actually converts vs. what just generates vanity metrics.",
+      "status": "review",
+      "format_count": 11,
+      "connections": 3
     }
   ],
-  "orphans": 34,
-  "generated_at": "2026-02-21T19:49:38.418Z"
+  "orphans": 38,
+  "generated_at": "2026-02-21T21:11:05.258Z"
 }

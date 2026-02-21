@@ -1,7 +1,7 @@
 {
-  "total_content": 61,
+  "total_content": 66,
   "completed": 1,
-  "in_progress": 60,
+  "in_progress": 65,
   "avg_total_days": 0.3,
   "avg_create_to_approve": 0,
   "fastest": [
@@ -40,7 +40,7 @@
       "status": "review",
       "created_to_approved_days": null,
       "approved_to_published_days": null,
-      "total_days": 7.4,
+      "total_days": 7.5,
       "is_complete": false
     },
     {
@@ -58,9 +58,9 @@
       "status": "review",
       "created_to_approved_days": null,
       "approved_to_published_days": null,
-      "total_days": 6.8,
+      "total_days": 6.9,
       "is_complete": false
     }
   ],
-  "generated_at": "2026-02-21T19:49:38.440Z"
+  "generated_at": "2026-02-21T21:11:05.285Z"
 }

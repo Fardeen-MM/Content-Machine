@@ -132,6 +132,48 @@ function verifySecret(provided, expected) {
   return crypto.timingSafeEqual(Buffer.from(provided), Buffer.from(expected));
 }
 
+// Normalize content item formats — ensures all format values are { content, status, edited } dicts
+// Fixes data from endpoints that stored raw Claude output (strings/lists) directly into formats
+const VALID_FORMAT_KEYS = new Set(['linkedin','x_single','x_thread','short_video','carousel','poll','quote_cards','stat_graphic','hot_take','before_after','listicle','blog','youtube_script','newsletter','lead_magnet','case_study','linkedin_poll','x_thread_optimized']);
+const FORMAT_ALIASES = { linkedin_post: 'linkedin', short_video_script: 'short_video', listicle_post: 'listicle' };
+const META_KEYS_IN_FORMATS = new Set(['blog_keyword','youtube_topic','lead_magnet_topic','image_prompt','linkedin_hooks','x_hooks','linkedin_cta','x_cta','linkedin_carousel']);
+
+function normalizeContentFormats(item) {
+  if (!item || !item.formats) return item;
+  const clean = {};
+  for (const [k, v] of Object.entries(item.formats)) {
+    // Skip metadata keys that shouldn't be in formats
+    if (META_KEYS_IN_FORMATS.has(k)) {
+      // Hoist to top level if not already there
+      if (item[k] === undefined || item[k] === null) item[k] = v;
+      continue;
+    }
+    // Resolve aliases
+    const realKey = FORMAT_ALIASES[k] || k;
+    // Only keep valid format keys
+    if (!VALID_FORMAT_KEYS.has(realKey)) continue;
+    // Already a proper dict — keep it
+    if (v && typeof v === 'object' && !Array.isArray(v) && v.content !== undefined) {
+      clean[realKey] = v;
+      continue;
+    }
+    // String — wrap in slot
+    if (typeof v === 'string' && v.length > 0) {
+      clean[realKey] = { content: v, status: 'review', edited: false };
+      continue;
+    }
+    // Array — join and wrap (x_thread, quote_cards, carousel)
+    if (Array.isArray(v) && v.length > 0) {
+      const joined = v.map(x => typeof x === 'string' ? x : JSON.stringify(x)).join('\n\n---\n\n');
+      clean[realKey] = { content: joined, status: 'review', edited: false };
+      continue;
+    }
+    // Null/empty — skip
+  }
+  item.formats = clean;
+  return item;
+}
+
 function buildChatContext(question) {
   const q = question.toLowerCase();
   const parts = [];
@@ -421,7 +463,7 @@ async function handleRequest(req, res) {
 
     // GET /api/content
     if (pathname === '/api/content' && method === 'GET') {
-      let content = readJSON('content.json');
+      let content = readJSON('content.json').map(normalizeContentFormats);
       const status = url.searchParams.get('status');
       const format = url.searchParams.get('format');
       const search = url.searchParams.get('q');
@@ -893,7 +935,9 @@ async function handleRequest(req, res) {
           content_id: content.id,
           format,
           title: (content.trigger_title || '').slice(0, 80),
-          status: 'review'
+          preview: typeof content.formats?.[format]?.content === 'string' ? content.formats[format].content.slice(0, 100) : '',
+          status: 'review',
+          assigned_at: now()
         };
         writeJSON('calendar.json', calendarData);
 
@@ -2631,7 +2675,9 @@ async function handleRequest(req, res) {
         ? db.getEvents({ limit: 50 }).filter(e => e.client_email === client.email)
         : [];
       const proposals = db.getProposals({ client_id: client.id });
-      return json(res, { ...client, meetings, events, proposals });
+      // Include latest pre-call brief if one exists
+      const latestBrief = db.getDb().prepare('SELECT * FROM briefs WHERE client_id = ? ORDER BY created_at DESC LIMIT 1').get(client.id) || null;
+      return json(res, { ...client, meetings, events, proposals, latest_brief: latestBrief });
     }
 
     // GET /api/events — list external events
@@ -3043,6 +3089,15 @@ ${context}`;
       } else if (body.outcome === 'lost') {
         sendTelegramAlert(`❌ <b>DEAL LOST</b>: ${body.client_name || 'Unknown'}${body.loss_reason ? ' — ' + body.loss_reason : ''}`);
       }
+      return json(res, { ok: true, deal });
+    }
+
+    // PUT /api/deals/:id — update deal outcome (stage, value, notes)
+    const dealUpdateMatch = pathname.match(/^\/api\/deals\/(\d+)$/);
+    if (dealUpdateMatch && method === 'PUT') {
+      const body = await parseBody(req);
+      const deal = db.updateDealOutcome(parseInt(dealUpdateMatch[1]), body);
+      if (!deal) return json(res, { error: 'Deal not found' }, 404);
       return json(res, { ok: true, deal });
     }
 
@@ -13685,32 +13740,6 @@ Return COMPACT JSON:
       return json(res, readJSON('competitive-intel.json', null));
     }
 
-    // POST /api/hashtag-strategy — Generate platform-specific hashtag strategies
-    if (method === 'POST' && pathname === '/api/hashtag-strategy') {
-      const body = await parseBody(req) || {};
-      const platform = body.platform || 'linkedin';
-      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
-      const result = await callClaude({
-        model: HAIKU,
-        system: `You are a ${platform} hashtag and discoverability expert. Create hashtag strategies that maximize reach without looking spammy. Return JSON only.`,
-        prompt: `Create a hashtag strategy for a legal marketing agency on ${platform}.
-
-Return COMPACT JSON:
-{
-  "primary_hashtags": ["3-5 high-volume niche hashtags"],
-  "secondary_hashtags": ["3-5 medium-volume specific hashtags"],
-  "branded_hashtag": "one unique branded hashtag",
-  "rules": ["rule 1", "rule 2"],
-  "per_post_count": 0,
-  "placement": "where in the post to put hashtags",
-  "avoid": ["hashtags to never use"]
-}`,
-        maxTokens: 1500
-      });
-      const parsed = parseJsonResponse(result);
-      return json(res, { ok: true, platform, ...parsed });
-    }
-
     // POST /api/content-scoring — Score all content with composite quality metric
     if (method === 'POST' && pathname === '/api/content-scoring') {
       const content = readJSON('content.json', []);
@@ -15378,7 +15407,7 @@ Make each feel native to its platform. LinkedIn should have line breaks and stor
               created_at: now(),
               batch_generated: true
             };
-            if (parsed.linkedin) newItem.formats.linkedin_post = { content: parsed.linkedin, status: 'review' };
+            if (parsed.linkedin) newItem.formats.linkedin = { content: parsed.linkedin, status: 'review' };
             if (parsed.x_single) newItem.formats.x_single = { content: parsed.x_single, status: 'review' };
             if (parsed.x_thread) newItem.formats.x_thread = { content: Array.isArray(parsed.x_thread) ? parsed.x_thread.join('\n\n---\n\n') : parsed.x_thread, status: 'review' };
             content.push(newItem);
@@ -16874,7 +16903,7 @@ Return COMPACT JSON:
 
 Content: ${text.substring(0, 3000)}`;
 
-      const result = await callClaude(prompt, { model: HAIKU, max_tokens: 1500 });
+      const result = await callClaude({ model: HAIKU, prompt, maxTokens: 1500 });
       const analysis = parseJsonResponse(result);
 
       const entry = { content_id: body.content_id, ...analysis, analyzed_at: new Date().toISOString() };
@@ -16911,7 +16940,7 @@ Content: ${text.substring(0, 3000)}`;
   "optimal_count": { "linkedin": 3, "instagram": 15, "x": 3, "tiktok": 5 }
 }`;
 
-      const result = await callClaude(prompt, { model: HAIKU, max_tokens: 2000 });
+      const result = await callClaude({ model: HAIKU, prompt, maxTokens: 2000 });
       const strategy = parseJsonResponse(result);
 
       const rawHash = readJSON('hashtag-strategy.json');
@@ -17175,7 +17204,7 @@ Content: ${text.substring(0, 3000)}`;
 
 Content: ${firstContent.substring(0, 2000)}`;
 
-      const result = await callClaude(prompt, { model: HAIKU, max_tokens: 2000 });
+      const result = await callClaude({ model: HAIKU, prompt, maxTokens: 2000 });
       const suggestions = parseJsonResponse(result);
 
       const entry = { content_id: body.content_id, ...suggestions, generated_at: new Date().toISOString() };
@@ -20004,6 +20033,23 @@ Content: ${firstContent.substring(0, 2000)}`;
 
   } catch (err) {
     console.error('Server error:', err);
+    // Give specific error messages for Claude API failures
+    const msg = err.message || '';
+    if (msg.includes('Claude API 529') || msg.includes('overloaded')) {
+      return json(res, { error: 'Claude API is temporarily overloaded. Please try again in a moment.' }, 503);
+    }
+    if (msg.includes('Claude API 429') || msg.includes('rate limit')) {
+      return json(res, { error: 'Claude API rate limit reached. Please wait a minute and try again.' }, 429);
+    }
+    if (msg.includes('Claude API 401') || msg.includes('invalid x-api-key')) {
+      return json(res, { error: 'Claude API key is invalid. Check ANTHROPIC_API_KEY in settings.' }, 503);
+    }
+    if (msg.includes('Claude API 400') && msg.includes('credit')) {
+      return json(res, { error: 'Claude API credits exhausted. Add credits at console.anthropic.com.' }, 503);
+    }
+    if (msg.includes('ANTHROPIC_API_KEY not set')) {
+      return json(res, { error: 'Claude API key not configured. Set ANTHROPIC_API_KEY environment variable.' }, 503);
+    }
     json(res, { error: 'Internal server error' }, 500);
   }
 }

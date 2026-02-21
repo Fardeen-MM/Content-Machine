@@ -1,21 +1,9 @@
 {
-  "total_triggers_analyzed": 476,
+  "total_triggers_analyzed": 530,
   "personas": [
     {
-      "persona": "Managing Partner",
-      "trigger_count": 19,
-      "sample_topics": [
-        "When does internal linking logic start working against you at scale?",
-        "CRM Integrations Exist, Yet Sales Teams Still Manually Track Conversations",
-        "Should You Hire a Law Firm Business Consultant? 5 Questions to Ask First",
-        "DISCO Launches Scaled Agentic AI Tool for Large Discovery and Fact Investigation Matters",
-        "Steno Bolsters Its Leadership Team with Two Strategic Hires from InfoTrack and EvenUp"
-      ],
-      "engagement_level": "medium"
-    },
-    {
       "persona": "Marketing Director",
-      "trigger_count": 19,
+      "trigger_count": 23,
       "sample_topics": [
         "How do I build a \"Micro-Agency\" in a rural Indian village using my freelance skills to employ 10-20 local women?",
         "Attribution issues when running paid crypto campaigns",
@@ -23,7 +11,19 @@
         "Hiring freelancers vs. agency for website redesign + SEO - what's been your experience?",
         "Why policy clarity is as Important as creative in paid search campaigns"
       ],
-      "engagement_level": "medium"
+      "engagement_level": "high"
+    },
+    {
+      "persona": "Managing Partner",
+      "trigger_count": 22,
+      "sample_topics": [
+        "When does internal linking logic start working against you at scale?",
+        "CRM Integrations Exist, Yet Sales Teams Still Manually Track Conversations",
+        "Should You Hire a Law Firm Business Consultant? 5 Questions to Ask First",
+        "DISCO Launches Scaled Agentic AI Tool for Large Discovery and Fact Investigation Matters",
+        "Steno Bolsters Its Leadership Team with Two Strategic Hires from InfoTrack and EvenUp"
+      ],
+      "engagement_level": "high"
     },
     {
       "persona": "PI Attorney",
@@ -38,6 +38,18 @@
       "engagement_level": "medium"
     },
     {
+      "persona": "Solo Practitioner",
+      "trigger_count": 5,
+      "sample_topics": [
+        "From 0 to $56 MRR as a solo dev — lessons learned building a mobile SaaS in fintech",
+        "Need Advice on Restarting My Digital Marketing Career in the UK After a 2-Year Gap",
+        "Biglaw to Solo: 20 months In",
+        "How much vulnerability should I show in my social media? Nail artist starting her career",
+        "Just hit a vertical growth curve (+829%) solo. Now looking for a TikTok Ads partner to hit 100k."
+      ],
+      "engagement_level": "low"
+    },
+    {
       "persona": "Family Law",
       "trigger_count": 4,
       "sample_topics": [
@@ -49,22 +61,13 @@
       "engagement_level": "low"
     },
     {
-      "persona": "Solo Practitioner",
-      "trigger_count": 2,
-      "sample_topics": [
-        "From 0 to $56 MRR as a solo dev — lessons learned building a mobile SaaS in fintech",
-        "Need Advice on Restarting My Digital Marketing Career in the UK After a 2-Year Gap"
-      ],
-      "engagement_level": "low"
-    },
-    {
       "persona": "Criminal Defense",
       "trigger_count": 0,
       "sample_topics": [],
       "engagement_level": "low"
     }
   ],
-  "dominant_persona": "Managing Partner",
-  "unmatched": 423,
-  "generated_at": "2026-02-21T19:49:38.449Z"
+  "dominant_persona": "Marketing Director",
+  "unmatched": 467,
+  "generated_at": "2026-02-21T21:11:05.296Z"
 }

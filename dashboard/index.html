@@ -1510,6 +1510,9 @@ const state = {
   deals: [],
   showAddDeal: false,
   newDeal: { client_name: '', outcome: 'won', monthly_value: '', loss_reason: '', notes: '' },
+  // Capture
+  showCapture: false,
+  captureText: '',
   // Content Series
   series: [],
   seriesGenerating: null,
@@ -3474,7 +3477,9 @@ function renderDashboardPage() {
             onclick: async () => {
               try {
                 const detail = await api(`/api/clients/${c.client_id}`);
-                state.clientDetail = detail; state.page = 'clients'; render();
+                state.clientDetail = detail;
+                if (detail.latest_brief) { state.clientBrief = { ...detail.latest_brief, client_id: detail.id }; } else { state.clientBrief = null; }
+                state.page = 'clients'; render();
               } catch (err) { toast('Failed', 'error'); }
             }
           },
@@ -10280,8 +10285,7 @@ function renderSeriesPage() {
               className: 'btn btn-sm',
               style: { fontSize: '12px', padding: '4px 12px', borderRadius: '6px', border: '1px solid var(--gray-200)', background: 'white', cursor: 'pointer' },
               onclick: async () => {
-                const series = readJSON ? state.series : state.series;
-                const idx = series.findIndex(x => x.id === s.id);
+                const idx = state.series.findIndex(x => x.id === s.id);
                 if (idx !== -1) {
                   await api(`/api/series/${s.id}`, { method: 'PUT', body: { active: !s.active } });
                   loadData();
@@ -11526,6 +11530,12 @@ function renderClientsPage() {
                 try {
                   const detail = await api(`/api/clients/${c.id}`);
                   state.clientDetail = detail;
+                  // Load latest brief if available from server
+                  if (detail.latest_brief) {
+                    state.clientBrief = { ...detail.latest_brief, client_id: detail.id };
+                  } else {
+                    state.clientBrief = null;
+                  }
                   render();
                 } catch (err) { toast('Failed to load client', 'error'); }
               }
@@ -11724,6 +11734,12 @@ function renderPipelinePage() {
                 try {
                   const detail = await api(`/api/clients/${c.client_id}`);
                   state.clientDetail = detail;
+                  // Load latest brief if available from server
+                  if (detail.latest_brief) {
+                    state.clientBrief = { ...detail.latest_brief, client_id: detail.id };
+                  } else {
+                    state.clientBrief = null;
+                  }
                   state.page = 'clients';
                   render();
                 } catch (err) { toast('Failed to load client', 'error'); }
@@ -12136,19 +12152,31 @@ function renderDealsPage() {
               h('div', { style: { flex: 1, minWidth: 0 } },
                 h('div', { style: { fontSize: '14px', fontWeight: '500' } }, d.client_name || 'Unknown'),
                 h('div', { style: { fontSize: '12px', color: 'var(--gray-500)', marginTop: '2px' } },
-                  d.loss_reason ? `Lost: ${d.loss_reason}` : d.notes || ''
+                  d.loss_reason ? `Lost: ${d.loss_reason}` : d.what_worked || ''
                 )
               ),
               d.monthly_value ? h('span', { style: {
                 fontWeight: '600', fontSize: '14px',
                 color: d.outcome === 'won' ? 'var(--green)' : 'var(--gray-500)'
               } }, `$${d.monthly_value.toLocaleString()}/mo`) : null,
-              h('span', { style: {
-                padding: '3px 10px', borderRadius: '12px', fontSize: '11px', fontWeight: '600',
-                background: d.outcome === 'won' ? 'var(--green-light)' : 'var(--red-light)',
-                color: d.outcome === 'won' ? 'var(--green)' : 'var(--red)'
-              } }, d.outcome),
-              d.created_at ? h('span', { style: { fontSize: '11px', color: 'var(--gray-400)' } }, new Date(d.created_at).toLocaleDateString()) : null
+              h('span', {
+                style: {
+                  padding: '3px 10px', borderRadius: '12px', fontSize: '11px', fontWeight: '600', cursor: 'pointer',
+                  background: d.outcome === 'won' ? 'var(--green-light)' : 'var(--red-light)',
+                  color: d.outcome === 'won' ? 'var(--green)' : 'var(--red)'
+                },
+                title: 'Click to toggle outcome',
+                onclick: async (e) => {
+                  e.stopPropagation();
+                  const newOutcome = d.outcome === 'won' ? 'lost' : 'won';
+                  try {
+                    await api(`/api/deals/${d.id}`, { method: 'PUT', body: { outcome: newOutcome } });
+                    toast(`Deal updated to ${newOutcome}`, 'success');
+                    await loadData();
+                  } catch (err) { toast('Update failed: ' + err.message, 'error'); }
+                }
+              }, d.outcome),
+              d.recorded_at ? h('span', { style: { fontSize: '11px', color: 'var(--gray-400)' } }, new Date(d.recorded_at).toLocaleDateString()) : null
             )
           )
         )

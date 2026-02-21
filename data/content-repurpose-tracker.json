@@ -1,6 +1,6 @@
 {
-  "total_content": 61,
-  "avg_formats_per_piece": 8,
+  "total_content": 66,
+  "avg_formats_per_piece": 8.2,
   "fully_repurposed": 8,
   "under_repurposed": 29,
   "top_repurposed": [
@@ -207,6 +207,6 @@
       "untapped": 12
     }
   ],
-  "total_format_instances": 488,
-  "generated_at": "2026-02-21T19:49:38.428Z"
+  "total_format_instances": 543,
+  "generated_at": "2026-02-21T21:11:05.273Z"
 }

@@ -1,5 +1,5 @@
 {
-  "total_analyzed": 61,
+  "total_analyzed": 66,
   "avg_score": 70,
   "top_headlines": [
     {
@@ -162,15 +162,15 @@
   "common_tips": [
     {
       "tip": "Add a power word",
-      "count": 60
+      "count": 65
     },
     {
       "tip": "Add emotional triggers",
-      "count": 56
+      "count": 61
     },
     {
       "tip": "Add a number for specificity",
-      "count": 20
+      "count": 23
     },
     {
       "tip": "Headline is too long",
@@ -178,8 +178,8 @@
     },
     {
       "tip": "Headline is too short",
-      "count": 1
+      "count": 2
     }
   ],
-  "generated_at": "2026-02-21T19:49:38.387Z"
+  "generated_at": "2026-02-21T21:11:05.219Z"
 }

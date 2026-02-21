@@ -1,22 +1,8 @@
 {
   "total_competitor_topics": 45,
-  "total_gaps": 26,
-  "high_priority": 6,
+  "total_gaps": 23,
+  "high_priority": 5,
   "gaps": [
-    {
-      "competitor_title": "CCPA/CPRA: Privacy Policy and Disclaimers for Law Firms. Whew!",
-      "source": "https://www.paperstreet.com/blog/ccpa-cpra-privacy-disclaimers/",
-      "coverage_pct": 0,
-      "uncovered_keywords": [
-        "ccpa/cpra:",
-        "privacy",
-        "policy",
-        "disclaimers",
-        "firms."
-      ],
-      "priority": "high",
-      "competitor": "PaperStreet"
-    },
     {
       "competitor_title": "Ask Attorney Jennifer B.: Technology in Family Law",
       "source": "https://www.martindale-avvo.com/blog/ask-attorney-jennifer-b-technology-in-family-law/",
@@ -157,19 +143,6 @@
       "competitor": "PaperStreet"
     },
     {
-      "competitor_title": "Privacy Policy Template for Law Firms by PaperStreet",
-      "source": "https://www.paperstreet.com/blog/privacy-policy-template-for-law-firms-by-paperstreet/",
-      "coverage_pct": 20,
-      "uncovered_keywords": [
-        "privacy",
-        "policy",
-        "template",
-        "paperstreet"
-      ],
-      "priority": "medium",
-      "competitor": "PaperStreet"
-    },
-    {
       "competitor_title": "How to Audit Your Law Firm’s Online Presence",
       "source": "https://www.martindale-avvo.com/blog/how-to-audit-your-law-firms-online-presence/",
       "coverage_pct": 20,
@@ -259,17 +232,6 @@
       "competitor": "PaperStreet"
     },
     {
-      "competitor_title": "The Hidden Intake Gaps",
-      "source": "https://www.martindale-avvo.com/blog/the-hidden-intake-gaps/",
-      "coverage_pct": 33,
-      "uncovered_keywords": [
-        "hidden",
-        "gaps"
-      ],
-      "priority": "low",
-      "competitor": "Martindale-Avvo Blog"
-    },
-    {
       "competitor_title": "The Ultimate SEO Framework for Lawyers",
       "source": "https://www.martindale-avvo.com/blog/the-ultimate-seo-framework-for-lawyers/",
       "coverage_pct": 33,
@@ -350,9 +312,9 @@
     }
   ],
   "coverage_overview": {
-    "well_covered": 19,
-    "gaps": 26,
-    "coverage_rate": 42
+    "well_covered": 22,
+    "gaps": 23,
+    "coverage_rate": 49
   },
-  "generated_at": "2026-02-21T19:49:38.412Z"
+  "generated_at": "2026-02-21T21:11:05.250Z"
 }

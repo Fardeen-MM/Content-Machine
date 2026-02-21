@@ -1,9 +1,19 @@
 {
-  "total_tracked": 7,
+  "total_tracked": 9,
   "needs_refresh": 0,
   "needs_retire": 0,
   "needs_boost": 0,
   "items": [
+    {
+      "id": "c4c23c4858e12fc8",
+      "title": "My web designer charges $300/mo and my site looks like it's from 2005",
+      "age_days": 7,
+      "decay_rate": 0,
+      "recent_engagement": 0,
+      "older_engagement": 0,
+      "action": "monitor",
+      "status": "review"
+    },
     {
       "id": "7f77c159bb8ccf6a",
       "title": "Fired my 3rd marketing agency this year — what am I doing wrong?",
@@ -55,6 +65,16 @@
       "status": "review"
     },
     {
+      "id": "54da56c7cf4c18",
+      "title": "Landing pages vs homepage for law firm ads — A/B test results",
+      "age_days": 7,
+      "decay_rate": 0,
+      "recent_engagement": 0,
+      "older_engagement": 0,
+      "action": "monitor",
+      "status": "review"
+    },
+    {
       "id": "b27b9c8b72a638",
       "title": "I built a $3M law firm in 4 years with zero referrals — here's every channel I used",
       "age_days": 7,
@@ -76,5 +96,5 @@
     }
   ],
   "avg_decay_rate": 0,
-  "generated_at": "2026-02-21T19:49:38.384Z"
+  "generated_at": "2026-02-21T21:11:05.216Z"
 }

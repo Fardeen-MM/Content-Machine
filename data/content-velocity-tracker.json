@@ -1,10 +1,10 @@
 {
   "generation": {
-    "last_7_days": 53,
-    "last_30_days": 57,
-    "daily_rate_7d": 7.6,
-    "daily_rate_30d": 1.9,
-    "weekly_rate": 53
+    "last_7_days": 58,
+    "last_30_days": 62,
+    "daily_rate_7d": 8.3,
+    "daily_rate_30d": 2.1,
+    "weekly_rate": 58
   },
   "publishing": {
     "last_7_days": 1,
@@ -13,13 +13,13 @@
     "daily_rate_30d": 0
   },
   "pipeline": {
-    "total": 61,
-    "pending": 55,
+    "total": 66,
+    "pending": 60,
     "approved": 5,
     "published": 1,
     "queue_depth_days": 1
   },
   "velocity_score": 100,
   "trend": "accelerating",
-  "generated_at": "2026-02-21T19:49:38.330Z"
+  "generated_at": "2026-02-21T21:11:05.156Z"
 }

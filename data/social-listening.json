@@ -1,10 +1,10 @@
 {
-  "total_signals": 476,
+  "total_signals": 530,
   "by_source": {
-    "reddit": 121,
+    "reddit": 174,
     "google-news": 1,
     "rss": 189,
-    "youtube": 77,
+    "youtube": 78,
     "hackernews": 42,
     "competitor": 45,
     "content-ideas": 1
@@ -16,7 +16,7 @@
     },
     {
       "word": "marketing",
-      "count": 66
+      "count": 67
     },
     {
       "word": "smokeball",
@@ -27,11 +27,15 @@
       "count": 24
     },
     {
-      "word": "content",
-      "count": 20
+      "word": "automation",
+      "count": 22
     },
     {
-      "word": "automation",
+      "word": "content",
+      "count": 21
+    },
+    {
+      "word": "actually",
       "count": 19
     },
     {
@@ -39,15 +43,15 @@
       "count": 17
     },
     {
-      "word": "actually",
-      "count": 16
+      "word": "business",
+      "count": 15
     },
     {
-      "word": "lawyers",
+      "word": "google",
       "count": 14
     },
     {
-      "word": "business",
+      "word": "lawyers",
       "count": 14
     },
     {
@@ -55,26 +59,22 @@
       "count": 14
     },
     {
-      "word": "google",
+      "word": "building",
       "count": 13
     },
     {
       "word": "email",
-      "count": 11
+      "count": 12
     },
     {
       "word": "website",
       "count": 11
-    },
-    {
-      "word": "guide",
-      "count": 11
     }
   ],
   "sentiment": {
-    "positive": 46,
-    "negative": 14,
-    "neutral": 416
+    "positive": 58,
+    "negative": 16,
+    "neutral": 456
   },
   "dominant_sentiment": "positive",
   "trending_up": [
@@ -82,7 +82,7 @@
     "marketing",
     "smokeball",
     "firms",
-    "content"
+    "automation"
   ],
-  "generated_at": "2026-02-21T19:49:40.784Z"
+  "generated_at": "2026-02-21T21:11:08.602Z"
 }

@@ -1,6 +1,6 @@
 {
   "campaign_metrics": {
-    "total_content": 61,
+    "total_content": 66,
     "total_published": 1,
     "total_impressions": 2500,
     "total_engagements": 65,
@@ -9,18 +9,18 @@
     "closed_deals": 1
   },
   "financial": {
-    "total_cost": 4625,
+    "total_cost": 5000,
     "total_revenue": 5000,
     "pipeline_value": 0,
-    "roi_percentage": 8,
-    "roas": 1.08,
-    "cost_per_lead": 2313,
-    "cost_per_acquisition": 4625
+    "roi_percentage": 0,
+    "roas": 1,
+    "cost_per_lead": 2500,
+    "cost_per_acquisition": 5000
   },
   "funnel": {
     "content_to_publish_rate": 2,
     "publish_to_conversion_rate": 200,
     "conversion_to_close_rate": 50
   },
-  "generated_at": "2026-02-21T19:49:38.462Z"
+  "generated_at": "2026-02-21T21:11:05.310Z"
 }

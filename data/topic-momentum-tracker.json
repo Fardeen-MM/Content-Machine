@@ -5,25 +5,25 @@
   "topics": [
     {
       "topic": "google ads",
-      "total": 7,
+      "total": 8,
       "recent": 0,
-      "older": 7,
+      "older": 8,
       "momentum": -100,
       "trend": "falling"
     },
     {
       "topic": "marketing",
-      "total": 71,
+      "total": 73,
       "recent": 0,
-      "older": 71,
+      "older": 73,
       "momentum": -100,
       "trend": "falling"
     },
     {
       "topic": "ai",
-      "total": 137,
+      "total": 145,
       "recent": 0,
-      "older": 137,
+      "older": 145,
       "momentum": -100,
       "trend": "falling"
     },
@@ -37,17 +37,17 @@
     },
     {
       "topic": "email",
-      "total": 12,
+      "total": 13,
       "recent": 0,
-      "older": 12,
+      "older": 13,
       "momentum": -100,
       "trend": "falling"
     },
     {
       "topic": "content",
-      "total": 20,
+      "total": 21,
       "recent": 0,
-      "older": 20,
+      "older": 21,
       "momentum": -100,
       "trend": "falling"
     },
@@ -69,17 +69,17 @@
     },
     {
       "topic": "automation",
-      "total": 21,
+      "total": 24,
       "recent": 0,
-      "older": 21,
+      "older": 24,
       "momentum": -100,
       "trend": "falling"
     },
     {
       "topic": "branding",
-      "total": 1,
+      "total": 2,
       "recent": 0,
-      "older": 1,
+      "older": 2,
       "momentum": -100,
       "trend": "falling"
     },
@@ -93,17 +93,17 @@
     },
     {
       "topic": "social media",
-      "total": 2,
+      "total": 6,
       "recent": 0,
-      "older": 2,
+      "older": 6,
       "momentum": -100,
       "trend": "falling"
     },
     {
       "topic": "video",
-      "total": 3,
+      "total": 4,
       "recent": 0,
-      "older": 3,
+      "older": 4,
       "momentum": -100,
       "trend": "falling"
     },
@@ -116,5 +116,5 @@
       "trend": "falling"
     }
   ],
-  "generated_at": "2026-02-21T19:49:38.437Z"
+  "generated_at": "2026-02-21T21:11:05.283Z"
 }

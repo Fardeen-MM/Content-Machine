@@ -2,19 +2,19 @@
   "stages": [
     {
       "name": "Ideas (Triggers)",
-      "count": 452,
+      "count": 507,
       "capacity": 100,
       "utilization": 100
     },
     {
       "name": "Generation",
-      "count": 61,
+      "count": 66,
       "capacity": 50,
       "utilization": 100
     },
     {
       "name": "Review",
-      "count": 55,
+      "count": 60,
       "capacity": 20,
       "utilization": 100
     },
@@ -31,17 +31,17 @@
       "utilization": 3
     }
   ],
-  "total_in_system": 514,
+  "total_in_system": 574,
   "bottleneck": "Ideas (Triggers)",
   "efficiency": 67,
   "throughput": {
-    "triggers_per_day": 64.6,
-    "content_per_day": 8.7,
+    "triggers_per_day": 72.4,
+    "content_per_day": 9.4,
     "published_per_day": 0.1
   },
   "recommendations": [
-    "55 items stuck in review — process or auto-approve older items",
+    "60 items stuck in review — process or auto-approve older items",
     "Large trigger backlog — generate content or prune old triggers"
   ],
-  "generated_at": "2026-02-21T19:49:38.382Z"
+  "generated_at": "2026-02-21T21:11:05.213Z"
 }

@@ -6,7 +6,7 @@
     "production": {
       "score": 25,
       "max": 25,
-      "detail": "57 created"
+      "detail": "62 created"
     },
     "publishing": {
       "score": 3,
@@ -30,5 +30,5 @@
   "improvements": [
     "Publish more approved content"
   ],
-  "generated_at": "2026-02-21T19:49:38.431Z"
+  "generated_at": "2026-02-21T21:11:05.277Z"
 }

@@ -1,8 +1,8 @@
 {
   "investment": {
-    "pieces_created": 61,
-    "estimated_hours": 30.5,
-    "cost_at_rate": 4575,
+    "pieces_created": 66,
+    "estimated_hours": 33,
+    "cost_at_rate": 4950,
     "hourly_rate": 150
   },
   "returns": {
@@ -14,5 +14,5 @@
   "roi_percentage": -100,
   "break_even": "1 clients needed",
   "recommendation": "Negative ROI — publish more to see returns",
-  "generated_at": "2026-02-21T19:49:40.721Z"
+  "generated_at": "2026-02-21T21:11:08.510Z"
 }

@@ -5,7 +5,7 @@
       "items": []
     },
     "review": {
-      "count": 55,
+      "count": 60,
       "items": [
         {
           "id": "c4c23c4858e12fc8",
@@ -53,7 +53,7 @@
           "id": "1d3caed24b1928",
           "title": "Our intake team started texting leads within 30 seconds — conversion up 41%",
           "format_count": 4,
-          "age_days": 5
+          "age_days": 6
         },
         {
           "id": "6416c9f94e5c38",
@@ -124,11 +124,11 @@
     }
   },
   "summary": {
-    "total_in_pipeline": 61,
+    "total_in_pipeline": 66,
     "total_published": 1,
-    "avg_age_days": 1347,
+    "avg_age_days": 1245,
     "throughput_rate": 2,
     "bottleneck": "review"
   },
-  "generated_at": "2026-02-21T19:49:38.351Z"
+  "generated_at": "2026-02-21T21:11:05.178Z"
 }

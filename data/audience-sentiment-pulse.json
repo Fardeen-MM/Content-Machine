@@ -2,65 +2,65 @@
   "overall": {
     "positive": 1,
     "negative": 3,
-    "neutral": 95,
-    "total_analyzed": 488,
+    "neutral": 96,
+    "total_analyzed": 543,
     "dominant": "negative"
   },
   "by_format": {
     "linkedin": {
       "positive": 2,
       "negative": 6,
-      "neutral": 47
+      "neutral": 52
     },
     "x_single": {
       "positive": 0,
       "negative": 2,
-      "neutral": 51
+      "neutral": 56
     },
     "x_thread": {
       "positive": 0,
       "negative": 0,
-      "neutral": 52
+      "neutral": 57
     },
     "short_video": {
       "positive": 1,
       "negative": 4,
-      "neutral": 41
+      "neutral": 46
     },
     "carousel": {
       "positive": 0,
       "negative": 0,
-      "neutral": 27
+      "neutral": 32
     },
     "hot_take": {
       "positive": 0,
       "negative": 0,
-      "neutral": 33
+      "neutral": 38
     },
     "poll": {
       "positive": 0,
       "negative": 0,
-      "neutral": 27
+      "neutral": 32
     },
     "quote_cards": {
       "positive": 0,
       "negative": 0,
-      "neutral": 31
+      "neutral": 36
     },
     "stat_graphic": {
       "positive": 0,
       "negative": 0,
-      "neutral": 31
+      "neutral": 36
     },
     "before_after": {
       "positive": 0,
       "negative": 0,
-      "neutral": 31
+      "neutral": 36
     },
     "listicle": {
       "positive": 0,
       "negative": 0,
-      "neutral": 26
+      "neutral": 31
     },
     "blog": {
       "positive": 1,
@@ -152,5 +152,5 @@
   "recommendations": [
     "Too neutral — add more opinionated/emotional content"
   ],
-  "generated_at": "2026-02-21T19:49:38.393Z"
+  "generated_at": "2026-02-21T21:11:05.227Z"
 }

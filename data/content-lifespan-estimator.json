@@ -1,10 +1,21 @@
 {
-  "total_analyzed": 61,
-  "healthy": 41,
+  "total_analyzed": 66,
+  "healthy": 46,
   "aging": 0,
-  "expiring": 11,
-  "expired": 9,
+  "expiring": 9,
+  "expired": 11,
   "items": [
+    {
+      "id": "c4c23c4858e12fc8",
+      "title": "My web designer charges $300/mo and my site looks like it's from 2005",
+      "estimated_lifespan_days": 7,
+      "age_days": 7,
+      "remaining_days": 0,
+      "health_pct": 0,
+      "status": "expired",
+      "format_count": 4,
+      "best_format_lifespan": 7
+    },
     {
       "id": "7f77c159bb8ccf6a",
       "title": "Fired my 3rd marketing agency this year — what am I doing wrong?",
@@ -83,6 +94,17 @@
       "best_format_lifespan": 7
     },
     {
+      "id": "54da56c7cf4c18",
+      "title": "Landing pages vs homepage for law firm ads — A/B test results",
+      "estimated_lifespan_days": 7,
+      "age_days": 7,
+      "remaining_days": 0,
+      "health_pct": 0,
+      "status": "expired",
+      "format_count": 4,
+      "best_format_lifespan": 7
+    },
+    {
       "id": "b27b9c8b72a638",
       "title": "I built a $3M law firm in 4 years with zero referrals — here's every channel I used",
       "estimated_lifespan_days": 7,
@@ -107,17 +129,6 @@
     {
       "id": "dd33fd2be463cf5f",
       "title": "Spent $5K/month on Google Ads for my PI firm and got 2 cases",
-      "estimated_lifespan_days": 7,
-      "age_days": 6,
-      "remaining_days": 1,
-      "health_pct": 14,
-      "status": "expiring",
-      "format_count": 4,
-      "best_format_lifespan": 7
-    },
-    {
-      "id": "c4c23c4858e12fc8",
-      "title": "My web designer charges $300/mo and my site looks like it's from 2005",
       "estimated_lifespan_days": 7,
       "age_days": 6,
       "remaining_days": 1,
@@ -162,17 +173,6 @@
     {
       "id": "a318e2a656b57",
       "title": "Negative keywords saved my law firm client $3,200/month",
-      "estimated_lifespan_days": 7,
-      "age_days": 6,
-      "remaining_days": 1,
-      "health_pct": 14,
-      "status": "expiring",
-      "format_count": 4,
-      "best_format_lifespan": 7
-    },
-    {
-      "id": "54da56c7cf4c18",
-      "title": "Landing pages vs homepage for law firm ads — A/B test results",
       "estimated_lifespan_days": 7,
       "age_days": 6,
       "remaining_days": 1,
@@ -328,9 +328,9 @@
       "id": "17613aa38257031a",
       "title": "Show HN: Stripe Specialist Team Scam – 50%+ deals",
       "estimated_lifespan_days": 7,
-      "age_days": 0,
-      "remaining_days": 7,
-      "health_pct": 100,
+      "age_days": 1,
+      "remaining_days": 6,
+      "health_pct": 86,
       "status": "healthy",
       "format_count": 2,
       "best_format_lifespan": 7
@@ -371,6 +371,17 @@
     {
       "id": "513a096e8f85b7e4",
       "title": "I tracked every growth tactic I tried for 14 months. Here's the data on what actually converts vs. what just generates vanity metrics.",
+      "estimated_lifespan_days": 15,
+      "age_days": 0,
+      "remaining_days": 15,
+      "health_pct": 100,
+      "status": "healthy",
+      "format_count": 11,
+      "best_format_lifespan": 30
+    },
+    {
+      "id": "65998bc68ac70829",
+      "title": "i turned down 3 prospects this month because they weren't ready for cold email",
       "estimated_lifespan_days": 15,
       "age_days": 0,
       "remaining_days": 15,
@@ -543,19 +554,8 @@
       "status": "healthy",
       "format_count": 11,
       "best_format_lifespan": 30
-    },
-    {
-      "id": "bf57ce881734c656",
-      "title": "From 0 to $56 MRR as a solo dev — lessons learned building a mobile SaaS in fintech",
-      "estimated_lifespan_days": 30,
-      "age_days": 0,
-      "remaining_days": 30,
-      "health_pct": 100,
-      "status": "healthy",
-      "format_count": 11,
-      "best_format_lifespan": 30
     }
   ],
-  "avg_lifespan_days": 34,
-  "generated_at": "2026-02-21T19:49:38.407Z"
+  "avg_lifespan_days": 33,
+  "generated_at": "2026-02-21T21:11:05.241Z"
 }

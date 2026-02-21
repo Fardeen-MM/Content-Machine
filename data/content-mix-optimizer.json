@@ -2,50 +2,50 @@
   "current_mix": [
     {
       "format": "x_single",
-      "current_count": 53,
-      "current_pct": 87,
+      "current_count": 58,
+      "current_pct": 88,
       "avg_engagement": 2.72,
       "recommendation": "maintain or reduce"
     },
     {
       "format": "x_thread",
-      "current_count": 52,
-      "current_pct": 85,
+      "current_count": 57,
+      "current_pct": 86,
       "avg_engagement": 2.72,
       "recommendation": "maintain or reduce"
     },
     {
       "format": "hot_take",
-      "current_count": 33,
-      "current_pct": 54,
+      "current_count": 38,
+      "current_pct": 58,
       "avg_engagement": 2.72,
       "recommendation": "maintain or reduce"
     },
     {
       "format": "quote_cards",
-      "current_count": 31,
-      "current_pct": 51,
+      "current_count": 36,
+      "current_pct": 55,
       "avg_engagement": 2.72,
       "recommendation": "maintain or reduce"
     },
     {
       "format": "stat_graphic",
-      "current_count": 31,
-      "current_pct": 51,
+      "current_count": 36,
+      "current_pct": 55,
       "avg_engagement": 2.72,
       "recommendation": "maintain or reduce"
     },
     {
       "format": "before_after",
-      "current_count": 31,
-      "current_pct": 51,
+      "current_count": 36,
+      "current_pct": 55,
       "avg_engagement": 2.72,
       "recommendation": "maintain or reduce"
     },
     {
       "format": "linkedin_post",
       "current_count": 6,
-      "current_pct": 10,
+      "current_pct": 9,
       "avg_engagement": 2.72,
       "recommendation": "maintain"
     },
@@ -142,38 +142,38 @@
     },
     {
       "format": "linkedin",
-      "current_count": 55,
-      "current_pct": 90,
+      "current_count": 60,
+      "current_pct": 91,
       "avg_engagement": 0,
       "recommendation": "maintain or reduce"
     },
     {
       "format": "short_video",
-      "current_count": 46,
-      "current_pct": 75,
+      "current_count": 51,
+      "current_pct": 77,
       "avg_engagement": 0,
       "recommendation": "maintain or reduce"
     },
     {
       "format": "carousel",
-      "current_count": 27,
-      "current_pct": 44,
+      "current_count": 32,
+      "current_pct": 48,
       "avg_engagement": 0,
-      "recommendation": "maintain"
+      "recommendation": "maintain or reduce"
     },
     {
       "format": "poll",
-      "current_count": 27,
-      "current_pct": 44,
+      "current_count": 32,
+      "current_pct": 48,
       "avg_engagement": 0,
-      "recommendation": "maintain"
+      "recommendation": "maintain or reduce"
     },
     {
       "format": "listicle",
-      "current_count": 26,
-      "current_pct": 43,
+      "current_count": 31,
+      "current_pct": 47,
       "avg_engagement": 0,
-      "recommendation": "maintain"
+      "recommendation": "maintain or reduce"
     },
     {
       "format": "blog",
@@ -220,5 +220,5 @@
   "recommendations": [
     "Underrepresented formats: x_thread_optimized — create more"
   ],
-  "generated_at": "2026-02-21T19:49:38.375Z"
+  "generated_at": "2026-02-21T21:11:05.204Z"
 }

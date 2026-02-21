@@ -1,0 +1,371 @@
+{
+  "week_theme": "Launch Publishing Pipeline & Clear Review Backlog",
+  "days": [
+    {
+      "day": "Saturday",
+      "morning": [
+        {
+          "time": "9:00 AM",
+          "action": "Audit 4 approved content pieces for final compliance check (brand voice, links, CTAs, formatting)",
+          "duration": "20 min",
+          "tool": "manual"
+        },
+        {
+          "time": "9:20 AM",
+          "action": "Schedule 4 approved posts across LinkedIn and X using content-machine with optimal posting times (9 AM, 12 PM, 3 PM, 6 PM staggered)",
+          "duration": "15 min",
+          "tool": "content-machine"
+        }
+      ],
+      "midday": [
+        {
+          "time": "12:00 PM",
+          "action": "Review first batch of 465 pending triggers - categorize into: high-priority (80), medium-priority (200), low-priority (185)",
+          "duration": "45 min",
+          "tool": "manual"
+        }
+      ],
+      "afternoon": [
+        {
+          "time": "3:00 PM",
+          "action": "Create content briefs for top 10 high-priority triggers using 5 defined content series as framework",
+          "duration": "40 min",
+          "tool": "manual"
+        },
+        {
+          "time": "3:45 PM",
+          "action": "Move 10 new briefs to review queue - assign to 2 reviewers with 24-hour deadline",
+          "duration": "10 min",
+          "tool": "manual"
+        }
+      ]
+    },
+    {
+      "day": "Sunday",
+      "morning": [
+        {
+          "time": "9:00 AM",
+          "action": "Monitor Saturday published content performance - check engagement metrics on all 4 posts",
+          "duration": "15 min",
+          "tool": "linkedin"
+        },
+        {
+          "time": "9:15 AM",
+          "action": "Execute comment strategy on 15 competitor/industry posts using pre-written comment templates",
+          "duration": "25 min",
+          "tool": "linkedin"
+        }
+      ],
+      "midday": [
+        {
+          "time": "12:00 PM",
+          "action": "Review 8 content pieces from review queue - provide detailed feedback (approve 3, request revisions on 5)",
+          "duration": "50 min",
+          "tool": "manual"
+        }
+      ],
+      "afternoon": [
+        {
+          "time": "3:00 PM",
+          "action": "Create 8 new content briefs from medium-priority triggers (focus on Series 2 and Series 3)",
+          "duration": "35 min",
+          "tool": "manual"
+        },
+        {
+          "time": "3:40 PM",
+          "action": "Submit 8 briefs to review queue with clear deadline of Monday EOD",
+          "duration": "8 min",
+          "tool": "manual"
+        }
+      ]
+    },
+    {
+      "day": "Monday",
+      "morning": [
+        {
+          "time": "8:00 AM",
+          "action": "Check reviewer feedback on Saturday's 10-piece submission - prioritize revisions for 5 pieces",
+          "duration": "20 min",
+          "tool": "manual"
+        },
+        {
+          "time": "8:20 AM",
+          "action": "Implement revisions on flagged content (update 5 pieces based on reviewer notes)",
+          "duration": "30 min",
+          "tool": "manual"
+        },
+        {
+          "time": "8:50 AM",
+          "action": "Resubmit 5 revised pieces to reviewers for final approval (target: 2-hour approval window)",
+          "duration": "5 min",
+          "tool": "manual"
+        }
+      ],
+      "midday": [
+        {
+          "time": "12:00 PM",
+          "action": "Publish 3 approved pieces from yesterday's reviews across LinkedIn and X (stagger at 12 PM, 2 PM, 4 PM)",
+          "duration": "15 min",
+          "tool": "content-machine"
+        },
+        {
+          "time": "12:15 PM",
+          "action": "Execute reply strategy - respond to all comments on weekend posts within 2 hours of publication",
+          "duration": "20 min",
+          "tool": "linkedin"
+        }
+      ],
+      "afternoon": [
+        {
+          "time": "3:00 PM",
+          "action": "Create 10 new content briefs from remaining high-priority triggers (Series 1, 4, 5 focus)",
+          "duration": "45 min",
+          "tool": "manual"
+        },
+        {
+          "time": "3:50 PM",
+          "action": "Submit 10 briefs to review with Tuesday EOD deadline",
+          "duration": "8 min",
+          "tool": "manual"
+        }
+      ]
+    },
+    {
+      "day": "Tuesday",
+      "morning": [
+        {
+          "time": "8:00 AM",
+          "action": "Monitor Monday published content - track engagement metrics and respond to comments within 30 min of posting",
+          "duration": "20 min",
+          "tool": "linkedin"
+        },
+        {
+          "time": "8:20 AM",
+          "action": "Execute comment strategy on 15 new target posts (use reply strategy for relevant mentions)",
+          "duration": "25 min",
+          "tool": "linkedin"
+        }
+      ],
+      "midday": [
+        {
+          "time": "12:00 PM",
+          "action": "Review 10 content pieces from Monday submission - approve 6, request revisions on 4",
+          "duration": "60 min",
+          "tool": "manual"
+        }
+      ],
+      "afternoon": [
+        {
+          "time": "3:00 PM",
+          "action": "Implement revisions on 4 flagged pieces (incorporate feedback)",
+          "duration": "20 min",
+          "tool": "manual"
+        },
+        {
+          "time": "3:25 PM",
+          "action": "Resubmit 4 revised pieces for final review (target: 2-hour turnaround)",
+          "duration": "5 min",
+          "tool": "manual"
+        },
+        {
+          "time": "3:35 PM",
+          "action": "Create 8 new briefs from medium-priority triggers",
+          "duration": "30 min",
+          "tool": "manual"
+        }
+      ]
+    },
+    {
+      "day": "Wednesday",
+      "morning": [
+        {
+          "time": "8:00 AM",
+          "action": "Collect approved content from Tuesday review (target: 10 approved total) - prepare 4-6 pieces for publishing",
+          "duration": "15 min",
+          "tool": "manual"
+        },
+        {
+          "time": "8:15 AM",
+          "action": "Publish 4 approved pieces across LinkedIn and X (12:30 PM, 2:30 PM, 4:30 PM, 6:30 PM slots)",
+          "duration": "12 min",
+          "tool": "content-machine"
+        }
+      ],
+      "midday": [
+        {
+          "time": "12:00 PM",
+          "action": "Review 8 pieces from Tuesday submission - approve 5, request revisions on 3",
+          "duration": "50 min",
+          "tool": "manual"
+        },
+        {
+          "time": "12:50 PM",
+          "action": "Execute reply strategy - respond to all comments on Tuesday posts (minimum 10 comments target)",
+          "duration": "15 min",
+          "tool": "linkedin"
+        }
+      ],
+      "afternoon": [
+        {
+          "time": "3:00 PM",
+          "action": "Implement revisions on 3 flagged pieces",
+          "duration": "15 min",
+          "tool": "manual"
+        },
+        {
+          "time": "3:15 PM",
+          "action": "Resubmit 3 revised pieces for final review",
+          "duration": "3 min",
+          "tool": "manual"
+        },
+        {
+          "time": "3:20 PM",
+          "action": "Create 7 new briefs from remaining high-priority and medium-priority triggers",
+          "duration": "30 min",
+          "tool": "manual"
+        }
+      ]
+    },
+    {
+      "day": "Thursday",
+      "morning": [
+        {
+          "time": "8:00 AM",
+          "action": "Monitor Wednesday published content - respond to comments within first 2 hours",
+          "duration": "20 min",
+          "tool": "linkedin"
+        },
+        {
+          "time": "8:20 AM",
+          "action": "Execute comment strategy on 12 industry posts + engage on 5 influencer posts",
+          "duration": "25 min",
+          "tool": "linkedin"
+        }
+      ],
+      "midday": [
+        {
+          "time": "12:00 PM",
+          "action": "Review 7 pieces from Wednesday submission - approve 5, request revisions on 2",
+          "duration": "45 min",
+          "tool": "manual"
+        }
+      ],
+      "afternoon": [
+        {
+          "time": "3:00 PM",
+          "action": "Implement revisions on 2 flagged pieces",
+          "duration": "10 min",
+          "tool": "manual"
+        },
+        {
+          "time": "3:10 PM",
+          "action": "Resubmit 2 revised pieces for approval",
+          "duration": "2 min",
+          "tool": "manual"
+        },
+        {
+          "time": "3:15 PM",
+          "action": "Create 8 new briefs from low-priority triggers (opportunistic content series)",
+          "duration": "35 min",
+          "tool": "manual"
+        },
+        {
+          "time": "3:50 PM",
+          "action": "Submit 8 briefs to review with Friday EOD deadline",
+          "duration": "5 min",
+          "tool": "manual"
+        }
+      ]
+    },
+    {
+      "day": "Friday",
+      "morning": [
+        {
+          "time": "8:00 AM",
+          "action": "Publish 3-4 approved pieces from Thursday review (9:00 AM, 11:00 AM, 1:00 PM slots for weekend visibility)",
+          "duration": "12 min",
+          "tool": "content-machine"
+        },
+        {
+          "time": "8:15 AM",
+          "action": "Monitor Thursday published content - execute reply strategy on all comments",
+          "duration": "20 min",
+          "tool": "linkedin"
+        }
+      ],
+      "midday": [
+        {
+          "time": "12:00 PM",
+          "action": "Review 8 pieces from Thursday submission - approve 6, request revisions on 2",
+          "duration": "55 min",
+          "tool": "manual"
+        },
+        {
+          "time": "1:00 PM",
+          "action": "Implement revisions on 2 flagged pieces",
+          "duration": "10 min",
+          "tool": "manual"
+        }
+      ],
+      "afternoon": [
+        {
+          "time": "3:00 PM",
+          "action": "Resubmit 2 revised pieces for final approval",
+          "duration": "2 min",
+          "tool": "manual"
+        },
+        {
+          "time": "3:05 PM",
+          "action": "Weekly performance summary - track: total published (target: 14+), engagement rate, comment volume, pending triggers reduced",
+          "duration": "25 min",
+          "tool": "manual"
+        },
+        {
+          "time": "3:35 PM",
+          "action": "Plan next week - prioritize remaining 385 pending triggers, schedule Sunday-Friday content calendar",
+          "duration": "20 min",
+          "tool": "manual"
+        }
+      ]
+    }
+  ],
+  "weekly_kpis": [
+    {
+      "metric": "Content Published",
+      "target": 14,
+      "how": "Track all pieces published across LinkedIn and X daily in content-machine"
+    },
+    {
+      "metric": "Pending Triggers Processed",
+      "target": 80,
+      "how": "Subtract briefs created from 465 starting total by Friday EOD"
+    },
+    {
+      "metric": "Content In Review Cleared",
+      "target": 24,
+      "how": "Move 36 pieces from review to either approved or revision queue"
+    },
+    {
+      "metric": "Approval Rate",
+      "target": 75,
+      "how": "Calculate (pieces approved / total reviewed) × 100"
+    },
+    {
+      "metric": "Comment Engagement Actions",
+      "target": 35,
+      "how": "Log all comments made and replies posted daily via LinkedIn"
+    },
+    {
+      "metric": "Average Response Time",
+      "target": "1 hour",
+      "how": "Track time from post publication to first reply/comment action"
+    }
+  ],
+  "content_targets": {
+    "create": 43,
+    "review": 36,
+    "publish": 14,
+    "engage": 35
+  },
+  "generated_at": "2026-02-21T08:01:50.166Z"
+}

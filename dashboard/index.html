@@ -1550,6 +1550,11 @@ const state = {
   socialProofEngine: null,
   advancedAnalytics: null,
   growthPlaybook: null,
+  // Batch 60: Lead Magnets, Funnel, Auto-Repurpose, Action Plan
+  generatedLeadMagnets: [],
+  funnelAnalysis: null,
+  autoRepurpose: null,
+  weeklyActionPlan: null,
 };
 
 // --- API Calls ---
@@ -1575,7 +1580,7 @@ async function loadData() {
   state.loading = true;
   render();
   try {
-    const [content, triggers, stats, calendar, monthCal, settings, memory, performance, perfAnalytics, meetings, meetingStats, clients, allActions, chatMessages, healthData, inspirations, pestering, pesteringStages, insights, deals, published, series, predictions, playbooks, ctaLibrary, trending, funnel, publishTracker, leadMagnets, contentHealth, scheduleOptimize, templates, dmSequences, hooks, pillarPlan, contentLeads, autopilot, scheduleQueue, engagementDashboard, contentBriefs, workflowPipeline, personas, calendarWeek, benchmarkReport, contentIdeas, socialProof, roiReport, audienceGrowth, contentThemes, distributionPlans, dmPipelines, competitorsTracked, dripCampaigns, autoResponses, expiringContent, amplifications, leadFunnels, calendarInsights, weeklyDigest, splitTests, workflowRules, youtubePipelines, carousels, contentMatrix, ctaStrategy, seriesTemplates, contentBank, engagementPlaybook, atomizations, platformRules, emailSequences, weeklyContentPlan, repurposeChains, lmFunnels, perfReport, contentPillars, compAnalyses, nurtureCampaigns, authorityPlan, flywheelData, velocityData, audienceSegments, contentDna, topicClusters, voiceProfiles, dmScriptsData, replyStrategyData, systemHealthData, contentRecyclerData, commentStrategyData, newslettersData, distributionEngineData, socialProofEngineData, advancedAnalyticsData, growthPlaybookData] = await Promise.all([
+    const [content, triggers, stats, calendar, monthCal, settings, memory, performance, perfAnalytics, meetings, meetingStats, clients, allActions, chatMessages, healthData, inspirations, pestering, pesteringStages, insights, deals, published, series, predictions, playbooks, ctaLibrary, trending, funnel, publishTracker, leadMagnets, contentHealth, scheduleOptimize, templates, dmSequences, hooks, pillarPlan, contentLeads, autopilot, scheduleQueue, engagementDashboard, contentBriefs, workflowPipeline, personas, calendarWeek, benchmarkReport, contentIdeas, socialProof, roiReport, audienceGrowth, contentThemes, distributionPlans, dmPipelines, competitorsTracked, dripCampaigns, autoResponses, expiringContent, amplifications, leadFunnels, calendarInsights, weeklyDigest, splitTests, workflowRules, youtubePipelines, carousels, contentMatrix, ctaStrategy, seriesTemplates, contentBank, engagementPlaybook, atomizations, platformRules, emailSequences, weeklyContentPlan, repurposeChains, lmFunnels, perfReport, contentPillars, compAnalyses, nurtureCampaigns, authorityPlan, flywheelData, velocityData, audienceSegments, contentDna, topicClusters, voiceProfiles, dmScriptsData, replyStrategyData, systemHealthData, contentRecyclerData, commentStrategyData, newslettersData, distributionEngineData, socialProofEngineData, advancedAnalyticsData, growthPlaybookData, genLeadMagnetsData, funnelAnalysisData, autoRepurposeData, weeklyActionPlanData] = await Promise.all([
       api('/api/content'),
       api('/api/triggers'),
       api('/api/stats'),
@@ -1670,7 +1675,11 @@ async function loadData() {
       api('/api/distribution-engine').catch(() => null),
       api('/api/social-proof-engine').catch(() => null),
       api('/api/advanced-analytics').catch(() => null),
-      api('/api/growth-playbook').catch(() => null)
+      api('/api/growth-playbook').catch(() => null),
+      api('/api/generated-lead-magnets').catch(() => []),
+      api('/api/funnel-analysis').catch(() => null),
+      api('/api/auto-repurpose').catch(() => null),
+      api('/api/weekly-action-plan').catch(() => null)
     ]);
     state.content = content;
     state.triggers = triggers;
@@ -1767,6 +1776,10 @@ async function loadData() {
     state.socialProofEngine = socialProofEngineData;
     state.advancedAnalytics = advancedAnalyticsData;
     state.growthPlaybook = growthPlaybookData;
+    state.generatedLeadMagnets = genLeadMagnetsData;
+    state.funnelAnalysis = funnelAnalysisData;
+    state.autoRepurpose = autoRepurposeData;
+    state.weeklyActionPlan = weeklyActionPlanData;
   } catch (err) {
     console.error('Failed to load data:', err);
     toast('Failed to load data', 'error');
@@ -3277,6 +3290,56 @@ function renderDashboardPage() {
                 } catch (err) { toast('Social proof failed: ' + err.message, 'error'); }
               }
             }, 'Proof'),
+            h('button', {
+              className: 'btn btn-sm',
+              style: { background: '#ea580c', color: 'white', border: 'none' },
+              onclick: async () => {
+                toast('Analyzing funnel health...', 'info');
+                try {
+                  const res = await api('/api/funnel-analyzer', { method: 'POST' });
+                  state.funnelAnalysis = res;
+                  toast(`Funnel: ${res.funnel_health} — Bottleneck: ${res.bottleneck?.stage || 'none'}`, 'success');
+                  render();
+                } catch (err) { toast('Funnel analysis failed: ' + err.message, 'error'); }
+              }
+            }, 'Funnel'),
+            h('button', {
+              className: 'btn btn-sm',
+              style: { background: '#0d9488', color: 'white', border: 'none' },
+              onclick: async () => {
+                toast('Building weekly action plan...', 'info');
+                try {
+                  const res = await api('/api/weekly-action-plan', { method: 'POST' });
+                  state.weeklyActionPlan = res;
+                  toast(`Week plan: ${res.week_theme}`, 'success');
+                  render();
+                } catch (err) { toast('Action plan failed: ' + err.message, 'error'); }
+              }
+            }, 'Plan'),
+            h('button', {
+              className: 'btn btn-sm',
+              style: { background: '#6366f1', color: 'white', border: 'none' },
+              onclick: async () => {
+                toast('Auto-repurposing top content...', 'info');
+                try {
+                  const res = await api('/api/auto-repurpose', { method: 'POST' });
+                  toast(`${res.count || 0} pieces repurposed into 6 formats each!`, 'success');
+                  loadData();
+                } catch (err) { toast('Auto-repurpose failed: ' + err.message, 'error'); }
+              }
+            }, 'Repurpose'),
+            h('button', {
+              className: 'btn btn-sm',
+              style: { background: '#be185d', color: 'white', border: 'none' },
+              onclick: async () => {
+                toast('Generating lead magnet...', 'info');
+                try {
+                  const res = await api('/api/lead-magnet-generator', { method: 'POST', body: { type: 'checklist' } });
+                  toast(`Lead magnet: "${res.title}"`, 'success');
+                  loadData();
+                } catch (err) { toast('Lead magnet failed: ' + err.message, 'error'); }
+              }
+            }, 'Magnet'),
             h('button', { className: 'btn btn-ghost btn-sm', onclick: () => { state.page = 'content'; render(); } }, 'View Content')
           )
         ),
@@ -4076,6 +4139,59 @@ function renderDashboardPage() {
         h('div', { style: { padding: '8px', background: state.advancedAnalytics.health_indicators?.production_rate === 'strong' ? '#dcfce7' : '#fef3c7', borderRadius: 'var(--radius-sm)', textAlign: 'center' } },
           h('div', { style: { fontSize: '12px', fontWeight: '700', color: state.advancedAnalytics.health_indicators?.production_rate === 'strong' ? '#059669' : '#d97706' } }, state.advancedAnalytics.health_indicators?.production_rate || 'N/A'),
           h('div', { style: { fontSize: '9px', color: 'var(--gray-500)' } }, 'Velocity')
+        )
+      )
+    ) : null,
+
+    // Funnel Analysis (Batch 60)
+    state.funnelAnalysis?.stages ? h('div', { style: { marginBottom: '20px' } },
+      h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
+        h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)' } }, 'FUNNEL HEALTH'),
+        h('div', { style: { fontSize: '10px', padding: '2px 8px', borderRadius: '8px', fontWeight: '600', background: state.funnelAnalysis.funnel_health === 'strong' ? '#dcfce7' : state.funnelAnalysis.funnel_health === 'moderate' ? '#fef3c7' : '#fee2e2', color: state.funnelAnalysis.funnel_health === 'strong' ? '#059669' : state.funnelAnalysis.funnel_health === 'moderate' ? '#d97706' : '#dc2626' } }, state.funnelAnalysis.funnel_health)
+      ),
+      h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px' } },
+        ...(state.funnelAnalysis.stages || []).map(s =>
+          h('div', { style: { padding: '8px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', borderLeft: `3px solid ${s.health === 'strong' ? '#059669' : s.health === 'moderate' ? '#d97706' : '#dc2626'}` } },
+            h('div', { style: { fontSize: '10px', fontWeight: '700', color: 'var(--navy)' } }, s.stage),
+            h('div', { style: { fontSize: '9px', color: 'var(--gray-500)', marginTop: '2px' } }, `${s.content_count || 0} pieces`),
+            s.gaps?.length ? h('div', { style: { fontSize: '9px', color: '#dc2626', marginTop: '2px' } }, s.gaps[0]) : null
+          )
+        )
+      ),
+      state.funnelAnalysis.bottleneck ? h('div', { style: { marginTop: '6px', padding: '6px 10px', background: '#fef3c7', borderRadius: 'var(--radius-sm)', fontSize: '10px', color: '#92400e' } },
+        `Bottleneck: ${state.funnelAnalysis.bottleneck.stage} — ${state.funnelAnalysis.bottleneck.fix}`) : null
+    ) : null,
+
+    // Weekly Action Plan (Batch 60)
+    state.weeklyActionPlan?.days ? h('div', { style: { marginBottom: '20px' } },
+      h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)', marginBottom: '4px' } }, 'WEEKLY ACTION PLAN'),
+      state.weeklyActionPlan.week_theme ? h('div', { style: { fontSize: '10px', color: '#7c3aed', fontStyle: 'italic', marginBottom: '6px' } }, state.weeklyActionPlan.week_theme) : null,
+      h('div', { style: { display: 'grid', gap: '3px' } },
+        ...(state.weeklyActionPlan.days || []).slice(0, 5).map(d =>
+          h('div', { style: { padding: '6px 10px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)' } },
+            h('div', { style: { fontSize: '10px', fontWeight: '600', color: 'var(--navy)' } }, d.day),
+            h('div', { style: { fontSize: '9px', color: 'var(--gray-500)', marginTop: '2px' } },
+              [...(d.morning || []), ...(d.midday || [])].slice(0, 2).map(t => t.action).join(' | ')
+            )
+          )
+        )
+      ),
+      state.weeklyActionPlan.content_targets ? h('div', { style: { marginTop: '6px', padding: '4px 10px', background: '#eff6ff', borderRadius: 'var(--radius-sm)', fontSize: '10px', color: '#2563eb' } },
+        `Targets: Create ${state.weeklyActionPlan.content_targets.create || 0} | Review ${state.weeklyActionPlan.content_targets.review || 0} | Publish ${state.weeklyActionPlan.content_targets.publish || 0}`) : null
+    ) : null,
+
+    // Generated Lead Magnets (Batch 60)
+    state.generatedLeadMagnets?.length ? h('div', { style: { marginBottom: '20px' } },
+      h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)', marginBottom: '8px' } }, `LEAD MAGNETS (${state.generatedLeadMagnets.length})`),
+      h('div', { style: { display: 'grid', gap: '3px' } },
+        ...state.generatedLeadMagnets.slice(0, 3).map(m =>
+          h('div', { style: { padding: '6px 10px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)' } },
+            h('div', { style: { fontSize: '11px', fontWeight: '600', color: 'var(--navy)' } }, m.title || 'Lead Magnet'),
+            h('div', { style: { display: 'flex', gap: '4px', marginTop: '3px' } },
+              h('span', { style: { fontSize: '9px', padding: '2px 6px', background: '#faf5ff', color: '#7c3aed', borderRadius: '8px', fontWeight: '600' } }, m.type),
+              h('span', { style: { fontSize: '9px', color: 'var(--gray-400)' } }, m.estimated_conversion || '')
+            )
+          )
         )
       )
     ) : null,
@@ -5846,6 +5962,20 @@ function renderFormatContent(content, formatKey, fmt) {
               } catch (err) { toast('Social proof failed: ' + err.message, 'error'); }
             }
           }, 'Proof Post')
+        : null,
+      // Story Builder button (for any format with 200+ chars)
+      typeof text === 'string' && text.length >= 200
+        ? h('button', {
+            className: 'btn btn-outline btn-sm',
+            style: { color: '#ea580c', borderColor: '#ea580c' },
+            onclick: async () => {
+              toast('Building story from content...', 'info');
+              try {
+                const res = await api(`/api/content/${content.id}/story-builder`, { method: 'POST' });
+                toast('Story version created! Narrative + mini-story ready.', 'success');
+              } catch (err) { toast('Story builder failed: ' + err.message, 'error'); }
+            }
+          }, 'Story')
         : null,
       // Social Media Copy button (for any format with 200+ chars)
       typeof text === 'string' && text.length >= 200

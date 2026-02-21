@@ -12172,6 +12172,281 @@ Return JSON:
       return json(res, { ok: true, content_id: contentId, format: formatKey, ...parsed });
     }
 
+    // ======= BATCH 60: Lead Magnet Automation, Funnel Optimization, Content Repurpose Automation =======
+
+    // POST /api/lead-magnet-generator — Auto-generate a lead magnet from best content
+    if (method === 'POST' && pathname === '/api/lead-magnet-generator') {
+      const allContent = readJSON('content.json', []);
+      const body = await parseBody(req);
+      const contentId = body.content_id;
+      const magType = body.type || 'checklist';
+
+      let sourceText = '';
+      if (contentId) {
+        const item = allContent.find(c => c.id === contentId);
+        if (!item) return json(res, { error: 'Content not found' }, 404);
+        const fk = Object.keys(item.formats || {})[0];
+        sourceText = item.formats?.[fk]?.text || item.formats?.[fk] || '';
+      } else {
+        const approved = allContent.filter(c => c.status === 'approved').slice(0, 5);
+        sourceText = approved.map(c => {
+          const fk = Object.keys(c.formats || {})[0];
+          return (c.formats?.[fk]?.text || c.formats?.[fk] || '').toString().slice(0, 500);
+        }).join('\n\n');
+      }
+      if (!sourceText) return json(res, { error: 'No source content available' }, 400);
+
+      const { callClaude, parseJsonResponse, SONNET } = require('./lib/claude');
+      const result = await callClaude({
+        model: SONNET,
+        system: `You are a lead magnet designer for Mortar Metrics, a legal marketing agency. Create ${magType} lead magnets that are so valuable law firm owners can't resist downloading them. Make them specific, actionable, and immediately useful. Return JSON only.`,
+        prompt: `Create a ${magType} lead magnet from this content.
+
+Source material:
+${typeof sourceText === 'string' ? sourceText.slice(0, 3000) : JSON.stringify(sourceText).slice(0, 3000)}
+
+Return JSON:
+{
+  "title": "compelling title that promises specific outcome",
+  "subtitle": "what they'll learn/get",
+  "landing_page": {
+    "headline": "above-the-fold headline",
+    "subheadline": "supporting line",
+    "bullet_points": ["5 specific outcomes they'll get"],
+    "cta_button": "Download Now — button text",
+    "social_proof": "X firms have used this to Y"
+  },
+  "content": {
+    "sections": [
+      {
+        "title": "section title",
+        "body": "detailed content for this section",
+        "actionable_tip": "what to do right now"
+      }
+    ],
+    "bonus": "bonus tip or resource at the end"
+  },
+  "follow_up_email": {
+    "subject": "email subject for delivery",
+    "body": "email body with download link placeholder and next steps"
+  },
+  "promotion_post": "LinkedIn post to promote this lead magnet",
+  "estimated_conversion": "expected opt-in rate with good promotion"
+}`,
+        maxTokens: 5000
+      });
+      const parsed = parseJsonResponse(result);
+      const magnets = readJSON('generated-lead-magnets.json', []);
+      const magnet = { id: generateId(), type: magType, ...parsed, generated_at: now() };
+      magnets.unshift(magnet);
+      writeJSON('generated-lead-magnets.json', magnets);
+      return json(res, { ok: true, ...magnet });
+    }
+
+    // GET /api/generated-lead-magnets
+    if (method === 'GET' && pathname === '/api/generated-lead-magnets') {
+      return json(res, readJSON('generated-lead-magnets.json', []));
+    }
+
+    // POST /api/funnel-analyzer — Analyze content funnel health and find gaps
+    if (method === 'POST' && pathname === '/api/funnel-analyzer') {
+      const allContent = readJSON('content.json', []);
+      const triggers = readJSON('trigger-queue.json', []);
+      const published = readJSON('published.json', []);
+      const leadMagnets = readJSON('generated-lead-magnets.json', []);
+      const newsletters = readJSON('newsletters.json', []);
+      const emailSeqs = readJSON('email-sequences.json', []);
+
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+      const result = await callClaude({
+        model: HAIKU,
+        system: 'You are a marketing funnel analyst. Analyze the full content-to-lead pipeline and identify gaps, bottlenecks, and optimization opportunities at each stage: TOFU (awareness), MOFU (consideration), BOFU (decision). Return JSON only.',
+        prompt: `Analyze this content funnel.
+
+Stats:
+- ${triggers.length} triggers (${triggers.filter(t => t.status === 'pending').length} pending)
+- ${allContent.length} content pieces (${allContent.filter(c => c.status === 'approved').length} approved)
+- ${published.length} published
+- ${leadMagnets.length} lead magnets
+- ${newsletters.length} newsletters compiled
+- ${emailSeqs.length} email sequences
+
+Return JSON:
+{
+  "funnel_health": "strong|moderate|weak",
+  "stages": [
+    {
+      "stage": "TOFU|MOFU|BOFU",
+      "health": "strong|moderate|weak",
+      "content_count": 0,
+      "gaps": ["what's missing"],
+      "recommendations": ["what to create"],
+      "priority": "high|medium|low"
+    }
+  ],
+  "bottleneck": {
+    "stage": "where the biggest drop-off is",
+    "reason": "why people get stuck here",
+    "fix": "specific action to unblock"
+  },
+  "quick_wins": ["immediate improvements ranked by impact"],
+  "content_needs": [
+    { "type": "what to create", "stage": "TOFU|MOFU|BOFU", "priority": "high|medium|low", "why": "expected impact" }
+  ],
+  "conversion_estimate": "estimated lead capture rate given current assets"
+}`,
+        maxTokens: 3000
+      });
+      const parsed = parseJsonResponse(result);
+      writeJSON('funnel-analysis.json', { ...parsed, analyzed_at: now() });
+      return json(res, { ok: true, ...parsed });
+    }
+
+    // GET /api/funnel-analysis
+    if (method === 'GET' && pathname === '/api/funnel-analysis') {
+      return json(res, readJSON('funnel-analysis.json', null));
+    }
+
+    // POST /api/auto-repurpose — Auto-repurpose top content across all formats and platforms
+    if (method === 'POST' && pathname === '/api/auto-repurpose') {
+      const allContent = readJSON('content.json', []);
+      const approved = allContent.filter(c => c.status === 'approved').slice(0, 5);
+      if (approved.length === 0) return json(res, { error: 'No approved content to repurpose' }, 400);
+
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+      const repurposed = [];
+
+      for (const item of approved.slice(0, 3)) {
+        const fk = Object.keys(item.formats || {})[0];
+        const text = item.formats?.[fk]?.text || item.formats?.[fk] || '';
+        if (!text || typeof text !== 'string' || text.length < 100) continue;
+
+        const result = await callClaude({
+          model: HAIKU,
+          system: 'You are a content repurposing machine. Take one piece of content and transform it into 6 different formats, each optimized for its target platform. Every output should feel native to the platform, not like a lazy copy-paste. Return JSON only.',
+          prompt: `Repurpose this content into 6 platform-native formats.
+
+Original:
+${text.slice(0, 2000)}
+
+Return JSON:
+{
+  "linkedin_post": "full LinkedIn post",
+  "x_thread": ["tweet 1", "tweet 2", "tweet 3", "tweet 4"],
+  "youtube_short_script": "60-second video script",
+  "newsletter_section": "newsletter-ready paragraph",
+  "carousel_outline": ["slide 1 headline", "slide 2", "slide 3", "slide 4", "CTA slide"],
+  "email_teaser": "email subject + 2-line teaser"
+}`,
+          maxTokens: 3000
+        });
+        const parsed = parseJsonResponse(result);
+        repurposed.push({ content_id: item.id, title: item.trigger_title || item.title, formats: parsed });
+      }
+
+      const batch = { items: repurposed, generated_at: now() };
+      writeJSON('auto-repurpose.json', batch);
+      return json(res, { ok: true, count: repurposed.length, ...batch });
+    }
+
+    // GET /api/auto-repurpose
+    if (method === 'GET' && pathname === '/api/auto-repurpose') {
+      return json(res, readJSON('auto-repurpose.json', { items: [] }));
+    }
+
+    // POST /api/content/:id/story-builder — Build a compelling narrative from data/facts content
+    if (method === 'POST' && pathname.match(/^\/api\/content\/([^/]+)\/story-builder$/)) {
+      const contentId = pathname.split('/')[3];
+      const allContent = readJSON('content.json', []);
+      const item = allContent.find(c => c.id === contentId);
+      if (!item) return json(res, { error: 'Content not found' }, 404);
+      const formatKey = Object.keys(item.formats || {})[0];
+      const text = item.formats?.[formatKey]?.text || item.formats?.[formatKey];
+      if (!text) return json(res, { error: 'No content found' }, 400);
+
+      const { callClaude, parseJsonResponse, SONNET } = require('./lib/claude');
+      const result = await callClaude({
+        model: SONNET,
+        system: 'You are a storytelling expert who transforms dry facts and data into compelling narratives. Stories are 22x more memorable than facts alone. Use the Hero\'s Journey, tension/resolution, and specific details to make content stick. Return JSON only.',
+        prompt: `Transform this content into a compelling story.
+
+Original:
+${typeof text === 'string' ? text.slice(0, 3000) : JSON.stringify(text).slice(0, 3000)}
+
+Return JSON:
+{
+  "story_version": "full story post for LinkedIn (800-1200 words)",
+  "mini_story": "condensed story for X (3-5 tweets)",
+  "story_structure": {
+    "hook": "opening that creates immediate tension",
+    "setup": "context that makes the audience care",
+    "conflict": "the problem or challenge",
+    "turning_point": "the breakthrough moment",
+    "resolution": "the result with specific numbers",
+    "lesson": "the takeaway that applies to the reader"
+  },
+  "emotional_arc": "how the story makes the reader feel at each stage",
+  "why_it_works": "storytelling principles used"
+}`,
+        maxTokens: 4000
+      });
+      const parsed = parseJsonResponse(result);
+      return json(res, { ok: true, content_id: contentId, ...parsed });
+    }
+
+    // POST /api/weekly-action-plan — Generate a specific weekly action plan
+    if (method === 'POST' && pathname === '/api/weekly-action-plan') {
+      const allContent = readJSON('content.json', []);
+      const triggers = readJSON('trigger-queue.json', []);
+      const published = readJSON('published.json', []);
+      const series = readJSON('series-templates.json', { series: [] });
+      const commentStrategy = readJSON('comment-strategy.json', null);
+      const replyStrategy = readJSON('reply-strategy.json', null);
+
+      const dayOfWeek = new Date().toLocaleDateString('en-US', { weekday: 'long' });
+
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+      const result = await callClaude({
+        model: HAIKU,
+        system: 'You are a marketing operations manager. Create hyper-specific daily action plans that someone can follow step-by-step with zero ambiguity. Include exact times, exact actions, and expected outcomes. Return JSON only.',
+        prompt: `Create this week's action plan starting from ${dayOfWeek}.
+
+Current state:
+- ${triggers.filter(t => t.status === 'pending').length} pending triggers
+- ${allContent.filter(c => c.status === 'review').length} content in review
+- ${allContent.filter(c => c.status === 'approved').length} approved (ready to publish)
+- ${published.length} published total
+- ${(series.series || []).length} content series defined
+- Comment strategy: ${commentStrategy ? 'ready' : 'not created'}
+- Reply strategy: ${replyStrategy ? 'ready' : 'not created'}
+
+Return JSON:
+{
+  "week_theme": "this week's focus",
+  "days": [
+    {
+      "day": "Monday",
+      "morning": [{ "time": "8:00 AM", "action": "specific task", "duration": "15 min", "tool": "content-machine|linkedin|x|manual" }],
+      "midday": [{ "time": "12:00 PM", "action": "...", "duration": "...", "tool": "..." }],
+      "afternoon": [{ "time": "3:00 PM", "action": "...", "duration": "...", "tool": "..." }]
+    }
+  ],
+  "weekly_kpis": [{ "metric": "what to track", "target": "number to hit", "how": "how to measure" }],
+  "content_targets": { "create": 5, "review": 10, "publish": 3, "engage": 30 }
+}`,
+        maxTokens: 4000
+      });
+      const parsed = parseJsonResponse(result);
+      const plan = { ...parsed, generated_at: now() };
+      writeJSON('weekly-action-plan.json', plan);
+      return json(res, { ok: true, ...plan });
+    }
+
+    // GET /api/weekly-action-plan
+    if (method === 'GET' && pathname === '/api/weekly-action-plan') {
+      return json(res, readJSON('weekly-action-plan.json', null));
+    }
+
     // --- Static file serving ---
 
     // Serve dashboard

@@ -1,0 +1,142 @@
+{
+  "funnel_health": "weak",
+  "stages": [
+    {
+      "stage": "TOFU",
+      "health": "weak",
+      "content_count": 0,
+      "gaps": [
+        "No published awareness content despite 40 pieces in draft",
+        "No blog posts, guides, or educational resources live",
+        "No social content or thought leadership pieces",
+        "No SEO-optimized foundational content",
+        "473 triggers pending but nothing to activate them against"
+      ],
+      "recommendations": [
+        "Approve and publish top 5 TOFU content pieces immediately",
+        "Create 3-5 beginner guides or explainer articles",
+        "Develop social media content calendar (10-15 pieces minimum)",
+        "Establish weekly blog publishing cadence",
+        "Repurpose existing content into multiple formats"
+      ],
+      "priority": "high"
+    },
+    {
+      "stage": "MOFU",
+      "health": "weak",
+      "content_count": 1,
+      "gaps": [
+        "Only 1 newsletter compiled; insufficient nurture content",
+        "No comparison guides, case studies, or webinars",
+        "Missing product demos or in-depth resource content",
+        "No consideration-stage email sequences visible",
+        "Inadequate lead nurturing infrastructure"
+      ],
+      "recommendations": [
+        "Create 8-12 MOFU content pieces (case studies, comparison guides, webinars)",
+        "Develop multi-touch email nurture sequence (5-7 emails minimum)",
+        "Produce video content or recorded webinars",
+        "Build resource library or resource center",
+        "Establish regular newsletter cadence (bi-weekly minimum)"
+      ],
+      "priority": "high"
+    },
+    {
+      "stage": "BOFU",
+      "health": "weak",
+      "content_count": 0,
+      "gaps": [
+        "No sales enablement content",
+        "Missing pricing guides, ROI calculators, or trials",
+        "No customer testimonials or case study results",
+        "No free consultation or demo offers",
+        "Only 1 lead magnet for entire funnel"
+      ],
+      "recommendations": [
+        "Create 3-5 BOFU decision-stage assets (pricing pages, ROI tools, testimonials)",
+        "Develop sales deck or product comparison content",
+        "Build 2-3 additional lead magnets targeting decision-makers",
+        "Create urgency-driven content (limited offers, deadline-based promotions)",
+        "Implement post-lead email sequences (2-3 additional sequences)"
+      ],
+      "priority": "high"
+    }
+  ],
+  "bottleneck": {
+    "stage": "TOFU to MOFU transition",
+    "reason": "0 published content means no traffic generation, no awareness, and no qualified leads entering the funnel. The 473 pending triggers cannot activate without live content to drive them. The approval rate (4/40 = 10%) indicates workflow or quality issues blocking publication.",
+    "fix": "Immediately audit the 40 draft pieces, approve and publish top 10 this week, and establish a daily publishing schedule. Unblock the approval bottleneck by clarifying approval criteria and assigning a single owner."
+  },
+  "quick_wins": [
+    "Publish the 4 approved content pieces today (instant visibility and trigger activation)",
+    "Approve and launch 6 additional TOFU pieces within 48 hours to start building traffic",
+    "Create one high-value lead magnet for MOFU (gated guide or checklist) to capture inbound interest",
+    "Set up 2-3 automated email sequences from existing assets (minimal effort, immediate nurture)",
+    "Compile and send first newsletter with curated existing content to activate audience"
+  ],
+  "content_needs": [
+    {
+      "type": "Blog posts & educational articles",
+      "stage": "TOFU",
+      "priority": "high",
+      "why": "Drives organic traffic, activates 473 triggers, establishes domain authority. Expected 40-60% of total funnel traffic."
+    },
+    {
+      "type": "Social media content (organic + paid)",
+      "stage": "TOFU",
+      "priority": "high",
+      "why": "Extends reach beyond owned channels, low cost, high volume. Expected 20-30% of impressions."
+    },
+    {
+      "type": "Lead magnet (gated guide, template, checklist)",
+      "stage": "MOFU",
+      "priority": "high",
+      "why": "Converts awareness to leads. Current 1 magnet insufficient. Expected 15-25% conversion from traffic."
+    },
+    {
+      "type": "Case studies with results",
+      "stage": "MOFU/BOFU",
+      "priority": "high",
+      "why": "Builds credibility for consideration and decision. Expected 30-40% higher conversion vs. generic content."
+    },
+    {
+      "type": "Email nurture sequences (5-7 emails per sequence)",
+      "stage": "MOFU/BOFU",
+      "priority": "high",
+      "why": "Only 1 email sequence is insufficient. Expected 5-10% reply/conversion per sequence over 2 weeks."
+    },
+    {
+      "type": "Webinar or video content",
+      "stage": "MOFU",
+      "priority": "medium",
+      "why": "Higher engagement than text, expected 2-3x longer time-on-page, 20-30% lead generation rate."
+    },
+    {
+      "type": "Pricing/ROI calculator or comparison tool",
+      "stage": "BOFU",
+      "priority": "medium",
+      "why": "Removes final objections. Expected 40-60% conversion for warm leads."
+    },
+    {
+      "type": "Customer testimonials/success stories",
+      "stage": "BOFU",
+      "priority": "medium",
+      "why": "Social proof critical for decision stage. Expected 25-35% higher close rate."
+    }
+  ],
+  "conversion_estimate": "2-4% (critically low)",
+  "conversion_analysis": {
+    "current_reality": "With 0 published content, 0% of triggers are activated. Maximum potential reach is near zero.",
+    "if_4_approved_published": "10-15% TOFU conversion (awareness to email list) → 8-12% MOFU conversion (consideration) → 15-25% BOFU conversion (decision) = ~0.15-0.45% final lead conversion. Still insufficient.",
+    "with_full_implementation": "30-40% TOFU conversion → 12-18% MOFU conversion → 25-35% BOFU conversion = ~1.1-2.5% final lead conversion (acceptable baseline).",
+    "optimal_maturity": "50-60% TOFU → 20-25% MOFU → 35-45% BOFU = 3.5-6.75% final conversion (strong funnel).",
+    "primary_blocker": "Lack of published content is the existential bottleneck. Publishing is prerequisite for any conversion."
+  },
+  "implementation_roadmap": {
+    "week_1": "Publish 10 pieces (4 approved + 6 additional). Launch 1 email sequence. Activate triggers.",
+    "week_2": "Publish 8 more pieces. Create second lead magnet. Compile newsletter. Begin social posting.",
+    "week_3": "Publish remaining quality content. Launch 2-3 additional email sequences. Monitor engagement metrics.",
+    "week_4": "Analyze conversion data. Optimize top performers. Scale what works. Iterate on underperformers."
+  },
+  "analyzed_at": "2026-02-21T07:59:34.788Z"
+}

@@ -1477,6 +1477,11 @@ const state = {
   personas: [],
   // Calendar Week
   calendarWeek: null,
+  // Benchmarks & Ideas
+  benchmarks: null,
+  benchmarkReport: null,
+  contentIdeas: [],
+  generatingIdeas: false,
 };
 
 // --- API Calls ---
@@ -1502,7 +1507,7 @@ async function loadData() {
   state.loading = true;
   render();
   try {
-    const [content, triggers, stats, calendar, monthCal, settings, memory, performance, perfAnalytics, meetings, meetingStats, clients, allActions, chatMessages, healthData, inspirations, pestering, pesteringStages, insights, deals, published, series, predictions, playbooks, ctaLibrary, trending, funnel, publishTracker, leadMagnets, contentHealth, scheduleOptimize, templates, dmSequences, hooks, pillarPlan, contentLeads, autopilot, scheduleQueue, engagementDashboard, contentBriefs, workflowPipeline, personas, calendarWeek] = await Promise.all([
+    const [content, triggers, stats, calendar, monthCal, settings, memory, performance, perfAnalytics, meetings, meetingStats, clients, allActions, chatMessages, healthData, inspirations, pestering, pesteringStages, insights, deals, published, series, predictions, playbooks, ctaLibrary, trending, funnel, publishTracker, leadMagnets, contentHealth, scheduleOptimize, templates, dmSequences, hooks, pillarPlan, contentLeads, autopilot, scheduleQueue, engagementDashboard, contentBriefs, workflowPipeline, personas, calendarWeek, benchmarkReport, contentIdeas] = await Promise.all([
       api('/api/content'),
       api('/api/triggers'),
       api('/api/stats'),
@@ -1545,7 +1550,9 @@ async function loadData() {
       api('/api/content-briefs').catch(() => []),
       api('/api/workflow/pipeline').catch(() => null),
       api('/api/personas').catch(() => []),
-      api('/api/calendar/week').catch(() => null)
+      api('/api/calendar/week').catch(() => null),
+      api('/api/benchmarks/report').catch(() => null),
+      api('/api/ideas').catch(() => [])
     ]);
     state.content = content;
     state.triggers = triggers;
@@ -1590,6 +1597,8 @@ async function loadData() {
     state.workflowPipeline = workflowPipeline;
     state.personas = personas;
     state.calendarWeek = calendarWeek;
+    state.benchmarkReport = benchmarkReport;
+    state.contentIdeas = contentIdeas;
   } catch (err) {
     console.error('Failed to load data:', err);
     toast('Failed to load data', 'error');
@@ -2763,6 +2772,19 @@ function renderDashboardPage() {
                 } catch (err) { toast('Autopilot run failed: ' + err.message, 'error'); }
               }
             }, 'Run Now') : null,
+            h('button', {
+              className: 'btn btn-sm',
+              style: { background: '#0891b2', color: 'white', border: 'none' },
+              onclick: async () => {
+                state.generatingIdeas = true; render();
+                try {
+                  const res = await api('/api/ideas/generate', { method: 'POST' });
+                  state.contentIdeas = await api('/api/ideas');
+                  toast(`Generated ${res.ideas?.length || 0} content ideas`, 'success');
+                } catch (err) { toast('Idea generation failed: ' + err.message, 'error'); }
+                state.generatingIdeas = false; render();
+              }
+            }, state.generatingIdeas ? 'Generating...' : 'Ideas'),
             h('button', { className: 'btn btn-ghost btn-sm', onclick: () => { state.page = 'content'; render(); } }, 'View Content')
           )
         ),
@@ -3081,6 +3103,96 @@ function renderDashboardPage() {
           );
         })
       ) : null
+    ) : null,
+    // Performance Benchmarks Report
+    state.benchmarkReport?.total_tracked > 0 ? h('div', { style: { marginBottom: '20px' } },
+      h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
+        h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)' } }, 'PERFORMANCE vs BENCHMARKS'),
+        h('div', { style: { display: 'flex', gap: '8px', alignItems: 'center' } },
+          h('span', { style: { fontSize: '11px', padding: '2px 8px', borderRadius: '10px', fontWeight: '600', background: '#f0fdf4', color: '#059669' } }, `${state.benchmarkReport.summary?.over || 0} over`),
+          h('span', { style: { fontSize: '11px', padding: '2px 8px', borderRadius: '10px', fontWeight: '600', background: '#fef2f2', color: '#dc2626' } }, `${state.benchmarkReport.summary?.under || 0} under`),
+          h('span', { style: { fontSize: '11px', padding: '2px 8px', borderRadius: '10px', fontWeight: '600', background: '#f1f5f9', color: '#64748b' } }, `${state.benchmarkReport.summary?.on_track || 0} on track`)
+        )
+      ),
+      state.benchmarkReport.overperformers?.length > 0 ? h('div', { style: { marginBottom: '8px' } },
+        h('div', { style: { fontSize: '11px', fontWeight: '700', color: '#059669', marginBottom: '4px' } }, 'TOP PERFORMERS'),
+        h('div', { style: { display: 'grid', gap: '4px' } },
+          ...state.benchmarkReport.overperformers.slice(0, 5).map(item =>
+            h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 10px', background: '#f0fdf4', borderRadius: 'var(--radius-sm)', border: '1px solid #bbf7d0' } },
+              h('div', { style: { fontSize: '14px', fontWeight: '700', color: '#059669', minWidth: '50px' } }, `+${item.score}%`),
+              h('div', { style: { flex: '1' } },
+                h('div', { style: { fontSize: '11px', fontWeight: '600', color: 'var(--navy)' } }, (item.title || '').slice(0, 50)),
+                h('div', { style: { fontSize: '10px', color: 'var(--gray-500)' } }, `${item.platform} | ${item.engagement?.impressions || 0} imp | ${item.engagement?.engagement_rate || 0}% rate`)
+              )
+            )
+          )
+        )
+      ) : null,
+      state.benchmarkReport.underperformers?.length > 0 ? h('div', {},
+        h('div', { style: { fontSize: '11px', fontWeight: '700', color: '#dc2626', marginBottom: '4px' } }, 'UNDERPERFORMING'),
+        h('div', { style: { display: 'grid', gap: '4px' } },
+          ...state.benchmarkReport.underperformers.slice(0, 3).map(item =>
+            h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 10px', background: '#fef2f2', borderRadius: 'var(--radius-sm)', border: '1px solid #fecaca' } },
+              h('div', { style: { fontSize: '14px', fontWeight: '700', color: '#dc2626', minWidth: '50px' } }, `${item.score}%`),
+              h('div', { style: { flex: '1' } },
+                h('div', { style: { fontSize: '11px', fontWeight: '600', color: 'var(--navy)' } }, (item.title || '').slice(0, 50)),
+                h('div', { style: { fontSize: '10px', color: 'var(--gray-500)' } }, `${item.platform} | ${item.engagement?.impressions || 0} imp | ${item.engagement?.engagement_rate || 0}% rate`)
+              )
+            )
+          )
+        )
+      ) : null
+    ) : null,
+    // Content Ideas Backlog
+    state.contentIdeas?.length > 0 ? h('div', { style: { marginBottom: '20px' } },
+      h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
+        h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)' } }, `CONTENT IDEAS (${state.contentIdeas.length})`),
+        h('div', { style: { display: 'flex', gap: '6px' } },
+          h('span', { style: { fontSize: '11px', color: 'var(--gray-500)' } },
+            `${state.contentIdeas.filter(i => i.priority === 'high').length} high priority`
+          )
+        )
+      ),
+      h('div', { style: { display: 'grid', gap: '6px' } },
+        ...state.contentIdeas.filter(i => i.status !== 'promoted' && i.status !== 'dismissed').slice(0, 8).map(idea => {
+          const priorityColors = { high: { bg: '#fef2f2', color: '#dc2626', border: '#fecaca' }, medium: { bg: '#fffbeb', color: '#d97706', border: '#fde68a' }, low: { bg: '#f1f5f9', color: '#64748b', border: '#e2e8f0' } };
+          const pc = priorityColors[idea.priority] || priorityColors.medium;
+          const categoryIcons = { contrarian: 'C', data_point: 'D', question: '?', framework: 'F', case_study: 'CS', how_to: 'H', trend: 'T', myth_bust: 'M', comparison: '~', behind_scenes: 'B' };
+          return h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 14px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', borderLeft: `4px solid ${pc.color}` } },
+            h('div', {
+              style: { width: '28px', height: '28px', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: '700', background: pc.bg, color: pc.color, flexShrink: '0' }
+            }, categoryIcons[idea.category] || '?'),
+            h('div', { style: { flex: '1', minWidth: 0 } },
+              h('div', { style: { fontSize: '12px', fontWeight: '600', color: 'var(--navy)', marginBottom: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } }, idea.title),
+              h('div', { style: { fontSize: '10px', color: 'var(--gray-500)' } },
+                `${idea.category?.replace('_', ' ')} | ${idea.target_persona} | ${(idea.recommended_formats || []).join(', ')}`
+              )
+            ),
+            h('div', { style: { display: 'flex', gap: '4px', flexShrink: '0' } },
+              h('button', {
+                style: { fontSize: '10px', padding: '3px 8px', background: '#059669', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' },
+                onclick: async () => {
+                  try {
+                    await api(`/api/ideas/${idea.id}/promote`, { method: 'POST' });
+                    toast('Promoted to trigger!', 'success');
+                    loadData();
+                  } catch (err) { toast('Failed: ' + err.message, 'error'); }
+                }
+              }, 'Promote'),
+              h('button', {
+                style: { fontSize: '10px', padding: '3px 6px', background: 'transparent', color: '#dc2626', border: '1px solid #dc2626', borderRadius: '4px', cursor: 'pointer' },
+                onclick: async () => {
+                  try {
+                    await api(`/api/ideas/${idea.id}`, { method: 'DELETE' });
+                    toast('Idea dismissed', 'info');
+                    loadData();
+                  } catch (err) { toast('Failed: ' + err.message, 'error'); }
+                }
+              }, 'X')
+            )
+          );
+        })
+      )
     ) : null,
     // Trending Topics
     (state.trending?.trending_topics?.length > 0) ? h('div', { style: { marginBottom: '20px' } },

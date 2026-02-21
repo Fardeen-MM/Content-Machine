@@ -6787,6 +6787,170 @@ Keep same core message. Adjust language, examples, pain points for this persona.
       return json(res, { ok: true, applied });
     }
 
+    // --- Performance Benchmarks ---
+
+    // GET /api/benchmarks — get current performance benchmarks
+    if (pathname === '/api/benchmarks' && method === 'GET') {
+      const benchmarks = readJSON('benchmarks.json', {
+        linkedin: { impressions: 500, engagement: 25, engagement_rate: 5.0, clicks: 10, shares: 3 },
+        x_single: { impressions: 200, engagement: 10, engagement_rate: 5.0, clicks: 5 },
+        x_thread: { impressions: 300, engagement: 15, engagement_rate: 5.0, clicks: 8 },
+        carousel: { impressions: 400, engagement: 30, engagement_rate: 7.5, clicks: 12 },
+        short_video: { impressions: 1000, engagement: 50, engagement_rate: 5.0, clicks: 20 }
+      });
+      return json(res, benchmarks);
+    }
+
+    // POST /api/benchmarks/set — update benchmarks
+    if (pathname === '/api/benchmarks/set' && method === 'POST') {
+      const body = await parseBody(req);
+      const benchmarks = readJSON('benchmarks.json', {});
+      Object.assign(benchmarks, body);
+      benchmarks.updated_at = now();
+      writeJSON('benchmarks.json', benchmarks);
+      return json(res, { ok: true, benchmarks });
+    }
+
+    // GET /api/benchmarks/report — compare all tracked content against benchmarks
+    if (pathname === '/api/benchmarks/report' && method === 'GET') {
+      const benchmarks = readJSON('benchmarks.json', { linkedin: { impressions: 500, engagement: 25, engagement_rate: 5.0 } });
+      const content = readJSON('content.json');
+      const tracked = content.filter(c => c.engagement && Object.keys(c.engagement).length > 0);
+
+      const overperformers = [];
+      const underperformers = [];
+
+      for (const item of tracked) {
+        for (const [platform, eng] of Object.entries(item.engagement)) {
+          const bench = benchmarks[platform];
+          if (!bench) continue;
+          const score = ((eng.impressions || 0) / (bench.impressions || 500) + (eng.engagement || 0) / (bench.engagement || 25)) / 2 * 100;
+          const entry = { id: item.id, title: item.trigger_title, platform, engagement: eng, benchmark: bench, score: Math.round(score) };
+          if (score >= 120) overperformers.push(entry);
+          if (score < 80) underperformers.push(entry);
+        }
+      }
+
+      return json(res, {
+        total_tracked: tracked.length,
+        overperformers: overperformers.sort((a, b) => b.score - a.score),
+        underperformers: underperformers.sort((a, b) => a.score - b.score),
+        summary: { over: overperformers.length, under: underperformers.length, on_track: tracked.length - overperformers.length - underperformers.length }
+      });
+    }
+
+    // --- Content Idea Generator ---
+
+    // POST /api/ideas/generate — AI generates content ideas based on gaps and trends
+    if (pathname === '/api/ideas/generate' && method === 'POST') {
+      const content = readJSON('content.json');
+      const triggers = readJSON('trigger-queue.json');
+      const trending = readJSON('trending-topics.json', {});
+
+      // Build context
+      const recentTopics = content.slice(-20).map(c => c.trigger_title).join(', ');
+      const topTrending = (trending.trending_topics || []).slice(0, 5).map(t => t.topic).join(', ');
+      const categories = {};
+      for (const t of triggers.slice(-50)) { categories[t.category || 'unknown'] = (categories[t.category || 'unknown'] || 0) + 1; }
+
+      const { callClaude, parseJsonResponse, SONNET } = require('./lib/claude');
+      const prompt = `Generate 10 content ideas for a legal marketing agency (Mortar Metrics) that targets law firm owners.
+
+RECENT CONTENT TOPICS: ${recentTopics.slice(0, 500) || 'None yet'}
+TRENDING: ${topTrending || 'General legal marketing trends'}
+CONTENT CATEGORIES COVERED: ${JSON.stringify(categories)}
+
+Generate ideas that:
+1. Fill content gaps (topics NOT recently covered)
+2. Capitalize on trending topics
+3. Address different audience personas (PI, family law, criminal defense, estate planning)
+4. Mix formats (data-driven posts, stories, contrarian takes, frameworks, case studies)
+
+Return JSON:
+{
+  "ideas": [
+    {
+      "title": "...",
+      "angle": "unique perspective or hook",
+      "category": "pain_point|data_point|case_study|framework|contrarian|trend|question",
+      "target_persona": "pi-attorney|family-law|criminal-defense|estate-planning|multi-practice|all",
+      "recommended_formats": ["linkedin", "x_thread", "blog"],
+      "priority": "high|medium|low",
+      "reasoning": "why this idea will perform well"
+    }
+  ]
+}`;
+
+      let text, parsed;
+      try {
+        text = await callClaude({ model: SONNET, system: 'Content strategist for B2B legal marketing. Generate creative, specific, actionable content ideas.', prompt, maxTokens: 2000 });
+        parsed = parseJsonResponse(text);
+      } catch (err) {
+        return json(res, { error: 'Claude API error: ' + err.message }, 500);
+      }
+
+      if (parsed?.ideas) {
+        const ideas = readJSON('content-ideas.json', []);
+        const newIdeas = parsed.ideas.map(idea => ({
+          id: generateId(),
+          ...idea,
+          status: 'new', // new, saved, promoted, dismissed
+          created_at: now()
+        }));
+        ideas.push(...newIdeas);
+        writeJSON('content-ideas.json', ideas);
+        return json(res, { ok: true, ideas: newIdeas, total: ideas.length });
+      }
+      return json(res, { error: 'Failed to generate ideas', raw_preview: (text || '').slice(0, 200) }, 500);
+    }
+
+    // GET /api/ideas — list all content ideas
+    if (pathname === '/api/ideas' && method === 'GET') {
+      const ideas = readJSON('content-ideas.json', []);
+      return json(res, ideas);
+    }
+
+    // POST /api/ideas/:id/promote — convert idea to a trigger
+    if (pathname.match(/^\/api\/ideas\/[^/]+\/promote$/) && method === 'POST') {
+      const id = pathname.split('/')[3];
+      const ideas = readJSON('content-ideas.json', []);
+      const idx = ideas.findIndex(i => i.id === id);
+      if (idx === -1) return json(res, { error: 'idea not found' }, 404);
+
+      const idea = ideas[idx];
+      ideas[idx].status = 'promoted';
+      writeJSON('content-ideas.json', ideas);
+
+      // Create trigger from idea
+      const triggers = readJSON('trigger-queue.json');
+      const trigger = {
+        id: 'idea-' + generateId(),
+        title: idea.title,
+        source: 'content-ideas',
+        source_detail: idea.angle,
+        category: idea.category || 'pain_point',
+        summary: idea.reasoning,
+        score: idea.priority === 'high' ? 16 : idea.priority === 'medium' ? 12 : 8,
+        status: 'pending',
+        captured_at: now()
+      };
+      triggers.push(trigger);
+      writeJSON('trigger-queue.json', triggers);
+
+      return json(res, { ok: true, trigger });
+    }
+
+    // DELETE /api/ideas/:id — dismiss an idea
+    if (pathname.match(/^\/api\/ideas\/[^/]+$/) && method === 'DELETE') {
+      const id = pathname.split('/')[3];
+      const ideas = readJSON('content-ideas.json', []);
+      const idx = ideas.findIndex(i => i.id === id);
+      if (idx === -1) return json(res, { error: 'not found' }, 404);
+      ideas[idx].status = 'dismissed';
+      writeJSON('content-ideas.json', ideas);
+      return json(res, { ok: true });
+    }
+
     // --- Content Series API ---
 
     // GET /api/series — list all content series

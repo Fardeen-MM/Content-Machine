@@ -1,0 +1,154 @@
+[
+  {
+    "id": "774127f591fddd2c",
+    "title": "We analyzed 487 law firm websites: Here's why 73% are losing cases before the first call",
+    "angle": "Original data analysis revealing specific conversion killers on law firm websites (buried phone numbers, no chat, slow load times, missing trust signals)",
+    "category": "data_point",
+    "target_persona": "all",
+    "recommended_formats": [
+      "linkedin",
+      "blog",
+      "x_thread"
+    ],
+    "priority": "high",
+    "reasoning": "Fills DATA_POINT gap (only 1 in recent content), provides authority through original research, addresses universal pain point of website conversion that isn't being discussed",
+    "status": "promoted",
+    "created_at": "2026-02-21T01:54:07.790Z"
+  },
+  {
+    "id": "8ab85c5e72dd42f5",
+    "title": "The 'Referral Paradox': Why family law attorneys who stop chasing referrals get MORE of them",
+    "angle": "Contrarian take that building visible expertise (content, speaking, media) creates inbound referrals vs. traditional networking",
+    "category": "contrarian",
+    "target_persona": "family-law",
+    "recommended_formats": [
+      "linkedin",
+      "blog"
+    ],
+    "priority": "high",
+    "reasoning": "Contrarian angle creates engagement, targets underserved family law segment, challenges conventional wisdom about referral generation",
+    "status": "dismissed",
+    "created_at": "2026-02-21T01:54:07.790Z"
+  },
+  {
+    "id": "c7469fb34faac08a",
+    "title": "Should criminal defense attorneys use client testimonials? Here's what the data actually says",
+    "angle": "Tackle the ethical gray area with concrete data on effectiveness vs. risk, state-by-state rule variations",
+    "category": "question",
+    "target_persona": "criminal-defense",
+    "recommended_formats": [
+      "linkedin",
+      "blog"
+    ],
+    "priority": "medium",
+    "reasoning": "Addresses practice-area-specific concern, question format proven to engage, criminal defense underserved in recent content",
+    "status": "new",
+    "created_at": "2026-02-21T01:54:07.790Z"
+  },
+  {
+    "id": "bf38b0995a23e959",
+    "title": "Case Study: How a 3-attorney estate planning firm used AI to 5x their content output without sounding robotic",
+    "angle": "Concrete case study showing the AI workflow, prompts used, human editing process, and results (traffic, leads, cases)",
+    "category": "case_study",
+    "target_persona": "estate-planning",
+    "recommended_formats": [
+      "blog",
+      "linkedin"
+    ],
+    "priority": "high",
+    "reasoning": "Case studies completely missing from recent content, AI is trending topic, estate planning attorneys actively seeking content solutions for boring topic",
+    "status": "new",
+    "created_at": "2026-02-21T01:54:07.790Z"
+  },
+  {
+    "id": "be269d5bdfa9bb60",
+    "title": "The RACE Framework: Turn your intake process from liability into competitive advantage",
+    "angle": "Actionable framework - Respond (speed), Acknowledge (empathy), Convert (clear CTA), Escalate (follow-up system)",
+    "category": "framework",
+    "target_persona": "pi-attorney",
+    "recommended_formats": [
+      "linkedin",
+      "x_thread",
+      "blog"
+    ],
+    "priority": "high",
+    "reasoning": "Frameworks are highly shareable, directly addresses the 'speed to lead' pain point from recent content, gives PI attorneys (largest segment) actionable system",
+    "status": "new",
+    "created_at": "2026-02-21T01:54:07.790Z"
+  },
+  {
+    "id": "7edf47e770a4d764",
+    "title": "Your SEO agency is lying to you: Why 'ranking #1' means nothing if it's for the wrong terms",
+    "angle": "Expose vanity metrics in legal SEO, show how to audit if rankings are for commercial-intent keywords vs. informational fluff",
+    "category": "pain_point",
+    "target_persona": "all",
+    "recommended_formats": [
+      "linkedin",
+      "x_thread"
+    ],
+    "priority": "high",
+    "reasoning": "Contrarian take on common pain point, builds trust by calling out bad practices, helps law firms evaluate current vendors",
+    "status": "new",
+    "created_at": "2026-02-21T01:54:07.790Z"
+  },
+  {
+    "id": "68b426203f9768ab",
+    "title": "I spent $847K on legal marketing in 2024. Here's the only 3 channels that actually drove cases.",
+    "angle": "Personal story/data from Mortar Metrics' own client portfolio showing channel ROI comparison with specific numbers",
+    "category": "data_point",
+    "target_persona": "all",
+    "recommended_formats": [
+      "linkedin",
+      "blog"
+    ],
+    "priority": "high",
+    "reasoning": "Transparency builds authority, addresses the Google Ads ROI concern from recent content, provides benchmarking data lawyers desperately need",
+    "status": "new",
+    "created_at": "2026-02-21T01:54:07.790Z"
+  },
+  {
+    "id": "9d00f4d5fd5dcaa2",
+    "title": "Why multi-practice firms waste 40% of their marketing budget (and the 3-bucket fix)",
+    "angle": "Show how treating all practice areas the same dilutes results; introduce segmentation framework for budget allocation by practice area maturity",
+    "category": "framework",
+    "target_persona": "multi-practice",
+    "recommended_formats": [
+      "blog",
+      "linkedin"
+    ],
+    "priority": "medium",
+    "reasoning": "Serves underserved multi-practice segment, provides diagnostic + solution, addresses budget efficiency concern implicit in recent content",
+    "status": "new",
+    "created_at": "2026-02-21T01:54:07.790Z"
+  },
+  {
+    "id": "42ae6cb395ab1b24",
+    "title": "The client intake calls costing you $50K+ per year (recorded examples)",
+    "angle": "Share anonymized real intake call recordings showing common mistakes (talking too much, no urgency creation, weak close), with fixes",
+    "category": "case_study",
+    "target_persona": "all",
+    "recommended_formats": [
+      "blog",
+      "linkedin"
+    ],
+    "priority": "high",
+    "reasoning": "Audio/story-based content gap, directly connects to speed-to-lead concerns, provides clear before/after value demonstration",
+    "status": "new",
+    "created_at": "2026-02-21T01:54:07.790Z"
+  },
+  {
+    "id": "4476403b2210237b",
+    "title": "Is your brand stopping you from scaling? The identity crisis happening at 5+ attorney firms",
+    "angle": "Address the shift from founder-led personal brand to firm brand, when to make the transition, and how to do it without losing referrals",
+    "category": "pain_point",
+    "target_persona": "all",
+    "recommended_formats": [
+      "blog",
+      "linkedin"
+    ],
+    "priority": "medium",
+    "reasoning": "Underaddressed scaling pain point, affects growing firms across practice areas, positions Mortar Metrics for larger client relationships",
+    "status": "new",
+    "created_at": "2026-02-21T01:54:07.790Z"
+  }
+]

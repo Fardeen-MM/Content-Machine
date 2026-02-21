@@ -6516,5 +6516,16 @@
     "captured_at": "2026-02-02T21:27:56.000Z",
     "status": "pending",
     "score": 0
+  },
+  {
+    "id": "idea-336cde8123c2a405",
+    "title": "We analyzed 487 law firm websites: Here's why 73% are losing cases before the first call",
+    "source": "content-ideas",
+    "source_detail": "Original data analysis revealing specific conversion killers on law firm websites (buried phone numbers, no chat, slow load times, missing trust signals)",
+    "category": "data_point",
+    "summary": "Fills DATA_POINT gap (only 1 in recent content), provides authority through original research, addresses universal pain point of website conversion that isn't being discussed",
+    "score": 16,
+    "status": "pending",
+    "captured_at": "2026-02-21T01:54:12.075Z"
   }
 ]

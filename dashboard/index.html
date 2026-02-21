@@ -1486,7 +1486,8 @@ async function loadData() {
       api('/api/series').catch(() => []),
       api('/api/predictions').catch(() => ({ predictions: [], has_enough_data: false })),
       api('/api/playbooks').catch(() => ({})),
-      api('/api/cta-library').catch(() => ({}))
+      api('/api/cta-library').catch(() => ({})),
+      api('/api/trending').catch(() => ({ trending_topics: [], trending_phrases: [], categories: {}, source_velocity: {} }))
     ]);
     state.content = content;
     state.triggers = triggers;
@@ -1513,6 +1514,7 @@ async function loadData() {
     state.predictions = predictions;
     state.playbooks = playbooks;
     state.ctaLibrary = ctaLibrary;
+    state.trending = trending;
   } catch (err) {
     console.error('Failed to load data:', err);
     toast('Failed to load data', 'error');
@@ -2624,6 +2626,37 @@ function renderDashboardPage() {
         )
       );
     })(),
+    // Trending Topics
+    (state.trending?.trending_topics?.length > 0) ? h('div', { style: { marginBottom: '20px' } },
+      h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
+        h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)' } }, `TRENDING TOPICS (${state.trending.period})`),
+        h('div', { style: { fontSize: '11px', color: 'var(--gray-500)' } }, `${state.trending.total_recent} recent triggers`)
+      ),
+      h('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap' } },
+        ...state.trending.trending_topics.slice(0, 12).map(t => {
+          const maxCount = state.trending.trending_topics[0]?.count || 1;
+          const intensity = Math.max(0.15, t.count / maxCount);
+          return h('div', {
+            style: {
+              padding: '6px 14px', borderRadius: '20px', fontSize: '13px', fontWeight: '500',
+              background: `rgba(37,99,235,${intensity * 0.2})`,
+              color: intensity > 0.5 ? 'var(--blue)' : '#64748b',
+              border: `1px solid rgba(37,99,235,${intensity * 0.3})`,
+              cursor: 'pointer', transition: 'all 0.15s'
+            },
+            title: `${t.count} mentions in ${t.triggers} triggers`,
+            onclick: () => { state.page = 'triggers'; state.triggerSearch = t.word; render(); }
+          }, t.word, h('span', { style: { marginLeft: '4px', fontSize: '10px', fontWeight: '700', color: 'var(--blue)' } }, String(t.count)));
+        })
+      ),
+      state.trending.trending_phrases?.length > 0 ? h('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: '8px' } },
+        ...state.trending.trending_phrases.slice(0, 5).map(p =>
+          h('span', { style: { padding: '3px 10px', borderRadius: '6px', fontSize: '11px', background: '#f0fdf4', color: '#059669', border: '1px solid #bbf7d0' } },
+            `"${p.phrase}" (${p.count}x)`
+          )
+        )
+      ) : null
+    ) : null,
     // Recent meetings
     recentMeetings.length > 0 ? h('div', { style: { marginBottom: '20px' } },
       h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
@@ -3336,7 +3369,46 @@ function renderFormatContent(content, formatKey, fmt) {
           ? `${fmt.content.length} tweets`
           : typeof text === 'string' ? `${text.length} chars` : ''
       )
-    )
+    ),
+    // Distribution checklist for approved content
+    fmt.status === 'approved' && !fmt.published_at ? (() => {
+      const distKey = `dist-${content.id}-${formatKey}`;
+      const steps = {
+        linkedin: ['Copy content', 'Open LinkedIn app', 'Create post', 'Add hashtags in comment', 'Post & engage replies for 60min'],
+        x_single: ['Copy tweet', 'Open X/Twitter', 'Post tweet', 'Pin if high-value', 'Engage replies for 30min'],
+        x_thread: ['Copy all tweets', 'Post thread on X', 'Add CTA in last tweet', 'Repost thread hook', 'Engage replies'],
+        carousel: ['Create PDF from slides', 'Upload as LinkedIn document', 'Add hook text', 'Post & reply to comments'],
+        short_video: ['Record video using script', 'Add captions', 'Upload to LinkedIn + Reels', 'Add CTA in description'],
+        blog: ['Publish to website', 'Share on LinkedIn', 'Create X thread from key points', 'Submit to Google Search Console'],
+        youtube_script: ['Record video', 'Edit & add B-roll', 'Create thumbnail', 'Upload with SEO title/desc', 'Pin comment with CTA link'],
+        newsletter: ['Copy to email platform', 'Set subject line', 'Schedule send', 'Review preview'],
+        hot_take: ['Post on X', 'Post on LinkedIn', 'Engage with replies'],
+        poll: ['Create poll on LinkedIn', 'Share poll context', 'Engage with voters']
+      };
+      const checklist = steps[formatKey] || ['Copy content', 'Post to platform', 'Engage with responses'];
+      const checked = fmt._distChecked || [];
+      return state._distOpen === distKey ? h('div', { style: { padding: '8px 20px 12px', background: '#f0fdf4', borderTop: '1px solid #bbf7d0', fontSize: '12px' } },
+        h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: '6px' } },
+          h('span', { style: { fontWeight: '600', color: '#059669', fontSize: '11px', textTransform: 'uppercase' } }, 'Distribution Checklist'),
+          h('span', { style: { fontSize: '10px', color: '#64748b' } }, `${checked.length}/${checklist.length} done`)
+        ),
+        ...checklist.map((step, i) => {
+          const isDone = checked.includes(i);
+          return h('label', { style: { display: 'flex', alignItems: 'center', gap: '6px', padding: '3px 0', cursor: 'pointer', color: isDone ? '#059669' : '#334155', textDecoration: isDone ? 'line-through' : 'none' } },
+            h('input', { type: 'checkbox', checked: isDone, onchange: () => {
+              if (!fmt._distChecked) fmt._distChecked = [];
+              if (isDone) { fmt._distChecked = fmt._distChecked.filter(x => x !== i); }
+              else { fmt._distChecked.push(i); }
+              render();
+            }}),
+            step
+          );
+        })
+      ) : h('button', {
+        style: { width: '100%', padding: '4px', fontSize: '10px', color: '#059669', background: 'transparent', border: 'none', cursor: 'pointer', borderTop: '1px solid #e2e8f0' },
+        onclick: () => { state._distOpen = distKey; render(); }
+      }, 'Show distribution checklist');
+    })() : null
   );
 }
 

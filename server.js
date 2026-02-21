@@ -1751,6 +1751,60 @@ async function handleRequest(req, res) {
       });
     }
 
+    // GET /api/trending — trending topics from trigger queue
+    if (pathname === '/api/trending' && method === 'GET') {
+      const triggers = readJSON('trigger-queue.json');
+      const nowMs = Date.now();
+      const recentDays = 7;
+      const recent = triggers.filter(t => {
+        const age = nowMs - new Date(t.captured_at || t.scraped_at || t.date || 0).getTime();
+        return age < recentDays * 24 * 60 * 60 * 1000;
+      });
+      // Extract keywords from titles
+      const stopwords = new Set(['the','a','an','and','or','but','in','on','at','to','for','of','with','by','from','is','are','was','were','be','been','being','have','has','had','do','does','did','will','would','shall','should','may','might','must','can','could','this','that','these','those','it','its','i','you','he','she','we','they','my','your','his','her','our','their','not','no','all','any','some','every','each','just','also','how','why','what','when','where','who','which','about','new','more','most','than','very','too','even','only','just','so','if','then','else','out','up','down','into','over','after','before','between','under','above','below','through','during','here','there','now','already','still','yet','ever','never','always','often','really','well','much','many','few','little','less','least','own','same','other','another','such','like','get','make','go','know','take','come','think','look','want','give','use','find','tell','ask','work','seem','feel','try','leave','call','keep','let','begin','show','hear','play','run','move','live','believe','bring','happen','write','provide','sit','stand','lose','pay','meet','include','continue','set','learn','change','lead','understand','watch','follow','stop','create','speak','read','allow','add','spend','grow','open','walk','win','offer','remember','love','consider','appear','buy','wait','serve','die','send','expect','build','stay','fall','cut','reach','kill','remain','law','firm','firms','lawyer','lawyers','legal','marketing','attorney','attorneys','client','clients','case','cases']);
+      const wordCounts = {};
+      const phraseMap = {};
+      for (const t of recent) {
+        const title = (t.title || '').toLowerCase().replace(/[^a-z0-9\s]/g, '');
+        const words = title.split(/\s+/).filter(w => w.length > 3 && !stopwords.has(w));
+        const seen = new Set();
+        for (const w of words) {
+          if (!seen.has(w)) { wordCounts[w] = (wordCounts[w] || 0) + 1; seen.add(w); }
+        }
+        // Extract 2-word phrases
+        for (let i = 0; i < words.length - 1; i++) {
+          const phrase = `${words[i]} ${words[i + 1]}`;
+          if (!seen.has(phrase)) { phraseMap[phrase] = (phraseMap[phrase] || 0) + 1; seen.add(phrase); }
+        }
+      }
+      // Top single words
+      const topWords = Object.entries(wordCounts)
+        .filter(([, c]) => c >= 2)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 20)
+        .map(([word, count]) => ({ word, count, triggers: recent.filter(t => (t.title || '').toLowerCase().includes(word)).length }));
+      // Top phrases
+      const topPhrases = Object.entries(phraseMap)
+        .filter(([, c]) => c >= 2)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 10)
+        .map(([phrase, count]) => ({ phrase, count }));
+      // Category breakdown
+      const categories = {};
+      for (const t of recent) { categories[t.category || 'uncategorized'] = (categories[t.category || 'uncategorized'] || 0) + 1; }
+      // Source velocity (triggers per source in last 7 days)
+      const sourceVelocity = {};
+      for (const t of recent) { sourceVelocity[t.source || 'unknown'] = (sourceVelocity[t.source || 'unknown'] || 0) + 1; }
+      return json(res, {
+        period: `last ${recentDays} days`,
+        total_recent: recent.length,
+        trending_topics: topWords,
+        trending_phrases: topPhrases,
+        categories,
+        source_velocity: sourceVelocity
+      });
+    }
+
     // POST /api/triggers/bulk-delete — delete rejected triggers
     if (pathname === '/api/triggers/bulk-delete' && method === 'POST') {
       const body = await parseBody(req);

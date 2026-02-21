@@ -1,0 +1,130 @@
+{
+  "linkedin": {
+    "contrarian": [
+      {"template": "Most {audience} believe {common_belief}. Here's why they're wrong.", "example": "Most law firms believe more ad spend = more cases. Here's why they're wrong."},
+      {"template": "Everyone talks about {topic}. Nobody talks about {real_issue}.", "example": "Everyone talks about law firm SEO. Nobody talks about the 52% of calls that go unanswered."},
+      {"template": "Unpopular opinion: {bold_claim}.", "example": "Unpopular opinion: Your law firm doesn't need more leads."},
+      {"template": "Stop {common_action}. Start {better_action} instead.", "example": "Stop spending money on Avvo. Start fixing your intake process instead."}
+    ],
+    "data_bomb": [
+      {"template": "I analyzed {number} {things} and found something surprising:", "example": "I analyzed 150 law firm Google Ads accounts and found something surprising:"},
+      {"template": "{percentage}% of {audience} {painful_truth}.", "example": "73% of law firms have no intake script for inbound calls."},
+      {"template": "We audited {number} {things}. {number}% had the same mistake.", "example": "We audited 47 law firm ad accounts. 73% had the same fatal mistake."},
+      {"template": "The firms spending the LEAST on {thing} were getting the MOST {result}.", "example": "The firms spending the LEAST on ads were getting the MOST signed cases."}
+    ],
+    "story": [
+      {"template": "{time} ago, I {made_mistake}. It cost {amount}.", "example": "2 years ago, I told a managing partner his marketing was fine. It cost him $60K."},
+      {"template": "A {client_type} came to us with {problem}. The data was brutal.", "example": "A PI firm installed call tracking last month. The data was brutal."},
+      {"template": "Losing {something} was the best thing that ever happened to {entity}.", "example": "Losing their biggest referral source was the best thing that happened to this firm."},
+      {"template": "{time} ago, {firm_type} was {bad_state}. Today they're {good_state}. Here's what changed:", "example": "6 months ago, this family law firm was spending $15K/month with zero ROI. Today they sign 22 cases/month. Here's what changed:"}
+    ],
+    "curiosity_gap": [
+      {"template": "Nobody tells {audience} this about {topic}...", "example": "Nobody tells law firm owners this about their marketing spend..."},
+      {"template": "It took me {time} to realize {realization}.", "example": "It took me 4 years to realize law firms don't need more leads. They need better intake."},
+      {"template": "I thought I'd found the perfect {solution}. Then {turning_point}.", "example": "I thought I'd found the perfect lead gen strategy for PI firms. Then Google changed the algorithm."},
+      {"template": "The hidden economics of {topic}:", "example": "The hidden economics of law firm marketing:"}
+    ],
+    "direct_address": [
+      {"template": "If you're a {specific_audience}, this will save you {benefit}.", "example": "If you're a managing partner spending $10K+/mo on marketing, this will save you 40% of your budget."},
+      {"template": "You're not alone in {painful_feeling}. {empathetic_stat}.", "example": "You're not alone in feeling like your marketing agency isn't delivering. 68% of law firms switch agencies within 18 months."},
+      {"template": "This is for {specific_audience} who {specific_situation}.", "example": "This is for firm owners who are spending $5K+/month on Google Ads and can't tell if it's working."}
+    ],
+    "proof_first": [
+      {"template": "We took a {firm_type} from {bad_metric} to {good_metric} in {timeframe}.", "example": "We took a family law firm from 3 signed cases/month to 22 in 90 days."},
+      {"template": "{specific_number} {results} in {timeframe}. Here's exactly how:", "example": "127 signed cases in one quarter. Here's exactly how:"},
+      {"template": "From {bad_state} to {good_state} in {timeframe}. Same budget.", "example": "From 4 signed cases to 28. Same ad budget. 6 months. Here's what we changed."}
+    ],
+    "math_problem": [
+      {"template": "Your {firm_type} gets {number} {thing}/month. {number} {waste}. That's ${amount}/month in the trash.", "example": "Your PI firm gets 90 calls/month from ads. 47 go unanswered. That's $4,183/month in the trash."},
+      {"template": "Every {time_unit} your {thing} {problem}, you lose ${amount}.", "example": "Every hour your phone goes unanswered after 5pm, you lose $420 in potential revenue."}
+    ],
+    "confession": [
+      {"template": "I used to tell every law firm to {advice}. I was wrong.", "example": "I used to tell every law firm to spend $5K/month on Google Ads. I was wrong."},
+      {"template": "The biggest mistake I made with {topic}: {mistake}.", "example": "The biggest mistake I made with law firm SEO: obsessing over rankings instead of conversions."}
+    ],
+    "framework_reveal": [
+      {"template": "The {name} Framework: {number} steps to {outcome}.", "example": "The 5-3-1 Rule of Law Firm Growth: 5 content pieces/week, 3 referral conversations, 1 thought leadership piece."},
+      {"template": "The most successful firms I work with all use this framework:", "example": "The most successful PI firms I work with all use the Intake Triage System:"}
+    ]
+  },
+  "x_single": {
+    "hot_take": [
+      {"template": "{bold_claim}. Fight me.", "example": "Your law firm's website doesn't matter. Your intake process does. Fight me."},
+      {"template": "Them: '{common_advice}.' Me: *{contradictory_action}*.", "example": "Them: 'Spend more on Google Ads.' Me: *fixes intake process, doubles revenue*."}
+    ],
+    "data_driven": [
+      {"template": "{surprising_stat}. Let that sink in.", "example": "67% of law firm leads never get a callback. Let that sink in."},
+      {"template": "More leads = more revenue? Not if your intake team closes at {low_percentage}%.", "example": "More leads = more revenue? Not if your intake team closes at 12%."}
+    ],
+    "question": [
+      {"template": "Why do some {audience} {good_outcome} while others {bad_outcome}?", "example": "Why do some law firms get 50 signed cases/month while others struggle to get 5?"},
+      {"template": "What if I told you {counterintuitive_claim}?", "example": "What if I told you your best marketing channel is your receptionist?"}
+    ]
+  },
+  "youtube_titles": [
+    {"template": "How to {action} ({specific_benefit})", "example": "How to Get More PI Cases (Without Spending More on Ads)"},
+    {"template": "How to {action} (Even If {common_objection})", "example": "How to Market Your Law Firm (Even If You Hate Social Media)"},
+    {"template": "{number} {things} Every {audience} Needs to Know in {year}", "example": "7 Marketing Mistakes Every Law Firm Makes in 2026"},
+    {"template": "I {action} for {timeframe} — Here's What Happened", "example": "I Audited 100 Law Firm Websites — Here's What I Found"},
+    {"template": "I Spent ${amount} on {thing} So You Don't Have To", "example": "I Spent $50,000 on Law Firm Google Ads So You Don't Have To"},
+    {"template": "Stop Doing {thing} — Do {better_thing} Instead", "example": "Stop Chasing Leads — Fix Your Intake Instead"},
+    {"template": "From {bad_state} to {good_state}: The Complete {process}", "example": "From 3 Cases to 30/Month: The Complete Law Firm Marketing System"},
+    {"template": "The {adjective} Truth About {topic} Nobody Tells You", "example": "The Ugly Truth About Law Firm Marketing Nobody Tells You"},
+    {"template": "Why {common_thing} Doesn't Work (And What Does)", "example": "Why Google Ads Don't Work for Most Law Firms (And What Does)"},
+    {"template": "This One {element} {impressive_result}", "example": "This One Change Tripled Our Client's Signed Cases"}
+  ],
+  "email_subjects": [
+    {"template": "{number} {adjective} ways to {benefit}", "example": "5 proven ways to sign more PI cases"},
+    {"template": "The {number}-word tweak that {result}", "example": "The 3-word tweak that doubled callbacks"},
+    {"template": "Quick question about {company}", "example": "Quick question about Smith & Associates"},
+    {"template": "How {similar_company} {achieved_outcome}", "example": "How a 4-attorney firm signed 15 cases in 30 days"},
+    {"template": "From {bad_state} to {good_state} in {time}", "example": "From 2 cases/mo to 18 in 60 days"},
+    {"template": "{number} mistakes costing {audience} {amount}", "example": "3 mistakes costing PI firms $100K/year"},
+    {"template": "Free {resource}: {specific_benefit}", "example": "Free audit: your law firm's intake gaps"},
+    {"template": "Why your {metric} is {problem}", "example": "Why your cost per case is 3x too high"},
+    {"template": "The pivot that saved {amount}/{period}", "example": "The pivot that saved $8K/month on ads"}
+  ],
+  "short_video_hooks": [
+    {"template": "{bold_contrarian_claim}", "example": "Most law firms are wasting half their marketing budget. Here's proof."},
+    {"template": "Why do {frustrating_discrepancy}?", "example": "Why do some law firms get 50 cases a month while others can't get 5?"},
+    {"template": "If you're a {specific_audience}, stop scrolling.", "example": "If you're a managing partner spending over $5K/month on marketing, stop scrolling."},
+    {"template": "We helped a {firm_type} go from {bad} to {good} in {time}. Here's how.", "example": "We helped a PI firm go from 3 cases to 22 per month in 90 days. Here's how."},
+    {"template": "{number} mistakes you're making with {thing}...", "example": "3 mistakes you're making with your law firm's Google Ads..."},
+    {"template": "Only {small_percent}% of {audience} know this...", "example": "Only 5% of law firms know this intake trick. It's worth $20K/month."},
+    {"template": "Everything you know about {belief} is wrong.", "example": "Everything you know about law firm SEO is wrong."},
+    {"template": "Before you {common_action}, you need to know this...", "example": "Before you hire a marketing agency, you need to know this..."},
+    {"template": "Did you know that {surprising_fact}?", "example": "Did you know that 67% of law firm leads never get a callback?"},
+    {"template": "All {audience} know about {tool}, but only {small}% use it right.", "example": "All law firms know about Google Ads, but only 5% run them profitably."}
+  ],
+  "cta_formulas": {
+    "comment_keyword": [
+      "Comment '{keyword}' and I'll send you {resource}.",
+      "Drop a + if you want the {resource}.",
+      "Comment '{keyword}' for a personalized {deliverable}."
+    ],
+    "soft_authority": [
+      "If this was helpful, follow me. I post {topic} breakdowns every {frequency}.",
+      "Save this post. You'll need it when {situation}."
+    ],
+    "engagement": [
+      "Agree or disagree? I'll debate anyone in the comments.",
+      "What's your biggest challenge with {topic}? Let me know below.",
+      "Which step are you stuck on? Drop a number below."
+    ],
+    "social_proof": [
+      "Join {number}+ {audience} who already {benefit}. Link in comments."
+    ],
+    "meeting_reframe": [
+      "Not looking to sell anything. Sharing what works for {practice_area} firms. 15 min.",
+      "Would it make sense to chat for 15 minutes? If not, no worries.",
+      "I'd love to walk you through {deliverable} — saves firms like yours {amount}. Quick call?"
+    ]
+  },
+  "meta": {
+    "version": 1,
+    "total_templates": 85,
+    "categories": ["contrarian", "data_bomb", "story", "curiosity_gap", "direct_address", "proof_first", "math_problem", "confession", "framework_reveal", "hot_take", "question"],
+    "usage": "Loaded by buildSystemPromptWithMemory() — 3 random hooks injected per generation to prevent repetition",
+    "sources": "Hormozi, Welsh, Walker, Priestley, Parr, Natividad, Bloom, Deiss, Patel, Gerhardt, Simmonds"
+  }
+}

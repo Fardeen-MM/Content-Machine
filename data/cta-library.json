@@ -5,19 +5,37 @@
       "We publish a free weekly breakdown of what's working in legal marketing. Drop a comment if you want the link.",
       "I put together a free checklist for this. Comment 'checklist' and I'll send it over.",
       "If this hits home, you're not alone. I talk to 5+ firm owners a week dealing with the exact same thing.",
-      "Curious how your firm stacks up? I've been running free 15-min audits this month. No pitch, just data."
+      "Curious how your firm stacks up? I've been running free 15-min audits this month. No pitch, just data.",
+      "If this was helpful, follow me. I post law firm growth breakdowns every Tuesday and Thursday.",
+      "Save this post. You'll need it when your next marketing contract comes up for renewal."
     ],
     "medium": [
       "If you want to see exactly where your marketing spend is leaking, I do a free 15-minute Google Ads audit for law firms. I'll pull the data live on the call. DM me 'audit' if interested.",
       "We built a free scorecard that tells you in 5 minutes if your intake process is costing you cases. Comment 'scorecard' and I'll send the link.",
       "I'm running a free workshop next week on fixing the intake-to-signed-case gap. Limited to 20 firms. Comment 'workshop' for details.",
-      "Every week I do 3 free strategy calls with firm owners who want a second opinion on their marketing. If you want one, shoot me a message."
+      "Every week I do 3 free strategy calls with firm owners who want a second opinion on their marketing. If you want one, shoot me a message.",
+      "Join 500+ managing partners who get our weekly marketing insights. Link in comments."
     ],
     "value_first": [
       "Here's the spreadsheet template I use for this. Free — no email needed. Link in the first comment.",
       "I recorded a 12-minute Loom breaking this down step by step. Comment 'video' and I'll DM it to you.",
       "We built a free calculator that estimates your cost-per-signed-case across channels. Link in comments.",
-      "I wrote a full breakdown on our blog with the exact scripts and SOPs. Link in the first comment."
+      "I wrote a full breakdown on our blog with the exact scripts and SOPs. Link in the first comment.",
+      "I put together a free intake script template for PI firms. Drop a + if you want it."
+    ],
+    "comment_keyword": [
+      "Comment 'AUDIT' and I'll send you our 15-point law firm marketing checklist.",
+      "Comment 'INTAKE' for a free review of your firm's lead follow-up process.",
+      "Comment 'SCORECARD' and I'll send you the free marketing health assessment.",
+      "Comment 'TEMPLATE' and I'll DM you the exact scripts we use.",
+      "Comment 'DATA' and I'll send you the full benchmark report."
+    ],
+    "engagement": [
+      "Agree or disagree? I'll debate anyone in the comments.",
+      "What's your biggest challenge with law firm marketing? Let me know below — I'll respond to every comment.",
+      "Which step are you stuck on? Drop a number below.",
+      "What would you add to this list? Best answer gets the full template.",
+      "Rate your own firm's marketing 1-10. Be honest."
     ]
   },
   "x_single": {
@@ -25,13 +43,15 @@
       "Want the full breakdown? I wrote a thread on this →",
       "More on this in tomorrow's thread.",
       "I've been sharing these breakdowns weekly. Follow for the next one.",
-      "Reply with your practice area and I'll tell you the #1 thing to fix."
+      "Reply with your practice area and I'll tell you the #1 thing to fix.",
+      "Reply 'AUDIT' and I'll DM you the template."
     ],
     "engagement": [
       "What's the biggest marketing mistake you see law firms making? Wrong answers only.",
       "Hot take or fact? Reply with yours.",
       "If you disagree, reply with your data. I'll share mine.",
-      "Rate your own firm's marketing 1-10. Be honest."
+      "Rate your own firm's marketing 1-10. Be honest.",
+      "Repost this if you know a firm owner who needs to see it."
     ]
   },
   "x_thread": {
@@ -39,37 +59,52 @@
       "If you want the full audit template I use, reply 'template' and I'll DM it.",
       "That's the thread. If you found this useful, repost it — a firm owner in your network probably needs to see this.",
       "Follow @MortarMetrics for weekly breakdowns like this.",
-      "I'm doing free 15-min ad account audits this month. Reply 'audit' if you want one."
+      "I'm doing free 15-min ad account audits this month. Reply 'audit' if you want one.",
+      "Want this kind of result? DM me 'GROWTH' and I'll send you the framework."
     ]
   },
   "youtube": {
     "mid_roll": [
       "Before I show you step 3 — if you're a firm owner watching this and thinking 'this is exactly my problem' — I do free 15-minute ad audits. Link is in the description. No pitch, I just pull your data and tell you what I see.",
       "Quick note — if you're finding this helpful, hit subscribe. I post a new breakdown every week and I don't want you to miss the one that saves your firm $5K/month.",
-      "If you want the template I'm about to show you, it's free in the description. No email required."
+      "If you want the template I'm about to show you, it's free in the description. No email required.",
+      "If you want to know YOUR firm's exact score on this — we built a free scorecard. Takes 5 minutes. Link in the description."
     ],
     "end_screen": [
       "If you want me to look at your specific situation, I do free 15-minute audits for law firms. I'll pull your actual Google Ads data live on the call and tell you exactly what I'd change. Link is in the description — no pitch, no obligation.",
       "That's everything. If you want to go deeper, watch this video next — it covers the exact system we use to turn these audits into 30+ signed cases per month.",
-      "If this was helpful, subscribe and hit the bell. I break down one law firm marketing mistake every single week. See you in the next one."
+      "If this was helpful, subscribe and hit the bell. I break down one law firm marketing mistake every single week. See you in the next one.",
+      "Everything I just showed you? We put it into a free scorecard that rates your firm in 5 minutes. Link in description — takes 3 minutes, you'll know exactly where you stand."
     ]
   },
   "blog": {
     "inline": [
       "**Want to know your exact cost per signed case?** [Get a free 15-minute audit →](https://mortarmetrics.com/audit)",
       "**Free resource:** We built a [calculator](https://mortarmetrics.com/calculator) that estimates your marketing ROI across all channels.",
-      "**Related:** [How we helped Mandall Law go from $4K to $92K/month →](https://mortarmetrics.com/case-study)"
+      "**Related:** [How we helped Mandall Law go from $4K to $92K/month →](https://mortarmetrics.com/case-study)",
+      "**Free scorecard:** [Rate your law firm's marketing in 5 minutes →](https://mortarmetrics.com/scorecard)"
     ],
     "bottom": [
       "## Want Help With This?\n\nWe help law firms build marketing systems that generate signed cases predictably. If you want a second opinion on your current setup, [book a free 15-minute audit](https://mortarmetrics.com/audit). We'll pull your data live and tell you exactly what we'd change. No pitch.",
-      "## Next Steps\n\nIf you found this useful, here are 3 things you can do right now:\n1. **Run the numbers** — use our [free calculator](https://mortarmetrics.com/calculator) to find your cost per signed case\n2. **Fix the biggest leak** — most firms have one thing costing them 40%+ of their budget\n3. **Get a second opinion** — [book a free audit](https://mortarmetrics.com/audit) and we'll show you the data"
+      "## Next Steps\n\nIf you found this useful, here are 3 things you can do right now:\n1. **Run the numbers** — use our [free calculator](https://mortarmetrics.com/calculator) to find your cost per signed case\n2. **Fix the biggest leak** — most firms have one thing costing them 40%+ of their budget\n3. **Get a second opinion** — [book a free audit](https://mortarmetrics.com/audit) and we'll show you the data",
+      "## Your Turn\n\n1. **Take the scorecard** — [rate your marketing in 5 minutes](https://mortarmetrics.com/scorecard)\n2. **Identify your #1 gap** — the scorecard shows you exactly where to start\n3. **Get a custom plan** — [book a free strategy call](https://mortarmetrics.com/audit) and we'll walk through your results"
     ]
   },
   "newsletter": {
     "soft": [
       "That's it for this week. Hit reply if you have questions — I read every email.",
       "If you know a firm owner who needs to hear this, forward this email. They can subscribe [here].",
-      "Next week: I'm breaking down the exact Google Ads structure we use for PI firms. Don't miss it."
+      "Next week: I'm breaking down the exact Google Ads structure we use for PI firms. Don't miss it.",
+      "P.S. I have 3 audit slots open this week. If you want me to pull your data and show you what I'd change — reply 'audit' and I'll send the booking link."
+    ]
+  },
+  "short_video": {
+    "end_cta": [
+      "Follow for more law firm growth strategies.",
+      "Comment 'AUDIT' and I'll send you the full breakdown.",
+      "Save this before it gets buried in your feed.",
+      "Link in bio for the free scorecard.",
+      "Share this with a managing partner who needs to see it."
     ]
   },
   "meeting_hooks": {
@@ -77,6 +112,21 @@
     "scorecard": "Free marketing scorecard — answer 10 questions, get a custom report on where you're leaking cases.",
     "calculator": "Free cost-per-case calculator — plug in your numbers, see exactly what each signed case costs you.",
     "workshop": "Free weekly workshop — we break down one firm's marketing live (anonymized). Limited spots.",
-    "case_study": "Want to see how a firm like yours went from X to Y? We'll show you the exact system on a quick call."
+    "case_study": "Want to see how a firm like yours went from X to Y? We'll show you the exact system on a quick call.",
+    "loom_audit": "I'll record a free 5-minute Loom walking through your website and ads. No call needed — just value.",
+    "strategy_session": "15-minute strategy session. I'll look at your firm's marketing and give you the 3 things I'd change first. No pitch, just data.",
+    "not_a_sales_call": "Not looking to sell you anything. Just sharing what's working for {practice_area} firms right now. 15 minutes — you'll walk away with at least one actionable idea."
+  },
+  "dm_sequences": {
+    "after_comment": [
+      "Hey {name}, thanks for engaging with my post about {topic}. Here's the {resource} I mentioned — {link}. Let me know if you have any questions!",
+      "Hey {name}, I noticed your comment on my {topic} post. I actually have a more detailed breakdown — want me to send it over?",
+      "Hey {name}, since you're interested in {topic}, I thought you might find this useful: {resource}. Happy to chat about how it applies to your firm specifically."
+    ],
+    "after_resource": [
+      "Hey {name}, how did you find the {resource}? Curious if any of the benchmarks surprised you.",
+      "Hey {name}, I was looking at firms similar to yours and noticed a few patterns. Would you be open to a quick 15-min call? I have some ideas that could help.",
+      "Hey {name}, we just helped a {practice_area} firm in {state} go from {X} to {Y} signed cases/month. Thought you might find the case study interesting — happy to share?"
+    ]
   }
 }

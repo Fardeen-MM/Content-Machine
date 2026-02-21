@@ -108,15 +108,49 @@ CONTENT RULES:
 - Carousels: Slide 1 = bold hook (stop the scroll), slides 2-6 = one insight per slide, slide 7 = CTA
 - Polls: Controversial question that people WANT to answer, not obvious/generic
 
-HOOK FORMULAS (rotate between these):
-1. Failure Story: "A criminal defense firm fired 3 marketing agencies this year. Total damage: $57,000."
-2. Data Bomb: "We analyzed 47 law firm Google Ads accounts. 73% had the same fatal mistake."
-3. Contrarian: "Everyone says SEO takes 6 months. That's wrong. For law firms, it takes 3 — if you do this."
+HOOK FORMULAS (rotate between these — use Hormozi's 7-element rule: every hook uses 2+ of Recency, Proximity, Celebrity, Conflict, Unusual, Ongoing, Significance):
+
+TIER 1 — HIGHEST PERFORMING:
+1. Contrarian: "Most law firms believe [common belief]. Here's why they're wrong." / "Unpopular opinion: [bold claim]."
+2. Data Bomb: "I analyzed [number] [things]. [percentage]% had the same mistake." / "We audited 47 law firm ad accounts. 73% had the same fatal mistake."
+3. Story/Failure: "A PI firm installed call tracking. The data was brutal." / "[Time] ago, I [made mistake]. It cost [amount]."
 4. Math Problem: "Your PI firm gets 90 calls/month from ads. 47 go unanswered. That's $4,183/month in the trash."
-5. Confession: "I used to tell every law firm to spend $5K/month on Google Ads. I was wrong."
-6. Before/After: "March: 4 signed cases. September: 28. Same ad budget. Here's what we changed."
-7. Myth Buster: "Your website isn't broken. Your intake process is."
-8. Cost of Inaction: "Every hour your phone goes unanswered after 5pm, you lose $420 in potential revenue."`;
+5. Proof-First: "We took a [firm type] from [bad] to [good] in [timeframe]." / "127 signed cases in one quarter. Here's exactly how:"
+6. Framework Reveal: "The [Name] Framework: [number] steps to [outcome]." / "The most successful firms I work with all use this:"
+
+TIER 2 — STRONG ENGAGEMENT:
+7. Confession: "I used to tell every law firm to spend $5K/month on Google Ads. I was wrong."
+8. Before/After: "March: 4 signed cases. September: 28. Same ad budget. Here's what we changed."
+9. Curiosity Gap: "Nobody tells law firm owners this about their marketing spend..." / "It took me 4 years to realize [realization]."
+10. Direct Address: "If you're a managing partner spending $10K+/mo on marketing, this will save you 40% of your budget."
+11. Myth Buster: "Your website isn't broken. Your intake process is."
+12. Cost of Inaction: "Every hour your phone goes unanswered after 5pm, you lose $420 in potential revenue."
+
+TIER 3 — ENGAGEMENT DRIVERS:
+13. Them vs Me: "Them: 'Spend more on Google Ads.' Me: *fixes intake process, doubles revenue*."
+14. Question (X/Twitter only): "Why do some law firms get 50 cases/month while others can't get 5?"
+15. Hidden Economics: "The hidden economics of law firm marketing:"
+
+LINKEDIN POST FRAMEWORKS (use these structures):
+- Unpopular Opinion: contrarian claim → evidence → reframed question → engagement ask
+- Mistake I Made: mistake → cost → consequences → lesson → what to do instead
+- 3-Step Framework: "[Outcome] comes down to 3 things. Most skip Step [X]."
+- Before/After Transformation: client problem → 3 specific changes → metrics → counterintuitive lesson
+- I Analyzed X: "I analyzed [number] [things] and found something surprising:" → data → what winners do
+- Mini Case Study: client quote → bad metrics → 3 tactics → good metrics → "No magic. Just [principle]."
+
+MEETING-BOOKING STRATEGY (every piece should guide toward a call):
+- Give away the recipe, sell the implementation (Hormozi model)
+- Content shows WHAT and WHY → the call is about HOW for THEIR specific firm
+- Use comment-keyword CTAs: "Comment AUDIT and I'll send you the checklist"
+- Value-first DM sequence: share resource → engage 2-3x → suggest 15-min call
+- Scorecard/quiz CTAs convert at 40%+ (vs 10-20% for PDFs)
+- Frame calls as diagnostics, not pitches: "15-min strategy session, no pitch, just data"
+
+VALUE EQUATION (apply to every hook — Hormozi):
+Value = (Dream Outcome x Perceived Likelihood) / (Time Delay x Effort & Sacrifice)
+- Maximize: vivid outcome + proof/specificity
+- Minimize: compress timeline + remove barriers`;
 
 let _cachedPrompt = null;
 let _cachedPromptAt = 0;
@@ -266,7 +300,20 @@ function buildSystemPromptWithMemory() {
         const yt = playbooks.youtube;
         prompt += `\nYOUTUBE — Goal: ${yt.goal}\n`;
         prompt += `- Script structure: ${yt.content_rules.script_structure.slice(0, 3).join(' → ')}\n`;
+        prompt += `- Title formulas: ${(yt.content_rules.title_formulas || []).slice(0, 3).join('; ')}\n`;
         prompt += `- Meeting conversion: ${yt.content_rules.meeting_conversion.slice(0, 2).join('; ')}\n`;
+      }
+      if (playbooks.short_video) {
+        const sv = playbooks.short_video;
+        prompt += `\nSHORT VIDEO — Goal: ${sv.goal}\n`;
+        prompt += `- 30s structure: ${sv.content_rules.script_30s}\n`;
+        prompt += `- Hook rule: ${sv.content_rules.hook_formula[0]}\n`;
+      }
+      if (playbooks.scorecard_funnel) {
+        const sc = playbooks.scorecard_funnel;
+        prompt += `\nSCORECARD FUNNEL — ${sc.conversion_rate}\n`;
+        prompt += `- Pillars: ${sc.framework.pillars_for_legal.slice(0, 4).join(', ')}\n`;
+        prompt += `- ${sc.framework.priestley_7_11_4}\n`;
       }
     }
   } catch (err) {
@@ -281,6 +328,10 @@ function buildSystemPromptWithMemory() {
         const randomCta = ctas.linkedin.soft[Math.floor(Math.random() * ctas.linkedin.soft.length)];
         prompt += `- LinkedIn soft CTA example: "${randomCta}"\n`;
       }
+      if (ctas.linkedin?.comment_keyword) {
+        const randomCta = ctas.linkedin.comment_keyword[Math.floor(Math.random() * ctas.linkedin.comment_keyword.length)];
+        prompt += `- Comment-keyword CTA: "${randomCta}"\n`;
+      }
       if (ctas.linkedin?.value_first) {
         const randomCta = ctas.linkedin.value_first[Math.floor(Math.random() * ctas.linkedin.value_first.length)];
         prompt += `- LinkedIn value-first CTA example: "${randomCta}"\n`;
@@ -290,12 +341,33 @@ function buildSystemPromptWithMemory() {
         prompt += `- X soft CTA example: "${randomCta}"\n`;
       }
       if (ctas.meeting_hooks) {
-        prompt += `- Audit hook: "${ctas.meeting_hooks.audit_offer}"\n`;
+        const hookKeys = Object.keys(ctas.meeting_hooks);
+        const randomKey = hookKeys[Math.floor(Math.random() * hookKeys.length)];
+        prompt += `- Meeting hook: "${ctas.meeting_hooks[randomKey]}"\n`;
       }
-      prompt += '- IMPORTANT: Weave CTAs naturally. Don\'t end every post with "DM me." Use comment-keyword patterns, value-first offers, and soft closes.\n';
+      prompt += '- IMPORTANT: Weave CTAs naturally. Prefer comment-keyword patterns ("Comment AUDIT and I\'ll send it"). Don\'t end every post with "DM me." Rotate between soft, value-first, and engagement CTAs.\n';
     }
   } catch (err) {
     // CTA library not available — skip
+  }
+  // Add hook templates from hook library for variety
+  try {
+    const hooks = readJSON('hook-library.json');
+    if (hooks.linkedin) {
+      prompt += '\n\nHOOK TEMPLATES (use these as starting points — fill in with topic-specific content):\n';
+      // Pick 3 random hook categories and show 1 example each
+      const categories = Object.keys(hooks.linkedin);
+      const shuffled = categories.sort(() => Math.random() - 0.5).slice(0, 3);
+      for (const cat of shuffled) {
+        const templates = hooks.linkedin[cat];
+        if (templates?.length > 0) {
+          const pick = templates[Math.floor(Math.random() * templates.length)];
+          prompt += `- [${cat}] "${pick.example}"\n`;
+        }
+      }
+    }
+  } catch (err) {
+    // Hook library not available — skip
   }
   _cachedPrompt = prompt;
   _cachedPromptAt = Date.now();

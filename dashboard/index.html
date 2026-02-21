@@ -1578,6 +1578,10 @@ const state = {
   trendHijacker: null,
   leadMagnetFunnels: [],
   outboundSequences: [],
+  // Batch 66: ICP Refiner, Win-Loss Analysis, Content ROI
+  icpRefined: null,
+  winLossAnalysis: null,
+  contentRoi: null,
 };
 
 // --- API Calls ---
@@ -1603,7 +1607,7 @@ async function loadData() {
   state.loading = true;
   render();
   try {
-    const [content, triggers, stats, calendar, monthCal, settings, memory, performance, perfAnalytics, meetings, meetingStats, clients, allActions, chatMessages, healthData, inspirations, pestering, pesteringStages, insights, deals, published, series, predictions, playbooks, ctaLibrary, trending, funnel, publishTracker, leadMagnets, contentHealth, scheduleOptimize, templates, dmSequences, hooks, pillarPlan, contentLeads, autopilot, scheduleQueue, engagementDashboard, contentBriefs, workflowPipeline, personas, calendarWeek, benchmarkReport, contentIdeas, socialProof, roiReport, audienceGrowth, contentThemes, distributionPlans, dmPipelines, competitorsTracked, dripCampaigns, autoResponses, expiringContent, amplifications, leadFunnels, calendarInsights, weeklyDigest, splitTests, workflowRules, youtubePipelines, carousels, contentMatrix, ctaStrategy, seriesTemplates, contentBank, engagementPlaybook, atomizations, platformRules, emailSequences, weeklyContentPlan, repurposeChains, lmFunnels, perfReport, contentPillars, compAnalyses, nurtureCampaigns, authorityPlan, flywheelData, velocityData, audienceSegments, contentDna, topicClusters, voiceProfiles, dmScriptsData, replyStrategyData, systemHealthData, contentRecyclerData, commentStrategyData, newslettersData, distributionEngineData, socialProofEngineData, advancedAnalyticsData, growthPlaybookData, genLeadMagnetsData, funnelAnalysisData, autoRepurposeData, weeklyActionPlanData, trendsAnalysisData, authorityScoreData, contentIntelData, conversionOptData, contentMatrixData, draftingStrategyData, zeroClickBankData, contentVelocityData, pillarRotatorData, savedRepliesData, audienceBuilderData, weeklyReportData, competitiveIntelData, contentScoringData, postSchedulerData, trendHijackerData, leadMagnetFunnelsData, outboundSequencesData] = await Promise.all([
+    const [content, triggers, stats, calendar, monthCal, settings, memory, performance, perfAnalytics, meetings, meetingStats, clients, allActions, chatMessages, healthData, inspirations, pestering, pesteringStages, insights, deals, published, series, predictions, playbooks, ctaLibrary, trending, funnel, publishTracker, leadMagnets, contentHealth, scheduleOptimize, templates, dmSequences, hooks, pillarPlan, contentLeads, autopilot, scheduleQueue, engagementDashboard, contentBriefs, workflowPipeline, personas, calendarWeek, benchmarkReport, contentIdeas, socialProof, roiReport, audienceGrowth, contentThemes, distributionPlans, dmPipelines, competitorsTracked, dripCampaigns, autoResponses, expiringContent, amplifications, leadFunnels, calendarInsights, weeklyDigest, splitTests, workflowRules, youtubePipelines, carousels, contentMatrix, ctaStrategy, seriesTemplates, contentBank, engagementPlaybook, atomizations, platformRules, emailSequences, weeklyContentPlan, repurposeChains, lmFunnels, perfReport, contentPillars, compAnalyses, nurtureCampaigns, authorityPlan, flywheelData, velocityData, audienceSegments, contentDna, topicClusters, voiceProfiles, dmScriptsData, replyStrategyData, systemHealthData, contentRecyclerData, commentStrategyData, newslettersData, distributionEngineData, socialProofEngineData, advancedAnalyticsData, growthPlaybookData, genLeadMagnetsData, funnelAnalysisData, autoRepurposeData, weeklyActionPlanData, trendsAnalysisData, authorityScoreData, contentIntelData, conversionOptData, contentMatrixData, draftingStrategyData, zeroClickBankData, contentVelocityData, pillarRotatorData, savedRepliesData, audienceBuilderData, weeklyReportData, competitiveIntelData, contentScoringData, postSchedulerData, trendHijackerData, leadMagnetFunnelsData, outboundSequencesData, icpRefinedData, winLossData, contentRoiData] = await Promise.all([
       api('/api/content'),
       api('/api/triggers'),
       api('/api/stats'),
@@ -1720,7 +1724,10 @@ async function loadData() {
       api('/api/post-scheduler').catch(() => null),
       api('/api/trend-hijacker').catch(() => null),
       api('/api/lead-magnet-funnels').catch(() => []),
-      api('/api/outbound-sequences').catch(() => [])
+      api('/api/outbound-sequences').catch(() => []),
+      api('/api/icp-refiner').catch(() => null),
+      api('/api/win-loss-analysis').catch(() => null),
+      api('/api/content-roi').catch(() => null)
     ]);
     state.content = content;
     state.triggers = triggers;
@@ -1839,6 +1846,9 @@ async function loadData() {
     state.trendHijacker = trendHijackerData;
     state.leadMagnetFunnels = leadMagnetFunnelsData || [];
     state.outboundSequences = outboundSequencesData || [];
+    state.icpRefined = icpRefinedData;
+    state.winLossAnalysis = winLossData;
+    state.contentRoi = contentRoiData;
   } catch (err) {
     console.error('Failed to load data:', err);
     toast('Failed to load data', 'error');
@@ -3547,6 +3557,33 @@ function renderDashboardPage() {
                 render();
               } catch (err) { toast('Trends failed: ' + err.message, 'error'); }
             }}, 'Hijack'),
+            h('button', { className: 'btn btn-outline btn-sm', style: { color: '#4f46e5', borderColor: '#4f46e5' }, onclick: async () => {
+              toast('Refining ICP...', 'info');
+              try {
+                const res = await api('/api/icp-refiner', { method: 'POST' });
+                state.icpRefined = res;
+                toast(`ICP: ${res.primary_icp?.title || 'refined'} — ${res.primary_icp?.firm_size || ''}`, 'success');
+                render();
+              } catch (err) { toast('ICP failed: ' + err.message, 'error'); }
+            }}, 'ICP'),
+            h('button', { className: 'btn btn-outline btn-sm', style: { color: '#15803d', borderColor: '#15803d' }, onclick: async () => {
+              toast('Calculating ROI...', 'info');
+              try {
+                const res = await api('/api/content-roi', { method: 'POST' });
+                state.contentRoi = res;
+                toast(`ROI: ${res.roi_percentage}% — ${res.recommendation?.slice(0, 50)}`, 'success');
+                render();
+              } catch (err) { toast('ROI failed: ' + err.message, 'error'); }
+            }}, 'ROI'),
+            h('button', { className: 'btn btn-outline btn-sm', style: { color: '#9333ea', borderColor: '#9333ea' }, onclick: async () => {
+              toast('Analyzing wins/losses...', 'info');
+              try {
+                const res = await api('/api/win-loss-analysis', { method: 'POST' });
+                state.winLossAnalysis = res;
+                toast(`Wins: ${res.total_wins} | Rate: ${res.win_rate}`, 'success');
+                render();
+              } catch (err) { toast('Win/loss failed: ' + err.message, 'error'); }
+            }}, 'Win/Loss'),
             h('button', { className: 'btn btn-ghost btn-sm', onclick: () => { state.page = 'content'; render(); } }, 'View Content')
           )
         ),
@@ -4646,6 +4683,43 @@ function renderDashboardPage() {
         h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)' } }, 'OUTBOUND'),
         h('div', { style: { fontSize: '12px', fontWeight: '700', padding: '2px 8px', borderRadius: '8px', background: '#dbeafe', color: '#2563eb' } }, `${state.outboundSequences.length} sequences`)
       )
+    ) : null,
+
+    // ICP Refined (Batch 66)
+    state.icpRefined?.primary_icp ? h('div', { style: { marginBottom: '20px' } },
+      h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)', marginBottom: '8px' } }, 'IDEAL CUSTOMER'),
+      h('div', { style: { padding: '8px 10px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)' } },
+        h('div', { style: { fontWeight: '700', fontSize: '12px', color: 'var(--navy)' } }, state.icpRefined.primary_icp.title || ''),
+        h('div', { style: { fontSize: '10px', color: 'var(--gray-500)', marginTop: '2px' } }, `${state.icpRefined.primary_icp.firm_size || ''} | ${state.icpRefined.primary_icp.revenue || ''}`),
+        state.icpRefined.primary_icp.pain_points ? h('div', { style: { marginTop: '4px', display: 'flex', gap: '4px', flexWrap: 'wrap' } },
+          ...(state.icpRefined.primary_icp.pain_points || []).slice(0, 3).map(p =>
+            h('span', { style: { fontSize: '9px', padding: '1px 5px', borderRadius: '4px', background: '#fee2e2', color: '#dc2626' } }, p)
+          )
+        ) : null
+      )
+    ) : null,
+
+    // Win-Loss Analysis (Batch 66)
+    state.winLossAnalysis ? h('div', { style: { marginBottom: '20px' } },
+      h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
+        h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)' } }, 'WIN/LOSS'),
+        h('div', { style: { fontSize: '12px', fontWeight: '700', padding: '2px 8px', borderRadius: '8px', background: '#dcfce7', color: '#059669' } }, state.winLossAnalysis.win_rate || `${state.winLossAnalysis.total_wins}W`)
+      ),
+      state.winLossAnalysis.recommendations ? h('div', { style: { display: 'grid', gap: '2px' } },
+        ...(state.winLossAnalysis.recommendations || []).slice(0, 2).map(r =>
+          h('div', { style: { padding: '4px 10px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px', color: 'var(--gray-600)' } }, r)
+        )
+      ) : null
+    ) : null,
+
+    // Content ROI (Batch 66)
+    state.contentRoi ? h('div', { style: { marginBottom: '20px' } },
+      h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
+        h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)' } }, 'CONTENT ROI'),
+        h('div', { style: { fontSize: '12px', fontWeight: '700', padding: '2px 8px', borderRadius: '8px', background: state.contentRoi.roi_percentage > 0 ? '#dcfce7' : '#fee2e2', color: state.contentRoi.roi_percentage > 0 ? '#059669' : '#dc2626' } }, `${state.contentRoi.roi_percentage}%`)
+      ),
+      h('div', { style: { fontSize: '10px', color: 'var(--gray-500)' } }, state.contentRoi.break_even || ''),
+      h('div', { style: { fontSize: '10px', color: 'var(--gray-600)', marginTop: '2px', fontStyle: 'italic' } }, state.contentRoi.recommendation || '')
     ) : null,
 
     // Autopilot Status
@@ -6643,6 +6717,20 @@ function renderFormatContent(content, formatKey, fmt) {
               } catch (err) { toast('Prediction failed: ' + err.message, 'error'); }
             }
           }, 'Predict')
+        : null,
+      // Voice Check button (for any format with 100+ chars)
+      typeof text === 'string' && text.length >= 100
+        ? h('button', {
+            className: 'btn btn-outline btn-sm',
+            style: { color: '#6366f1', borderColor: '#6366f1' },
+            onclick: async () => {
+              try {
+                const res = await api(`/api/content/${content.id}/voice-check`, { method: 'POST', body: { format: formatKey } });
+                const clr = res.voice_score >= 80 ? '#059669' : res.voice_score >= 50 ? '#d97706' : '#dc2626';
+                toast(`Voice: ${res.voice_score}/100 — ${res.verdict}`, res.voice_score >= 70 ? 'success' : 'error');
+              } catch (err) { toast('Voice check failed: ' + err.message, 'error'); }
+            }
+          }, 'Voice')
         : null,
       // AI Improve button
       typeof text === 'string' && fmt.status === 'review' ? h('button', {

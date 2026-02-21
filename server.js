@@ -13893,6 +13893,268 @@ Return COMPACT JSON:
       return json(res, readJSON('outbound-sequences.json', []));
     }
 
+    // ========== BATCH 66: ICP Refiner, Content Atomizer, Micro-Content Generator, Win-Loss Analysis, Content ROI Calculator, Referral Content, Brand Voice Guard ==========
+
+    // POST /api/icp-refiner — Refine Ideal Customer Profile from all available data
+    if (method === 'POST' && pathname === '/api/icp-refiner') {
+      const contentDna = readJSON('content-dna.json', null);
+      const audienceSegments = readJSON('audience-segments-ai.json', null);
+      const triggers = readJSON('trigger-queue.json', []);
+      const redditSignals = triggers.filter(t => t.source === 'reddit').slice(0, 10);
+
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+      const result = await callClaude({
+        model: HAIKU,
+        system: 'You are an ICP (Ideal Customer Profile) refinement expert for B2B legal marketing. Use all available signals to build the most precise customer profile possible. Return JSON only.',
+        prompt: `Refine the ICP for a legal marketing agency (Mortar Metrics).
+
+Existing DNA: ${contentDna ? JSON.stringify({ formula: contentDna.formula, differentiators: contentDna.differentiators }).slice(0, 300) : 'Not set'}
+Audience segments: ${audienceSegments ? JSON.stringify(audienceSegments.segments?.map(s => s.name)) : 'Not built'}
+Reddit pain signals: ${JSON.stringify(redditSignals.map(t => t.title).slice(0, 5))}
+
+Return COMPACT JSON:
+{
+  "primary_icp": {
+    "title": "job title",
+    "firm_size": "range",
+    "revenue": "range",
+    "practice_areas": ["area 1", "area 2"],
+    "pain_points": ["p1", "p2", "p3"],
+    "goals": ["g1", "g2"],
+    "objections": ["o1", "o2"],
+    "where_they_hang_out": ["platform 1", "platform 2"],
+    "buying_triggers": ["trigger 1", "trigger 2"]
+  },
+  "secondary_icp": { "title": "title", "difference": "how they differ from primary" },
+  "disqualifiers": ["who NOT to target"]
+}`,
+        maxTokens: 2500
+      });
+      const parsed = parseJsonResponse(result);
+      const icp = { ...(parsed || {}), generated_at: now() };
+      writeJSON('icp-refined.json', icp);
+      return json(res, { ok: true, ...icp });
+    }
+
+    // GET /api/icp-refiner
+    if (method === 'GET' && pathname === '/api/icp-refiner') {
+      return json(res, readJSON('icp-refined.json', null));
+    }
+
+    // POST /api/content-atomizer — Break long-form content into micro-content pieces
+    if (method === 'POST' && pathname.match(/^\/api\/content\/([^/]+)\/atomize$/)) {
+      const contentId = pathname.match(/^\/api\/content\/([^/]+)\/atomize$/)[1];
+      const content = readJSON('content.json', []);
+      const item = content.find(c => c.id === contentId);
+      if (!item) return json(res, { error: 'Content not found' }, 404);
+
+      const blogText = typeof item.formats?.blog === 'string' ? item.formats.blog : item.formats?.blog?.content || '';
+      const liText = typeof item.formats?.linkedin_post === 'string' ? item.formats.linkedin_post : item.formats?.linkedin_post?.content || '';
+      const sourceText = blogText || liText || '';
+      if (!sourceText || sourceText.length < 200) return json(res, { error: 'Need long-form content (blog or linkedin) with 200+ chars' }, 400);
+
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+      const result = await callClaude({
+        model: HAIKU,
+        system: 'You are a content atomization expert. Break one piece of long-form content into multiple micro-content pieces for different platforms. Return JSON only.',
+        prompt: `Atomize this content into 6 micro-content pieces.
+
+Source: "${sourceText.slice(0, 2000)}"
+
+Return COMPACT JSON:
+{
+  "atoms": [
+    { "type": "tweet", "content": "tweet text (under 280 chars)", "platform": "x" },
+    { "type": "linkedin_hook", "content": "standalone hook post", "platform": "linkedin" },
+    { "type": "quote_card", "content": "text for quote graphic", "platform": "instagram" },
+    { "type": "carousel_slide", "content": "key insight for carousel", "platform": "linkedin" },
+    { "type": "email_subject", "content": "subject line + preview text", "platform": "email" },
+    { "type": "video_hook", "content": "first 3 seconds of short video script", "platform": "tiktok" }
+  ]
+}`,
+        maxTokens: 2000
+      });
+      const parsed = parseJsonResponse(result);
+      return json(res, { ok: true, content_id: contentId, ...(parsed || {}) });
+    }
+
+    // POST /api/micro-content — Generate standalone micro-content pieces (quotes, stats, tips)
+    if (method === 'POST' && pathname === '/api/micro-content') {
+      const body = await parseBody(req);
+      const topic = body.topic || 'law firm marketing';
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+      const result = await callClaude({
+        model: HAIKU,
+        system: 'You are a micro-content creator for legal marketing. Generate snackable, shareable content pieces that work standalone. Return JSON only.',
+        prompt: `Generate 5 micro-content pieces on topic: "${topic.slice(0, 200)}"
+
+Return COMPACT JSON:
+{
+  "pieces": [
+    { "type": "stat", "content": "text", "platform": "best platform" },
+    { "type": "tip", "content": "text", "platform": "best platform" },
+    { "type": "myth_buster", "content": "text", "platform": "best platform" },
+    { "type": "question", "content": "text", "platform": "best platform" },
+    { "type": "hot_take", "content": "text", "platform": "best platform" }
+  ]
+}`,
+        maxTokens: 1500
+      });
+      const parsed = parseJsonResponse(result);
+      return json(res, { ok: true, topic, ...(parsed || {}) });
+    }
+
+    // POST /api/win-loss-analysis — Analyze content wins and losses to improve strategy
+    if (method === 'POST' && pathname === '/api/win-loss-analysis') {
+      const content = readJSON('content.json', []);
+      const published = readJSON('published.json', []);
+      const triggers = readJSON('trigger-queue.json', []);
+
+      const wins = content.filter(c => c.status === 'approved' || c.status === 'published');
+      const losses = content.filter(c => c.status === 'rejected');
+      const unused = triggers.filter(t => t.status === 'rejected');
+
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+      const result = await callClaude({
+        model: HAIKU,
+        system: 'You are a content strategy analyst. Analyze wins (approved/published) vs losses (rejected) to find patterns. Return JSON only.',
+        prompt: `Analyze content win/loss patterns.
+
+Wins (${wins.length}): ${JSON.stringify(wins.slice(0, 5).map(c => ({ title: c.title?.slice(0, 60), source: c.source })))}
+Losses (${losses.length}): ${JSON.stringify(losses.slice(0, 5).map(c => ({ title: c.title?.slice(0, 60), source: c.source })))}
+Rejected triggers (${unused.length}): ${JSON.stringify(unused.slice(0, 5).map(t => ({ title: t.title?.slice(0, 60), source: t.source })))}
+Published: ${published.length}
+
+Return COMPACT JSON:
+{
+  "win_patterns": ["what approved content has in common"],
+  "loss_patterns": ["why content gets rejected"],
+  "best_source": "source with highest approval rate",
+  "worst_source": "source with lowest approval rate",
+  "recommendations": ["action 1", "action 2", "action 3"],
+  "win_rate": "X%"
+}`,
+        maxTokens: 2000
+      });
+      const parsed = parseJsonResponse(result);
+      const analysis = { total_wins: wins.length, total_losses: losses.length, published: published.length, ...(parsed || {}), generated_at: now() };
+      writeJSON('win-loss-analysis.json', analysis);
+      return json(res, { ok: true, ...analysis });
+    }
+
+    // GET /api/win-loss-analysis
+    if (method === 'GET' && pathname === '/api/win-loss-analysis') {
+      return json(res, readJSON('win-loss-analysis.json', null));
+    }
+
+    // POST /api/content-roi — Calculate estimated content ROI based on production metrics
+    if (method === 'POST' && pathname === '/api/content-roi') {
+      const body = await parseBody(req);
+      const monthlyRevenue = body.monthly_revenue || 15000;
+      const clientValue = body.avg_client_value || 5000;
+      const content = readJSON('content.json', []);
+      const published = readJSON('published.json', []);
+
+      const hoursPerPiece = 0.5;
+      const totalPieces = content.length;
+      const totalHours = totalPieces * hoursPerPiece;
+      const hourlyRate = 150;
+      const contentCost = totalHours * hourlyRate;
+      const estimatedLeadsFromContent = published.length * 3;
+      const estimatedClients = Math.floor(estimatedLeadsFromContent * 0.1);
+      const estimatedRevenue = estimatedClients * clientValue;
+      const roi = contentCost > 0 ? parseFloat(((estimatedRevenue - contentCost) / contentCost * 100).toFixed(0)) : 0;
+
+      const result = {
+        investment: {
+          pieces_created: totalPieces,
+          estimated_hours: totalHours,
+          cost_at_rate: contentCost,
+          hourly_rate: hourlyRate
+        },
+        returns: {
+          published_pieces: published.length,
+          estimated_leads: estimatedLeadsFromContent,
+          estimated_clients: estimatedClients,
+          estimated_revenue: estimatedRevenue
+        },
+        roi_percentage: roi,
+        break_even: contentCost > 0 ? `${Math.ceil(contentCost / clientValue)} clients needed` : 'N/A',
+        recommendation: roi > 200 ? 'Excellent ROI — double down on content' : roi > 50 ? 'Good ROI — maintain pace and optimize' : roi > 0 ? 'Positive ROI — focus on publishing more' : 'Negative ROI — publish more to see returns',
+        generated_at: now()
+      };
+      writeJSON('content-roi.json', result);
+      return json(res, { ok: true, ...result });
+    }
+
+    // GET /api/content-roi
+    if (method === 'GET' && pathname === '/api/content-roi') {
+      return json(res, readJSON('content-roi.json', null));
+    }
+
+    // POST /api/referral-content — Generate content designed to be shared by clients/partners
+    if (method === 'POST' && pathname === '/api/referral-content') {
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+      const result = await callClaude({
+        model: HAIKU,
+        system: 'You are a referral marketing content expert. Create content specifically designed to be shared by existing clients and partners to generate referral leads. Return JSON only.',
+        prompt: `Generate 4 referral-optimized content pieces for a legal marketing agency.
+
+Return COMPACT JSON:
+{
+  "referral_pieces": [
+    {
+      "type": "client_spotlight|partner_shoutout|results_showcase|educational_share",
+      "title": "post title",
+      "hook": "opening line",
+      "share_trigger": "why someone shares this",
+      "cta": "what to do next"
+    }
+  ],
+  "referral_strategy": "one paragraph on how to ask clients to share"
+}`,
+        maxTokens: 2000
+      });
+      const parsed = parseJsonResponse(result);
+      return json(res, { ok: true, ...(parsed || {}) });
+    }
+
+    // POST /api/brand-voice-check — Check if content matches brand voice guidelines
+    if (method === 'POST' && pathname.match(/^\/api\/content\/([^/]+)\/voice-check$/)) {
+      const contentId = pathname.match(/^\/api\/content\/([^/]+)\/voice-check$/)[1];
+      const content = readJSON('content.json', []);
+      const item = content.find(c => c.id === contentId);
+      if (!item) return json(res, { error: 'Content not found' }, 404);
+
+      const body = await parseBody(req);
+      const formatKey = body.format || 'linkedin_post';
+      const text = typeof item.formats?.[formatKey] === 'string' ? item.formats[formatKey] : item.formats?.[formatKey]?.content || '';
+      if (!text) return json(res, { error: `No content in format ${formatKey}` }, 400);
+
+      const contentDna = readJSON('content-dna.json', null);
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+      const result = await callClaude({
+        model: HAIKU,
+        system: 'You are a brand voice consistency checker. Evaluate if content matches the brand\'s established voice, tone, and messaging guidelines. Return JSON only.',
+        prompt: `Check if this content matches the brand voice.
+
+Content: "${text.slice(0, 1500)}"
+Brand DNA: ${contentDna ? JSON.stringify({ formula: contentDna.formula, tone: contentDna.tone, differentiators: contentDna.differentiators }).slice(0, 400) : 'Direct, data-driven, no-BS legal marketing voice. Conversational but authoritative.'}
+
+Return COMPACT JSON:
+{
+  "voice_score": 0-100,
+  "on_brand": ["what matches the voice"],
+  "off_brand": ["what doesn't match"],
+  "fixes": ["specific fix 1", "specific fix 2"],
+  "verdict": "on-brand|needs-adjustment|off-brand"
+}`,
+        maxTokens: 1500
+      });
+      const parsed = parseJsonResponse(result);
+      return json(res, { ok: true, content_id: contentId, format: formatKey, ...(parsed || {}) });
+    }
+
     // --- Static file serving ---
 
     // Serve dashboard

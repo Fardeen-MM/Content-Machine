@@ -1,13 +1,18 @@
-[
-  {
-    "id": "aaf332c3e5e62b4a",
-    "content_id": "942509da1ea4f8",
-    "lead_name": "Mike Jenkins",
-    "lead_email": "mike@jenkinslaw.com",
-    "attribution_type": "direct",
-    "revenue": 5000,
-    "source_platform": "linkedin",
-    "notes": "Came from LinkedIn post",
-    "created_at": "2026-02-21T01:58:10.759Z"
-  }
-]
+{
+  "investment": {
+    "pieces_created": 41,
+    "estimated_hours": 20.5,
+    "cost_at_rate": 3075,
+    "hourly_rate": 150
+  },
+  "returns": {
+    "published_pieces": 1,
+    "estimated_leads": 3,
+    "estimated_clients": 0,
+    "estimated_revenue": 0
+  },
+  "roi_percentage": -100,
+  "break_even": "1 clients needed",
+  "recommendation": "Negative ROI — publish more to see returns",
+  "generated_at": "2026-02-21T13:58:18.344Z"
+}

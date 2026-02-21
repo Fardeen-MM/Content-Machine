@@ -1,0 +1,257 @@
+{
+  "month_1": {
+    "theme": "Foundation & Discovery",
+    "goals": [
+      "Publish first 20 high-value content pieces and establish content velocity",
+      "Define Content DNA by analyzing top performers and client conversations",
+      "Identify and validate 3 core client segments with specific pain points",
+      "Generate first 50 qualified leads through content distribution"
+    ],
+    "weekly_actions": [
+      {
+        "week": 1,
+        "focus": "Content DNA Discovery & Quick Publishing",
+        "actions": [
+          "Interview 5 best clients to identify their pre-purchase pain points and search behavior",
+          "Analyze existing 40 pieces: categorize by topic, client stage, and problem solved",
+          "Publish 5 best-ready pieces on website with SEO optimization",
+          "Set up basic analytics: GA4, LinkedIn analytics, and simple lead tracking spreadsheet",
+          "Create content distribution checklist (LinkedIn, email, communities)"
+        ],
+        "content_target": 5
+      },
+      {
+        "week": 2,
+        "focus": "Segment Identification & Content Velocity",
+        "actions": [
+          "Map content to 3 tentative segments based on client data (e.g., PI attorneys, corporate firms, solo practitioners)",
+          "Publish 5 more pieces, ensuring each addresses specific segment pain points",
+          "Start LinkedIn presence: share published content with practitioner insights (not just links)",
+          "Identify 10 relevant communities/Slack groups/forums where target clients gather",
+          "Create 'Content DNA document' draft: recurring themes, unique POV, core expertise areas"
+        ],
+        "content_target": 5
+      },
+      {
+        "week": 3,
+        "focus": "Strategic Distribution & Feedback Loops",
+        "actions": [
+          "Publish 5 pieces focused on highest-value segment's immediate problems",
+          "Begin systematic distribution: post in 3 communities, share on LinkedIn daily, email to existing network",
+          "Set up lead magnet from best-performing content (checklist, template, or guide)",
+          "Track which content gets engagement, saves, shares - update DNA document",
+          "Schedule 3 'content feedback' calls with prospects/clients to validate segment pain points"
+        ],
+        "content_target": 5
+      },
+      {
+        "week": 4,
+        "focus": "Optimization & Segment Validation",
+        "actions": [
+          "Publish final 5 pieces of month, prioritizing content gaps identified in feedback",
+          "Finalize 3 validated segments with documented: pain points, content preferences, buying triggers",
+          "Finalize Content DNA: unique perspective, core topics, voice/tone, content frameworks",
+          "Create segment-specific content calendars for Month 2",
+          "Launch first nurture sequence: 5-email series using published content",
+          "Document what's working: traffic sources, conversion content, engagement patterns"
+        ],
+        "content_target": 5
+      }
+    ],
+    "kpis": [
+      "20 content pieces published",
+      "3 validated segments with documented profiles",
+      "Content DNA document completed",
+      "50+ leads captured (email signups, lead magnet downloads, contact forms)",
+      "100+ pieces of engagement (comments, shares, DMs)",
+      "5+ discovery calls booked"
+    ]
+  },
+  "month_2": {
+    "theme": "Acceleration & Multiplication",
+    "goals": [
+      "Publish 28 new pieces (7/week) using DNA-driven content frameworks",
+      "Build segment-specific nurture paths that move prospects to consultation",
+      "Establish thought leadership in 2 key channels (LinkedIn + 1 community)",
+      "Generate 150 qualified leads with 20% email engagement rate",
+      "Close first 2 clients directly attributed to content"
+    ],
+    "weekly_actions": [
+      {
+        "week": 5,
+        "focus": "Segment-Specific Content Engines",
+        "actions": [
+          "Create content framework templates for each segment (e.g., 'Case study breakdown', 'Regulation explainer', 'ROI calculator')",
+          "Publish 7 pieces: 2-3 per primary segment, following DNA frameworks",
+          "Repurpose Week 1-4 top performers into new formats (video snippets, carousel posts, threads)",
+          "Launch segment-specific lead magnets (3 total, one per segment)",
+          "Begin daily LinkedIn content: mix of insights, published pieces, and engagement with target audience"
+        ],
+        "content_target": 7
+      },
+      {
+        "week": 6,
+        "focus": "Authority Building & Distribution Scale",
+        "actions": [
+          "Publish 7 pieces including first 'pillar content' (comprehensive guide) for top segment",
+          "Guest post in 1 industry publication or contribute to relevant newsletter",
+          "Create 'content partnership' with complementary service (legal tech, practice management) for co-promotion",
+          "Launch segment-specific nurture sequences (3 sequences, 6 emails each)",
+          "Engage deeply in 1 key community: answer questions, share relevant content, build relationships",
+          "Start tracking 'content journey': which pieces lead to conversions"
+        ],
+        "content_target": 7
+      },
+      {
+        "week": 7,
+        "focus": "Conversion Optimization & Proof",
+        "actions": [
+          "Publish 7 pieces with stronger CTAs based on Month 1 learning",
+          "Create 'results content': case studies, before/after, ROI examples (even if anonymized)",
+          "Launch 'founder-led' content series on LinkedIn: weekly deep-dive posts on contrarian takes",
+          "Optimize top 10 performing pieces from Month 1 with better CTAs, lead magnets, internal links",
+          "Test 1 paid promotion: boost top content to targeted segment on LinkedIn",
+          "Conduct 5 sales conversations, document objections for content creation"
+        ],
+        "content_target": 7
+      },
+      {
+        "week": 8,
+        "focus": "System Refinement & Compounding",
+        "actions": [
+          "Publish 7 pieces addressing sales objections and segment-specific buying concerns",
+          "Create 'content hub' on website: organized by segment and client journey stage",
+          "Build internal linking strategy between related content pieces to increase time-on-site",
+          "Launch 'weekly insight' email newsletter to segmented list",
+          "Create content calendar for Month 3 based on: top performers, sales feedback, segment needs",
+          "Document repeatable processes: ideation, production, distribution, measurement"
+        ],
+        "content_target": 7
+      }
+    ],
+    "kpis": [
+      "28 new pieces published (48 total library)",
+      "150+ new leads with segmented profiles",
+      "20%+ email open rate, 3%+ click rate",
+      "15+ qualified sales conversations",
+      "2 closed clients from content attribution",
+      "500+ LinkedIn followers/connections in target segments",
+      "3 pieces ranking on Google page 1",
+      "30%+ returning visitor rate"
+    ]
+  },
+  "month_3": {
+    "theme": "Scale & Systematic Growth",
+    "goals": [
+      "Publish 40 pieces (10/week) through optimized content system",
+      "Build self-sustaining content flywheel: SEO traffic + community presence driving consistent leads",
+      "Establish predictable lead generation: 200+ qualified leads monthly",
+      "Close 5 new clients with clear content attribution",
+      "Create scalable content operation requiring <10 hours/week to maintain"
+    ],
+    "weekly_actions": [
+      {
+        "week": 9,
+        "focus": "Content Factory Optimization",
+        "actions": [
+          "Publish 10 pieces using batched creation process and templates",
+          "Create 'content assembly line': ideation → outline → draft → optimize → distribute",
+          "Repurpose all Month 2 content into micro-content (20+ LinkedIn posts, threads, shorts)",
+          "Launch 'topic cluster' strategy: 1 pillar piece + 8 supporting pieces for high-value keyword",
+          "Build 'best of' resource pages for each segment linking to relevant content",
+          "Train VA or contractor on content distribution process",
+          "Start podcast or video series interviewing clients (content multiplication)"
+        ],
+        "content_target": 10
+      },
+      {
+        "week": 10,
+        "focus": "Organic Reach Multiplication",
+        "actions": [
+          "Publish 10 pieces optimized for SEO and social sharing",
+          "Launch 'content upgrade' strategy: add segment-specific bonuses to top 20 pieces",
+          "Create strategic partnerships with 3 adjacent businesses for content exchange/promotion",
+          "Systematize community engagement: daily presence in 5 key spaces with helpful contributions",
+          "Update and republish top 10 Month 1 pieces with new insights and CTAs",
+          "Launch referral program: incentivize sharing best content",
+          "Create 'swipe file' of proven content frameworks for rapid production"
+        ],
+        "content_target": 10
+      },
+      {
+        "week": 11,
+        "focus": "Conversion Engine Refinement",
+        "actions": [
+          "Publish 10 pieces focused on bottom-funnel topics (buying signals, vendor selection, ROI)",
+          "Create 'case study content series': 5 detailed client success stories across segments",
+          "Build 'content-to-consultation' fast path: targeted landing pages with calendly integration",
+          "Launch advanced segmentation in email: behavior-based tagging and content delivery",
+          "Create 'content audit dashboard': track performance, identify gaps, prioritize updates",
+          "Test video content: transform top 5 articles into short-form videos",
+          "Develop 'content scorecard': measure each piece against lead gen and engagement goals"
+        ],
+        "content_target": 10
+      },
+      {
+        "week": 12,
+        "focus": "Systematization & Future Planning",
+        "actions": [
+          "Publish 10 pieces including forward-looking thought leadership content",
+          "Document complete 'content system': SOPs for creation, distribution, optimization, measurement",
+          "Create 90-day content calendar based on: seasonal trends, client needs, competitive gaps",
+          "Build 'evergreen content engine': identify 20 pieces to update quarterly for sustained traffic",
+          "Analyze full 90-day results: content ROI, segment performance, channel effectiveness",
+          "Create 'scale plan': hiring needs, tool investments, process automation for next quarter",
+          "Launch 'content advisory board': 5 clients who provide quarterly feedback on content direction",
+          "Package learnings into proprietary framework/methodology (future content + differentiation)"
+        ],
+        "content_target": 10
+      }
+    ],
+    "kpis": [
+      "40 new pieces published (88 total library)",
+      "200+ qualified leads in month",
+      "5 new clients closed with content attribution",
+      "1,000+ organic website visitors/month",
+      "10+ pieces ranking on Google page 1",
+      "1,500+ engaged LinkedIn audience",
+      "35%+ email list growth",
+      "Content production time reduced to <10 hours/week",
+      "Documented, repeatable content system operational"
+    ]
+  },
+  "critical_path": [
+    "Week 1: Publish first 5 pieces immediately - velocity creates momentum and learning",
+    "Week 2: Define Content DNA through client interviews - this guides all future content",
+    "Week 3: Validate 3 segments with real feedback - prevents wasted effort on wrong audiences",
+    "Week 4: Launch first lead magnet and nurture sequence - begins conversion machinery",
+    "Week 6: Create content frameworks/templates - enables scaling without quality loss",
+    "Week 7: Optimize top performers with better CTAs - maximizes existing asset value",
+    "Week 9: Build repeatable production system - required for 10 pieces/week without burnout",
+    "Week 11: Implement advanced conversion tracking - proves ROI and guides investment"
+  ],
+  "quick_wins": [
+    "Publish best 5 existing pieces in Week 1 - immediate visibility and traffic",
+    "Email existing network with top 3 pieces - fast engagement and early leads",
+    "Post daily on LinkedIn with insights (not just links) - builds authority immediately",
+    "Set up Google Analytics and track everything - data from day one",
+    "Create simple lead magnet from existing content - start capturing emails Week 1",
+    "Join 3 relevant communities and introduce yourself helpfully - immediate distribution channel",
+    "Reach out to 5 best clients for interviews - builds DNA and potential testimonials"
+  ],
+  "compound_effects": [
+    "Month 1 SEO foundation → Month 3 organic traffic: Early published content gains authority, starts ranking, drives consistent traffic",
+    "Month 1 LinkedIn daily posts → Month 3 thought leadership: 90 days of consistent value builds significant audience and inbound interest",
+    "Month 1 segment validation → Month 3 conversion rates: Precisely targeted content converts 3-5x better than generic content",
+    "Month 1 Content DNA → Month 3 production speed: Clear frameworks reduce creation time by 60%, enable 10 pieces/week",
+    "Month 1 lead magnets → Month 3 email list: Early list building creates owned audience of 400+ for direct promotion",
+    "Month 1 community presence → Month 3 referrals: Consistent helpful contributions establish expertise, generate word-of-mouth",
+    "Month 1 content library → Month 3 internal linking: 88 pieces create powerful topic clusters that boost collective SEO",
+    "Month 2 nurture sequences → Month 3 automated sales: Evergreen sequences convert leads 24/7 without active effort",
+    "Month 2 case studies → Month 3 sales velocity: Proof content reduces sales cycle by 40%, increases close rates",
+    "Month 2 repurposing system → Month 3 omnipresence: One piece becomes 10+ assets across channels, multiplying reach 10x",
+    "Early publishing velocity → Search engine trust: Consistent publishing signals authority to Google, accelerating all rankings",
+    "Content addressing sales objections → Shorter sales cycles: Prospects self-educate, arrive more qualified, close faster"
+  ],
+  "generated_at": "2026-02-21T07:54:26.819Z"
+}

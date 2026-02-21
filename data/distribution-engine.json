@@ -1,0 +1,221 @@
+{
+  "plan": [
+    {
+      "day": "Monday",
+      "slots": [
+        {
+          "time": "8:00 AM ET",
+          "platform": "linkedin",
+          "content_id": "942509da1ea4f8",
+          "format": "carousel",
+          "action": "post",
+          "notes": "Metric Monday - 5-slide carousel breaking down agency failure patterns with stats"
+        },
+        {
+          "time": "12:00 PM ET",
+          "platform": "x",
+          "content_id": "942509da1ea4f8",
+          "format": "x_thread",
+          "action": "thread",
+          "notes": "Expand carousel insights into 7-tweet thread with specific red flags"
+        }
+      ]
+    },
+    {
+      "day": "Tuesday",
+      "slots": [
+        {
+          "time": "8:00 AM ET",
+          "platform": "linkedin",
+          "content_id": "dd33fd2be463cf5f",
+          "format": "linkedin",
+          "action": "post",
+          "notes": "Teardown Tuesday - Long-form text post analyzing $5K/month ad spend failure with ROI breakdown"
+        },
+        {
+          "time": "2:00 PM ET",
+          "platform": "x",
+          "content_id": "dd33fd2be463cf5f",
+          "format": "x_single",
+          "action": "post",
+          "notes": "Single quote tweet with shocking stat: '2 cases from $5K/month. Here's what went wrong.'"
+        },
+        {
+          "time": "5:00 PM ET",
+          "platform": "email",
+          "content_id": "dd33fd2be463cf5f",
+          "format": "linkedin",
+          "action": "newsletter",
+          "notes": "Send full breakdown to email list with CTA to audit their own ad spend"
+        }
+      ]
+    },
+    {
+      "day": "Wednesday",
+      "slots": [
+        {
+          "time": "8:00 AM ET",
+          "platform": "x",
+          "content_id": "4c20a864324032bb",
+          "format": "x_thread",
+          "action": "thread",
+          "notes": "War Story Wednesday - 8-tweet thread: 'My agency ran ads to WRONG zip codes for 6 months. Here's how I caught it.'"
+        },
+        {
+          "time": "11:00 AM ET",
+          "platform": "linkedin",
+          "content_id": "4c20a864324032bb",
+          "format": "short_video",
+          "action": "post",
+          "notes": "30-second video teardown: screen recording showing the zip code mistake and red flags"
+        },
+        {
+          "time": "3:00 PM ET",
+          "platform": "youtube",
+          "content_id": "4c20a864324032bb",
+          "format": "short_video",
+          "action": "post",
+          "notes": "Upload 2-3 min extended version with case study details as YouTube Short"
+        }
+      ]
+    },
+    {
+      "day": "Thursday",
+      "slots": [
+        {
+          "time": "8:00 AM ET",
+          "platform": "x",
+          "content_id": "6e4f84de57065",
+          "format": "x_single",
+          "action": "post",
+          "notes": "Thesis Thursday - Contrarian take: 'TikTok for law firms isn't unprofessional—your execution is'"
+        },
+        {
+          "time": "10:00 AM ET",
+          "platform": "linkedin",
+          "content_id": "6e4f84de57065",
+          "format": "hot_take",
+          "action": "post",
+          "notes": "LinkedIn hot take: Bold headline challenging TikTok stigma with 3 case examples"
+        },
+        {
+          "time": "2:00 PM ET",
+          "platform": "x",
+          "content_id": "6e4f84de57065",
+          "format": "x_thread",
+          "action": "thread",
+          "notes": "Deep-dive thread: why platform choice ≠ professionalism, execution does"
+        }
+      ]
+    },
+    {
+      "day": "Friday",
+      "slots": [
+        {
+          "time": "8:00 AM ET",
+          "platform": "linkedin",
+          "content_id": "942509da1ea4f8",
+          "format": "case_study",
+          "action": "post",
+          "notes": "Framework Friday - Full case study: '3 Agencies in 2 Years: The Audit Framework That Caught Their Mistakes'"
+        },
+        {
+          "time": "1:00 PM ET",
+          "platform": "email",
+          "content_id": "942509da1ea4f8",
+          "format": "case_study",
+          "action": "newsletter",
+          "notes": "Send downloadable agency audit checklist as lead magnet"
+        }
+      ]
+    },
+    {
+      "day": "Saturday",
+      "slots": [
+        {
+          "time": "10:00 AM ET",
+          "platform": "x",
+          "content_id": "dd33fd2be463cf5f",
+          "format": "x_single",
+          "action": "post",
+          "notes": "Weekend replay: Repost ad spend failure story to catch late-week audience"
+        },
+        {
+          "time": "3:00 PM ET",
+          "platform": "youtube",
+          "content_id": "dd33fd2be463cf5f",
+          "format": "short_video",
+          "action": "post",
+          "notes": "Upload YouTube Short: 'Why Your $5K/month ads aren't working' compilation"
+        }
+      ]
+    },
+    {
+      "day": "Sunday",
+      "slots": [
+        {
+          "time": "6:00 PM ET",
+          "platform": "linkedin",
+          "content_id": "4c20a864324032bb",
+          "format": "x_single",
+          "action": "post",
+          "notes": "Weekend engagement: Repost zip code story as LinkedIn update for Monday morning discovery"
+        }
+      ]
+    }
+  ],
+  "cross_promotion": [
+    {
+      "from": "linkedin carousel (942509da1ea4f8)",
+      "to": "x thread (942509da1ea4f8)",
+      "timing": "Monday 12:00 PM ET",
+      "adaptation": "Convert visual carousel points into tweet-sized insights, add engagement hooks for X audience"
+    },
+    {
+      "from": "linkedin long-form (dd33fd2be463cf5f)",
+      "to": "x single (dd33fd2be463cf5f)",
+      "timing": "Tuesday 2:00 PM ET",
+      "adaptation": "Pull most shocking stat, create curiosity gap, link back to LinkedIn for full breakdown"
+    },
+    {
+      "from": "x thread (4c20a864324032bb)",
+      "to": "linkedin short_video (4c20a864324032bb)",
+      "timing": "Wednesday 11:00 AM ET",
+      "adaptation": "Visual proof of the story mentioned in thread; direct visual learners to video"
+    },
+    {
+      "from": "linkedin hot_take (6e4f84de57065)",
+      "to": "x thread (6e4f84de57065)",
+      "timing": "Thursday 2:00 PM ET",
+      "adaptation": "Expand LinkedIn headline into full argumentative thread, address counterarguments"
+    },
+    {
+      "from": "linkedin case_study (942509da1ea4f8)",
+      "to": "email newsletter (942509da1ea4f8)",
+      "timing": "Friday 1:00 PM ET",
+      "adaptation": "Offer downloadable audit framework; email exclusive bonuses not in LinkedIn post"
+    },
+    {
+      "from": "email newsletter (dd33fd2be463cf5f)",
+      "to": "x thread (dd33fd2be463cf5f)",
+      "timing": "Tuesday 5:00 PM ET + Friday repost",
+      "adaptation": "Share key takeaways as follow-up engagement, drive newsletter subscribers to Twitter conversation"
+    }
+  ],
+  "total_touchpoints": 22,
+  "platform_breakdown": {
+    "linkedin": 7,
+    "x": 8,
+    "email": 2,
+    "youtube": 2,
+    "cross_platform_reach": 3
+  },
+  "distribution_notes": {
+    "content_reuse": "Each piece distributed 5-6 times across platforms over 7 days through format adaptation, not duplication",
+    "series_alignment": "All 4 weekly series slots filled (Mon carousel, Tue text, Wed story, Thu hot_take, Fri case_study)",
+    "content_bank_status": "All 4 pieces are value-first war stories; no CTAs included per bank (1 value post available)",
+    "optimal_timing": "8 AM ET posts (peak B2B professional hours), afternoon X threads (higher engagement), email Friday (CAGR prep)",
+    "adaptation_strategy": "LinkedIn = long-form authority; X = bite-sized + threads for depth; Email = lead generation; YouTube = SEO + discovery"
+  },
+  "generated_at": "2026-02-21T07:52:18.297Z"
+}

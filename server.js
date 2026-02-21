@@ -11835,6 +11835,343 @@ Return JSON:
       return json(res, { ok: true, content_id: contentId, ...parsed });
     }
 
+    // ======= BATCH 59: Content Distribution, Social Proof Automation, Advanced Analytics =======
+
+    // POST /api/distribution-engine — Auto-generate distribution plan for approved content
+    if (method === 'POST' && pathname === '/api/distribution-engine') {
+      const allContent = readJSON('content.json', []);
+      const approved = allContent.filter(c => c.status === 'approved').slice(0, 15);
+      if (approved.length === 0) return json(res, { error: 'No approved content to distribute' }, 400);
+
+      const series = readJSON('series-templates.json', { series: [] });
+      const contentBank = readJSON('content-bank.json', { log: [], stats: {} });
+
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+      const contentList = approved.map(c => ({
+        id: c.id,
+        title: c.trigger_title || c.title,
+        formats: Object.keys(c.formats || {}),
+        created: c.created_at
+      }));
+
+      const result = await callClaude({
+        model: HAIKU,
+        system: 'You are a content distribution strategist. You plan multi-channel distribution that maximizes reach by posting the right format on the right platform at the right time. Each piece should be distributed across 3-5 channels over 7 days. Return JSON only.',
+        prompt: `Create a 7-day distribution plan for ${approved.length} approved content pieces.
+
+Series schedule: ${JSON.stringify((series.series || []).map(s => ({ name: s.name, day: s.day, format: s.format })))}
+Content bank: ${contentBank.stats?.value || 0} value posts, ${contentBank.stats?.cta || 0} CTA posts
+
+Content to distribute:
+${JSON.stringify(contentList, null, 2)}
+
+Return JSON:
+{
+  "plan": [
+    {
+      "day": "Monday",
+      "slots": [
+        {
+          "time": "8:00 AM ET",
+          "platform": "linkedin|x|email|youtube",
+          "content_id": "...",
+          "format": "which format to use",
+          "action": "post|thread|story|newsletter",
+          "notes": "specific posting instructions"
+        }
+      ]
+    }
+  ],
+  "cross_promotion": [
+    { "from": "linkedin post", "to": "x thread", "timing": "same day 2pm", "adaptation": "what to change" }
+  ],
+  "total_touchpoints": 20,
+  "platform_breakdown": { "linkedin": 7, "x": 8, "email": 3, "youtube": 2 }
+}`,
+        maxTokens: 4000
+      });
+      const parsed = parseJsonResponse(result);
+      const plan = { ...parsed, generated_at: now() };
+      writeJSON('distribution-engine.json', plan);
+      return json(res, { ok: true, ...plan });
+    }
+
+    // GET /api/distribution-engine
+    if (method === 'GET' && pathname === '/api/distribution-engine') {
+      return json(res, readJSON('distribution-engine.json', null));
+    }
+
+    // POST /api/social-proof-engine — Auto-generate social proof assets from meeting data
+    if (method === 'POST' && pathname === '/api/social-proof-engine') {
+      const meetings = db.getMeetings({ limit: 50 });
+      const clients = db.getClients({});
+      const atoms = db.getAtoms({});
+
+      const successStories = atoms.filter(a => a.type === 'success_story');
+      const quotes = atoms.filter(a => a.type === 'quote');
+
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+      const result = await callClaude({
+        model: HAIKU,
+        system: 'You are a social proof content creator. Convert real client interactions into compelling proof assets. Anonymize where needed but keep specific numbers. Social proof is the #1 conversion driver — make it feel authentic, not manufactured. Return JSON only.',
+        prompt: `Create social proof content from real client data.
+
+${successStories.length} success stories available: ${successStories.slice(0, 5).map(s => s.content).join(' | ')}
+${quotes.length} client quotes available: ${quotes.slice(0, 5).map(q => q.content).join(' | ')}
+${clients.length} clients, ${meetings.length} meetings processed.
+
+Return JSON:
+{
+  "testimonial_posts": [
+    {
+      "type": "before_after|case_study_mini|client_win|data_proof",
+      "headline": "attention-grabbing headline",
+      "body": "full post text for LinkedIn",
+      "platform": "linkedin|x|both",
+      "anonymized": true
+    }
+  ],
+  "proof_stats": [
+    { "stat": "specific number", "context": "why it matters", "use_in": "post|bio|email_signature|website" }
+  ],
+  "authority_signals": ["ways to demonstrate expertise without bragging"],
+  "weekly_proof_plan": "how to weave proof into regular content"
+}`,
+        maxTokens: 3000
+      });
+      const parsed = parseJsonResponse(result);
+      const proofData = { ...parsed, generated_at: now() };
+      writeJSON('social-proof-engine.json', proofData);
+      return json(res, { ok: true, ...proofData });
+    }
+
+    // GET /api/social-proof-engine
+    if (method === 'GET' && pathname === '/api/social-proof-engine') {
+      return json(res, readJSON('social-proof-engine.json', null));
+    }
+
+    // GET /api/advanced-analytics — Comprehensive content analytics with growth metrics
+    if (method === 'GET' && pathname === '/api/advanced-analytics') {
+      const allContent = readJSON('content.json', []);
+      const published = readJSON('published.json', []);
+      const triggers = readJSON('trigger-queue.json', []);
+      const series = readJSON('series-templates.json', { series: [] });
+      const contentBank = readJSON('content-bank.json', { log: [], stats: {} });
+
+      const now_ts = Date.now();
+      const sevenDaysAgo = now_ts - 7 * 24 * 60 * 60 * 1000;
+      const thirtyDaysAgo = now_ts - 30 * 24 * 60 * 60 * 1000;
+
+      const recentContent = allContent.filter(c => new Date(c.created_at) > sevenDaysAgo);
+      const monthContent = allContent.filter(c => new Date(c.created_at) > thirtyDaysAgo);
+
+      const weeklyRate = recentContent.length;
+      const monthlyRate = monthContent.length;
+      const avgFormatsPerItem = allContent.length > 0 ? Math.round(allContent.reduce((sum, c) => sum + Object.keys(c.formats || {}).length, 0) / allContent.length) : 0;
+
+      const pipelineHealth = {
+        triggers_pending: triggers.filter(t => t.status === 'pending').length,
+        content_review: allContent.filter(c => c.status === 'review').length,
+        content_approved: allContent.filter(c => c.status === 'approved').length,
+        published_total: published.length,
+        rejection_rate: allContent.length > 0 ? Math.round(allContent.filter(c => c.status === 'rejected').length / allContent.length * 100) : 0
+      };
+
+      const sourceStats = {};
+      triggers.forEach(t => {
+        const src = t.source || 'unknown';
+        if (!sourceStats[src]) sourceStats[src] = { total: 0, used: 0, avg_score: 0, scores: [] };
+        sourceStats[src].total++;
+        if (t.status === 'used') sourceStats[src].used++;
+        if (t.score) sourceStats[src].scores.push(t.score);
+      });
+      Object.keys(sourceStats).forEach(src => {
+        const s = sourceStats[src];
+        s.avg_score = s.scores.length > 0 ? Math.round(s.scores.reduce((a, b) => a + b, 0) / s.scores.length) : 0;
+        s.conversion_rate = s.total > 0 ? Math.round(s.used / s.total * 100) : 0;
+        delete s.scores;
+      });
+
+      const formatCount = {};
+      allContent.forEach(c => {
+        Object.keys(c.formats || {}).forEach(f => {
+          formatCount[f] = (formatCount[f] || 0) + 1;
+        });
+      });
+
+      return json(res, {
+        production: {
+          total_content: allContent.length,
+          this_week: weeklyRate,
+          this_month: monthlyRate,
+          avg_formats_per_item: avgFormatsPerItem,
+          total_formats: Object.values(formatCount).reduce((a, b) => a + b, 0),
+          total_published: published.length
+        },
+        pipeline: pipelineHealth,
+        sources: sourceStats,
+        formats: formatCount,
+        content_bank: contentBank.stats || {},
+        series_count: (series.series || []).length,
+        health_indicators: {
+          trigger_freshness: triggers.filter(t => new Date(t.captured_at) > sevenDaysAgo).length > 0 ? 'fresh' : 'stale',
+          review_backlog: pipelineHealth.content_review > 20 ? 'high' : pipelineHealth.content_review > 5 ? 'moderate' : 'low',
+          production_rate: weeklyRate >= 5 ? 'strong' : weeklyRate >= 2 ? 'moderate' : 'low',
+          publish_rate: published.length > 0 ? 'active' : 'not_started'
+        }
+      });
+    }
+
+    // POST /api/content/:id/social-media-copy — Generate platform-specific copy with CTAs and hashtags
+    if (method === 'POST' && pathname.match(/^\/api\/content\/([^/]+)\/social-media-copy$/)) {
+      const contentId = pathname.split('/')[3];
+      const allContent = readJSON('content.json', []);
+      const item = allContent.find(c => c.id === contentId);
+      if (!item) return json(res, { error: 'Content not found' }, 404);
+      const formatKey = Object.keys(item.formats || {})[0];
+      const text = item.formats?.[formatKey]?.text || item.formats?.[formatKey];
+      if (!text) return json(res, { error: 'No content found' }, 400);
+
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+      const result = await callClaude({
+        model: HAIKU,
+        system: 'You are a social media copywriter who writes platform-native copy. Each platform has different character limits, audience expectations, and algorithm preferences. LinkedIn is professional storytelling. X is punchy and provocative. Instagram is visual and hashtag-heavy. Email is personal and direct. Return JSON only.',
+        prompt: `Write platform-specific copy for all major channels from this content:
+
+${typeof text === 'string' ? text.slice(0, 2500) : JSON.stringify(text).slice(0, 2500)}
+
+Return JSON:
+{
+  "linkedin": {
+    "post": "full LinkedIn post (1300 chars max, hook first line)",
+    "hashtags": ["3 hashtags"],
+    "cta": "comment-driving CTA"
+  },
+  "x_tweet": {
+    "post": "tweet (280 chars max)",
+    "hashtags": ["1-2 hashtags"],
+    "cta": "engagement CTA"
+  },
+  "x_thread": {
+    "tweets": ["tweet 1 (hook)", "tweet 2", "tweet 3", "tweet 4 (CTA)"],
+    "hook_style": "what makes tweet 1 compelling"
+  },
+  "instagram_caption": {
+    "caption": "Instagram caption with line breaks",
+    "hashtags": ["10-15 hashtags"],
+    "cta": "bio link CTA"
+  },
+  "email_subject": {
+    "subject": "email subject line",
+    "preview": "preview text",
+    "opening": "first 2 sentences of email"
+  },
+  "youtube_community": {
+    "post": "YouTube community tab post",
+    "cta": "engagement CTA"
+  }
+}`,
+        maxTokens: 4000
+      });
+      const parsed = parseJsonResponse(result);
+      return json(res, { ok: true, content_id: contentId, ...parsed });
+    }
+
+    // POST /api/growth-playbook — Generate a comprehensive growth playbook based on current content
+    if (method === 'POST' && pathname === '/api/growth-playbook') {
+      const allContent = readJSON('content.json', []);
+      const published = readJSON('published.json', []);
+      const contentDna = readJSON('content-dna.json', null);
+      const audienceSegments = readJSON('audience-segments.json', null);
+
+      const { callClaude, parseJsonResponse, SONNET } = require('./lib/claude');
+      const result = await callClaude({
+        model: SONNET,
+        system: 'You are a growth strategist who creates actionable 90-day playbooks for B2B companies using content-led growth. Focus on compound growth — actions that build on each other over time. Return JSON only.',
+        prompt: `Create a 90-day growth playbook for a legal marketing agency.
+
+Current state: ${allContent.length} content pieces, ${published.length} published, ${contentDna ? 'DNA analysis done' : 'no DNA yet'}, ${audienceSegments ? 'audience segments defined' : 'no segments yet'}.
+
+Return JSON:
+{
+  "month_1": {
+    "theme": "Foundation",
+    "goals": ["measurable goal 1", "goal 2"],
+    "weekly_actions": [
+      { "week": 1, "focus": "what to focus on", "actions": ["action 1", "action 2"], "content_target": 5 }
+    ],
+    "kpis": ["what to measure"]
+  },
+  "month_2": {
+    "theme": "Acceleration",
+    "goals": ["..."],
+    "weekly_actions": [{ "week": 5, "focus": "...", "actions": ["..."], "content_target": 7 }],
+    "kpis": ["..."]
+  },
+  "month_3": {
+    "theme": "Scale",
+    "goals": ["..."],
+    "weekly_actions": [{ "week": 9, "focus": "...", "actions": ["..."], "content_target": 10 }],
+    "kpis": ["..."]
+  },
+  "critical_path": ["must-do items in order of priority"],
+  "quick_wins": ["things that can show results in week 1"],
+  "compound_effects": ["how month 1 actions compound by month 3"]
+}`,
+        maxTokens: 5000
+      });
+      const parsed = parseJsonResponse(result);
+      const playbook = { ...parsed, generated_at: now() };
+      writeJSON('growth-playbook.json', playbook);
+      return json(res, { ok: true, ...playbook });
+    }
+
+    // GET /api/growth-playbook
+    if (method === 'GET' && pathname === '/api/growth-playbook') {
+      return json(res, readJSON('growth-playbook.json', null));
+    }
+
+    // POST /api/content/:id/cta-optimizer — Optimize CTAs for maximum conversion
+    if (method === 'POST' && pathname.match(/^\/api\/content\/([^/]+)\/cta-optimizer$/)) {
+      const contentId = pathname.split('/')[3];
+      const allContent = readJSON('content.json', []);
+      const item = allContent.find(c => c.id === contentId);
+      if (!item) return json(res, { error: 'Content not found' }, 404);
+      const body = await parseBody(req);
+      const formatKey = body.format || Object.keys(item.formats || {})[0];
+      const text = item.formats?.[formatKey]?.text || item.formats?.[formatKey];
+      if (!text) return json(res, { error: 'No content found' }, 400);
+
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+      const result = await callClaude({
+        model: HAIKU,
+        system: 'You are a CTA optimization expert. The best CTAs feel like a natural next step, not a sales pitch. They use specificity, urgency, and social proof. For LinkedIn: comment-based CTAs outperform link CTAs 4:1. For X: quote-tweet bait and "reply with X" work best. Return JSON only.',
+        prompt: `Optimize the CTA for this content piece.
+
+Content:
+${typeof text === 'string' ? text.slice(0, 2000) : JSON.stringify(text).slice(0, 2000)}
+
+Return JSON:
+{
+  "current_cta_analysis": "what the current CTA is (if any) and why it could be better",
+  "optimized_ctas": [
+    {
+      "type": "comment_cta|dm_cta|link_cta|reply_cta|save_cta",
+      "cta_text": "the optimized CTA",
+      "placement": "where to put it in the post",
+      "psychology": "why this works",
+      "expected_conversion": "low|medium|high"
+    }
+  ],
+  "recommended": 0,
+  "avoid": ["CTA patterns that hurt engagement on this platform"]
+}`,
+        maxTokens: 2500
+      });
+      const parsed = parseJsonResponse(result);
+      return json(res, { ok: true, content_id: contentId, format: formatKey, ...parsed });
+    }
+
     // --- Static file serving ---
 
     // Serve dashboard

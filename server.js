@@ -6951,6 +6951,233 @@ Return JSON:
       return json(res, { ok: true });
     }
 
+    // === Batch 43: Content Repurposing Chains + Social Proof + Content ROI ===
+
+    // POST /api/content/:id/chain-repurpose — auto-generate all missing platform versions
+    if (pathname.match(/^\/api\/content\/[^/]+\/chain-repurpose$/) && method === 'POST') {
+      const id = pathname.split('/')[3];
+      const content = readJSON('content.json', []);
+      const item = content.find(c => c.id === id);
+      if (!item) return json(res, { error: 'not found' }, 404);
+
+      const allFormats = ['linkedin', 'x_single', 'x_thread', 'carousel', 'short_video', 'hot_take', 'poll'];
+      const existing = Object.keys(item.formats || {});
+      const missing = allFormats.filter(f => !existing.includes(f));
+
+      if (missing.length === 0) return json(res, { ok: true, message: 'All formats already exist', generated: 0 });
+
+      // Find best source content (prefer linkedin > blog > any)
+      let sourceFormat = existing.find(f => f === 'linkedin') || existing.find(f => f === 'blog') || existing[0];
+      let sourceContent = item.formats[sourceFormat]?.content;
+      if (!sourceContent) return json(res, { error: 'No source content found to repurpose' }, 400);
+
+      const { repurposeContent } = require('./lib/claude.js');
+      const { BRAND_SYSTEM_PROMPT } = require('./generator/content-writer.js');
+      const system = BRAND_SYSTEM_PROMPT;
+      const results = [];
+
+      for (const targetFormat of missing) {
+        try {
+          const repurposed = await repurposeContent(sourceContent, sourceFormat, targetFormat, system);
+          if (!item.formats) item.formats = {};
+          item.formats[targetFormat] = {
+            content: repurposed,
+            status: 'draft',
+            generated_at: now(),
+            source_chain: { from_format: sourceFormat, chain_type: 'auto-repurpose' }
+          };
+          results.push({ format: targetFormat, ok: true });
+        } catch (err) {
+          results.push({ format: targetFormat, ok: false, error: err.message });
+        }
+      }
+
+      writeJSON('content.json', content);
+      return json(res, { ok: true, generated: results.filter(r => r.ok).length, failed: results.filter(r => !r.ok).length, results });
+    }
+
+    // GET /api/content/:id/chain-status — see repurpose coverage
+    if (pathname.match(/^\/api\/content\/[^/]+\/chain-status$/) && method === 'GET') {
+      const id = pathname.split('/')[3];
+      const content = readJSON('content.json', []);
+      const item = content.find(c => c.id === id);
+      if (!item) return json(res, { error: 'not found' }, 404);
+
+      const allFormats = ['linkedin', 'x_single', 'x_thread', 'carousel', 'short_video', 'hot_take', 'poll', 'blog', 'youtube_script', 'newsletter'];
+      const coverage = {};
+      for (const f of allFormats) {
+        coverage[f] = item.formats?.[f] ? { exists: true, status: item.formats[f].status, chain: item.formats[f].source_chain || null } : { exists: false };
+      }
+      const total = allFormats.length;
+      const covered = allFormats.filter(f => item.formats?.[f]).length;
+      return json(res, { coverage, covered, total, percentage: Math.round((covered / total) * 100) });
+    }
+
+    // --- Social Proof Tracker ---
+
+    // GET /api/social-proof — list all proof elements
+    if (pathname === '/api/social-proof' && method === 'GET') {
+      return json(res, readJSON('social-proof.json', []));
+    }
+
+    // POST /api/social-proof — add a proof element
+    if (pathname === '/api/social-proof' && method === 'POST') {
+      const body = await parseBody(req);
+      const proof = readJSON('social-proof.json', []);
+      const entry = {
+        id: generateId(),
+        type: body.type || 'testimonial', // testimonial, case_metric, social_mention, review, award
+        client_name: body.client_name || '',
+        content: body.content || '',
+        metric_value: body.metric_value || null, // e.g. "300% ROI", "+45 leads/month"
+        metric_label: body.metric_label || null,
+        platform: body.platform || null, // where it came from
+        url: body.url || null,
+        tags: body.tags || [],
+        verified: body.verified || false,
+        used_in: [], // content IDs where this proof was used
+        created_at: now()
+      };
+      proof.push(entry);
+      writeJSON('social-proof.json', proof);
+      return json(res, { ok: true, proof: entry });
+    }
+
+    // PUT /api/social-proof/:id — update a proof element
+    if (pathname.match(/^\/api\/social-proof\/[^/]+$/) && method === 'PUT') {
+      const id = pathname.split('/')[3];
+      const body = await parseBody(req);
+      const proof = readJSON('social-proof.json', []);
+      const idx = proof.findIndex(p => p.id === id);
+      if (idx === -1) return json(res, { error: 'not found' }, 404);
+      Object.assign(proof[idx], body, { updated_at: now() });
+      writeJSON('social-proof.json', proof);
+      return json(res, { ok: true, proof: proof[idx] });
+    }
+
+    // DELETE /api/social-proof/:id
+    if (pathname.match(/^\/api\/social-proof\/[^/]+$/) && method === 'DELETE') {
+      const id = pathname.split('/')[3];
+      const proof = readJSON('social-proof.json', []);
+      const filtered = proof.filter(p => p.id !== id);
+      writeJSON('social-proof.json', filtered);
+      return json(res, { ok: true });
+    }
+
+    // POST /api/social-proof/auto-extract — AI extract proof from meeting/content
+    if (pathname === '/api/social-proof/auto-extract' && method === 'POST') {
+      const body = await parseBody(req);
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude.js');
+      const sourceText = body.text || body.content || '';
+      if (!sourceText) return json(res, { error: 'Provide text or content to extract from' }, 400);
+
+      const text = await callClaude({
+        model: HAIKU,
+        system: 'You extract social proof elements from text. Return JSON array.',
+        prompt: `Extract testimonials, case study metrics, success stories, and social proof from this text.
+
+TEXT:
+${sourceText.slice(0, 4000)}
+
+Return JSON array of objects with: type (testimonial|case_metric|social_mention), client_name, content (the proof statement), metric_value (if applicable), metric_label (if applicable).
+Only return elements that are genuine social proof — client wins, results, praise. Skip generic statements.`,
+        maxTokens: 1500
+      });
+
+      const extracted = parseJsonResponse(text) || [];
+      const proof = readJSON('social-proof.json', []);
+      const added = [];
+      for (const item of extracted) {
+        const entry = { id: generateId(), ...item, verified: false, used_in: [], auto_extracted: true, created_at: now() };
+        proof.push(entry);
+        added.push(entry);
+      }
+      writeJSON('social-proof.json', proof);
+      return json(res, { ok: true, extracted: added.length, items: added });
+    }
+
+    // --- Content ROI Calculator ---
+
+    // POST /api/content/:id/attribute-lead — attribute a lead/revenue to content
+    if (pathname.match(/^\/api\/content\/[^/]+\/attribute-lead$/) && method === 'POST') {
+      const id = pathname.split('/')[3];
+      const body = await parseBody(req);
+      const roi = readJSON('content-roi.json', []);
+      const entry = {
+        id: generateId(),
+        content_id: id,
+        lead_name: body.lead_name || '',
+        lead_email: body.lead_email || '',
+        attribution_type: body.type || 'direct', // direct, assisted, influenced
+        revenue: body.revenue || 0,
+        source_platform: body.platform || '',
+        notes: body.notes || '',
+        created_at: now()
+      };
+      roi.push(entry);
+      writeJSON('content-roi.json', roi);
+      return json(res, { ok: true, attribution: entry });
+    }
+
+    // GET /api/roi/report — ROI report across all content
+    if (pathname === '/api/roi/report' && method === 'GET') {
+      const roi = readJSON('content-roi.json', []);
+      const content = readJSON('content.json', []);
+
+      // Group by content_id
+      const byContent = {};
+      for (const r of roi) {
+        if (!byContent[r.content_id]) byContent[r.content_id] = { leads: 0, revenue: 0, attributions: [] };
+        byContent[r.content_id].leads++;
+        byContent[r.content_id].revenue += (r.revenue || 0);
+        byContent[r.content_id].attributions.push(r);
+      }
+
+      // By platform
+      const byPlatform = {};
+      for (const r of roi) {
+        const p = r.source_platform || 'unknown';
+        if (!byPlatform[p]) byPlatform[p] = { leads: 0, revenue: 0 };
+        byPlatform[p].leads++;
+        byPlatform[p].revenue += (r.revenue || 0);
+      }
+
+      // Top content by ROI
+      const topContent = Object.entries(byContent)
+        .map(([contentId, data]) => {
+          const item = content.find(c => c.id === contentId);
+          return { content_id: contentId, title: item?.trigger_title || 'Unknown', ...data };
+        })
+        .sort((a, b) => b.revenue - a.revenue)
+        .slice(0, 10);
+
+      return json(res, {
+        total_attributions: roi.length,
+        total_leads: roi.length,
+        total_revenue: roi.reduce((s, r) => s + (r.revenue || 0), 0),
+        by_platform: byPlatform,
+        top_content: topContent,
+        by_type: {
+          direct: roi.filter(r => r.attribution_type === 'direct').length,
+          assisted: roi.filter(r => r.attribution_type === 'assisted').length,
+          influenced: roi.filter(r => r.attribution_type === 'influenced').length
+        }
+      });
+    }
+
+    // GET /api/roi/content/:id — ROI for specific content
+    if (pathname.match(/^\/api\/roi\/content\/[^/]+$/) && method === 'GET') {
+      const id = pathname.split('/')[4];
+      const roi = readJSON('content-roi.json', []);
+      const attributions = roi.filter(r => r.content_id === id);
+      return json(res, {
+        content_id: id,
+        total_leads: attributions.length,
+        total_revenue: attributions.reduce((s, r) => s + (r.revenue || 0), 0),
+        attributions
+      });
+    }
+
     // --- Content Series API ---
 
     // GET /api/series — list all content series

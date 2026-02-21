@@ -649,6 +649,71 @@
         "content": "HOOK: A law firm owner spent $57,000 on three marketing agencies. Total signed cases across all three: twelve.\n\n[PAUSE]\n\nAgency one: promised 20 leads a month. Delivered three. No call tracking. \"Trust the process.\"\n\nAgency two: beautiful reports. Impressions up, clicks up, cases... zero.\n\nAgency three: ran Google Ads to the wrong geographic area. For four months.\n\n[PAUSE]\n\nThe pattern? None of them were measured on signed cases. Not one.\n\nBefore you hire any agency, ask three questions.\n\n[PAUSE]\n\nOne: how do you define a lead?\nTwo: what's my expected cost per signed case?\nThree: can I have login access to my ad accounts?\n\nIf any answer is vague, walk away. Good agencies welcome accountability.",
         "status": "approved",
         "edited": false
+      },
+      "carousel": {
+        "content": [
+          {
+            "slide": 1,
+            "text": "$57K spent.\n\n12 cases signed.\n\n$4,750 per case.\n\nThree agencies. All failed.\n\nHere's why (and how to spot it before you hire)."
+          },
+          {
+            "slide": 2,
+            "text": "Agency 1: Promised 20 leads/month.\n\nDelivered 3.\n\nNo call tracking.\nNo reporting.\n\nThey had no idea if ANY of those 3 turned into cases.\n\nThey were just... hoping."
+          },
+          {
+            "slide": 3,
+            "text": "Agency 2: Beautiful reports.\n\nClicks up ↑\nCTR up ↑\nCases down ↓\n\nThey optimized vanity metrics instead of revenue.\n\nMore traffic to the wrong people = more wasted money."
+          },
+          {
+            "slide": 4,
+            "text": "Agency 3: Ran ads to the wrong zip code for 4 months.\n\nBilled $2K/month the whole time.\n\nNo one even noticed.\n\nNo accountability = no skin in the game."
+          },
+          {
+            "slide": 5,
+            "text": "The pattern:\n\nNone of them measured what actually matters.\n\nNot leads.\nNot clicks.\nNot impressions.\n\nSigned cases.\n\nThat's the only metric that pays the bills."
+          },
+          {
+            "slide": 6,
+            "text": "Before you hire the next agency, ask three questions:\n\n1. \"How do you define a lead?\"\n(If they say clicks—run.)\n\n2. \"What's my cost per signed case?\"\n(If they don't know—run.)\n\n3. \"Can I access all accounts?\"\n(If no—run.)"
+          },
+          {
+            "slide": 7,
+            "text": "Good agencies welcome accountability.\n\nBad ones hide behind impressions and vanity metrics.\n\nYou'll know the difference in the first conversation.\n\nDon't waste $57K to learn it."
+          }
+        ],
+        "status": "draft",
+        "generated_at": "2026-02-21T01:58:42.955Z",
+        "source_chain": {
+          "from_format": "linkedin",
+          "chain_type": "auto-repurpose"
+        }
+      },
+      "hot_take": {
+        "content": "# HOT TAKE (Twitter/X)\n\nMost law firms deserve the marketing agencies they hire.\n\nYou spent $57K on three agencies. Got 12 cases. $4,750/case.\n\nBut you never asked them how they define a lead. Never demanded cost-per-signed-case reporting. Never accessed the accounts yourself.\n\nYou hired blind. Got what you paid for.\n\n---\n\n# LONGER HOT TAKE (Thread format)\n\n1/ Most law firms deserve the marketing agencies they hire.\n\nA firm just told me they spent $57K across three agencies.\n\n12 signed cases total.\n\n$4,750 per case.\n\n\"They all failed,\" the owner said.\n\nWrong.\n\n2/ Agency 1 promised 20 leads/month. Delivered 3. No call tracking. No reporting.\n\nAgency 2? Beautiful dashboards. CTR up. Cases down. They were optimizing clicks, not outcomes.\n\nAgency 3 ran ads to the wrong zip code for 4 months. Charged $2K/month the entire time.\n\n3/ But here's the part the owner won't admit:\n\nHe never asked ONE hard question.\n\nDidn't define what \"lead\" means.\n\nNever demanded cost-per-signed-case data.\n\nNever asked for direct account access.\n\nJust... hired them and hoped.\n\n4/ Good agencies WANT that pressure.\n\nBad ones hide behind impressions and CTR.\n\nIf your agency gets nervous when you ask \"What's my actual cost per case?\" — you already know the answer.\n\nFire them.\n\n5/ Before you hire the next one:\n\nAsk how they define a lead.\nDemand cost-per-signed-case reporting.\nInsist on direct account access.\n\nAn agency that refuses any of these three things isn't protecting strategy.\n\nThey're hiding.\n\n---\n\n# CAROUSEL (JSON)\n\n```json\n{\n  \"format\": \"carousel\",\n  \"slides\": [\n    {\n      \"slide\": 1,\n      \"text\": \"A law firm spent $57K on three agencies.\\n\\n12 signed cases.\\n\\n$4,750/case.\\n\\nThey all \\\"failed.\\\"\\n\\nThey didn't.\",\n      \"type\": \"hook\"\n    },\n    {\n      \"slide\": 2,\n      \"text\": \"Agency 1: Promised 20 leads/month. Delivered 3.\\n\\nNo call tracking.\\nNo reporting.\\n\\nBut the owner never asked how they define a \\\"lead.\\\"\\n\\nFirst mistake.\"\n    },\n    {\n      \"slide\": 3,\n      \"text\": \"Agency 2: Beautiful reports.\\n\\nClicks up.\\nCTR up.\\nCases down.\\n\\nThey optimized vanity metrics. Owner never asked for cost-per-signed-case.\\n\\nSecond mistake.\"\n    },\n    {\n      \"slide\": 4,\n      \"text\": \"Agency 3: Ran ads to the WRONG zip code for 4 months.\\n\\nCharged $2K/month the entire time.\\n\\nOwner never accessed the accounts.\\n\\nThird mistake.\"\n    },\n    {\n      \"slide\": 5,\n      \"text\": \"The pattern:\\n\\nGood agencies welcome accountability.\\nBad ones hide behind impressions.\\n\\nYou didn't hire bad agencies.\\n\\nYou hired blindly.\"\n    },\n    {\n      \"slide\": 6,\n      \"text\": \"Before hiring next:\\n\\n1. \\\"How do you define a lead?\\\"\\n2. \\\"Show me cost-per-signed-case\\\"\\n3. \\\"I need direct account access\\\"\\n\\nIf they flinch, you have your answer.\"\n    }\n  ]\n}\n```\n\n---\n\n# POLL (Twitter/X)\n\n**POLL:**\n\nYou hired a marketing agency. They showed you:\n- 500 clicks/month\n- 3% CTR\n- 2 signed cases\n\nWhen you asked \"Why so few cases?\" they blamed your intake process, not their work.\n\nDo you keep them?\n\nA) Yes — it's probably my fault\nB) No — that's an excuse\nC) Only if cost-per-case is solid\nD) I'd fire them immediately",
+        "status": "draft",
+        "generated_at": "2026-02-21T01:58:51.904Z",
+        "source_chain": {
+          "from_format": "linkedin",
+          "chain_type": "auto-repurpose"
+        }
+      },
+      "poll": {
+        "content": {
+          "question": "Your marketing agency can't access your Google Ads account. Do you fire them?",
+          "options": [
+            "Yes, immediately. That's a red flag.",
+            "No, if they're delivering results, it doesn't matter.",
+            "Depends on performance, but I'd demand access.",
+            "I give them 30 days to prove it or they're gone."
+          ],
+          "post_text": "A firm spent $57K across three agencies and got 12 signed cases ($4,750/case). One buried their account for 4 months. Another optimized clicks instead of cases. The third wouldn't share reporting.\n\nAccessibility isn't just a nice-to-have. It's how you know if they're actually accountable or just hiding.\n\nWhich would you choose?"
+        },
+        "status": "draft",
+        "generated_at": "2026-02-21T01:58:55.856Z",
+        "source_chain": {
+          "from_format": "linkedin",
+          "chain_type": "auto-repurpose"
+        }
       }
     },
     "image_prompt": "Three agency logos crossed out with red X marks. \"$57K → 12 Cases = $4,750/case\" in bold typography. Professional but alarming color scheme.",

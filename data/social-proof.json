@@ -46,5 +46,39 @@
       "total_engagement": 0
     },
     "generated_at": "2026-02-21T01:13:43.202Z"
+  },
+  {
+    "id": "6996d2ed73a16b18",
+    "type": "testimonial",
+    "client_name": "Johnson & Associates",
+    "content": "Mortar Metrics helped us get 45 new leads in our first month. Best agency decision we ever made.",
+    "metric_value": "45 leads/month",
+    "metric_label": "New leads",
+    "platform": "linkedin",
+    "url": null,
+    "tags": [
+      "leads",
+      "PI"
+    ],
+    "verified": false,
+    "used_in": [],
+    "created_at": "2026-02-21T01:58:03.052Z"
+  },
+  {
+    "id": "e492f94df8bfb61b",
+    "type": "case_metric",
+    "client_name": "Smith Family Law",
+    "content": "300% increase in organic traffic within 6 months",
+    "metric_value": "300%",
+    "metric_label": "Traffic increase",
+    "platform": null,
+    "url": null,
+    "tags": [
+      "SEO",
+      "family-law"
+    ],
+    "verified": false,
+    "used_in": [],
+    "created_at": "2026-02-21T01:58:04.946Z"
   }
 ]

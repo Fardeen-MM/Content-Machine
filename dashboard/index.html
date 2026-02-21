@@ -1482,6 +1482,9 @@ const state = {
   benchmarkReport: null,
   contentIdeas: [],
   generatingIdeas: false,
+  // Social Proof & ROI
+  socialProof: [],
+  roiReport: null,
 };
 
 // --- API Calls ---
@@ -1507,7 +1510,7 @@ async function loadData() {
   state.loading = true;
   render();
   try {
-    const [content, triggers, stats, calendar, monthCal, settings, memory, performance, perfAnalytics, meetings, meetingStats, clients, allActions, chatMessages, healthData, inspirations, pestering, pesteringStages, insights, deals, published, series, predictions, playbooks, ctaLibrary, trending, funnel, publishTracker, leadMagnets, contentHealth, scheduleOptimize, templates, dmSequences, hooks, pillarPlan, contentLeads, autopilot, scheduleQueue, engagementDashboard, contentBriefs, workflowPipeline, personas, calendarWeek, benchmarkReport, contentIdeas] = await Promise.all([
+    const [content, triggers, stats, calendar, monthCal, settings, memory, performance, perfAnalytics, meetings, meetingStats, clients, allActions, chatMessages, healthData, inspirations, pestering, pesteringStages, insights, deals, published, series, predictions, playbooks, ctaLibrary, trending, funnel, publishTracker, leadMagnets, contentHealth, scheduleOptimize, templates, dmSequences, hooks, pillarPlan, contentLeads, autopilot, scheduleQueue, engagementDashboard, contentBriefs, workflowPipeline, personas, calendarWeek, benchmarkReport, contentIdeas, socialProof, roiReport] = await Promise.all([
       api('/api/content'),
       api('/api/triggers'),
       api('/api/stats'),
@@ -1552,7 +1555,9 @@ async function loadData() {
       api('/api/personas').catch(() => []),
       api('/api/calendar/week').catch(() => null),
       api('/api/benchmarks/report').catch(() => null),
-      api('/api/ideas').catch(() => [])
+      api('/api/ideas').catch(() => []),
+      api('/api/social-proof').catch(() => []),
+      api('/api/roi/report').catch(() => null)
     ]);
     state.content = content;
     state.triggers = triggers;
@@ -1599,6 +1604,8 @@ async function loadData() {
     state.calendarWeek = calendarWeek;
     state.benchmarkReport = benchmarkReport;
     state.contentIdeas = contentIdeas;
+    state.socialProof = socialProof;
+    state.roiReport = roiReport;
   } catch (err) {
     console.error('Failed to load data:', err);
     toast('Failed to load data', 'error');
@@ -3190,6 +3197,64 @@ function renderDashboardPage() {
                 }
               }, 'X')
             )
+          );
+        })
+      )
+    ) : null,
+    // Content ROI
+    state.roiReport?.total_attributions > 0 ? h('div', { style: { marginBottom: '20px' } },
+      h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)', marginBottom: '8px' } }, 'CONTENT ROI'),
+      h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', marginBottom: '10px' } },
+        h('div', { style: { background: '#f0fdf4', borderRadius: 'var(--radius-sm)', padding: '12px', textAlign: 'center', border: '1px solid #bbf7d0' } },
+          h('div', { style: { fontSize: '22px', fontWeight: '700', color: '#059669' } }, '$' + (state.roiReport.total_revenue || 0).toLocaleString()),
+          h('div', { style: { fontSize: '10px', color: '#065f46' } }, 'Total Revenue')
+        ),
+        h('div', { style: { background: '#eff6ff', borderRadius: 'var(--radius-sm)', padding: '12px', textAlign: 'center', border: '1px solid #bfdbfe' } },
+          h('div', { style: { fontSize: '22px', fontWeight: '700', color: '#2563eb' } }, String(state.roiReport.total_leads || 0)),
+          h('div', { style: { fontSize: '10px', color: '#1e40af' } }, 'Attributed Leads')
+        ),
+        h('div', { style: { background: '#faf5ff', borderRadius: 'var(--radius-sm)', padding: '12px', textAlign: 'center', border: '1px solid #e9d5ff' } },
+          h('div', { style: { fontSize: '22px', fontWeight: '700', color: '#7c3aed' } },
+            state.roiReport.total_leads > 0 ? '$' + Math.round(state.roiReport.total_revenue / state.roiReport.total_leads).toLocaleString() : '$0'
+          ),
+          h('div', { style: { fontSize: '10px', color: '#5b21b6' } }, 'Revenue/Lead')
+        )
+      ),
+      state.roiReport.top_content?.length > 0 ? h('div', { style: { display: 'grid', gap: '4px' } },
+        ...state.roiReport.top_content.slice(0, 5).map(item =>
+          h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 10px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)' } },
+            h('div', { style: { fontSize: '14px', fontWeight: '700', color: '#059669', minWidth: '60px' } }, '$' + (item.revenue || 0).toLocaleString()),
+            h('div', { style: { flex: '1' } },
+              h('div', { style: { fontSize: '11px', fontWeight: '600', color: 'var(--navy)' } }, (item.title || '').slice(0, 50)),
+              h('div', { style: { fontSize: '10px', color: 'var(--gray-500)' } }, `${item.leads} leads`)
+            )
+          )
+        )
+      ) : null
+    ) : null,
+    // Social Proof
+    state.socialProof?.filter(p => p.type === 'testimonial' || p.type === 'case_metric').length > 0 ? h('div', { style: { marginBottom: '20px' } },
+      h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
+        h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)' } }, `SOCIAL PROOF (${state.socialProof.filter(p => p.type === 'testimonial' || p.type === 'case_metric').length})`),
+        h('div', { style: { display: 'flex', gap: '6px' } },
+          h('span', { style: { fontSize: '11px', color: '#059669' } }, `${state.socialProof.filter(p => p.verified).length} verified`),
+          h('span', { style: { fontSize: '11px', color: 'var(--gray-400)' } }, `${state.socialProof.filter(p => p.type === 'testimonial').length} testimonials`)
+        )
+      ),
+      h('div', { style: { display: 'grid', gap: '6px' } },
+        ...state.socialProof.filter(p => p.type === 'testimonial' || p.type === 'case_metric').slice(0, 5).map(proof => {
+          const isTestimonial = proof.type === 'testimonial';
+          return h('div', { style: { padding: '10px 14px', background: isTestimonial ? '#fffbeb' : '#f0fdf4', borderRadius: 'var(--radius-sm)', border: `1px solid ${isTestimonial ? '#fde68a' : '#bbf7d0'}`, borderLeft: `4px solid ${isTestimonial ? '#d97706' : '#059669'}` } },
+            h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '4px' } },
+              h('div', { style: { fontSize: '12px', fontWeight: '600', color: 'var(--navy)' } }, proof.client_name || 'Anonymous'),
+              proof.metric_value ? h('span', { style: { fontSize: '12px', fontWeight: '700', color: '#059669', padding: '1px 6px', background: '#dcfce7', borderRadius: '4px' } }, proof.metric_value) : null
+            ),
+            h('div', { style: { fontSize: '11px', color: 'var(--gray-600)', fontStyle: isTestimonial ? 'italic' : 'normal' } },
+              isTestimonial ? `"${proof.content}"` : proof.content
+            ),
+            proof.tags?.length > 0 ? h('div', { style: { display: 'flex', gap: '3px', marginTop: '4px' } },
+              ...proof.tags.map(t => h('span', { style: { fontSize: '9px', padding: '1px 5px', borderRadius: '3px', background: 'rgba(0,0,0,0.05)', color: 'var(--gray-500)' } }, t))
+            ) : null
           );
         })
       )

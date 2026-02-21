@@ -1,0 +1,29 @@
+[
+  {
+    "id": "6461ec009978d4ed",
+    "content_id": "942509da1ea4f8",
+    "title": "Hired 3 marketing agencies in 2 years — all terrible. What am I doing wrong?",
+    "variant_a": {
+      "hook_style": "story",
+      "content": "I watched a law firm owner's face sink when she realized the truth.\n\nThree years of \"marketing partnerships.\" $57K spent. 12 cases signed.\n\nThen she asked the question that changed everything: \"What are we actually measuring?\"\n\nAgency 1: Promised 20 leads/month. Delivered 3. No call tracking. No reporting.\n\nAgency 2: Beautiful reports. Clicks up, CTR up, cases down. Optimizing vanity metrics.\n\nAgency 3: Ran ads to the wrong zip code for 4 months. Billed $2K/month the whole time.\n\nThe real problem: none measured what matters.\n\nSigned cases. That's it.\n\nBefore you hire anyone, ask three things:\n\n1. \"How do you define a lead?\" (If they say clicks, run.)\n2. \"What's my cost per signed case?\" (If they don't know, run.)\n3. \"Can I access all accounts?\" (If no, run.)\n\nGood agencies welcome accountability.\n\nBad ones hide behind impressions."
+    },
+    "variant_b": {
+      "hook_style": "data",
+      "content": "$57K. 12 cases. $4,750 per case.\n\nThose are the real numbers from a law firm that hired three \"top\" agencies.\n\nHere's the breakdown of what actually happened.\n\nAgency 1: Promised 20 leads/month. Delivered 3. No call tracking. No reporting.\n\nAgency 2: Beautiful reports. Clicks up, CTR up, cases down. Optimizing vanity metrics.\n\nAgency 3: Ran ads to the wrong zip code for 4 months. Billed $2K/month the whole time.\n\nThe real problem: none measured what matters.\n\nSigned cases. That's it.\n\nBefore you hire anyone, ask three things:\n\n1. \"How do you define a lead?\" (If they say clicks, run.)\n2. \"What's I cost per signed case?\" (If they don't know, run.)\n3. \"Can I access all accounts?\" (If no, run.)\n\nGood agencies welcome accountability.\n\nBad ones hide behind impressions."
+    },
+    "hypothesis": "Variant B (data-driven) should perform better. Law firm owners and B2B service providers on LinkedIn respond strongly to concrete numbers upfront—they immediately see ROI relevance. Variant A creates curiosity through narrative, which may engage some audiences but risks lower click-through rates. For legal services professionals, specificity signals credibility and relevance faster than storytelling alone.",
+    "performance": {
+      "a": {
+        "impressions": 0,
+        "engagement": 0
+      },
+      "b": {
+        "impressions": 0,
+        "engagement": 0
+      }
+    },
+    "status": "active",
+    "winner": null,
+    "created_at": "2026-02-21T02:21:56.781Z"
+  }
+]

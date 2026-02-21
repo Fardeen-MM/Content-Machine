@@ -1,0 +1,41 @@
+{
+  "grade": "C+",
+  "headline": "Solid content production with engagement, but publishing pipeline stalled and no lead conversion",
+  "key_wins": [
+    "Strong engagement rate of 7.1% across published content",
+    "4,500 impressions generated from 38 content pieces",
+    "12 pieces scheduled for future publication shows pipeline activity",
+    "Revenue generated ($5,000) despite zero leads indicates existing customer monetization"
+  ],
+  "attention_needed": [
+    "Zero published content this week - publishing velocity critical",
+    "No lead generation despite 4,500 impressions (0% conversion)",
+    "Only 5 of 38 pieces approved - major bottleneck in approval workflow",
+    "12 scheduled pieces need monitoring to ensure actual publication"
+  ],
+  "recommendations": [
+    "Investigate approval process bottleneck - 87% of content stuck in review",
+    "Implement lead capture mechanisms for scheduled content to convert impressions",
+    "Set daily publishing targets to clear scheduled backlog into live status",
+    "Analyze which of the 5 approved pieces drive highest engagement for format replication",
+    "Review content mix - 263 formats from 38 pieces suggests over-diversification"
+  ],
+  "metrics_highlight": {
+    "best_metric": "Engagement Rate (7.1%)",
+    "worst_metric": "Lead Generation (0 leads)",
+    "trend": "flat"
+  },
+  "stats": {
+    "total_content": 38,
+    "total_formats": 263,
+    "approved": 5,
+    "published": 0,
+    "scheduled": 12,
+    "total_engagement": 320,
+    "total_impressions": 4500,
+    "avg_engagement_rate": "7.1",
+    "total_leads": 0,
+    "total_revenue": 5000
+  },
+  "generated_at": "2026-02-21T02:21:52.054Z"
+}

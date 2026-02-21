@@ -8103,6 +8103,250 @@ Return JSON: {
       });
     }
 
+    // === Batch 48: Workflow Automation + Weekly Digest + Split Testing ===
+
+    // POST /api/workflow/automate — set automation rules
+    if (pathname === '/api/workflow/automate' && method === 'POST') {
+      const body = await parseBody(req);
+      const rules = readJSON('workflow-rules.json', {
+        auto_approve_threshold: 80,
+        auto_schedule_approved: false,
+        auto_generate_hashtags: true,
+        auto_quality_check: true,
+        max_daily_approvals: 10,
+        notify_on_approval: true,
+        enabled: false
+      });
+      Object.assign(rules, body, { updated_at: now() });
+      writeJSON('workflow-rules.json', rules);
+      return json(res, { ok: true, rules });
+    }
+
+    // GET /api/workflow/rules — get current automation rules
+    if (pathname === '/api/workflow/rules' && method === 'GET') {
+      return json(res, readJSON('workflow-rules.json', {
+        auto_approve_threshold: 80,
+        auto_schedule_approved: false,
+        auto_generate_hashtags: true,
+        auto_quality_check: true,
+        max_daily_approvals: 10,
+        enabled: false
+      }));
+    }
+
+    // POST /api/workflow/run-automation — execute workflow rules on pending content
+    if (pathname === '/api/workflow/run-automation' && method === 'POST') {
+      const rules = readJSON('workflow-rules.json', { enabled: false });
+      if (!rules.enabled) return json(res, { error: 'Workflow automation is disabled' }, 400);
+
+      const allContent = readJSON('content.json', []);
+      let approved = 0, scheduled = 0, checked = 0;
+
+      for (const item of allContent) {
+        for (const [fmt, data] of Object.entries(item.formats || {})) {
+          if (!data.content || data.status !== 'draft') continue;
+
+          // Auto quality check
+          if (rules.auto_quality_check && !data.quality_score) {
+            checked++;
+          }
+
+          // Auto approve if quality score meets threshold
+          if (data.quality_score >= rules.auto_approve_threshold && data.status === 'draft') {
+            data.status = 'approved';
+            data.auto_approved = true;
+            data.approved_at = now();
+            approved++;
+          }
+        }
+      }
+
+      writeJSON('content.json', allContent);
+      return json(res, { ok: true, approved, scheduled, checked });
+    }
+
+    // --- Weekly Analytics Digest ---
+
+    // GET /api/analytics/weekly-digest — AI summary of all performance
+    if (pathname === '/api/analytics/weekly-digest' && method === 'GET') {
+      const cached = readJSON('weekly-digest.json', null);
+      if (cached && cached.generated_at) {
+        const age = Date.now() - new Date(cached.generated_at).getTime();
+        if (age < 24 * 60 * 60 * 1000) return json(res, cached); // 24h cache
+      }
+      return json(res, cached || { summary: null, generated_at: null });
+    }
+
+    // POST /api/analytics/generate-digest — generate weekly digest
+    if (pathname === '/api/analytics/generate-digest' && method === 'POST') {
+      const allContent = readJSON('content.json', []);
+      const engagement = readJSON('engagement-tracking.json', []);
+      const schedule = readJSON('schedule-queue.json', []);
+      const roi = readJSON('content-roi.json', []);
+      const leads = readJSON('content-leads.json', []);
+
+      const stats = {
+        total_content: allContent.length,
+        total_formats: allContent.reduce((s, c) => s + Object.keys(c.formats || {}).length, 0),
+        approved: allContent.filter(c => Object.values(c.formats || {}).some(f => f.status === 'approved')).length,
+        published: schedule.filter(s => s.status === 'published').length,
+        scheduled: schedule.filter(s => s.status === 'scheduled').length,
+        total_engagement: engagement.reduce((s, e) => s + (e.engagement || 0), 0),
+        total_impressions: engagement.reduce((s, e) => s + (e.impressions || 0), 0),
+        avg_engagement_rate: engagement.length > 0
+          ? (engagement.reduce((s, e) => s + parseFloat(e.engagement_rate || 0), 0) / engagement.length).toFixed(1)
+          : '0',
+        total_leads: leads.length,
+        total_revenue: roi.reduce((s, r) => s + (r.revenue || 0), 0)
+      };
+
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude.js');
+      let text, parsed;
+      try {
+        text = await callClaude({
+          model: HAIKU,
+          system: 'You generate weekly content marketing analytics summaries. Return JSON only.',
+          prompt: `Generate a weekly analytics digest from this data.
+
+STATS:
+${JSON.stringify(stats, null, 2)}
+
+Create a concise weekly summary with:
+1. Key wins this week
+2. Areas needing attention
+3. Recommendations for next week
+4. Performance grade (A-F)
+
+Return JSON: {
+  "grade": "A-F",
+  "headline": "one-line summary",
+  "key_wins": ["..."],
+  "attention_needed": ["..."],
+  "recommendations": ["..."],
+  "metrics_highlight": { "best_metric": "...", "worst_metric": "...", "trend": "up|down|flat" }
+}`,
+          maxTokens: 1000
+        });
+        parsed = parseJsonResponse(text);
+      } catch (err) {
+        return json(res, { error: 'AI error: ' + err.message }, 500);
+      }
+      if (!parsed) return json(res, { error: 'Failed to generate digest', raw_preview: (text || '').slice(0, 200) }, 500);
+
+      const digest = { ...parsed, stats, generated_at: now() };
+      writeJSON('weekly-digest.json', digest);
+      return json(res, { ok: true, digest });
+    }
+
+    // --- Content Split Testing ---
+
+    // POST /api/content/:id/split-test — create 2 hook variants for A/B testing
+    if (pathname.match(/^\/api\/content\/[^/]+\/split-test$/) && method === 'POST') {
+      const id = pathname.split('/')[3];
+      const allContent = readJSON('content.json', []);
+      const item = allContent.find(c => c.id === id);
+      if (!item) return json(res, { error: 'not found' }, 404);
+
+      const linkedinContent = item.formats?.linkedin?.content || '';
+      if (!linkedinContent) return json(res, { error: 'Need LinkedIn content to split test' }, 400);
+
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude.js');
+      let text, parsed;
+      try {
+        text = await callClaude({
+          model: HAIKU,
+          system: 'You create A/B test variants for LinkedIn content. Return JSON only.',
+          prompt: `Create 2 hook variants for this LinkedIn post for A/B testing.
+
+ORIGINAL POST:
+${linkedinContent.slice(0, 1500)}
+
+Rules:
+- Variant A: Different opening hook (story-driven)
+- Variant B: Different opening hook (data-driven)
+- Keep the core message and body the same
+- Only change the first 2-3 lines (the hook)
+
+Return JSON: {
+  "variant_a": { "hook_style": "story", "content": "full post with new hook..." },
+  "variant_b": { "hook_style": "data", "content": "full post with new hook..." },
+  "hypothesis": "which variant should perform better and why"
+}`,
+          maxTokens: 3000
+        });
+        parsed = parseJsonResponse(text);
+      } catch (err) {
+        return json(res, { error: 'AI error: ' + err.message }, 500);
+      }
+      if (!parsed) return json(res, { error: 'Failed to create variants', raw_preview: (text || '').slice(0, 200) }, 500);
+
+      const tests = readJSON('split-tests.json', []);
+      const test = {
+        id: generateId(),
+        content_id: id,
+        title: item.trigger_title,
+        ...parsed,
+        performance: { a: { impressions: 0, engagement: 0 }, b: { impressions: 0, engagement: 0 } },
+        status: 'active',
+        winner: null,
+        created_at: now()
+      };
+      tests.push(test);
+      writeJSON('split-tests.json', tests);
+      return json(res, { ok: true, test });
+    }
+
+    // GET /api/split-tests — list all split tests
+    if (pathname === '/api/split-tests' && method === 'GET') {
+      return json(res, readJSON('split-tests.json', []));
+    }
+
+    // POST /api/split-tests/:id/record — record variant performance
+    if (pathname.match(/^\/api\/split-tests\/[^/]+\/record$/) && method === 'POST') {
+      const testId = pathname.split('/')[3];
+      const body = await parseBody(req);
+      const tests = readJSON('split-tests.json', []);
+      const test = tests.find(t => t.id === testId);
+      if (!test) return json(res, { error: 'not found' }, 404);
+
+      const variant = body.variant; // 'a' or 'b'
+      if (variant !== 'a' && variant !== 'b') return json(res, { error: 'variant must be "a" or "b"' }, 400);
+      if (body.impressions) test.performance[variant].impressions += body.impressions;
+      if (body.engagement) test.performance[variant].engagement += body.engagement;
+
+      writeJSON('split-tests.json', tests);
+      return json(res, { ok: true, performance: test.performance });
+    }
+
+    // POST /api/split-tests/:id/declare-winner — declare winning variant
+    if (pathname.match(/^\/api\/split-tests\/[^/]+\/declare-winner$/) && method === 'POST') {
+      const testId = pathname.split('/')[3];
+      const body = await parseBody(req);
+      const tests = readJSON('split-tests.json', []);
+      const test = tests.find(t => t.id === testId);
+      if (!test) return json(res, { error: 'not found' }, 404);
+
+      const winner = body.winner || 'a';
+      test.winner = winner;
+      test.status = 'completed';
+      test.completed_at = now();
+
+      // Update the content with the winning variant
+      const allContent = readJSON('content.json', []);
+      const item = allContent.find(c => c.id === test.content_id);
+      if (item && item.formats?.linkedin) {
+        const winContent = winner === 'a' ? test.variant_a?.content : test.variant_b?.content;
+        if (winContent) {
+          item.formats.linkedin.content = winContent;
+          item.formats.linkedin.split_test_winner = winner;
+          writeJSON('content.json', allContent);
+        }
+      }
+
+      writeJSON('split-tests.json', tests);
+      return json(res, { ok: true, winner, test });
+    }
+
     // --- Content Series API ---
 
     // GET /api/series — list all content series

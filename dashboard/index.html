@@ -1500,6 +1500,10 @@ const state = {
   amplifications: [],
   leadFunnels: [],
   calendarInsights: null,
+  // Weekly Digest & Split Tests
+  weeklyDigest: null,
+  splitTests: [],
+  workflowRules: null,
 };
 
 // --- API Calls ---
@@ -1525,7 +1529,7 @@ async function loadData() {
   state.loading = true;
   render();
   try {
-    const [content, triggers, stats, calendar, monthCal, settings, memory, performance, perfAnalytics, meetings, meetingStats, clients, allActions, chatMessages, healthData, inspirations, pestering, pesteringStages, insights, deals, published, series, predictions, playbooks, ctaLibrary, trending, funnel, publishTracker, leadMagnets, contentHealth, scheduleOptimize, templates, dmSequences, hooks, pillarPlan, contentLeads, autopilot, scheduleQueue, engagementDashboard, contentBriefs, workflowPipeline, personas, calendarWeek, benchmarkReport, contentIdeas, socialProof, roiReport, audienceGrowth, contentThemes, distributionPlans, dmPipelines, competitorsTracked, dripCampaigns, autoResponses, expiringContent, amplifications, leadFunnels, calendarInsights] = await Promise.all([
+    const [content, triggers, stats, calendar, monthCal, settings, memory, performance, perfAnalytics, meetings, meetingStats, clients, allActions, chatMessages, healthData, inspirations, pestering, pesteringStages, insights, deals, published, series, predictions, playbooks, ctaLibrary, trending, funnel, publishTracker, leadMagnets, contentHealth, scheduleOptimize, templates, dmSequences, hooks, pillarPlan, contentLeads, autopilot, scheduleQueue, engagementDashboard, contentBriefs, workflowPipeline, personas, calendarWeek, benchmarkReport, contentIdeas, socialProof, roiReport, audienceGrowth, contentThemes, distributionPlans, dmPipelines, competitorsTracked, dripCampaigns, autoResponses, expiringContent, amplifications, leadFunnels, calendarInsights, weeklyDigest, splitTests, workflowRules] = await Promise.all([
       api('/api/content'),
       api('/api/triggers'),
       api('/api/stats'),
@@ -1583,7 +1587,10 @@ async function loadData() {
       api('/api/content/expiring').catch(() => null),
       api('/api/amplifications').catch(() => []),
       api('/api/lead-funnels').catch(() => []),
-      api('/api/calendar/insights').catch(() => null)
+      api('/api/calendar/insights').catch(() => null),
+      api('/api/analytics/weekly-digest').catch(() => null),
+      api('/api/split-tests').catch(() => []),
+      api('/api/workflow/rules').catch(() => null)
     ]);
     state.content = content;
     state.triggers = triggers;
@@ -1643,6 +1650,9 @@ async function loadData() {
     state.amplifications = amplifications;
     state.leadFunnels = leadFunnels;
     state.calendarInsights = calendarInsights;
+    state.weeklyDigest = weeklyDigest;
+    state.splitTests = splitTests;
+    state.workflowRules = workflowRules;
   } catch (err) {
     console.error('Failed to load data:', err);
     toast('Failed to load data', 'error');
@@ -2841,6 +2851,19 @@ function renderDashboardPage() {
                 } catch (err) { toast('Theme analysis failed: ' + err.message, 'error'); }
               }
             }, 'Themes'),
+            h('button', {
+              className: 'btn btn-sm',
+              style: { background: '#d97706', color: 'white', border: 'none' },
+              onclick: async () => {
+                toast('Generating weekly digest...', 'info');
+                try {
+                  const res = await api('/api/analytics/generate-digest', { method: 'POST' });
+                  state.weeklyDigest = res.digest;
+                  toast(`Weekly digest: Grade ${res.digest?.grade}`, 'success');
+                  render();
+                } catch (err) { toast('Digest failed: ' + err.message, 'error'); }
+              }
+            }, 'Digest'),
             h('button', { className: 'btn btn-ghost btn-sm', onclick: () => { state.page = 'content'; render(); } }, 'View Content')
           )
         ),
@@ -2952,6 +2975,67 @@ function renderDashboardPage() {
             h('div', { style: { fontSize: '11px', color: 'var(--gray-600)', marginBottom: '3px', paddingLeft: '8px', borderLeft: '2px solid #d97706' } }, g)
           )
         ) : null
+      )
+    ) : null,
+    // Weekly Digest
+    state.weeklyDigest?.grade ? h('div', { style: { marginBottom: '20px' } },
+      h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } },
+          h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)' } }, 'WEEKLY DIGEST'),
+          h('span', {
+            style: {
+              padding: '3px 12px', borderRadius: '12px', fontSize: '14px', fontWeight: '700',
+              background: state.weeklyDigest.grade?.startsWith('A') ? '#dcfce7' : state.weeklyDigest.grade?.startsWith('B') ? '#dbeafe' : state.weeklyDigest.grade?.startsWith('C') ? '#fef9c3' : '#fef2f2',
+              color: state.weeklyDigest.grade?.startsWith('A') ? '#166534' : state.weeklyDigest.grade?.startsWith('B') ? '#1e40af' : state.weeklyDigest.grade?.startsWith('C') ? '#854d0e' : '#991b1b'
+            }
+          }, state.weeklyDigest.grade)
+        ),
+        h('span', { style: { fontSize: '10px', color: 'var(--gray-400)' } }, state.weeklyDigest.generated_at?.slice(0, 16)?.replace('T', ' ') || '')
+      ),
+      h('div', { style: { background: 'white', borderRadius: 'var(--radius-sm)', padding: '14px', border: '1px solid var(--gray-200)' } },
+        h('div', { style: { fontSize: '12px', fontWeight: '600', color: 'var(--navy)', marginBottom: '8px' } }, state.weeklyDigest.headline),
+        h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' } },
+          h('div', {},
+            h('div', { style: { fontSize: '11px', fontWeight: '700', color: '#059669', marginBottom: '4px' } }, 'WINS'),
+            ...(state.weeklyDigest.key_wins || []).slice(0, 3).map(w =>
+              h('div', { style: { fontSize: '11px', color: 'var(--gray-600)', marginBottom: '3px', paddingLeft: '8px', borderLeft: '2px solid #059669' } }, w)
+            )
+          ),
+          h('div', {},
+            h('div', { style: { fontSize: '11px', fontWeight: '700', color: '#dc2626', marginBottom: '4px' } }, 'NEEDS ATTENTION'),
+            ...(state.weeklyDigest.attention_needed || []).slice(0, 3).map(a =>
+              h('div', { style: { fontSize: '11px', color: 'var(--gray-600)', marginBottom: '3px', paddingLeft: '8px', borderLeft: '2px solid #dc2626' } }, a)
+            )
+          )
+        ),
+        (state.weeklyDigest.recommendations || []).length > 0 ? h('div', { style: { marginTop: '8px' } },
+          h('div', { style: { fontSize: '11px', fontWeight: '700', color: 'var(--blue)', marginBottom: '4px' } }, 'NEXT WEEK'),
+          ...(state.weeklyDigest.recommendations || []).slice(0, 3).map(r =>
+            h('div', { style: { fontSize: '11px', color: 'var(--gray-600)', marginBottom: '3px', paddingLeft: '8px', borderLeft: '2px solid var(--blue)' } }, r)
+          )
+        ) : null
+      )
+    ) : null,
+    // Split Tests
+    state.splitTests?.filter(t => t.status === 'active').length > 0 ? h('div', { style: { marginBottom: '20px' } },
+      h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)', marginBottom: '8px' } }, `ACTIVE SPLIT TESTS (${state.splitTests.filter(t => t.status === 'active').length})`),
+      h('div', { style: { display: 'grid', gap: '6px' } },
+        ...state.splitTests.filter(t => t.status === 'active').slice(0, 3).map(test =>
+          h('div', { style: { padding: '10px 14px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)' } },
+            h('div', { style: { fontSize: '12px', fontWeight: '600', color: 'var(--navy)', marginBottom: '6px' } }, (test.title || '').slice(0, 50)),
+            h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' } },
+              h('div', { style: { padding: '6px 8px', background: '#eff6ff', borderRadius: '6px', border: '1px solid #bfdbfe' } },
+                h('div', { style: { fontSize: '10px', fontWeight: '700', color: '#2563eb', marginBottom: '2px' } }, `A: ${test.variant_a?.hook_style || 'story'}`),
+                h('div', { style: { fontSize: '10px', color: 'var(--gray-500)' } }, `${test.performance?.a?.impressions || 0} imp | ${test.performance?.a?.engagement || 0} eng`)
+              ),
+              h('div', { style: { padding: '6px 8px', background: '#f0fdf4', borderRadius: '6px', border: '1px solid #bbf7d0' } },
+                h('div', { style: { fontSize: '10px', fontWeight: '700', color: '#059669', marginBottom: '2px' } }, `B: ${test.variant_b?.hook_style || 'data'}`),
+                h('div', { style: { fontSize: '10px', color: 'var(--gray-500)' } }, `${test.performance?.b?.impressions || 0} imp | ${test.performance?.b?.engagement || 0} eng`)
+              )
+            ),
+            h('div', { style: { fontSize: '10px', color: '#7c3aed', marginTop: '4px', fontStyle: 'italic' } }, test.hypothesis?.slice(0, 100) + '...')
+          )
+        )
       )
     ) : null,
     // Autopilot Status

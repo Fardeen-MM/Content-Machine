@@ -2669,6 +2669,28 @@ function renderDashboardPage() {
                 } catch (err) { toast('Failed: ' + err.message, 'error'); }
               }
             }, 'Auto-Regen'),
+            h('button', {
+              className: 'btn btn-outline btn-sm',
+              style: { color: '#dc2626', borderColor: '#dc2626' },
+              onclick: async () => {
+                toast('Analyzing competitor content...', 'info');
+                try {
+                  const res = await api('/api/competitors/analyze', { method: 'POST' });
+                  toast(`Analyzed ${res.competitors?.length || 0} competitors. ${res.opportunities?.length || 0} opportunities found.`, 'success');
+                  loadData();
+                } catch (err) { toast('Analysis failed: ' + err.message, 'error'); }
+              }
+            }, 'Competitors'),
+            h('button', {
+              className: 'btn btn-outline btn-sm',
+              onclick: async () => {
+                toast('Auto-saving best content to swipe file...', 'info');
+                try {
+                  const res = await api('/api/swipe-file/auto-save', { method: 'POST' });
+                  toast(`Saved ${res.saved} examples to swipe file (${res.total} total)`, 'success');
+                } catch (err) { toast('Swipe save failed: ' + err.message, 'error'); }
+              }
+            }, 'Build Swipe'),
             h('button', { className: 'btn btn-ghost btn-sm', onclick: () => { state.page = 'content'; render(); } }, 'View Content')
           )
         ),
@@ -3735,6 +3757,17 @@ function renderFormatContent(content, formatKey, fmt) {
           } catch (err) { toast('CTA generation failed: ' + err.message, 'error'); }
         }
       }, 'Gen CTA') : null,
+      // Save to Swipe File button (for approved content)
+      typeof text === 'string' && fmt.status === 'approved' ? h('button', {
+        className: 'btn btn-outline btn-sm',
+        style: { fontSize: '10px', padding: '2px 6px', color: '#7c3aed', borderColor: '#7c3aed' },
+        onclick: async () => {
+          try {
+            await api('/api/swipe-file/save', { method: 'POST', body: { text: text.split('\n').slice(0, 3).join('\n'), content_id: content.id, format: formatKey, source: 'manual' } });
+            toast('Saved to swipe file!', 'success');
+          } catch (err) { toast('Save failed: ' + err.message, 'error'); }
+        }
+      }, 'Swipe') : null,
       // Apply template dropdown (for linkedin and x_thread formats)
       typeof text === 'string' && ['linkedin', 'x_thread'].includes(formatKey) && state.templates.length > 0
         ? h('select', {

@@ -5046,6 +5046,257 @@ Extract 8-15 atoms. Each must be self-contained and usable as standalone content
       }
     }
 
+    // --- Swipe File ---
+
+    // GET /api/swipe-file — list all swipe file entries
+    if (pathname === '/api/swipe-file' && method === 'GET') {
+      const swipe = readJSON('swipe-file.json', []);
+      return json(res, swipe);
+    }
+
+    // POST /api/swipe-file/save — save a content example to the swipe file
+    if (pathname === '/api/swipe-file/save' && method === 'POST') {
+      const body = await parseBody(req);
+      if (!body.text) return json(res, { error: 'text required' }, 400);
+
+      const swipe = readJSON('swipe-file.json', []);
+      const entry = {
+        id: generateId(),
+        text: body.text.slice(0, 2000),
+        category: body.category || 'general',
+        source: body.source || 'manual',
+        content_id: body.content_id || null,
+        format: body.format || 'linkedin',
+        tags: body.tags || [],
+        notes: body.notes || '',
+        created_at: now()
+      };
+      swipe.push(entry);
+      writeJSON('swipe-file.json', swipe);
+      return json(res, { ok: true, entry });
+    }
+
+    // POST /api/swipe-file/auto-save — AI scans approved content and saves best hooks/CTAs/structures
+    if (pathname === '/api/swipe-file/auto-save' && method === 'POST') {
+      const content = readJSON('content.json');
+      const swipe = readJSON('swipe-file.json', []);
+      const existingIds = new Set(swipe.map(s => s.content_id));
+
+      // Find approved content not yet in swipe file
+      const approved = content.filter(c => c.status === 'approved' && !existingIds.has(c.id));
+      if (approved.length === 0) return json(res, { ok: true, saved: 0, message: 'All approved content already in swipe file' });
+
+      let saved = 0;
+      for (const item of approved.slice(0, 20)) {
+        for (const [fmt, data] of Object.entries(item.formats || {})) {
+          if (!data?.content || data.status !== 'approved') continue;
+          const text = typeof data.content === 'string' ? data.content : (Array.isArray(data.content) ? data.content[0] : '');
+          if (text.length < 100) continue;
+
+          // Extract hook (first 1-2 lines)
+          const lines = text.split('\n').filter(l => l.trim());
+          const hook = lines.slice(0, 2).join('\n');
+
+          // Determine category based on content analysis
+          let category = 'general';
+          const hookLower = hook.toLowerCase();
+          if (/\d+%|\$[\d,]+|\d+ (cases|firms|leads|calls)/.test(hook)) category = 'data_hook';
+          else if (/myth|wrong|stop|don'?t|worst/.test(hookLower)) category = 'contrarian_hook';
+          else if (/firm|client|attorney.*called|last (month|week)/.test(hookLower)) category = 'story_hook';
+          else if (/\?$/.test(lines[0]?.trim())) category = 'question_hook';
+          else if (/comment|reply|dm|free/.test(text.toLowerCase().split('\n').pop() || '')) category = 'cta_example';
+
+          swipe.push({
+            id: generateId(),
+            text: hook,
+            full_text: text.slice(0, 1500),
+            category,
+            source: 'auto',
+            content_id: item.id,
+            format: fmt,
+            tags: [item.trigger_category, item.trigger_source].filter(Boolean),
+            notes: `Auto-saved from approved ${fmt} content`,
+            created_at: now()
+          });
+          saved++;
+          break; // One entry per content item
+        }
+      }
+
+      writeJSON('swipe-file.json', swipe);
+      return json(res, { ok: true, saved, total: swipe.length });
+    }
+
+    // --- Competitor Analysis ---
+
+    // POST /api/competitors/analyze — analyze competitor content strategy
+    if (pathname === '/api/competitors/analyze' && method === 'POST') {
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+
+      const triggers = readJSON('trigger-queue.json');
+      const competitorTriggers = triggers.filter(t => t.source === 'competitor');
+
+      if (competitorTriggers.length === 0) return json(res, { error: 'No competitor data found. Run scraper first.' }, 400);
+
+      // Group by competitor
+      const byCompetitor = {};
+      for (const t of competitorTriggers) {
+        const src = t.url ? new URL(t.url).hostname : 'unknown';
+        if (!byCompetitor[src]) byCompetitor[src] = [];
+        byCompetitor[src].push(t);
+      }
+
+      try {
+        const { callClaude, parseJsonResponse, SONNET } = require('./lib/claude');
+
+        const competitorSummary = Object.entries(byCompetitor).map(([host, items]) => {
+          return `${host} (${items.length} pieces):\n${items.slice(0, 5).map(i => `  - ${i.title}`).join('\n')}`;
+        }).join('\n\n');
+
+        const prompt = `Analyze these competitor legal marketing agencies' content strategies:
+
+${competitorSummary}
+
+Return JSON (raw, no fences):
+{
+  "competitors": [
+    {
+      "name": "competitor domain",
+      "content_count": 0,
+      "top_topics": ["topic1", "topic2"],
+      "posting_frequency": "X posts/month estimated",
+      "content_style": "description of their approach",
+      "strengths": ["what they do well"],
+      "weaknesses": ["gaps or missed opportunities"]
+    }
+  ],
+  "opportunities": ["content topics/angles competitors aren't covering that we should"],
+  "threats": ["areas where competitors are strong and we need to improve"],
+  "differentiation_ideas": ["how we can stand out from competitors"],
+  "summary": "1-2 sentence competitive landscape summary"
+}`;
+
+        const text = await callClaude({ model: SONNET, system: 'You are a competitive intelligence analyst for a legal marketing agency.', prompt, maxTokens: 2500 });
+        const parsed = parseJsonResponse(text);
+        if (!parsed) return json(res, { error: 'Failed to analyze competitors' }, 500);
+
+        parsed.analyzed_at = now();
+        parsed.total_competitor_content = competitorTriggers.length;
+        writeJSON('competitor-analysis.json', parsed);
+
+        return json(res, { ok: true, ...parsed });
+      } catch (err) {
+        return json(res, { error: err.message }, 500);
+      }
+    }
+
+    // GET /api/competitors/analysis — get saved competitor analysis
+    if (pathname === '/api/competitors/analysis' && method === 'GET') {
+      const analysis = readJSON('competitor-analysis.json', null);
+      return json(res, analysis || { competitors: [], analyzed_at: null });
+    }
+
+    // --- Social Proof Generator ---
+
+    // POST /api/social-proof/generate — create social proof content from performance data
+    if (pathname === '/api/social-proof/generate' && method === 'POST') {
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+
+      const content = readJSON('content.json');
+      const perfData = readJSON('performance.json');
+      const published = readJSON('published.json');
+
+      // Gather performance highlights
+      const topPerformers = perfData
+        .filter(p => (p.engagement || 0) > 0 || (p.clicks || 0) > 0 || (p.leads || 0) > 0)
+        .sort((a, b) => ((b.engagement || 0) + (b.clicks || 0) * 3 + (b.leads || 0) * 10) - ((a.engagement || 0) + (a.clicks || 0) * 3 + (a.leads || 0) * 10))
+        .slice(0, 5);
+
+      const highlights = topPerformers.map(p => {
+        const c = content.find(item => item.id === p.content_id);
+        return { title: c?.trigger_title || 'Unknown', format: p.format, impressions: p.impressions || 0, engagement: p.engagement || 0, clicks: p.clicks || 0, leads: p.leads || 0 };
+      });
+
+      const stats = {
+        total_content: content.length,
+        total_published: published.length,
+        total_formats: content.reduce((s, c) => s + Object.keys(c.formats || {}).length, 0),
+        approved_rate: content.length > 0 ? Math.round((content.filter(c => c.status === 'approved').length / content.length) * 100) : 0,
+        total_leads: perfData.reduce((s, p) => s + (p.leads || 0), 0),
+        total_engagement: perfData.reduce((s, p) => s + (p.engagement || 0), 0)
+      };
+
+      try {
+        const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+        const { buildSystemPromptWithMemory } = require('./generator/content-writer');
+
+        const approvedTitles = content.filter(c => c.status === 'approved').slice(0, 5).map(c => c.trigger_title);
+        const prompt = `Create 3 social proof LinkedIn posts for Mortar Metrics, a legal marketing agency. Use realistic-sounding metrics (make them plausible but impressive). This is for building authority.
+
+OUR CONTENT STATS:
+- ${stats.total_content} content pieces in our system
+- ${stats.total_formats} format variants created
+- ${stats.approved_rate}% quality approval rate
+${stats.total_published > 0 ? `- ${stats.total_published} published across platforms` : ''}
+${stats.total_leads > 0 ? `- ${stats.total_leads} leads generated from content` : ''}
+
+OUR APPROVED CONTENT TOPICS:
+${approvedTitles.map(t => `- ${t}`).join('\n') || '- Legal marketing strategies\n- Law firm growth tactics\n- Intake optimization'}
+
+${highlights.length > 0 ? `TOP PERFORMERS:\n${highlights.map(h => `- "${h.title}" (${h.format}): ${h.impressions} impressions, ${h.engagement} engagements, ${h.leads} leads`).join('\n')}` : ''}
+
+Return JSON (raw, no fences):
+{
+  "posts": [
+    {
+      "type": "results_showcase",
+      "content": "Full LinkedIn post showing our results...",
+      "hook": "First line of the post",
+      "cta": "Call to action"
+    },
+    {
+      "type": "process_reveal",
+      "content": "Full LinkedIn post revealing our content process...",
+      "hook": "First line",
+      "cta": "CTA"
+    },
+    {
+      "type": "authority_builder",
+      "content": "Full LinkedIn post establishing thought leadership...",
+      "hook": "First line",
+      "cta": "CTA"
+    }
+  ]
+}
+
+Make posts specific, data-driven, and not braggy. Show results naturally. Each 800-1200 chars.`;
+
+        const text = await callClaude({ model: HAIKU, system: buildSystemPromptWithMemory(), prompt, maxTokens: 3000 });
+        const parsed = parseJsonResponse(text);
+        if (!parsed?.posts) {
+          console.error('[social-proof] Parse failed. Raw:', text?.slice(0, 200));
+          return json(res, { error: 'Failed to generate social proof', raw_preview: (text || '').slice(0, 100) }, 500);
+        }
+
+        // Save generated social proof posts
+        const socialProof = readJSON('social-proof.json', []);
+        for (const post of parsed.posts) {
+          socialProof.push({ id: generateId(), ...post, stats_snapshot: stats, generated_at: now() });
+        }
+        writeJSON('social-proof.json', socialProof);
+
+        return json(res, { ok: true, posts: parsed.posts, stats_used: stats });
+      } catch (err) {
+        return json(res, { error: err.message }, 500);
+      }
+    }
+
+    // GET /api/social-proof — list generated social proof posts
+    if (pathname === '/api/social-proof' && method === 'GET') {
+      const proof = readJSON('social-proof.json', []);
+      return json(res, proof);
+    }
+
     // --- Content Series API ---
 
     // GET /api/series — list all content series

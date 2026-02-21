@@ -7178,6 +7178,202 @@ Only return elements that are genuine social proof — client wins, results, pra
       });
     }
 
+    // === Batch 44: Distribution Planner + Audience Growth + Theme Clustering ===
+
+    // POST /api/content/:id/distribution-plan — AI creates optimal distribution plan
+    if (pathname.match(/^\/api\/content\/[^/]+\/distribution-plan$/) && method === 'POST') {
+      const id = pathname.split('/')[3];
+      const content = readJSON('content.json', []);
+      const item = content.find(c => c.id === id);
+      if (!item) return json(res, { error: 'not found' }, 404);
+
+      const formats = Object.keys(item.formats || {}).filter(f => item.formats[f]?.content);
+      if (formats.length === 0) return json(res, { error: 'No content formats generated yet' }, 400);
+
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude.js');
+      let text, parsed;
+      try {
+        text = await callClaude({
+          model: HAIKU,
+          system: 'You are a social media distribution strategist. Return JSON only.',
+          prompt: `Create an optimal 7-day distribution plan for this content across platforms.
+
+CONTENT TITLE: ${item.trigger_title}
+AVAILABLE FORMATS: ${formats.join(', ')}
+
+Create a day-by-day plan with:
+- Which format to post on which day
+- Optimal time (EST)
+- Cross-promotion notes (e.g., "tease the blog in LinkedIn post")
+- Engagement strategy (e.g., "respond to comments within 1 hour")
+
+Return JSON: {
+  "plan": [{ "day": 1, "day_name": "Mon", "posts": [{ "platform": "linkedin", "format": "linkedin", "time": "08:30", "caption_note": "...", "cross_promote": "..." }] }],
+  "strategy_notes": ["..."],
+  "expected_reach": "estimate",
+  "key_cta": "primary call to action"
+}`,
+          maxTokens: 2000
+        });
+        parsed = parseJsonResponse(text);
+      } catch (err) {
+        return json(res, { error: 'AI error: ' + err.message }, 500);
+      }
+      if (!parsed) return json(res, { error: 'Failed to generate plan', raw_preview: (text || '').slice(0, 200) }, 500);
+
+      // Save the plan
+      const plans = readJSON('distribution-plans.json', []);
+      const plan = { id: generateId(), content_id: id, title: item.trigger_title, ...parsed, created_at: now() };
+      plans.push(plan);
+      writeJSON('distribution-plans.json', plans);
+
+      return json(res, { ok: true, plan });
+    }
+
+    // GET /api/distribution-plans — list all distribution plans
+    if (pathname === '/api/distribution-plans' && method === 'GET') {
+      return json(res, readJSON('distribution-plans.json', []));
+    }
+
+    // POST /api/distribution-plans/:id/execute — schedule all posts from a plan
+    if (pathname.match(/^\/api\/distribution-plans\/[^/]+\/execute$/) && method === 'POST') {
+      const planId = pathname.split('/')[3];
+      const plans = readJSON('distribution-plans.json', []);
+      const plan = plans.find(p => p.id === planId);
+      if (!plan) return json(res, { error: 'not found' }, 404);
+
+      const schedule = readJSON('schedule-queue.json', []);
+      let scheduled = 0;
+      const today = new Date();
+
+      for (const day of (plan.plan || [])) {
+        for (const post of (day.posts || [])) {
+          const postDate = new Date(today);
+          postDate.setDate(today.getDate() + (day.day - 1));
+          const [hours, mins] = (post.time || '09:00').split(':');
+          postDate.setHours(parseInt(hours), parseInt(mins), 0, 0);
+
+          schedule.push({
+            id: generateId(),
+            content_id: plan.content_id,
+            trigger_title: plan.title,
+            platform: post.platform,
+            format: post.format,
+            scheduled_at: postDate.toISOString(),
+            status: 'scheduled',
+            notes: post.caption_note || post.cross_promote || 'From distribution plan',
+            plan_id: plan.id,
+            created_at: now()
+          });
+          scheduled++;
+        }
+      }
+      writeJSON('schedule-queue.json', schedule);
+      return json(res, { ok: true, scheduled });
+    }
+
+    // --- Audience Growth Tracker ---
+
+    // POST /api/audience/snapshot — record current follower counts
+    if (pathname === '/api/audience/snapshot' && method === 'POST') {
+      const body = await parseBody(req);
+      const snapshots = readJSON('audience-growth.json', []);
+      const snapshot = {
+        id: generateId(),
+        date: new Date().toISOString().slice(0, 10),
+        linkedin_followers: body.linkedin_followers || 0,
+        linkedin_connections: body.linkedin_connections || 0,
+        x_followers: body.x_followers || 0,
+        youtube_subscribers: body.youtube_subscribers || 0,
+        email_subscribers: body.email_subscribers || 0,
+        website_visitors: body.website_visitors || 0,
+        notes: body.notes || '',
+        created_at: now()
+      };
+      snapshots.push(snapshot);
+      writeJSON('audience-growth.json', snapshots);
+      return json(res, { ok: true, snapshot });
+    }
+
+    // GET /api/audience/growth — growth report
+    if (pathname === '/api/audience/growth' && method === 'GET') {
+      const snapshots = readJSON('audience-growth.json', []);
+      if (snapshots.length === 0) return json(res, { snapshots: [], growth: null, summary: { total_snapshots: 0 } });
+
+      const latest = snapshots[snapshots.length - 1];
+      const previous = snapshots.length >= 2 ? snapshots[snapshots.length - 2] : null;
+
+      const growth = {};
+      if (previous) {
+        for (const key of ['linkedin_followers', 'linkedin_connections', 'x_followers', 'youtube_subscribers', 'email_subscribers', 'website_visitors']) {
+          const prev = previous[key] || 0;
+          const curr = latest[key] || 0;
+          growth[key] = { current: curr, previous: prev, change: curr - prev, change_pct: prev > 0 ? Math.round(((curr - prev) / prev) * 100) : 0 };
+        }
+      }
+
+      return json(res, {
+        snapshots: snapshots.slice(-30),
+        latest,
+        growth,
+        summary: {
+          total_snapshots: snapshots.length,
+          first_date: snapshots[0].date,
+          latest_date: latest.date
+        }
+      });
+    }
+
+    // --- Content Theme Clustering ---
+
+    // POST /api/themes/analyze — AI clusters content into themes
+    if (pathname === '/api/themes/analyze' && method === 'POST') {
+      const content = readJSON('content.json', []);
+      if (content.length < 3) return json(res, { error: 'Need at least 3 content pieces to analyze themes' }, 400);
+
+      const titles = content.slice(0, 50).map(c => `- ${c.trigger_title}`).join('\n');
+
+      const { callClaude, parseJsonResponse, SONNET } = require('./lib/claude.js');
+      let text, parsed;
+      try {
+        text = await callClaude({
+          model: SONNET,
+          system: 'You are a content strategist analyzing content themes. Return JSON only.',
+          prompt: `Analyze these content titles and cluster them into 5-8 themes.
+
+CONTENT TITLES:
+${titles}
+
+For each theme, provide:
+- name: short theme name (2-4 words)
+- description: what this theme covers
+- color: hex color for the theme
+- content_titles: which titles belong to this theme
+- strength: 'strong' (4+ pieces), 'moderate' (2-3), 'weak' (1)
+- gap_opportunity: what's missing in this theme area
+
+Return JSON: { "themes": [...], "recommendations": ["..."], "theme_balance": "assessment of theme diversity" }`,
+          maxTokens: 2000
+        });
+        parsed = parseJsonResponse(text);
+      } catch (err) {
+        return json(res, { error: 'AI error: ' + err.message }, 500);
+      }
+      if (!parsed) return json(res, { error: 'Failed to analyze themes', raw_preview: (text || '').slice(0, 200) }, 500);
+
+      // Save the analysis
+      parsed.analyzed_at = now();
+      parsed.content_count = content.length;
+      writeJSON('content-themes.json', parsed);
+
+      return json(res, { ok: true, ...parsed });
+    }
+
+    // GET /api/themes — get current theme analysis
+    if (pathname === '/api/themes' && method === 'GET') {
+      return json(res, readJSON('content-themes.json', { themes: [], recommendations: [], analyzed_at: null }));
+    }
+
     // --- Content Series API ---
 
     // GET /api/series — list all content series

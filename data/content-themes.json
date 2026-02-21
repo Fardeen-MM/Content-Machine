@@ -1,0 +1,121 @@
+{
+  "themes": [
+    {
+      "name": "Marketing Agency Failures",
+      "description": "Frustrations with hiring, managing, and firing marketing agencies that deliver poor results or make costly mistakes",
+      "color": "#E74C3C",
+      "content_titles": [
+        "Fired my 3rd marketing agency this year — what am I doing wrong?",
+        "Just found out my marketing agency was running ads to the wrong zip codes for 6 months",
+        "Hired 3 marketing agencies in 2 years — all terrible. What am I doing wrong?",
+        "My web designer charges $300/mo and my site looks like it's from 2005"
+      ],
+      "strength": "strong",
+      "gap_opportunity": "Content on how to properly vet agencies, red flags to watch for, and what questions to ask before hiring. Also missing: how to structure agency agreements and performance benchmarks."
+    },
+    {
+      "name": "Paid Advertising ROI",
+      "description": "Challenges and wins with Google Ads, LSAs, and other paid channels, including poor conversion rates and budget optimization",
+      "color": "#3498DB",
+      "content_titles": [
+        "Spent $5K/month on Google Ads for my PI firm and got 2 cases",
+        "We switched from Avvo to Google LSAs — 4x more cases at half the cost",
+        "Negative keywords saved my law firm client $3,200/month",
+        "Landing pages vs homepage for law firm ads — A/B test results",
+        "Should I invest in SEO or PPC first? Budget is $5K/month",
+        "[Recycled] Spent $5K/month on Google Ads for my PI firm and got 2 cases"
+      ],
+      "strength": "strong",
+      "gap_opportunity": "Missing detailed breakdowns of cost-per-case by practice area, retargeting strategies, and how to calculate acceptable CAC for different case types."
+    },
+    {
+      "name": "Speed to Lead",
+      "description": "Challenges with response times, intake processes, and converting leads before they contact competitors",
+      "color": "#F39C12",
+      "content_titles": [
+        "Speed to lead is killing us — callers hang up after 30 seconds",
+        "Our intake team started texting leads within 30 seconds — conversion up 41%",
+        "Call insight: Your intake team stops working at 5 PM. Your potential clien",
+        "Call insight: Your intake team is asking the same questions in the same or",
+        "Call insight: You're probably wasting 2-3 hours a day on intake conversati"
+      ],
+      "strength": "strong",
+      "gap_opportunity": "Missing content on after-hours solutions, intake automation tools, and specific scripts/training materials that improve conversion rates."
+    },
+    {
+      "name": "Marketing Attribution & Analytics",
+      "description": "Tracking ROI, understanding marketing metrics, and data-driven decision making for law firm marketing investments",
+      "color": "#9B59B6",
+      "content_titles": [
+        "Clio Legal Trends Report: 67% of firms don't track marketing ROI",
+        "ABA: Average PI firm spends $124K on marketing annually",
+        "Call insight: We keep meeting executive assistants secretly building sprea",
+        "Why Law Firm Marketing Costs Skyrocketed in 2025 (And What Comes Next)"
+      ],
+      "strength": "strong",
+      "gap_opportunity": "Need practical guides on setting up tracking systems, understanding attribution models, and dashboards that non-technical lawyers can actually use."
+    },
+    {
+      "name": "Local SEO & Visibility",
+      "description": "Google Business Profile optimization, local pack rankings, reviews, and organic search strategies for law firms",
+      "color": "#27AE60",
+      "content_titles": [
+        "Our Google Business Profile drives more calls than our website",
+        "How many Google reviews do we need to rank in the local pack?",
+        "Google just rolled out AI Overviews for legal queries — is SEO for lawyers dead?"
+      ],
+      "strength": "moderate",
+      "gap_opportunity": "Missing tactical content on review generation systems, GBP post strategies, and how to optimize for voice search and AI-driven results."
+    },
+    {
+      "name": "Content & Social Strategy",
+      "description": "Video marketing, social media presence, and content formats that drive engagement for professional services",
+      "color": "#E91E63",
+      "content_titles": [
+        "Video content gets 3x more engagement than text for professional services",
+        "Is TikTok worth it for a law firm? Seems unprofessional",
+        "1 month, 178k followers, 213M views, $500,000 Revenue"
+      ],
+      "strength": "moderate",
+      "gap_opportunity": "Need more guidance on content calendars, ethical considerations for lawyer social media, and repurposing strategies across platforms."
+    },
+    {
+      "name": "Growth Case Studies",
+      "description": "Real-world examples of law firms scaling revenue, optimizing operations, and building successful practices",
+      "color": "#16A085",
+      "content_titles": [
+        "I built a $3M law firm in 4 years with zero referrals — here's every channel I used",
+        "Doing the \"Impossible\": Lawyer Who Grew His Revenue by 59% with Fewer Leads — with Eric Gros-Dubois",
+        "Be a \"Lazy\" Lawyer: Expert Delegation Tips to Scale Your Revenue — with Cameron Herold",
+        "Call insight: We watched a firm generate 5,000 leads monthly on a $2-3K bu",
+        "Call insight: The real opportunity in lead generation isn't getting more v"
+      ],
+      "strength": "strong",
+      "gap_opportunity": "Missing mid-size firm case studies (most are either small solo stories or huge success stories). Need more content on sustainable 10-20% annual growth."
+    },
+    {
+      "name": "Industry Trends & AI",
+      "description": "Emerging technologies, AI impact on client acquisition, and how the legal marketing landscape is evolving",
+      "color": "#34495E",
+      "content_titles": [
+        "National Law Review: AI is transforming how law firms acquire clients",
+        "Custom Legal Marketing Celebrates 21 Years as AI Redefines How Clients Find Lawyers - IndyStar",
+        "Lessons Learned From 5,000 Days of Crisp — Episode 438"
+      ],
+      "strength": "moderate",
+      "gap_opportunity": "Need more practical AI implementation guides, not just conceptual pieces. How to use AI for intake, content creation, and ad optimization specifically."
+    }
+  ],
+  "recommendations": [
+    "Create a 'Marketing Agency Vetting Checklist' lead magnet to address the high frustration around agency relationships",
+    "Develop intake optimization content series with scripts, tools, and automation recommendations for speed-to-lead theme",
+    "Build out analytics education content with templates and dashboards lawyers can implement without technical expertise",
+    "Address the organic vs paid debate more directly with budget allocation frameworks for different practice areas",
+    "Create more mid-market case studies ($500K-$2M firms) to bridge the gap between solo practitioners and mega-firms",
+    "Produce platform-specific social media guides addressing ethical concerns for conservative lawyers hesitant about TikTok/social",
+    "Develop AI practical implementation guides beyond theory — specific tools and workflows for intake, content, and ads"
+  ],
+  "theme_balance": "Content shows strong clustering around operational pain points (agency failures, speed-to-lead, paid ads ROI) with 4-5 pieces each, suggesting these are top-of-mind frustrations. Moderate representation in strategic areas (local SEO, content strategy, AI trends) with 2-3 pieces indicates emerging interest but less urgency. Notable gap in tactical 'how-to' content — most pieces are problem-focused or high-level case studies rather than step-by-step implementation guides. The duplication of the Google Ads failure story (5 times) suggests this is a critical pain point worth developing a comprehensive content cluster around. Overall balance skews toward identifying problems rather than solving them, creating opportunity for solution-oriented content.",
+  "analyzed_at": "2026-02-21T02:02:44.953Z",
+  "content_count": 38
+}

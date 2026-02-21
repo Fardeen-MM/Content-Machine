@@ -1485,6 +1485,10 @@ const state = {
   // Social Proof & ROI
   socialProof: [],
   roiReport: null,
+  // Audience Growth & Themes
+  audienceGrowth: null,
+  contentThemes: null,
+  distributionPlans: [],
 };
 
 // --- API Calls ---
@@ -1510,7 +1514,7 @@ async function loadData() {
   state.loading = true;
   render();
   try {
-    const [content, triggers, stats, calendar, monthCal, settings, memory, performance, perfAnalytics, meetings, meetingStats, clients, allActions, chatMessages, healthData, inspirations, pestering, pesteringStages, insights, deals, published, series, predictions, playbooks, ctaLibrary, trending, funnel, publishTracker, leadMagnets, contentHealth, scheduleOptimize, templates, dmSequences, hooks, pillarPlan, contentLeads, autopilot, scheduleQueue, engagementDashboard, contentBriefs, workflowPipeline, personas, calendarWeek, benchmarkReport, contentIdeas, socialProof, roiReport] = await Promise.all([
+    const [content, triggers, stats, calendar, monthCal, settings, memory, performance, perfAnalytics, meetings, meetingStats, clients, allActions, chatMessages, healthData, inspirations, pestering, pesteringStages, insights, deals, published, series, predictions, playbooks, ctaLibrary, trending, funnel, publishTracker, leadMagnets, contentHealth, scheduleOptimize, templates, dmSequences, hooks, pillarPlan, contentLeads, autopilot, scheduleQueue, engagementDashboard, contentBriefs, workflowPipeline, personas, calendarWeek, benchmarkReport, contentIdeas, socialProof, roiReport, audienceGrowth, contentThemes, distributionPlans] = await Promise.all([
       api('/api/content'),
       api('/api/triggers'),
       api('/api/stats'),
@@ -1557,7 +1561,10 @@ async function loadData() {
       api('/api/benchmarks/report').catch(() => null),
       api('/api/ideas').catch(() => []),
       api('/api/social-proof').catch(() => []),
-      api('/api/roi/report').catch(() => null)
+      api('/api/roi/report').catch(() => null),
+      api('/api/audience/growth').catch(() => null),
+      api('/api/themes').catch(() => null),
+      api('/api/distribution-plans').catch(() => [])
     ]);
     state.content = content;
     state.triggers = triggers;
@@ -1606,6 +1613,9 @@ async function loadData() {
     state.contentIdeas = contentIdeas;
     state.socialProof = socialProof;
     state.roiReport = roiReport;
+    state.audienceGrowth = audienceGrowth;
+    state.contentThemes = contentThemes;
+    state.distributionPlans = distributionPlans;
   } catch (err) {
     console.error('Failed to load data:', err);
     toast('Failed to load data', 'error');
@@ -2792,6 +2802,18 @@ function renderDashboardPage() {
                 state.generatingIdeas = false; render();
               }
             }, state.generatingIdeas ? 'Generating...' : 'Ideas'),
+            h('button', {
+              className: 'btn btn-sm',
+              style: { background: '#6366f1', color: 'white', border: 'none' },
+              onclick: async () => {
+                try {
+                  const res = await api('/api/themes/analyze', { method: 'POST' });
+                  state.contentThemes = res;
+                  toast(`Found ${res.themes?.length || 0} content themes`, 'success');
+                  render();
+                } catch (err) { toast('Theme analysis failed: ' + err.message, 'error'); }
+              }
+            }, 'Themes'),
             h('button', { className: 'btn btn-ghost btn-sm', onclick: () => { state.page = 'content'; render(); } }, 'View Content')
           )
         ),
@@ -3258,6 +3280,50 @@ function renderDashboardPage() {
           );
         })
       )
+    ) : null,
+    // Audience Growth
+    state.audienceGrowth?.latest ? h('div', { style: { marginBottom: '20px' } },
+      h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)', marginBottom: '8px' } }, 'AUDIENCE GROWTH'),
+      h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' } },
+        ...['linkedin_followers', 'x_followers', 'email_subscribers'].map(key => {
+          const labels = { linkedin_followers: 'LinkedIn', x_followers: 'X/Twitter', email_subscribers: 'Email List' };
+          const colors = { linkedin_followers: '#0a66c2', x_followers: '#1da1f2', email_subscribers: '#059669' };
+          const g = state.audienceGrowth.growth?.[key];
+          return h('div', { style: { background: 'white', borderRadius: 'var(--radius-sm)', padding: '12px', textAlign: 'center', border: '1px solid var(--gray-200)' } },
+            h('div', { style: { fontSize: '20px', fontWeight: '700', color: colors[key] } }, String((state.audienceGrowth.latest[key] || 0).toLocaleString())),
+            h('div', { style: { fontSize: '10px', color: 'var(--gray-500)', marginBottom: '2px' } }, labels[key]),
+            g ? h('div', { style: { fontSize: '10px', fontWeight: '600', color: g.change >= 0 ? '#059669' : '#dc2626' } },
+              `${g.change >= 0 ? '+' : ''}${g.change} (${g.change_pct >= 0 ? '+' : ''}${g.change_pct}%)`) : null
+          );
+        })
+      )
+    ) : null,
+    // Content Themes
+    state.contentThemes?.themes?.length > 0 ? h('div', { style: { marginBottom: '20px' } },
+      h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
+        h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)' } }, `CONTENT THEMES (${state.contentThemes.themes.length})`),
+        h('span', { style: { fontSize: '10px', color: 'var(--gray-400)' } }, state.contentThemes.analyzed_at?.slice(0, 10) || '')
+      ),
+      h('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap' } },
+        ...state.contentThemes.themes.map(theme =>
+          h('div', {
+            style: {
+              padding: '8px 14px', borderRadius: '8px', border: `2px solid ${theme.color || '#64748b'}`,
+              background: `${theme.color || '#64748b'}10`, cursor: 'pointer', minWidth: '120px'
+            },
+            title: theme.description
+          },
+            h('div', { style: { fontSize: '12px', fontWeight: '700', color: theme.color || 'var(--navy)', marginBottom: '2px' } }, theme.name),
+            h('div', { style: { fontSize: '10px', color: 'var(--gray-500)' } }, `${theme.content_titles?.length || 0} pieces | ${theme.strength}`),
+            theme.gap_opportunity ? h('div', { style: { fontSize: '9px', color: '#d97706', marginTop: '3px' } }, 'Gap: ' + (theme.gap_opportunity || '').slice(0, 60) + '...') : null
+          )
+        )
+      ),
+      state.contentThemes.recommendations?.length > 0 ? h('div', { style: { marginTop: '8px', padding: '8px 12px', background: '#eff6ff', borderRadius: '8px', border: '1px solid #bfdbfe' } },
+        ...state.contentThemes.recommendations.slice(0, 3).map(r =>
+          h('div', { style: { fontSize: '11px', color: '#1e40af', marginBottom: '3px' } }, '- ' + r)
+        )
+      ) : null
     ) : null,
     // Trending Topics
     (state.trending?.trending_topics?.length > 0) ? h('div', { style: { marginBottom: '20px' } },

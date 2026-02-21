@@ -1,0 +1,124 @@
+[
+  {
+    "id": "fd4f3b592da50c93",
+    "content_id": "942509da1ea4f8",
+    "title": "Hired 3 marketing agencies in 2 years — all terrible. What am I doing wrong?",
+    "plan": [
+      {
+        "day": 1,
+        "day_name": "Monday",
+        "posts": [
+          {
+            "platform": "LinkedIn",
+            "format": "linkedin",
+            "time": "08:30",
+            "caption_note": "Open with vulnerability: 'I've fired 3 agencies in 24 months. Here's what I finally realized...' Lead with the problem, hint at the solution.",
+            "cross_promote": "Link to X thread in comments; direct readers to follow for daily insights",
+            "engagement_strategy": "Respond to first 20 comments within 1 hour; ask clarifying questions to drive conversation"
+          }
+        ]
+      },
+      {
+        "day": 2,
+        "day_name": "Tuesday",
+        "posts": [
+          {
+            "platform": "X",
+            "format": "x_thread",
+            "time": "09:00",
+            "caption_note": "5-tweet thread breaking down: 1) Red flags you missed, 2) Wrong questions you asked, 3) What to look for instead, 4) How to audit current partnerships, 5) The one metric that matters",
+            "cross_promote": "Quote tweet your LinkedIn post; tag agencies/marketing communities",
+            "engagement_strategy": "Monitor replies every 30 mins for 2 hours; engage with quote tweets; retweet thoughtful replies"
+          }
+        ]
+      },
+      {
+        "day": 3,
+        "day_name": "Wednesday",
+        "posts": [
+          {
+            "platform": "X",
+            "format": "x_single",
+            "time": "14:00",
+            "caption_note": "Hot contrarian take: 'Most agencies aren't bad—your brief is. If you can't explain your business in 60 seconds, neither can they.' Provoke discussion.",
+            "cross_promote": "Reference the thread from Day 2; drive engagement by asking 'Am I wrong?'",
+            "engagement_strategy": "Respond to every reply within 30 mins; look for ratio opportunities; engage with disagreements thoughtfully"
+          }
+        ]
+      },
+      {
+        "day": 4,
+        "day_name": "Thursday",
+        "posts": [
+          {
+            "platform": "LinkedIn",
+            "format": "carousel",
+            "time": "10:00",
+            "caption_note": "5-slide carousel: Slide 1) The mistake (headline), Slides 2-4) Each agency failure + lesson learned, Slide 5) CTA to book 15-min call for audit",
+            "cross_promote": "Mention X thread in caption; link short video below in comments",
+            "engagement_strategy": "Pin this post for 24 hours; respond within 1 hour; bookmark comments with specific advice to build social proof"
+          }
+        ]
+      },
+      {
+        "day": 5,
+        "day_name": "Friday",
+        "posts": [
+          {
+            "platform": "LinkedIn",
+            "format": "short_video",
+            "time": "11:00",
+            "caption_note": "90-second video: Sit-down format. 'Here's the exact conversation I should've had with agency #1.' Demonstrate the audit framework.",
+            "cross_promote": "Tease the poll below; link to carousel from Day 4",
+            "engagement_strategy": "Respond to all video comments; encourage shares; tag connections who've hired agencies"
+          }
+        ]
+      },
+      {
+        "day": 6,
+        "day_name": "Saturday",
+        "posts": [
+          {
+            "platform": "X",
+            "format": "poll",
+            "time": "10:00",
+            "caption_note": "4-option poll: 'What's your biggest agency hiring mistake?' Options: Bad chemistry, Wrong deliverables, No strategy, Hidden costs. Tie to larger thread.",
+            "cross_promote": "Share results back to LinkedIn on Day 7; reference in hot take",
+            "engagement_strategy": "Live-tweet poll results as they come in; retweet top replies; use data for Monday insight post"
+          }
+        ]
+      },
+      {
+        "day": 7,
+        "day_name": "Sunday",
+        "posts": [
+          {
+            "platform": "LinkedIn",
+            "format": "hot_take",
+            "time": "19:00",
+            "caption_note": "Sunday evening reflection: 'Poll results: X% of you hired the wrong agency for the wrong reasons. Here's how to fix it starting Monday.' Actionable close-out.",
+            "cross_promote": "Reference X poll data; link back to all week's content in carousel comment; invite DMs for follow-up",
+            "engagement_strategy": "Soft CTA (not pushy); respond to all comments through Monday morning; collect DMs for nurture list"
+          }
+        ]
+      }
+    ],
+    "strategy_notes": [
+      "Day 1-2: Build narrative arc on LinkedIn (vulnerability) → X (tactical breakdown)",
+      "Day 3-4: Pivot to contrarian angle + tangible framework (carousel); increase LinkedIn velocity",
+      "Day 5: Video humanizes the advice; highest engagement format—prioritize response rate",
+      "Day 6-7: Close with data-driven insights; use weekend timing to capture reflective audience",
+      "Cross-platform: LinkedIn → X for threadability; X polls → LinkedIn data posts (full circle)",
+      "Comment strategy: Respond in 1st hour, then 3x daily thereafter; depth > speed",
+      "Avoid: Hard selling before Day 7; low-engagement bait; algorithm manipulation"
+    ],
+    "expected_reach": {
+      "linkedin": "3,500-8,500 impressions (carousel/video highest)",
+      "x": "2,000-6,000 impressions (thread + poll)",
+      "total_engagement_rate": "8-15% (based on vulnerability + contrarian angle)",
+      "conversions": "15-25 DMs/15-min audit requests"
+    },
+    "key_cta": "Book a free 15-minute marketing audit to diagnose your agency problems—no pitch, just diagnosis.",
+    "created_at": "2026-02-21T02:03:32.120Z"
+  }
+]

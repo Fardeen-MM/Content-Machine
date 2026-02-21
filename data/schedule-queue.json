@@ -65,5 +65,89 @@
     "status": "scheduled",
     "notes": "Auto-scheduled",
     "created_at": "2026-02-21T01:25:06.024Z"
+  },
+  {
+    "id": "b13ba75887933e9f",
+    "content_id": "942509da1ea4f8",
+    "trigger_title": "Hired 3 marketing agencies in 2 years — all terrible. What am I doing wrong?",
+    "platform": "LinkedIn",
+    "format": "linkedin",
+    "scheduled_at": "2026-02-20T13:30:00.000Z",
+    "status": "scheduled",
+    "notes": "Open with vulnerability: 'I've fired 3 agencies in 24 months. Here's what I finally realized...' Lead with the problem, hint at the solution.",
+    "plan_id": "fd4f3b592da50c93",
+    "created_at": "2026-02-21T02:03:35.394Z"
+  },
+  {
+    "id": "03e6fe7a02757998",
+    "content_id": "942509da1ea4f8",
+    "trigger_title": "Hired 3 marketing agencies in 2 years — all terrible. What am I doing wrong?",
+    "platform": "X",
+    "format": "x_thread",
+    "scheduled_at": "2026-02-21T14:00:00.000Z",
+    "status": "scheduled",
+    "notes": "5-tweet thread breaking down: 1) Red flags you missed, 2) Wrong questions you asked, 3) What to look for instead, 4) How to audit current partnerships, 5) The one metric that matters",
+    "plan_id": "fd4f3b592da50c93",
+    "created_at": "2026-02-21T02:03:35.394Z"
+  },
+  {
+    "id": "393034df0fa9ab71",
+    "content_id": "942509da1ea4f8",
+    "trigger_title": "Hired 3 marketing agencies in 2 years — all terrible. What am I doing wrong?",
+    "platform": "X",
+    "format": "x_single",
+    "scheduled_at": "2026-02-22T19:00:00.000Z",
+    "status": "scheduled",
+    "notes": "Hot contrarian take: 'Most agencies aren't bad—your brief is. If you can't explain your business in 60 seconds, neither can they.' Provoke discussion.",
+    "plan_id": "fd4f3b592da50c93",
+    "created_at": "2026-02-21T02:03:35.394Z"
+  },
+  {
+    "id": "47079156f4474616",
+    "content_id": "942509da1ea4f8",
+    "trigger_title": "Hired 3 marketing agencies in 2 years — all terrible. What am I doing wrong?",
+    "platform": "LinkedIn",
+    "format": "carousel",
+    "scheduled_at": "2026-02-23T15:00:00.000Z",
+    "status": "scheduled",
+    "notes": "5-slide carousel: Slide 1) The mistake (headline), Slides 2-4) Each agency failure + lesson learned, Slide 5) CTA to book 15-min call for audit",
+    "plan_id": "fd4f3b592da50c93",
+    "created_at": "2026-02-21T02:03:35.394Z"
+  },
+  {
+    "id": "8499c286d353edd3",
+    "content_id": "942509da1ea4f8",
+    "trigger_title": "Hired 3 marketing agencies in 2 years — all terrible. What am I doing wrong?",
+    "platform": "LinkedIn",
+    "format": "short_video",
+    "scheduled_at": "2026-02-24T16:00:00.000Z",
+    "status": "scheduled",
+    "notes": "90-second video: Sit-down format. 'Here's the exact conversation I should've had with agency #1.' Demonstrate the audit framework.",
+    "plan_id": "fd4f3b592da50c93",
+    "created_at": "2026-02-21T02:03:35.394Z"
+  },
+  {
+    "id": "a2cbbb53a151180e",
+    "content_id": "942509da1ea4f8",
+    "trigger_title": "Hired 3 marketing agencies in 2 years — all terrible. What am I doing wrong?",
+    "platform": "X",
+    "format": "poll",
+    "scheduled_at": "2026-02-25T15:00:00.000Z",
+    "status": "scheduled",
+    "notes": "4-option poll: 'What's your biggest agency hiring mistake?' Options: Bad chemistry, Wrong deliverables, No strategy, Hidden costs. Tie to larger thread.",
+    "plan_id": "fd4f3b592da50c93",
+    "created_at": "2026-02-21T02:03:35.394Z"
+  },
+  {
+    "id": "525a7356fc972119",
+    "content_id": "942509da1ea4f8",
+    "trigger_title": "Hired 3 marketing agencies in 2 years — all terrible. What am I doing wrong?",
+    "platform": "LinkedIn",
+    "format": "hot_take",
+    "scheduled_at": "2026-02-27T00:00:00.000Z",
+    "status": "scheduled",
+    "notes": "Sunday evening reflection: 'Poll results: X% of you hired the wrong agency for the wrong reasons. Here's how to fix it starting Monday.' Actionable close-out.",
+    "plan_id": "fd4f3b592da50c93",
+    "created_at": "2026-02-21T02:03:35.394Z"
   }
 ]

@@ -1,0 +1,35 @@
+{
+  "total_leads": 2,
+  "hot_leads": 0,
+  "warm_leads": 1,
+  "cold_leads": 1,
+  "leads": [
+    {
+      "lead": "test@lawfirm.com",
+      "email": "test@lawfirm.com",
+      "score": 63,
+      "tier": "warm",
+      "interactions": 1,
+      "total_value": 3000,
+      "interaction_types": [
+        "booking"
+      ],
+      "first_seen": "2026-02-21T14:20:23.757Z",
+      "last_seen": "2026-02-21T14:20:23.757Z"
+    },
+    {
+      "lead": "4aa23b276fa5218b",
+      "email": null,
+      "score": 33,
+      "tier": "cold",
+      "interactions": 1,
+      "total_value": 0,
+      "interaction_types": [
+        "cta_click"
+      ],
+      "first_seen": "2026-02-21T14:20:23.723Z",
+      "last_seen": "2026-02-21T14:20:23.723Z"
+    }
+  ],
+  "generated_at": "2026-02-21T14:39:49.709Z"
+}

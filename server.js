@@ -16130,6 +16130,352 @@ Return COMPACT JSON:
       return json(res, readJSON('content-system-health-v2.json', null));
     }
 
+    // ============================================================
+    // Batch 73: Revenue Attribution, Pipeline Tracker, Cost Calculator,
+    //           Lead Scoring, Retargeting Builder, Campaign ROI,
+    //           Monthly Content Report
+    // ============================================================
+
+    // POST /api/revenue-attribution — Track revenue attributed to content
+    if (method === 'POST' && pathname === '/api/revenue-attribution') {
+      const body = await parseBody(req);
+      const { content_id, deal_value, client_name, deal_stage, source_platform, notes } = body || {};
+      if (!deal_value) return json(res, { error: 'deal_value required' }, 400);
+
+      const attributions = readJSON('revenue-attribution.json', []);
+      const entry = {
+        id: generateId(),
+        content_id: content_id || null,
+        deal_value: Number(deal_value) || 0,
+        client_name: client_name || null,
+        deal_stage: deal_stage || 'closed', // 'lead', 'meeting', 'proposal', 'closed'
+        source_platform: source_platform || 'organic',
+        notes: notes || null,
+        attributed_at: now()
+      };
+      attributions.push(entry);
+      writeJSON('revenue-attribution.json', attributions);
+      return json(res, { ok: true, entry });
+    }
+
+    // GET /api/revenue-attribution
+    if (method === 'GET' && pathname === '/api/revenue-attribution') {
+      const attributions = readJSON('revenue-attribution.json', []);
+      const totalRevenue = attributions.filter(a => a.deal_stage === 'closed').reduce((s, a) => s + (a.deal_value || 0), 0);
+      const pipelineValue = attributions.filter(a => a.deal_stage !== 'closed').reduce((s, a) => s + (a.deal_value || 0), 0);
+      const byPlatform = {};
+      for (const a of attributions) { byPlatform[a.source_platform] = (byPlatform[a.source_platform] || 0) + a.deal_value; }
+      const byStage = {};
+      for (const a of attributions) { byStage[a.deal_stage] = (byStage[a.deal_stage] || 0) + 1; }
+      return json(res, { total_revenue: totalRevenue, pipeline_value: pipelineValue, total_deals: attributions.length, by_platform: byPlatform, by_stage: byStage, recent: attributions.slice(-15).reverse() });
+    }
+
+    // POST /api/pipeline-value-tracker — Track deal pipeline progress
+    if (method === 'POST' && pathname === '/api/pipeline-value-tracker') {
+      const body = await parseBody(req);
+      const { client_name, deal_value, stage, source_content_id, source_platform, notes } = body || {};
+      if (!client_name || !deal_value) return json(res, { error: 'client_name and deal_value required' }, 400);
+
+      const pipeline = readJSON('pipeline-value-tracker.json', []);
+      // Check if deal exists for this client
+      const existing = pipeline.find(d => d.client_name === client_name && d.stage !== 'closed' && d.stage !== 'lost');
+      if (existing) {
+        existing.stage = stage || existing.stage;
+        existing.deal_value = Number(deal_value) || existing.deal_value;
+        existing.notes = notes || existing.notes;
+        existing.updated_at = now();
+        writeJSON('pipeline-value-tracker.json', pipeline);
+        return json(res, { ok: true, updated: true, deal: existing });
+      }
+
+      const deal = {
+        id: generateId(),
+        client_name,
+        deal_value: Number(deal_value) || 0,
+        stage: stage || 'lead', // 'lead', 'meeting', 'proposal', 'negotiation', 'closed', 'lost'
+        source_content_id: source_content_id || null,
+        source_platform: source_platform || null,
+        notes: notes || null,
+        created_at: now(),
+        updated_at: now()
+      };
+      pipeline.push(deal);
+      writeJSON('pipeline-value-tracker.json', pipeline);
+      return json(res, { ok: true, deal });
+    }
+
+    // GET /api/pipeline-value-tracker
+    if (method === 'GET' && pathname === '/api/pipeline-value-tracker') {
+      const pipeline = readJSON('pipeline-value-tracker.json', []);
+      const active = pipeline.filter(d => d.stage !== 'closed' && d.stage !== 'lost');
+      const byStage = {};
+      for (const d of active) {
+        if (!byStage[d.stage]) byStage[d.stage] = { count: 0, value: 0 };
+        byStage[d.stage].count++;
+        byStage[d.stage].value += d.deal_value || 0;
+      }
+      return json(res, {
+        total_deals: pipeline.length,
+        active_deals: active.length,
+        total_pipeline_value: active.reduce((s, d) => s + (d.deal_value || 0), 0),
+        closed_value: pipeline.filter(d => d.stage === 'closed').reduce((s, d) => s + (d.deal_value || 0), 0),
+        by_stage: byStage,
+        deals: pipeline.slice(-20).reverse()
+      });
+    }
+
+    // POST /api/content-cost-calculator — Calculate cost per content piece
+    if (method === 'POST' && pathname === '/api/content-cost-calculator') {
+      const body = await parseBody(req);
+      const hourlyRate = Number(body?.hourly_rate) || 150;
+      const monthlyToolCost = Number(body?.monthly_tool_cost) || 50; // Claude API, hosting, etc.
+
+      const content = readJSON('content.json', []);
+      const published = readJSON('published.json', []);
+      const conversions = readJSON('conversion-tracker.json', []);
+      const attributions = readJSON('revenue-attribution.json', []);
+
+      const totalContent = content.length;
+      const estHoursPerPiece = 0.5; // 30 min avg with AI assistance
+      const totalHours = totalContent * estHoursPerPiece;
+      const laborCost = totalHours * hourlyRate;
+      const toolCostPerPiece = totalContent > 0 ? monthlyToolCost / totalContent : 0;
+      const totalCost = laborCost + monthlyToolCost;
+      const costPerPiece = totalContent > 0 ? Math.round(totalCost / totalContent * 100) / 100 : 0;
+      const costPerPublished = published.length > 0 ? Math.round(totalCost / published.length * 100) / 100 : 0;
+
+      const totalRevenue = attributions.filter(a => a.deal_stage === 'closed').reduce((s, a) => s + (a.deal_value || 0), 0);
+      const roi = totalCost > 0 ? Math.round((totalRevenue - totalCost) / totalCost * 100) : 0;
+
+      const result = {
+        total_content: totalContent,
+        total_published: published.length,
+        total_conversions: conversions.length,
+        cost_breakdown: { labor: Math.round(laborCost), tools: monthlyToolCost, total: Math.round(totalCost) },
+        per_piece: { cost: costPerPiece, cost_per_published: costPerPublished, hours: estHoursPerPiece },
+        revenue: { attributed: totalRevenue, roi_percentage: roi, break_even_pieces: totalRevenue > 0 ? Math.ceil(totalCost / (totalRevenue / Math.max(1, published.length))) : 'N/A' },
+        generated_at: now()
+      };
+      writeJSON('content-cost-calculator.json', result);
+      return json(res, { ok: true, ...result });
+    }
+
+    // GET /api/content-cost-calculator
+    if (method === 'GET' && pathname === '/api/content-cost-calculator') {
+      return json(res, readJSON('content-cost-calculator.json', null));
+    }
+
+    // POST /api/lead-scorer — Score leads based on engagement
+    if (method === 'POST' && pathname === '/api/lead-scorer') {
+      const conversions = readJSON('conversion-tracker.json', []);
+      const tracker = readJSON('engagement-tracker.json', []);
+      const pipeline = readJSON('pipeline-value-tracker.json', []);
+
+      // Collect unique leads from conversions
+      const leads = {};
+      for (const c of conversions) {
+        const key = c.lead_email || c.content_id;
+        if (!leads[key]) leads[key] = { email: c.lead_email, interactions: 0, total_value: 0, types: new Set(), first_seen: c.converted_at, last_seen: c.converted_at };
+        leads[key].interactions++;
+        leads[key].total_value += c.value || 0;
+        leads[key].types.add(c.conversion_type);
+        if (c.converted_at > leads[key].last_seen) leads[key].last_seen = c.converted_at;
+      }
+
+      // Score each lead
+      const scored = Object.entries(leads).map(([key, data]) => {
+        const interactionScore = Math.min(40, data.interactions * 10);
+        const valueScore = Math.min(30, data.total_value / 100);
+        const recencyDays = Math.max(1, Math.floor((new Date() - new Date(data.last_seen)) / 86400000));
+        const recencyScore = Math.min(20, Math.max(0, 20 - recencyDays * 2));
+        const varietyScore = Math.min(10, data.types.size * 5);
+        const totalScore = Math.round(interactionScore + valueScore + recencyScore + varietyScore);
+
+        return {
+          lead: key,
+          email: data.email,
+          score: totalScore,
+          tier: totalScore >= 70 ? 'hot' : totalScore >= 40 ? 'warm' : 'cold',
+          interactions: data.interactions,
+          total_value: data.total_value,
+          interaction_types: [...data.types],
+          first_seen: data.first_seen,
+          last_seen: data.last_seen
+        };
+      }).sort((a, b) => b.score - a.score);
+
+      const result = {
+        total_leads: scored.length,
+        hot_leads: scored.filter(l => l.tier === 'hot').length,
+        warm_leads: scored.filter(l => l.tier === 'warm').length,
+        cold_leads: scored.filter(l => l.tier === 'cold').length,
+        leads: scored,
+        generated_at: now()
+      };
+      writeJSON('lead-scorer.json', result);
+      return json(res, { ok: true, ...result });
+    }
+
+    // GET /api/lead-scorer
+    if (method === 'GET' && pathname === '/api/lead-scorer') {
+      return json(res, readJSON('lead-scorer.json', null));
+    }
+
+    // POST /api/retargeting-builder — Build audiences from engaged contacts
+    if (method === 'POST' && pathname === '/api/retargeting-builder') {
+      const tracker = readJSON('engagement-tracker.json', []);
+      const conversions = readJSON('conversion-tracker.json', []);
+      const crossPosts = readJSON('cross-post-tracker.json', []);
+
+      // Build audience segments
+      const audiences = {};
+
+      // Segment by conversion type
+      for (const c of conversions) {
+        const seg = `${c.platform}_${c.conversion_type}`;
+        if (!audiences[seg]) audiences[seg] = { platform: c.platform, trigger: c.conversion_type, size: 0, emails: new Set() };
+        audiences[seg].size++;
+        if (c.lead_email) audiences[seg].emails.add(c.lead_email);
+      }
+
+      // Segment by engagement level
+      const engByPlatform = {};
+      for (const e of tracker) {
+        if (!engByPlatform[e.platform]) engByPlatform[e.platform] = { high: 0, medium: 0, low: 0 };
+        if (e.engagement_rate >= 5) engByPlatform[e.platform].high++;
+        else if (e.engagement_rate >= 2) engByPlatform[e.platform].medium++;
+        else engByPlatform[e.platform].low++;
+      }
+
+      const segments = Object.entries(audiences).map(([key, data]) => ({
+        name: key.replace(/_/g, ' '),
+        platform: data.platform,
+        trigger: data.trigger,
+        size: data.size,
+        emails: data.emails.size,
+        retarget_with: data.trigger === 'booking' ? 'follow-up offer' : data.trigger === 'cta_click' ? 'lead magnet' : 'nurture content'
+      }));
+
+      const result = {
+        total_segments: segments.length,
+        segments,
+        engagement_quality: engByPlatform,
+        total_trackable: conversions.filter(c => c.lead_email).length,
+        recommendations: [
+          segments.length > 0 ? `${segments.length} audience segments ready for retargeting` : 'Start tracking conversions to build audiences',
+          conversions.filter(c => c.lead_email).length > 0 ? `${conversions.filter(c => c.lead_email).length} contacts with emails for direct outreach` : 'Collect email addresses through lead magnets'
+        ],
+        generated_at: now()
+      };
+      writeJSON('retargeting-builder.json', result);
+      return json(res, { ok: true, ...result });
+    }
+
+    // GET /api/retargeting-builder
+    if (method === 'GET' && pathname === '/api/retargeting-builder') {
+      return json(res, readJSON('retargeting-builder.json', null));
+    }
+
+    // POST /api/campaign-roi — Calculate full campaign ROI
+    if (method === 'POST' && pathname === '/api/campaign-roi') {
+      const content = readJSON('content.json', []);
+      const published = readJSON('published.json', []);
+      const conversions = readJSON('conversion-tracker.json', []);
+      const attributions = readJSON('revenue-attribution.json', []);
+      const tracker = readJSON('engagement-tracker.json', []);
+
+      const totalRevenue = attributions.filter(a => a.deal_stage === 'closed').reduce((s, a) => s + (a.deal_value || 0), 0);
+      const pipelineRevenue = attributions.filter(a => a.deal_stage !== 'closed' && a.deal_stage !== 'lost').reduce((s, a) => s + (a.deal_value || 0), 0);
+      const totalCost = content.length * 75 + 50; // est $75/piece labor + $50 tools
+
+      const totalImpressions = tracker.reduce((s, e) => s + (e.impressions || 0), 0);
+      const totalEngagements = tracker.reduce((s, e) => s + (e.likes || 0) + (e.comments || 0) + (e.shares || 0), 0);
+      const cpl = conversions.length > 0 ? Math.round(totalCost / conversions.length) : 0;
+      const cpa = attributions.filter(a => a.deal_stage === 'closed').length > 0 ? Math.round(totalCost / attributions.filter(a => a.deal_stage === 'closed').length) : 0;
+      const roas = totalCost > 0 ? Math.round(totalRevenue / totalCost * 100) / 100 : 0;
+
+      const result = {
+        campaign_metrics: {
+          total_content: content.length,
+          total_published: published.length,
+          total_impressions: totalImpressions,
+          total_engagements: totalEngagements,
+          total_conversions: conversions.length,
+          total_deals: attributions.length,
+          closed_deals: attributions.filter(a => a.deal_stage === 'closed').length
+        },
+        financial: {
+          total_cost: totalCost,
+          total_revenue: totalRevenue,
+          pipeline_value: pipelineRevenue,
+          roi_percentage: totalCost > 0 ? Math.round((totalRevenue - totalCost) / totalCost * 100) : 0,
+          roas: roas,
+          cost_per_lead: cpl,
+          cost_per_acquisition: cpa
+        },
+        funnel: {
+          content_to_publish_rate: content.length > 0 ? Math.round(published.length / content.length * 100) : 0,
+          publish_to_conversion_rate: published.length > 0 ? Math.round(conversions.length / published.length * 100) : 0,
+          conversion_to_close_rate: conversions.length > 0 ? Math.round(attributions.filter(a => a.deal_stage === 'closed').length / conversions.length * 100) : 0
+        },
+        generated_at: now()
+      };
+      writeJSON('campaign-roi.json', result);
+      return json(res, { ok: true, ...result });
+    }
+
+    // GET /api/campaign-roi
+    if (method === 'GET' && pathname === '/api/campaign-roi') {
+      return json(res, readJSON('campaign-roi.json', null));
+    }
+
+    // POST /api/monthly-content-report — Generate executive content report
+    if (method === 'POST' && pathname === '/api/monthly-content-report') {
+      const content = readJSON('content.json', []);
+      const published = readJSON('published.json', []);
+      const tracker = readJSON('engagement-tracker.json', []);
+      const conversions = readJSON('conversion-tracker.json', []);
+      const attributions = readJSON('revenue-attribution.json', []);
+
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+      const result = await callClaude({
+        model: HAIKU,
+        system: 'You are a content marketing analyst writing an executive report. Return JSON only.',
+        prompt: `Write a monthly content performance report.
+
+Data:
+- Content created: ${content.length} pieces
+- Published: ${published.length}
+- Engagement entries: ${tracker.length}
+- Avg engagement rate: ${tracker.length > 0 ? Math.round(tracker.reduce((s, e) => s + (e.engagement_rate || 0), 0) / tracker.length * 100) / 100 : 0}%
+- Conversions: ${conversions.length}
+- Deals: ${attributions.length}
+- Revenue: $${attributions.filter(a => a.deal_stage === 'closed').reduce((s, a) => s + (a.deal_value || 0), 0)}
+
+Return COMPACT JSON:
+{
+  "headline": "one-line executive summary",
+  "grade": "A/B/C/D",
+  "highlights": ["highlight 1", "highlight 2", "highlight 3"],
+  "concerns": ["concern 1"],
+  "next_month_priorities": ["priority 1", "priority 2", "priority 3"],
+  "kpi_targets": { "content_pieces": 20, "publish_rate": "60%", "engagement_rate": "3%", "conversions": 10 }
+}`,
+        maxTokens: 1500
+      });
+      const parsed = parseJsonResponse(result);
+      if (!parsed) return json(res, { error: 'Failed to generate report', raw_preview: (result || '').slice(0, 200) }, 500);
+
+      const report = { ...parsed, generated_at: now() };
+      writeJSON('monthly-content-report.json', report);
+      return json(res, { ok: true, ...report });
+    }
+
+    // GET /api/monthly-content-report
+    if (method === 'GET' && pathname === '/api/monthly-content-report') {
+      return json(res, readJSON('monthly-content-report.json', null));
+    }
+
     // --- Static file serving ---
 
     // Serve dashboard

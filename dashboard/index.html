@@ -1615,6 +1615,14 @@ const state = {
   smartScheduler: null,
   contentSystemHealthV2: null,
   competitorContentTracker: null,
+  // Batch 73: Revenue, Pipeline, Cost, Lead Scoring, Campaign ROI
+  revenueAttribution: null,
+  pipelineValueTracker: null,
+  contentCostCalculator: null,
+  leadScorer: null,
+  retargetingBuilder: null,
+  campaignRoi: null,
+  monthlyContentReport: null,
 };
 
 // --- API Calls ---
@@ -1640,7 +1648,7 @@ async function loadData() {
   state.loading = true;
   render();
   try {
-    const [content, triggers, stats, calendar, monthCal, settings, memory, performance, perfAnalytics, meetings, meetingStats, clients, allActions, chatMessages, healthData, inspirations, pestering, pesteringStages, insights, deals, published, series, predictions, playbooks, ctaLibrary, trending, funnel, publishTracker, leadMagnets, contentHealth, scheduleOptimize, templates, dmSequences, hooks, pillarPlan, contentLeads, autopilot, scheduleQueue, engagementDashboard, contentBriefs, workflowPipeline, personas, calendarWeek, benchmarkReport, contentIdeas, socialProof, roiReport, audienceGrowth, contentThemes, distributionPlans, dmPipelines, competitorsTracked, dripCampaigns, autoResponses, expiringContent, amplifications, leadFunnels, calendarInsights, weeklyDigest, splitTests, workflowRules, youtubePipelines, carousels, contentMatrix, ctaStrategy, seriesTemplates, contentBank, engagementPlaybook, atomizations, platformRules, emailSequences, weeklyContentPlan, repurposeChains, lmFunnels, perfReport, contentPillars, compAnalyses, nurtureCampaigns, authorityPlan, flywheelData, velocityData, audienceSegments, contentDna, topicClusters, voiceProfiles, dmScriptsData, replyStrategyData, systemHealthData, contentRecyclerData, commentStrategyData, newslettersData, distributionEngineData, socialProofEngineData, advancedAnalyticsData, growthPlaybookData, genLeadMagnetsData, funnelAnalysisData, autoRepurposeData, weeklyActionPlanData, trendsAnalysisData, authorityScoreData, contentIntelData, conversionOptData, contentMatrixData, draftingStrategyData, zeroClickBankData, contentVelocityData, pillarRotatorData, savedRepliesData, audienceBuilderData, weeklyReportData, competitiveIntelData, contentScoringData, postSchedulerData, trendHijackerData, leadMagnetFunnelsData, outboundSequencesData, icpRefinedData, winLossData, contentRoiData, contentExperimentsData, socialListeningData, authorityBuilderData, quickWinsData, contentCalendarAiData, dailyBriefingData, engagementTrackerData, commentToDmData, contentSeriesPlannerData, hookBankData, engagementScorerData, conversionTrackerData, contentGapFinderData, audienceGrowthTrackerData, performanceBenchmarksData, flywheelAnalyzerData, topicAuthorityData, socialProofCollectorData, newsletterBuilderData, dmSequenceBuilderData, contentRecyclerScanData, contentDnaAnalyzerData, swipeFileData, crossPostTrackerData, smartSchedulerData, contentSystemHealthV2Data, competitorContentTrackerData] = await Promise.all([
+    const [content, triggers, stats, calendar, monthCal, settings, memory, performance, perfAnalytics, meetings, meetingStats, clients, allActions, chatMessages, healthData, inspirations, pestering, pesteringStages, insights, deals, published, series, predictions, playbooks, ctaLibrary, trending, funnel, publishTracker, leadMagnets, contentHealth, scheduleOptimize, templates, dmSequences, hooks, pillarPlan, contentLeads, autopilot, scheduleQueue, engagementDashboard, contentBriefs, workflowPipeline, personas, calendarWeek, benchmarkReport, contentIdeas, socialProof, roiReport, audienceGrowth, contentThemes, distributionPlans, dmPipelines, competitorsTracked, dripCampaigns, autoResponses, expiringContent, amplifications, leadFunnels, calendarInsights, weeklyDigest, splitTests, workflowRules, youtubePipelines, carousels, contentMatrix, ctaStrategy, seriesTemplates, contentBank, engagementPlaybook, atomizations, platformRules, emailSequences, weeklyContentPlan, repurposeChains, lmFunnels, perfReport, contentPillars, compAnalyses, nurtureCampaigns, authorityPlan, flywheelData, velocityData, audienceSegments, contentDna, topicClusters, voiceProfiles, dmScriptsData, replyStrategyData, systemHealthData, contentRecyclerData, commentStrategyData, newslettersData, distributionEngineData, socialProofEngineData, advancedAnalyticsData, growthPlaybookData, genLeadMagnetsData, funnelAnalysisData, autoRepurposeData, weeklyActionPlanData, trendsAnalysisData, authorityScoreData, contentIntelData, conversionOptData, contentMatrixData, draftingStrategyData, zeroClickBankData, contentVelocityData, pillarRotatorData, savedRepliesData, audienceBuilderData, weeklyReportData, competitiveIntelData, contentScoringData, postSchedulerData, trendHijackerData, leadMagnetFunnelsData, outboundSequencesData, icpRefinedData, winLossData, contentRoiData, contentExperimentsData, socialListeningData, authorityBuilderData, quickWinsData, contentCalendarAiData, dailyBriefingData, engagementTrackerData, commentToDmData, contentSeriesPlannerData, hookBankData, engagementScorerData, conversionTrackerData, contentGapFinderData, audienceGrowthTrackerData, performanceBenchmarksData, flywheelAnalyzerData, topicAuthorityData, socialProofCollectorData, newsletterBuilderData, dmSequenceBuilderData, contentRecyclerScanData, contentDnaAnalyzerData, swipeFileData, crossPostTrackerData, smartSchedulerData, contentSystemHealthV2Data, competitorContentTrackerData, revenueAttributionData, pipelineValueTrackerData, contentCostCalculatorData, leadScorerData, retargetingBuilderData, campaignRoiData, monthlyContentReportData] = await Promise.all([
       api('/api/content'),
       api('/api/triggers'),
       api('/api/stats'),
@@ -1787,7 +1795,14 @@ async function loadData() {
       api('/api/cross-post-tracker').catch(() => null),
       api('/api/smart-scheduler').catch(() => null),
       api('/api/content-system-health-v2').catch(() => null),
-      api('/api/competitor-content-tracker').catch(() => null)
+      api('/api/competitor-content-tracker').catch(() => null),
+      api('/api/revenue-attribution').catch(() => null),
+      api('/api/pipeline-value-tracker').catch(() => null),
+      api('/api/content-cost-calculator').catch(() => null),
+      api('/api/lead-scorer').catch(() => null),
+      api('/api/retargeting-builder').catch(() => null),
+      api('/api/campaign-roi').catch(() => null),
+      api('/api/monthly-content-report').catch(() => null)
     ]);
     state.content = content;
     state.triggers = triggers;
@@ -1936,6 +1951,13 @@ async function loadData() {
     state.smartScheduler = smartSchedulerData;
     state.contentSystemHealthV2 = contentSystemHealthV2Data;
     state.competitorContentTracker = competitorContentTrackerData;
+    state.revenueAttribution = revenueAttributionData;
+    state.pipelineValueTracker = pipelineValueTrackerData;
+    state.contentCostCalculator = contentCostCalculatorData;
+    state.leadScorer = leadScorerData;
+    state.retargetingBuilder = retargetingBuilderData;
+    state.campaignRoi = campaignRoiData;
+    state.monthlyContentReport = monthlyContentReportData;
   } catch (err) {
     console.error('Failed to load data:', err);
     toast('Failed to load data', 'error');
@@ -3830,6 +3852,33 @@ function renderDashboardPage() {
                 render();
               } catch (err) { toast('Health check failed: ' + err.message, 'error'); }
             }}, 'Health'),
+            h('button', { className: 'btn btn-outline btn-sm', style: { color: '#059669', borderColor: '#059669' }, onclick: async () => {
+              toast('Calculating campaign ROI...', 'info');
+              try {
+                const res = await api('/api/campaign-roi', { method: 'POST' });
+                state.campaignRoi = res;
+                toast(`ROI: ${res.financial?.roi_percentage || 0}%, ROAS: ${res.financial?.roas || 0}x`, 'success');
+                render();
+              } catch (err) { toast('ROI calc failed: ' + err.message, 'error'); }
+            }}, 'ROI'),
+            h('button', { className: 'btn btn-outline btn-sm', onclick: async () => {
+              toast('Scoring leads...', 'info');
+              try {
+                const res = await api('/api/lead-scorer', { method: 'POST' });
+                state.leadScorer = res;
+                toast(`${res.total_leads} leads: ${res.hot_leads} hot, ${res.warm_leads} warm`, 'success');
+                render();
+              } catch (err) { toast('Lead scoring failed: ' + err.message, 'error'); }
+            }}, 'Leads'),
+            h('button', { className: 'btn btn-outline btn-sm', onclick: async () => {
+              toast('Calculating content cost...', 'info');
+              try {
+                const res = await api('/api/content-cost-calculator', { method: 'POST' });
+                state.contentCostCalculator = res;
+                toast(`Cost: $${res.per_piece?.cost || 0}/piece, ROI: ${res.revenue?.roi_percentage || 0}%`, 'success');
+                render();
+              } catch (err) { toast('Cost calc failed: ' + err.message, 'error'); }
+            }}, 'Cost'),
             h('button', { className: 'btn btn-ghost btn-sm', onclick: () => { state.page = 'content'; render(); } }, 'View Content')
           )
         ),
@@ -5390,6 +5439,91 @@ function renderDashboardPage() {
             h('span', { style: { fontWeight: '700', color: 'var(--navy)', textTransform: 'capitalize' } }, p),
             h('span', { style: { color: 'var(--gray-500)', marginLeft: '4px' } }, String(c))
           )
+        )
+      )
+    ) : null,
+
+    // Revenue & Pipeline (Batch 73)
+    state.revenueAttribution?.total_revenue != null || state.pipelineValueTracker?.total_pipeline_value ? h('div', { style: { marginBottom: '20px', padding: '12px', background: 'linear-gradient(135deg, #f0fdf4, #ecfdf5)', borderRadius: 'var(--radius)', border: '1px solid #a7f3d0' } },
+      h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)', marginBottom: '8px' } }, 'REVENUE & PIPELINE'),
+      h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' } },
+        h('div', { style: { textAlign: 'center' } },
+          h('div', { style: { fontSize: '18px', fontWeight: '700', color: '#059669' } }, `$${((state.revenueAttribution?.total_revenue || 0) / 1000).toFixed(1)}K`),
+          h('div', { style: { fontSize: '10px', color: 'var(--gray-500)' } }, 'Revenue')
+        ),
+        h('div', { style: { textAlign: 'center' } },
+          h('div', { style: { fontSize: '18px', fontWeight: '700', color: '#d97706' } }, `$${((state.pipelineValueTracker?.total_pipeline_value || 0) / 1000).toFixed(1)}K`),
+          h('div', { style: { fontSize: '10px', color: 'var(--gray-500)' } }, 'Pipeline')
+        ),
+        h('div', { style: { textAlign: 'center' } },
+          h('div', { style: { fontSize: '18px', fontWeight: '700', color: '#2563eb' } }, `${state.pipelineValueTracker?.active_deals || 0}`),
+          h('div', { style: { fontSize: '10px', color: 'var(--gray-500)' } }, 'Active Deals')
+        )
+      )
+    ) : null,
+
+    // Campaign ROI (Batch 73)
+    state.campaignRoi?.financial ? h('div', { style: { marginBottom: '20px' } },
+      h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
+        h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)' } }, 'CAMPAIGN ROI'),
+        h('div', { style: { fontSize: '14px', fontWeight: '700', color: state.campaignRoi.financial.roi_percentage >= 0 ? '#059669' : '#dc2626' } }, `${state.campaignRoi.financial.roi_percentage}% ROI`)
+      ),
+      h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px' } },
+        h('div', { style: { padding: '6px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px', textAlign: 'center' } },
+          h('div', { style: { fontWeight: '700', color: 'var(--navy)' } }, `$${state.campaignRoi.financial.cost_per_lead || 0}`),
+          h('div', { style: { color: 'var(--gray-500)' } }, 'Cost/Lead')
+        ),
+        h('div', { style: { padding: '6px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px', textAlign: 'center' } },
+          h('div', { style: { fontWeight: '700', color: 'var(--navy)' } }, `${state.campaignRoi.financial.roas}x`),
+          h('div', { style: { color: 'var(--gray-500)' } }, 'ROAS')
+        ),
+        h('div', { style: { padding: '6px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px', textAlign: 'center' } },
+          h('div', { style: { fontWeight: '700', color: 'var(--navy)' } }, `${state.campaignRoi.funnel?.publish_to_conversion_rate || 0}%`),
+          h('div', { style: { color: 'var(--gray-500)' } }, 'Conv Rate')
+        )
+      )
+    ) : null,
+
+    // Lead Scoring (Batch 73)
+    state.leadScorer?.total_leads ? h('div', { style: { marginBottom: '20px' } },
+      h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
+        h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)' } }, 'LEAD SCORES'),
+        h('div', { style: { display: 'flex', gap: '4px' } },
+          state.leadScorer.hot_leads ? h('span', { style: { padding: '2px 8px', borderRadius: '8px', background: '#fee2e2', color: '#dc2626', fontSize: '10px', fontWeight: '700' } }, `${state.leadScorer.hot_leads} hot`) : null,
+          state.leadScorer.warm_leads ? h('span', { style: { padding: '2px 8px', borderRadius: '8px', background: '#fef3c7', color: '#d97706', fontSize: '10px', fontWeight: '700' } }, `${state.leadScorer.warm_leads} warm`) : null
+        )
+      ),
+      h('div', { style: { display: 'grid', gap: '3px' } },
+        ...(state.leadScorer.leads || []).slice(0, 5).map(l =>
+          h('div', { style: { display: 'flex', justifyContent: 'space-between', padding: '4px 8px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px' } },
+            h('span', { style: { color: 'var(--gray-600)' } }, l.email || l.lead),
+            h('div', { style: { display: 'flex', gap: '6px' } },
+              h('span', { style: { fontWeight: '700', color: l.tier === 'hot' ? '#dc2626' : l.tier === 'warm' ? '#d97706' : 'var(--gray-400)' } }, l.tier),
+              h('span', { style: { color: 'var(--gray-500)' } }, String(l.score))
+            )
+          )
+        )
+      )
+    ) : null,
+
+    // Content Cost (Batch 73)
+    state.contentCostCalculator?.per_piece ? h('div', { style: { marginBottom: '20px' } },
+      h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
+        h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)' } }, 'CONTENT COST'),
+        h('div', { style: { fontSize: '12px', color: 'var(--gray-500)' } }, `$${state.contentCostCalculator.per_piece.cost}/piece`)
+      ),
+      h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px' } },
+        h('div', { style: { padding: '6px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px', textAlign: 'center' } },
+          h('div', { style: { fontWeight: '700', color: 'var(--navy)' } }, `$${state.contentCostCalculator.cost_breakdown?.total || 0}`),
+          h('div', { style: { color: 'var(--gray-500)' } }, 'Total Cost')
+        ),
+        h('div', { style: { padding: '6px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px', textAlign: 'center' } },
+          h('div', { style: { fontWeight: '700', color: 'var(--navy)' } }, `$${state.contentCostCalculator.revenue?.attributed || 0}`),
+          h('div', { style: { color: 'var(--gray-500)' } }, 'Revenue')
+        ),
+        h('div', { style: { padding: '6px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px', textAlign: 'center' } },
+          h('div', { style: { fontWeight: '700', color: state.contentCostCalculator.revenue?.roi_percentage >= 0 ? '#059669' : '#dc2626' } }, `${state.contentCostCalculator.revenue?.roi_percentage || 0}%`),
+          h('div', { style: { color: 'var(--gray-500)' } }, 'ROI')
         )
       )
     ) : null,

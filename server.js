@@ -7374,6 +7374,325 @@ Return JSON: { "themes": [...], "recommendations": ["..."], "theme_balance": "as
       return json(res, readJSON('content-themes.json', { themes: [], recommendations: [], analyzed_at: null }));
     }
 
+    // === Batch 45: Content-to-DM Pipeline + Competitor Monitor + Scoring Model ===
+
+    // POST /api/content/:id/generate-dm-sequence — AI creates DM sequence from content
+    if (pathname.match(/^\/api\/content\/[^/]+\/generate-dm-sequence$/) && method === 'POST') {
+      const id = pathname.split('/')[3];
+      const content = readJSON('content.json', []);
+      const item = content.find(c => c.id === id);
+      if (!item) return json(res, { error: 'not found' }, 404);
+
+      const linkedinContent = item.formats?.linkedin?.content || item.formats?.x_single?.content || Object.values(item.formats || {})[0]?.content || '';
+      if (!linkedinContent) return json(res, { error: 'No content to build DM from' }, 400);
+
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude.js');
+      let text, parsed;
+      try {
+        text = await callClaude({
+          model: HAIKU,
+          system: 'You create DM outreach sequences for LinkedIn. Return JSON only.',
+          prompt: `Create a 3-message DM sequence to send to people who engage with this content.
+
+CONTENT: ${linkedinContent.slice(0, 2000)}
+CONTENT TITLE: ${item.trigger_title}
+
+The DM sequence should:
+- Message 1: Warm opener referencing their engagement/comment (sent within 2 hours)
+- Message 2: Value-add follow-up with a relevant insight or resource (sent 24 hours later)
+- Message 3: Soft CTA for a call/audit (sent 48 hours later)
+
+For each message, provide:
+- Trigger: what engagement triggers this DM (comment, share, like)
+- Template: the DM text with [NAME] and [COMPANY] placeholders
+- Timing: when to send relative to engagement
+- Goal: what you want to achieve
+
+Return JSON: {
+  "sequence_name": "...",
+  "target_audience": "...",
+  "messages": [{ "step": 1, "trigger": "...", "template": "...", "timing": "...", "goal": "..." }],
+  "expected_reply_rate": "estimate"
+}`,
+          maxTokens: 2000
+        });
+        parsed = parseJsonResponse(text);
+      } catch (err) {
+        return json(res, { error: 'AI error: ' + err.message }, 500);
+      }
+      if (!parsed) return json(res, { error: 'Failed to generate DM sequence', raw_preview: (text || '').slice(0, 200) }, 500);
+
+      const dmPipelines = readJSON('dm-pipelines.json', []);
+      const pipeline = {
+        id: generateId(),
+        content_id: id,
+        title: item.trigger_title,
+        ...parsed,
+        status: 'active',
+        stats: { sent: 0, replied: 0, booked: 0 },
+        created_at: now()
+      };
+      dmPipelines.push(pipeline);
+      writeJSON('dm-pipelines.json', dmPipelines);
+      return json(res, { ok: true, pipeline });
+    }
+
+    // GET /api/dm-pipelines — list all DM pipelines
+    if (pathname === '/api/dm-pipelines' && method === 'GET') {
+      return json(res, readJSON('dm-pipelines.json', []));
+    }
+
+    // POST /api/dm-pipelines/:id/track — track DM stats
+    if (pathname.match(/^\/api\/dm-pipelines\/[^/]+\/track$/) && method === 'POST') {
+      const pipelineId = pathname.split('/')[3];
+      const body = await parseBody(req);
+      const pipelines = readJSON('dm-pipelines.json', []);
+      const pipeline = pipelines.find(p => p.id === pipelineId);
+      if (!pipeline) return json(res, { error: 'not found' }, 404);
+
+      if (body.sent) pipeline.stats.sent += body.sent;
+      if (body.replied) pipeline.stats.replied += body.replied;
+      if (body.booked) pipeline.stats.booked += body.booked;
+      pipeline.last_updated = now();
+      writeJSON('dm-pipelines.json', pipelines);
+      return json(res, { ok: true, stats: pipeline.stats });
+    }
+
+    // --- Competitor Content Monitor ---
+
+    // POST /api/competitors/track — add competitor to track
+    if (pathname === '/api/competitors/track' && method === 'POST') {
+      const body = await parseBody(req);
+      if (!body.name) return json(res, { error: 'Competitor name required' }, 400);
+
+      const competitors = readJSON('competitors-tracked.json', []);
+      const entry = {
+        id: generateId(),
+        name: body.name,
+        linkedin_url: body.linkedin_url || '',
+        website: body.website || '',
+        x_handle: body.x_handle || '',
+        notes: body.notes || '',
+        content_samples: [],
+        analysis: null,
+        created_at: now()
+      };
+      competitors.push(entry);
+      writeJSON('competitors-tracked.json', competitors);
+      return json(res, { ok: true, competitor: entry });
+    }
+
+    // GET /api/competitors — list tracked competitors
+    if (pathname === '/api/competitors/tracked' && method === 'GET') {
+      return json(res, readJSON('competitors-tracked.json', []));
+    }
+
+    // POST /api/competitors/:id/add-sample — add content sample from competitor
+    if (pathname.match(/^\/api\/competitors\/[^/]+\/add-sample$/) && method === 'POST') {
+      const compId = pathname.split('/')[3];
+      const body = await parseBody(req);
+      const competitors = readJSON('competitors-tracked.json', []);
+      const comp = competitors.find(c => c.id === compId);
+      if (!comp) return json(res, { error: 'not found' }, 404);
+
+      comp.content_samples.push({
+        title: body.title || '',
+        content: body.content || '',
+        platform: body.platform || 'linkedin',
+        url: body.url || '',
+        engagement: body.engagement || {},
+        added_at: now()
+      });
+      writeJSON('competitors-tracked.json', competitors);
+      return json(res, { ok: true, samples: comp.content_samples.length });
+    }
+
+    // POST /api/competitors/:id/analyze — AI analyzes competitor content
+    if (pathname.match(/^\/api\/competitors\/[^/]+\/analyze$/) && method === 'POST') {
+      const compId = pathname.split('/')[3];
+      const competitors = readJSON('competitors-tracked.json', []);
+      const comp = competitors.find(c => c.id === compId);
+      if (!comp) return json(res, { error: 'not found' }, 404);
+      if (comp.content_samples.length < 2) return json(res, { error: 'Need at least 2 content samples to analyze' }, 400);
+
+      const samples = comp.content_samples.slice(0, 10).map(s => `- ${s.title}: ${(s.content || '').slice(0, 200)}`).join('\n');
+
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude.js');
+      let text, parsed;
+      try {
+        text = await callClaude({
+          model: HAIKU,
+          system: 'You analyze competitor content strategies. Return JSON only.',
+          prompt: `Analyze this competitor's content strategy based on their recent posts.
+
+COMPETITOR: ${comp.name}
+CONTENT SAMPLES:
+${samples}
+
+Analyze:
+1. Content themes and topics
+2. Posting frequency and patterns
+3. Tone and voice
+4. Strengths and weaknesses
+5. Opportunities for us to differentiate
+
+Return JSON: {
+  "themes": ["..."],
+  "posting_frequency": "estimate",
+  "tone": "description",
+  "strengths": ["..."],
+  "weaknesses": ["..."],
+  "differentiation_opportunities": ["..."],
+  "content_ideas_to_counter": ["..."]
+}`,
+          maxTokens: 1500
+        });
+        parsed = parseJsonResponse(text);
+      } catch (err) {
+        return json(res, { error: 'AI error: ' + err.message }, 500);
+      }
+      if (!parsed) return json(res, { error: 'Failed to analyze', raw_preview: (text || '').slice(0, 200) }, 500);
+
+      comp.analysis = { ...parsed, analyzed_at: now() };
+      writeJSON('competitors-tracked.json', competitors);
+      return json(res, { ok: true, analysis: comp.analysis });
+    }
+
+    // DELETE /api/competitors/:id
+    if (pathname.match(/^\/api\/competitors\/[^/]+$/) && method === 'DELETE') {
+      const compId = pathname.split('/')[3];
+      const competitors = readJSON('competitors-tracked.json', []);
+      writeJSON('competitors-tracked.json', competitors.filter(c => c.id !== compId));
+      return json(res, { ok: true });
+    }
+
+    // --- Content Scoring Model ---
+
+    // POST /api/content/score-model — build predictive model from engagement data
+    if (pathname === '/api/content/score-model' && method === 'POST') {
+      const content = readJSON('content.json', []);
+      const engagement = readJSON('engagement-tracking.json', []);
+
+      // Find content with engagement data
+      const scoredContent = content.filter(c => {
+        const eng = engagement.find(e => e.content_id === c.id);
+        return eng && Object.values(c.formats || {}).some(f => f.content);
+      }).map(c => {
+        const eng = engagement.find(e => e.content_id === c.id);
+        return {
+          title: c.trigger_title,
+          formats: Object.keys(c.formats || {}).filter(f => c.formats[f]?.content),
+          source: c.source,
+          engagement_rate: parseFloat(eng?.engagement_rate || 0),
+          impressions: eng?.impressions || 0,
+          clicks: eng?.clicks || 0
+        };
+      });
+
+      if (scoredContent.length < 3) {
+        return json(res, { error: 'Need at least 3 content pieces with engagement data to build model' }, 400);
+      }
+
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude.js');
+      const data = scoredContent.slice(0, 20).map(c =>
+        `- "${c.title}" (${c.source}, formats: ${c.formats.join(',')}) -> ${c.engagement_rate}% rate, ${c.impressions} imp, ${c.clicks} clicks`
+      ).join('\n');
+
+      let text, parsed;
+      try {
+        text = await callClaude({
+          model: HAIKU,
+          system: 'You analyze content performance data. Return JSON only.',
+          prompt: `Analyze this content performance data and create a scoring model.
+
+PERFORMANCE DATA:
+${data}
+
+Based on this data, identify:
+1. Which content characteristics correlate with high engagement
+2. Scoring weights for different factors (topic, format, source, length, hook style)
+3. Predictions for what types of content will perform best
+
+Return JSON: {
+  "model_version": "v1",
+  "factors": [{ "factor": "...", "weight": 0-100, "insight": "..." }],
+  "top_performing_patterns": ["..."],
+  "underperforming_patterns": ["..."],
+  "recommendations": ["..."],
+  "confidence": "low|medium|high"
+}`,
+          maxTokens: 1500
+        });
+        parsed = parseJsonResponse(text);
+      } catch (err) {
+        return json(res, { error: 'AI error: ' + err.message }, 500);
+      }
+      if (!parsed) return json(res, { error: 'Failed to build model', raw_preview: (text || '').slice(0, 200) }, 500);
+
+      parsed.trained_on = scoredContent.length;
+      parsed.trained_at = now();
+      writeJSON('scoring-model.json', parsed);
+      return json(res, { ok: true, model: parsed });
+    }
+
+    // GET /api/content/score-model — get current scoring model
+    if (pathname === '/api/content/score-model' && method === 'GET') {
+      return json(res, readJSON('scoring-model.json', { factors: [], trained_at: null }));
+    }
+
+    // POST /api/content/:id/predict-performance — predict performance before publishing
+    if (pathname.match(/^\/api\/content\/[^/]+\/predict-performance$/) && method === 'POST') {
+      const id = pathname.split('/')[3];
+      const content = readJSON('content.json', []);
+      const item = content.find(c => c.id === id);
+      if (!item) return json(res, { error: 'not found' }, 404);
+
+      const model = readJSON('scoring-model.json', { factors: [] });
+      const linkedinContent = item.formats?.linkedin?.content || '';
+
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude.js');
+      let text, parsed;
+      try {
+        text = await callClaude({
+          model: HAIKU,
+          system: 'You predict content performance. Return JSON only.',
+          prompt: `Predict the performance of this content based on our scoring model.
+
+CONTENT TITLE: ${item.trigger_title}
+CONTENT: ${linkedinContent.slice(0, 1500)}
+FORMATS: ${Object.keys(item.formats || {}).join(', ')}
+SOURCE: ${item.source}
+
+SCORING MODEL FACTORS:
+${model.factors?.map(f => `- ${f.factor} (weight: ${f.weight}): ${f.insight}`).join('\n') || 'No model trained yet'}
+
+Predict:
+1. Expected engagement rate
+2. Predicted impressions range
+3. Likelihood of going viral (low/medium/high)
+4. Best platform to post first
+5. Optimal posting time
+
+Return JSON: {
+  "predicted_engagement_rate": "X%",
+  "predicted_impressions": { "low": N, "high": N },
+  "viral_likelihood": "low|medium|high",
+  "best_platform": "...",
+  "optimal_time": "...",
+  "confidence": "low|medium|high",
+  "reasoning": "..."
+}`,
+          maxTokens: 800
+        });
+        parsed = parseJsonResponse(text);
+      } catch (err) {
+        return json(res, { error: 'AI error: ' + err.message }, 500);
+      }
+      if (!parsed) return json(res, { error: 'Failed to predict', raw_preview: (text || '').slice(0, 200) }, 500);
+
+      return json(res, { ok: true, prediction: parsed });
+    }
+
     // --- Content Series API ---
 
     // GET /api/series — list all content series

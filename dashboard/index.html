@@ -1489,6 +1489,9 @@ const state = {
   audienceGrowth: null,
   contentThemes: null,
   distributionPlans: [],
+  // DM Pipelines & Competitors
+  dmPipelines: [],
+  competitorsTracked: [],
 };
 
 // --- API Calls ---
@@ -1514,7 +1517,7 @@ async function loadData() {
   state.loading = true;
   render();
   try {
-    const [content, triggers, stats, calendar, monthCal, settings, memory, performance, perfAnalytics, meetings, meetingStats, clients, allActions, chatMessages, healthData, inspirations, pestering, pesteringStages, insights, deals, published, series, predictions, playbooks, ctaLibrary, trending, funnel, publishTracker, leadMagnets, contentHealth, scheduleOptimize, templates, dmSequences, hooks, pillarPlan, contentLeads, autopilot, scheduleQueue, engagementDashboard, contentBriefs, workflowPipeline, personas, calendarWeek, benchmarkReport, contentIdeas, socialProof, roiReport, audienceGrowth, contentThemes, distributionPlans] = await Promise.all([
+    const [content, triggers, stats, calendar, monthCal, settings, memory, performance, perfAnalytics, meetings, meetingStats, clients, allActions, chatMessages, healthData, inspirations, pestering, pesteringStages, insights, deals, published, series, predictions, playbooks, ctaLibrary, trending, funnel, publishTracker, leadMagnets, contentHealth, scheduleOptimize, templates, dmSequences, hooks, pillarPlan, contentLeads, autopilot, scheduleQueue, engagementDashboard, contentBriefs, workflowPipeline, personas, calendarWeek, benchmarkReport, contentIdeas, socialProof, roiReport, audienceGrowth, contentThemes, distributionPlans, dmPipelines, competitorsTracked] = await Promise.all([
       api('/api/content'),
       api('/api/triggers'),
       api('/api/stats'),
@@ -1564,7 +1567,9 @@ async function loadData() {
       api('/api/roi/report').catch(() => null),
       api('/api/audience/growth').catch(() => null),
       api('/api/themes').catch(() => null),
-      api('/api/distribution-plans').catch(() => [])
+      api('/api/distribution-plans').catch(() => []),
+      api('/api/dm-pipelines').catch(() => []),
+      api('/api/competitors/tracked').catch(() => [])
     ]);
     state.content = content;
     state.triggers = triggers;
@@ -1616,6 +1621,8 @@ async function loadData() {
     state.audienceGrowth = audienceGrowth;
     state.contentThemes = contentThemes;
     state.distributionPlans = distributionPlans;
+    state.dmPipelines = dmPipelines;
+    state.competitorsTracked = competitorsTracked;
   } catch (err) {
     console.error('Failed to load data:', err);
     toast('Failed to load data', 'error');
@@ -3281,6 +3288,43 @@ function renderDashboardPage() {
         })
       )
     ) : null,
+    // DM Pipelines
+    state.dmPipelines?.filter(p => p.status === 'active').length > 0 ? h('div', { style: { marginBottom: '20px' } },
+      h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
+        h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)' } }, `DM PIPELINES (${state.dmPipelines.filter(p => p.status === 'active').length} active)`),
+        h('div', { style: { fontSize: '11px', color: 'var(--gray-500)' } },
+          `${state.dmPipelines.reduce((s, p) => s + (p.stats?.sent || 0), 0)} sent | ${state.dmPipelines.reduce((s, p) => s + (p.stats?.replied || 0), 0)} replied | ${state.dmPipelines.reduce((s, p) => s + (p.stats?.booked || 0), 0)} booked`
+        )
+      ),
+      h('div', { style: { display: 'grid', gap: '6px' } },
+        ...state.dmPipelines.filter(p => p.status === 'active').slice(0, 5).map(pipeline =>
+          h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 12px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', borderLeft: '4px solid #6366f1' } },
+            h('div', { style: { flex: '1' } },
+              h('div', { style: { fontSize: '12px', fontWeight: '600', color: 'var(--navy)' } }, pipeline.sequence_name || pipeline.title?.slice(0, 40)),
+              h('div', { style: { fontSize: '10px', color: 'var(--gray-500)' } }, `${pipeline.messages?.length || 0} messages | ${pipeline.expected_reply_rate || 'N/A'} est. reply rate`)
+            ),
+            h('div', { style: { display: 'flex', gap: '8px', fontSize: '11px' } },
+              h('span', { style: { color: '#2563eb', fontWeight: '600' } }, `${pipeline.stats?.sent || 0} sent`),
+              h('span', { style: { color: '#059669', fontWeight: '600' } }, `${pipeline.stats?.replied || 0} replied`),
+              h('span', { style: { color: '#7c3aed', fontWeight: '600' } }, `${pipeline.stats?.booked || 0} booked`)
+            )
+          )
+        )
+      )
+    ) : null,
+    // Competitors
+    state.competitorsTracked?.length > 0 ? h('div', { style: { marginBottom: '20px' } },
+      h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)', marginBottom: '8px' } }, `COMPETITOR WATCH (${state.competitorsTracked.length})`),
+      h('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap' } },
+        ...state.competitorsTracked.map(comp =>
+          h('div', { style: { padding: '8px 14px', background: comp.analysis ? '#f0fdf4' : 'white', borderRadius: 'var(--radius-sm)', border: `1px solid ${comp.analysis ? '#bbf7d0' : 'var(--gray-200)'}`, minWidth: '140px' } },
+            h('div', { style: { fontSize: '12px', fontWeight: '700', color: 'var(--navy)', marginBottom: '2px' } }, comp.name),
+            h('div', { style: { fontSize: '10px', color: 'var(--gray-500)' } }, `${comp.content_samples?.length || 0} samples`),
+            comp.analysis ? h('div', { style: { fontSize: '10px', color: '#059669', marginTop: '2px' } }, 'Analyzed') : h('div', { style: { fontSize: '10px', color: '#d97706', marginTop: '2px' } }, 'Needs samples')
+          )
+        )
+      )
+    ) : null,
     // Audience Growth
     state.audienceGrowth?.latest ? h('div', { style: { marginBottom: '20px' } },
       h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)', marginBottom: '8px' } }, 'AUDIENCE GROWTH'),
@@ -3726,6 +3770,38 @@ function renderContentCard(content) {
                 } catch (err) { toast('Distribute failed: ' + err.message, 'error'); }
               }
             }, 'Distribute')
+          : null,
+        // DM Sequence button
+        Object.values(content.formats || {}).some(f => f.content)
+          ? h('button', {
+              className: 'btn btn-outline btn-sm',
+              style: { color: '#6366f1', borderColor: '#6366f1', fontSize: '11px' },
+              onclick: async (e) => {
+                e.stopPropagation();
+                toast('Generating DM sequence...', 'info');
+                try {
+                  const res = await api(`/api/content/${content.id}/generate-dm-sequence`, { method: 'POST' });
+                  toast(`DM pipeline "${res.pipeline?.sequence_name}" created with ${res.pipeline?.messages?.length || 0} messages`, 'success');
+                  loadData();
+                } catch (err) { toast('DM generation failed: ' + err.message, 'error'); }
+              }
+            }, 'DM Seq')
+          : null,
+        // Distribution Plan button
+        Object.values(content.formats || {}).some(f => f.content)
+          ? h('button', {
+              className: 'btn btn-outline btn-sm',
+              style: { color: '#0891b2', borderColor: '#0891b2', fontSize: '11px' },
+              onclick: async (e) => {
+                e.stopPropagation();
+                toast('Creating distribution plan...', 'info');
+                try {
+                  const res = await api(`/api/content/${content.id}/distribution-plan`, { method: 'POST' });
+                  toast(`7-day plan created with ${res.plan?.plan?.length || 0} days`, 'success');
+                  loadData();
+                } catch (err) { toast('Plan failed: ' + err.message, 'error'); }
+              }
+            }, 'Dist Plan')
           : null,
         content.trigger_url
           ? h('a', {

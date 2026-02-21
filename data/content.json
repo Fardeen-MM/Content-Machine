@@ -2058,6 +2058,42 @@
       ],
       "first_comment": "I mapped exactly where the 73% are losing cases in intake. Comment INTAKE above — I'll send you the scripts that fixed it for firms doing $2M+ in PPC revenue.",
       "generated_at": "2026-02-21T00:56:37.820Z"
+    },
+    "grades": {
+      "linkedin": {
+        "overall_grade": "B+",
+        "overall_score": 17,
+        "criteria": {
+          "hook": {
+            "score": 18,
+            "grade": "A-",
+            "feedback": "Strong opening with a specific number (23 firms analyzed). The follow-up stat (73%) is solid and creates curiosity. However, 'The number that stopped me' is slightly clichéd LinkedIn language—doesn't feel entirely fresh."
+          },
+          "value": {
+            "score": 16,
+            "grade": "B+",
+            "feedback": "Good concrete math ($255K loss scenario) that makes the problem tangible. The three root causes are clear. However, the value proposition is somewhat narrow—only relevant to PI firms. The insight feels incremental rather than groundbreaking (lead quality issues in intake aren't novel). The post cuts off mid-sentence, which breaks momentum and suggests incomplete thinking."
+          },
+          "readability": {
+            "score": 17,
+            "grade": "B+",
+            "feedback": "Clean formatting with numbered list and bold emphasis. Good white space. BUT: the final sentence cuts off ('Organic leads get the ful...'), which is a critical failure. This reads as rushed or unpolished. Short sentences work well until that abrupt ending tanks the experience."
+          },
+          "authenticity": {
+            "score": 15,
+            "grade": "B-",
+            "feedback": "Feels semi-authentic with specific research (23 firms), but the voice is polished/corporate rather than conversational. Phrases like 'costing them cases' and 'The fix:' sound like a consultant's template. Real people would show more personality or vulnerability about how they discovered this pattern."
+          },
+          "cta": {
+            "score": 13,
+            "grade": "C+",
+            "feedback": "No CTA at all. Post just ends abruptly (incomplete sentence). Even if it were complete, there's no ask: no 'reply with your intake process,' no link, no 'DM me,' nothing. This is a major miss for LinkedIn—you're educating but not converting curiosity into action."
+          }
+        },
+        "top_issue": "Incomplete post (cuts off mid-sentence) + no clear CTA. You're leaving money on the table by not directing engaged readers anywhere.",
+        "rewrite_suggestion": "I analyzed 23 law firm intake processes last month.\n\nHere's what shocked me: 73% treat a $4K PPC lead exactly like a $400 organic caller.\n\nIt's costing them six figures.\n\n(The math below shows why this matters to your revenue.)",
+        "graded_at": "2026-02-21T07:26:40.607Z"
+      }
     }
   },
   {
@@ -2524,5 +2560,33 @@
     },
     "status": "review",
     "created_at": "2026-02-21T01:30:16.501Z"
+  },
+  {
+    "id": "8314cf61a187cdb0",
+    "trigger_id": "reddit-1r85mj5",
+    "trigger_title": "For newer lawyers: an example of how to separate the wheat from the chaff",
+    "formats": {
+      "linkedin": {
+        "content": "A junior lawyer just told me they spent $3,200 on a \"law firm marketing consultant\" who sent them a 47-page PDF about \"building your personal brand on LinkedIn.\"\n\nNo metrics. No timeline. No cases signed.\n\nHere's what separates operators from charlatans:\n\n**Charlatans talk about strategy. Operators talk about cases.**\n\nWhen someone pitches you marketing, ask these three questions:\n\n1. \"Show me the exact number of cases your last 5 clients signed in month one.\" If they hedge, dodge, or say \"results vary\" — they're selling hope, not systems.\n\n2. \"What happens if we hit the metrics and still get zero cases?\" If they can't answer that, they've never built an intake process. They've only built campaigns.\n\n3. \"How do you measure success?\" Listen for \"calls,\" \"qualified leads,\" \"case value,\" and \"signed retainers.\" Not \"impressions,\" \"engagement,\" \"brand awareness,\" or \"thought leadership.\"\n\nThe junior lawyer's consultant couldn't answer any of them.\n\nSo here's what I told him:\n\nStop hiring marketing people. Hire systems.\n\nA $500/month Google Ads campaign + CallRail call tracking + a paralegal answering in under 60 seconds is worth more than a $5K retainer with an \"expert\" who can't show you signed cases.\n\nStart with whoever can show you:\n- Number of cases signed (not leads, not calls — cases)\n- Average case value\n- Cost per signed case\n- What their contingency is if you don't get results\n\nIf they can't show you that data for their own clients, they don't understand your business. They understand marketing theory.\n\nYou need someone who's answered the phones at 11pm because a deadline was in 4 hours. Not someone who's read a book about how marketing works.\n\nWhat's the worst pitch you've gotten? Curious what nonsense is out there right now.",
+        "status": "review",
+        "generated_at": "2026-02-21T07:26:47.714Z"
+      }
+    },
+    "status": "review",
+    "created_at": "2026-02-21T07:26:47.714Z"
+  },
+  {
+    "id": "010490bde5781407",
+    "trigger_id": "reddit-1r7rsky",
+    "trigger_title": "Paralegal/Legal Assistant for Plaintiff's Employment Firm (CA)",
+    "formats": {
+      "linkedin": {
+        "content": "A plaintiff's employment firm in San Francisco hired a paralegal last month.\n\nWithin three weeks, they realized the hire was a mistake.\n\nNot because the paralegal was bad. Because the firm had no system for what the paralegal should actually do.\n\nThe paralegal spent 40 hours a week:\n- Manually pulling case data into spreadsheets\n- Reorganizing discovery documents by hand\n- Copying case numbers between Clio and a Google Sheet\n- Answering intake calls that should've been routed to a form\n\nNone of that builds cases. All of it burns cash.\n\nHere's what we found auditing employment firms in California:\n\nMost are paying $28K-$42K/year for a paralegal to do clerical work that should take 6 hours a week — not 40.\n\nThe math: If a paralegal makes $35K/year and 34 of those 40 hours are waste, you're paying $29,750/year for work that could be automated or eliminated.\n\nThe fix isn't hiring smarter. It's systems first, then hire to the system.\n\nBefore you bring someone on, map:\n\n1. What intake data actually needs human touch (probably 20% of it)\n2. What discovery workflow repeats every case (automate this, don't hire for this)\n3. What client communication can be templated (Lawmatics, not a person)\n4. What actually requires legal expertise vs. task execution\n\nWe worked with an employment firm that did this backwards — hired first, built systems second. Cost them $8K in wasted hours before they realized.\n\nIf you're thinking about bringing on paralegal support, audit your process first. A $35K hire solving a $5K problem isn't a win.\n\nWhat's actually slowing down your cases right now?",
+        "status": "review",
+        "generated_at": "2026-02-21T07:26:53.859Z"
+      }
+    },
+    "status": "review",
+    "created_at": "2026-02-21T07:26:53.859Z"
   }
 ]

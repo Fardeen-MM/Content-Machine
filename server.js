@@ -10597,6 +10597,324 @@ Return JSON (no markdown fences):
       }
     }
 
+    // --- Batch 55: Content Flywheel + Smart Scheduling + Audience Segmentation + Content Grading + Batch Generator ---
+
+    // POST /api/content-flywheel — analyze content performance and recommend next actions
+    if (pathname === '/api/content-flywheel' && method === 'POST') {
+      const content = readJSON('content.json', []);
+      const bank = readJSON('content-bank.json', { log: [], stats: { value: 0, cta: 0 } });
+      const series = readJSON('series-templates.json', { series: [] });
+      const atomizations = readJSON('atomizations.json', []);
+      const chains = readJSON('repurpose-chains.json', []);
+      const sequences = readJSON('email-sequences.json', []);
+      const funnels = readJSON('lead-magnet-funnels.json', []);
+      const nurtures = readJSON('nurture-campaigns.json', []);
+      const pillars = readJSON('content-pillars.json', null);
+
+      // Calculate flywheel metrics
+      const approved = content.filter(c => c.status === 'approved').length;
+      const review = content.filter(c => c.status === 'review').length;
+      const totalFormats = content.reduce((s, c) => s + Object.keys(c.formats || {}).length, 0);
+      const derivativesTotal = atomizations.reduce((s, a) => s + (a.derivatives?.length || 0), 0);
+
+      // Calculate content velocity (pieces per day)
+      const dates = content.map(c => new Date(c.created_at || 0).getTime()).filter(d => d > 0).sort();
+      const daySpan = dates.length >= 2 ? (dates[dates.length - 1] - dates[0]) / 86400000 : 1;
+      const velocity = (content.length / Math.max(daySpan, 1)).toFixed(1);
+
+      // Flywheel stages
+      const stages = [
+        { stage: 'Create', metric: content.length, label: 'pieces', health: content.length >= 20 ? 'green' : content.length >= 10 ? 'yellow' : 'red' },
+        { stage: 'Repurpose', metric: chains.length + atomizations.length, label: 'chains + atomizations', health: (chains.length + atomizations.length) >= 5 ? 'green' : (chains.length + atomizations.length) >= 2 ? 'yellow' : 'red' },
+        { stage: 'Distribute', metric: approved, label: 'ready to post', health: approved >= 10 ? 'green' : approved >= 5 ? 'yellow' : 'red' },
+        { stage: 'Nurture', metric: sequences.length + nurtures.length, label: 'sequences + campaigns', health: (sequences.length + nurtures.length) >= 3 ? 'green' : (sequences.length + nurtures.length) >= 1 ? 'yellow' : 'red' },
+        { stage: 'Convert', metric: funnels.length, label: 'funnels', health: funnels.length >= 2 ? 'green' : funnels.length >= 1 ? 'yellow' : 'red' }
+      ];
+
+      // Next actions based on weakest stage
+      const weakest = stages.find(s => s.health === 'red') || stages.find(s => s.health === 'yellow');
+      const actions = [];
+      if (review > approved * 2) actions.push({ priority: 'high', action: 'Review and approve content', reason: `${review} pieces pending review vs ${approved} approved` });
+      if (chains.length === 0 && content.length >= 5) actions.push({ priority: 'high', action: 'Create a repurpose chain', reason: 'No chains yet — repurposing multiplies every piece 9x' });
+      if (sequences.length === 0 && approved >= 3) actions.push({ priority: 'medium', action: 'Build an email sequence', reason: 'No email sequences — leads need nurturing after engagement' });
+      if (funnels.length === 0) actions.push({ priority: 'medium', action: 'Design a lead magnet funnel', reason: 'No funnels — content without a funnel has no conversion path' });
+      if (!pillars) actions.push({ priority: 'low', action: 'Generate content pillars', reason: 'Pillars provide strategic direction for all content' });
+      if (bank.stats.value < 4 && bank.stats.cta > 0) actions.push({ priority: 'high', action: 'Post more value content', reason: `Bank ratio: ${(bank.stats.value / bank.stats.cta).toFixed(1)}:1 (need 4:1)` });
+
+      return json(res, {
+        ok: true,
+        flywheel: {
+          stages,
+          overall_health: stages.every(s => s.health === 'green') ? 'thriving' : stages.some(s => s.health === 'red') ? 'needs_work' : 'growing',
+          velocity: `${velocity} pieces/day`,
+          total_derivative_pieces: derivativesTotal + (chains.length * 9),
+          content_multiplier: content.length > 0 ? ((totalFormats + derivativesTotal) / content.length).toFixed(1) + 'x' : '0x'
+        },
+        next_actions: actions.sort((a, b) => ({ high: 0, medium: 1, low: 2 }[a.priority] || 3) - ({ high: 0, medium: 1, low: 2 }[b.priority] || 3)),
+        weakest_stage: weakest ? weakest.stage : null
+      });
+    }
+
+    // POST /api/smart-schedule — intelligently schedule content for optimal times
+    if (pathname === '/api/smart-schedule' && method === 'POST') {
+      const content = readJSON('content.json', []);
+      const series = readJSON('series-templates.json', { series: [] });
+      const bank = readJSON('content-bank.json', { log: [], stats: { value: 0, cta: 0 } });
+      const body = await parseBody(req);
+      const daysAhead = body.days || 7;
+
+      // Get approved + unscheduled content
+      const unscheduled = content.filter(c => c.status === 'approved' && !c.scheduled_at);
+      if (unscheduled.length === 0) return json(res, { error: 'No approved unscheduled content to schedule' }, 400);
+
+      // Build schedule
+      const schedule = [];
+      const today = new Date();
+      const canAsk = bank.stats.cta === 0 || (bank.stats.value / bank.stats.cta) >= 4;
+
+      for (let d = 0; d < daysAhead; d++) {
+        const date = new Date(today);
+        date.setDate(date.getDate() + d);
+        const dayOfWeek = date.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+
+        // Skip weekends (LinkedIn dead zone)
+        if (['saturday', 'sunday'].includes(dayOfWeek)) continue;
+
+        // Find series for this day
+        const daysSeries = (series.series || []).find(s => s.day === dayOfWeek);
+        const postTime = ['tuesday', 'wednesday', 'thursday'].includes(dayOfWeek) ? '08:00' : '12:00';
+
+        // Pick best content for this slot
+        const candidate = unscheduled.find(c => {
+          if (daysSeries) {
+            // Match format if series exists
+            const fmts = Object.keys(c.formats || {});
+            return fmts.includes(daysSeries.format) || fmts.includes('linkedin') || fmts.includes('x_single');
+          }
+          return true;
+        });
+
+        if (candidate) {
+          const idx = unscheduled.indexOf(candidate);
+          unscheduled.splice(idx, 1);
+
+          schedule.push({
+            content_id: candidate.id,
+            title: (candidate.trigger_title || '').slice(0, 60),
+            date: date.toISOString().slice(0, 10),
+            day: dayOfWeek,
+            time: postTime,
+            series: daysSeries?.name || null,
+            format: daysSeries?.format || Object.keys(candidate.formats || {})[0] || 'linkedin',
+            is_cta: canAsk && dayOfWeek === 'wednesday' && d >= 4 // Only CTA after 4 value posts
+          });
+        }
+      }
+
+      return json(res, { ok: true, schedule, total_scheduled: schedule.length, unscheduled_remaining: unscheduled.length });
+    }
+
+    // POST /api/audience-segments — define audience segments for targeted content
+    if (pathname === '/api/audience-segments' && method === 'POST') {
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+      const { BRAND_SYSTEM_PROMPT } = require('./generator/content-writer');
+      const body = await parseBody(req);
+
+      const prompt = `Define 5 audience segments for Mortar Metrics' content strategy. Each segment needs different messaging and content.
+
+Target market: ${body.market || 'Law firm owners in the US (PI, family law, criminal defense) doing $500K-$5M/year'}
+
+Return JSON (no markdown fences):
+{
+  "segments": [
+    {
+      "name": "segment name (2-3 words)",
+      "description": "who they are",
+      "pain_points": ["pain 1", "pain 2"],
+      "content_that_resonates": ["what content type works"],
+      "conversion_trigger": "what makes them buy",
+      "objections": ["common objection"],
+      "messaging_tone": "how to talk to them",
+      "linkedin_behavior": "how they use LinkedIn",
+      "estimated_size": "what % of audience"
+    }
+  ]
+}`;
+
+      try {
+        const text = await callClaude({ model: HAIKU, system: BRAND_SYSTEM_PROMPT, prompt, maxTokens: 3000 });
+        const parsed = parseJsonResponse(text);
+        if (!parsed) return json(res, { error: 'Failed to segment', raw_preview: (text || '').slice(0, 200) }, 500);
+
+        writeJSON('audience-segments.json', { ...parsed, generated_at: now() });
+        return json(res, { ok: true, ...parsed });
+      } catch (err) {
+        return json(res, { error: err.message }, 500);
+      }
+    }
+
+    // GET /api/audience-segments — get audience segments
+    if (pathname === '/api/audience-segments' && method === 'GET') {
+      return json(res, readJSON('audience-segments.json', null));
+    }
+
+    // POST /api/content/:id/grade — comprehensive AI-powered content grading
+    const gradeMatch = pathname.match(/^\/api\/content\/([a-f0-9]+)\/grade$/);
+    if (gradeMatch && method === 'POST') {
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      const id = gradeMatch[1];
+      const allContent = readJSON('content.json', []);
+      const item = allContent.find(c => c.id === id);
+      if (!item) return json(res, { error: 'Content not found' }, 404);
+
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+      const body = await parseBody(req);
+      const formatKey = body.format || 'linkedin';
+      const text = typeof item.formats?.[formatKey]?.content === 'string' ? item.formats[formatKey].content : '';
+      if (!text) return json(res, { error: 'No content for format' }, 400);
+
+      const prompt = `Grade this ${formatKey} content on a scale of A+ to F. Be brutally honest.
+
+Content: ${text.slice(0, 2000)}
+
+Grade on these criteria (each /20):
+1. Hook strength — does the first line stop the scroll?
+2. Value density — is every sentence worth reading?
+3. Readability — short sentences, white space, scannable?
+4. Authenticity — does it sound like a real person, not AI?
+5. CTA effectiveness — is there a clear next step?
+
+Return JSON (no markdown fences):
+{
+  "overall_grade": "A+|A|B+|B|C+|C|D|F",
+  "overall_score": 0,
+  "criteria": {
+    "hook": { "score": 0, "grade": "A-F", "feedback": "specific feedback" },
+    "value": { "score": 0, "grade": "A-F", "feedback": "..." },
+    "readability": { "score": 0, "grade": "A-F", "feedback": "..." },
+    "authenticity": { "score": 0, "grade": "A-F", "feedback": "..." },
+    "cta": { "score": 0, "grade": "A-F", "feedback": "..." }
+  },
+  "top_issue": "the #1 thing to fix",
+  "rewrite_suggestion": "rewritten first 2-3 lines showing improvement"
+}`;
+
+      try {
+        const text2 = await callClaude({ model: HAIKU, prompt, maxTokens: 2000 });
+        const parsed = parseJsonResponse(text2);
+        if (!parsed) return json(res, { error: 'Failed to grade', raw_preview: (text2 || '').slice(0, 200) }, 500);
+
+        // Save grade to content item
+        const idx = allContent.findIndex(c => c.id === id);
+        if (idx >= 0) {
+          if (!allContent[idx].grades) allContent[idx].grades = {};
+          allContent[idx].grades[formatKey] = { ...parsed, graded_at: now() };
+          writeJSON('content.json', allContent);
+        }
+        return json(res, { ok: true, content_id: id, format: formatKey, ...parsed });
+      } catch (err) {
+        return json(res, { error: err.message }, 500);
+      }
+    }
+
+    // POST /api/batch-generate — generate content for multiple triggers at once
+    if (pathname === '/api/batch-generate' && method === 'POST') {
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      const body = await parseBody(req);
+      const count = Math.min(body.count || 5, 10);
+      const format = body.format || 'linkedin';
+
+      const triggers = readJSON('trigger-queue.json', []);
+      const pending = triggers.filter(t => t.status === 'pending').slice(0, count);
+      if (pending.length === 0) return json(res, { error: 'No pending triggers to generate from' }, 400);
+
+      // Generate in parallel (up to 3 concurrent)
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+      const { BRAND_SYSTEM_PROMPT } = require('./generator/content-writer');
+      const allContent = readJSON('content.json', []);
+      const results = [];
+
+      for (const trigger of pending) {
+        try {
+          const prompt = `Write a ${format} post about this topic. Make it actionable, data-driven, and direct.
+
+Topic: ${trigger.title}
+${trigger.summary ? `Summary: ${trigger.summary.slice(0, 500)}` : ''}
+
+${format === 'linkedin' ? 'Format: LinkedIn post (1200-1500 chars, hook + story + insight + soft CTA, no external links)' : ''}
+${format === 'x_single' ? 'Format: Tweet (under 280 chars, punchy and quotable)' : ''}
+${format === 'hot_take' ? 'Format: Contrarian hot take (500-800 chars, bold opinion with evidence)' : ''}
+
+Write the post directly. No JSON wrapper needed.`;
+
+          const text = await callClaude({ model: HAIKU, system: BRAND_SYSTEM_PROMPT, prompt, maxTokens: 1500 });
+          if (text && text.length > 50) {
+            const id = generateId();
+            allContent.push({
+              id,
+              trigger_id: trigger.id,
+              trigger_title: trigger.title,
+              formats: { [format]: { content: text.trim(), status: 'review', generated_at: now() } },
+              status: 'review',
+              created_at: now()
+            });
+            results.push({ id, title: trigger.title, format, chars: text.length, status: 'ok' });
+          }
+        } catch (err) {
+          results.push({ title: trigger.title, status: 'error', error: err.message });
+        }
+      }
+
+      writeJSON('content.json', allContent);
+      return json(res, { ok: true, generated: results.filter(r => r.status === 'ok').length, failed: results.filter(r => r.status === 'error').length, results });
+    }
+
+    // GET /api/content-velocity — content production velocity metrics
+    if (pathname === '/api/content-velocity' && method === 'GET') {
+      const content = readJSON('content.json', []);
+
+      // Group by day
+      const byDay = {};
+      for (const c of content) {
+        const day = (c.created_at || '').slice(0, 10);
+        if (day) byDay[day] = (byDay[day] || 0) + 1;
+      }
+
+      // Group by week
+      const byWeek = {};
+      for (const c of content) {
+        const d = new Date(c.created_at || 0);
+        const weekStart = new Date(d);
+        weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+        const week = weekStart.toISOString().slice(0, 10);
+        byWeek[week] = (byWeek[week] || 0) + 1;
+      }
+
+      // Calculate averages
+      const days = Object.values(byDay);
+      const weeks = Object.values(byWeek);
+      const avgPerDay = days.length > 0 ? (days.reduce((s, d) => s + d, 0) / days.length).toFixed(1) : 0;
+      const avgPerWeek = weeks.length > 0 ? (weeks.reduce((s, w) => s + w, 0) / weeks.length).toFixed(1) : 0;
+
+      // Status pipeline
+      const pipeline = {
+        pending_triggers: readJSON('trigger-queue.json', []).filter(t => t.status === 'pending').length,
+        review: content.filter(c => c.status === 'review').length,
+        approved: content.filter(c => c.status === 'approved').length,
+        published: content.filter(c => c.status === 'published').length
+      };
+
+      return json(res, {
+        total: content.length,
+        avg_per_day: avgPerDay,
+        avg_per_week: avgPerWeek,
+        daily_breakdown: Object.entries(byDay).sort().slice(-14).map(([d, c]) => ({ date: d, count: c })),
+        weekly_breakdown: Object.entries(byWeek).sort().slice(-8).map(([w, c]) => ({ week: w, count: c })),
+        pipeline
+      });
+    }
+
     // --- Static file serving ---
 
     // Serve dashboard

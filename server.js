@@ -10293,6 +10293,310 @@ Return JSON (no markdown fences):
       });
     }
 
+    // --- Batch 54: Content Pillars + Competitor Monitor + Auto-Nurture + Trending Topics + Authority Builder ---
+
+    // POST /api/content-pillars/generate — generate strategic content pillars based on business goals
+    if (pathname === '/api/content-pillars/generate' && method === 'POST') {
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      const { callClaude, parseJsonResponse, SONNET } = require('./lib/claude');
+      const { BRAND_SYSTEM_PROMPT } = require('./generator/content-writer');
+      const body = await parseBody(req);
+
+      const prompt = `Design 5 strategic content pillars for a legal marketing agency (Mortar Metrics) that targets law firm owners.
+
+Business goals: ${body.goals || 'Book 10 discovery calls/month from LinkedIn content'}
+Target audience: ${body.audience || 'PI, family law, and criminal defense firm owners doing $500K-$3M/year'}
+Current services: ${body.services || 'Google Ads management, call tracking, intake optimization, website redesign'}
+
+Each pillar should have a clear PURPOSE (educate, build trust, create desire, handle objections, or convert).
+
+Return JSON (no markdown fences):
+{
+  "pillars": [
+    {
+      "name": "pillar name (2-4 words)",
+      "purpose": "educate|trust|desire|objections|convert",
+      "description": "what this pillar covers and why",
+      "content_ratio": "what % of content should be this pillar",
+      "formats": ["best formats for this pillar"],
+      "example_topics": ["topic 1", "topic 2", "topic 3", "topic 4", "topic 5"],
+      "buyer_journey_stage": "awareness|consideration|decision",
+      "kpis": ["what to measure for this pillar"]
+    }
+  ],
+  "posting_mix": "how to distribute across the week",
+  "funnel_flow": "how pillars connect to move someone from follower to client"
+}`;
+
+      try {
+        const text = await callClaude({ model: SONNET, system: BRAND_SYSTEM_PROMPT, prompt, maxTokens: 5000 });
+        const parsed = parseJsonResponse(text);
+        if (!parsed) return json(res, { error: 'Failed to generate pillars', raw_preview: (text || '').slice(0, 300) }, 500);
+
+        writeJSON('content-pillars.json', { ...parsed, generated_at: now() });
+        return json(res, { ok: true, ...parsed });
+      } catch (err) {
+        return json(res, { error: err.message }, 500);
+      }
+    }
+
+    // GET /api/content-pillars — get generated content pillars
+    if (pathname === '/api/content-pillars' && method === 'GET') {
+      return json(res, readJSON('content-pillars.json', null));
+    }
+
+    // POST /api/competitor-analysis — analyze competitor content strategy
+    if (pathname === '/api/competitor-analysis' && method === 'POST') {
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+      const body = await parseBody(req);
+
+      // Pull recent competitor triggers from our scraper data
+      const triggers = readJSON('trigger-queue.json', []);
+      const compTriggers = triggers.filter(t => t.source === 'competitor' || t.competitive_angle).slice(0, 20);
+      const compSummary = compTriggers.map(t => `- ${t.title} (${t.source_name || t.url || 'competitor'})`).join('\n');
+
+      const prompt = `Analyze competitor content strategy based on their recent posts. Identify gaps we can exploit.
+
+Our competitors' recent content:
+${compSummary || 'No competitor data available yet — analyze based on typical legal marketing agency content.'}
+
+Our brand: Mortar Metrics — data-driven, direct, no-BS legal marketing.
+
+Return JSON (no markdown fences):
+{
+  "competitor_themes": ["theme 1 they focus on", "theme 2", "theme 3"],
+  "content_gaps": ["topic they miss that we should own", "gap 2", "gap 3"],
+  "differentiation_angles": ["how to position differently", "angle 2"],
+  "counter_posts": [
+    { "competitor_claim": "what they're saying", "our_counter": "our contrarian angle", "post_hook": "hook for our post" }
+  ],
+  "trending_in_space": ["what's hot in legal marketing content"],
+  "steal_worthy": ["formats or approaches worth adapting"]
+}`;
+
+      try {
+        const text = await callClaude({ model: HAIKU, prompt, maxTokens: 3000 });
+        const parsed = parseJsonResponse(text);
+        if (!parsed) return json(res, { error: 'Failed to analyze', raw_preview: (text || '').slice(0, 200) }, 500);
+
+        const analyses = readJSON('competitor-analyses.json', []);
+        analyses.push({ id: generateId(), ...parsed, triggers_analyzed: compTriggers.length, created_at: now() });
+        if (analyses.length > 20) analyses.splice(0, analyses.length - 20);
+        writeJSON('competitor-analyses.json', analyses);
+        return json(res, { ok: true, ...parsed });
+      } catch (err) {
+        return json(res, { error: err.message }, 500);
+      }
+    }
+
+    // GET /api/competitor-analyses — get recent competitor analyses
+    if (pathname === '/api/competitor-analyses' && method === 'GET') {
+      return json(res, readJSON('competitor-analyses.json', []));
+    }
+
+    // POST /api/content/:id/nurture-touchpoints — generate multi-touch nurture campaign from content
+    const nurtureMatch = pathname.match(/^\/api\/content\/([a-f0-9]+)\/nurture-touchpoints$/);
+    if (nurtureMatch && method === 'POST') {
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      const id = nurtureMatch[1];
+      const allContent = readJSON('content.json', []);
+      const item = allContent.find(c => c.id === id);
+      if (!item) return json(res, { error: 'Content not found' }, 404);
+
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+      const { BRAND_SYSTEM_PROMPT } = require('./generator/content-writer');
+      const source = Object.values(item.formats || {}).map(f => typeof f?.content === 'string' ? f.content : '').sort((a, b) => b.length - a.length)[0] || '';
+
+      const prompt = `Create a 14-day multi-channel nurture campaign based on this content. Someone engaged with this topic — now we guide them to a call.
+
+Topic: ${item.trigger_title}
+Content: ${source.slice(0, 2000)}
+
+Each touchpoint should feel natural, not salesy. Build trust through value, then invite a conversation.
+
+Return JSON (no markdown fences):
+{
+  "campaign_name": "descriptive name",
+  "touchpoints": [
+    {
+      "day": 1,
+      "channel": "linkedin_post|email|dm|comment|story",
+      "action": "what to post/send",
+      "content_snippet": "first 2-3 lines or subject line",
+      "intent": "educate|relate|prove|convert",
+      "call_to_action": "soft CTA if any"
+    }
+  ],
+  "conversion_trigger": "what signal means they're ready for a call",
+  "expected_timeline": "days to conversion"
+}`;
+
+      try {
+        const text = await callClaude({ model: HAIKU, system: BRAND_SYSTEM_PROMPT, prompt, maxTokens: 3000 });
+        const parsed = parseJsonResponse(text);
+        if (!parsed) return json(res, { error: 'Failed to generate', raw_preview: (text || '').slice(0, 200) }, 500);
+
+        const nurtures = readJSON('nurture-campaigns.json', []);
+        nurtures.push({ id: generateId(), content_id: id, title: item.trigger_title, ...parsed, status: 'draft', created_at: now() });
+        writeJSON('nurture-campaigns.json', nurtures);
+        return json(res, { ok: true, campaign: nurtures[nurtures.length - 1] });
+      } catch (err) {
+        return json(res, { error: err.message }, 500);
+      }
+    }
+
+    // GET /api/nurture-campaigns — list all nurture campaigns
+    if (pathname === '/api/nurture-campaigns' && method === 'GET') {
+      return json(res, readJSON('nurture-campaigns.json', []));
+    }
+
+    // POST /api/trending-angles — find trending angles to create content about right now
+    if (pathname === '/api/trending-angles' && method === 'POST') {
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+
+      // Pull recent triggers for context
+      const triggers = readJSON('trigger-queue.json', []);
+      const recent = triggers.filter(t => {
+        const age = Date.now() - new Date(t.created_at || 0).getTime();
+        return age < 7 * 86400000; // last 7 days
+      }).slice(0, 15);
+      const recentSummary = recent.map(t => `- ${t.title} (${t.source || 'unknown'})`).join('\n');
+
+      const prompt = `Based on recent legal marketing news and trends, identify 8 hot angles Mortar Metrics should create content about THIS WEEK.
+
+Recent triggers from our scrapers:
+${recentSummary || 'No recent triggers — generate based on current legal marketing trends.'}
+
+For each angle, explain why it's timely and give a ready-to-use hook.
+
+Return JSON (no markdown fences):
+{
+  "trending_angles": [
+    {
+      "angle": "the topic/angle",
+      "why_now": "why this is timely",
+      "hook": "ready-to-post hook (under 100 chars)",
+      "format": "best format (linkedin|carousel|video|thread|hot_take)",
+      "urgency": "high|medium|low",
+      "tie_to_service": "how this connects to our services"
+    }
+  ],
+  "content_calendar_suggestion": "which angles to post which days this week"
+}`;
+
+      try {
+        const text = await callClaude({ model: HAIKU, prompt, maxTokens: 3000 });
+        const parsed = parseJsonResponse(text);
+        if (!parsed) return json(res, { error: 'Failed to find trends', raw_preview: (text || '').slice(0, 200) }, 500);
+        return json(res, { ok: true, ...parsed, triggers_analyzed: recent.length });
+      } catch (err) {
+        return json(res, { error: err.message }, 500);
+      }
+    }
+
+    // POST /api/authority-builder — generate thought leadership positioning plan
+    if (pathname === '/api/authority-builder' && method === 'POST') {
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      const { callClaude, parseJsonResponse, SONNET } = require('./lib/claude');
+      const { BRAND_SYSTEM_PROMPT } = require('./generator/content-writer');
+      const body = await parseBody(req);
+
+      const content = readJSON('content.json', []);
+      const published = readJSON('published.json', []);
+      const bank = readJSON('content-bank.json', { log: [], stats: { value: 0, cta: 0 } });
+
+      const prompt = `Create a 90-day thought leadership positioning plan for Mortar Metrics on LinkedIn.
+
+Current state:
+- ${content.length} pieces of content created
+- ${published.length} published
+- Content bank: ${bank.stats.value} value posts, ${bank.stats.cta} CTA posts
+- Focus: ${body.focus || 'Becoming the go-to expert for law firm Google Ads and intake optimization'}
+
+Build a plan that positions the founder as THE authority in legal marketing. Think Gary Vee's playbook but for B2B legal services.
+
+Return JSON (no markdown fences):
+{
+  "positioning_statement": "one sentence that defines the authority position",
+  "core_narrative": "the 2-3 paragraph story that everything ties back to",
+  "month_1": {
+    "theme": "month theme",
+    "goal": "specific goal",
+    "content_focus": ["what to post about"],
+    "key_actions": ["action 1", "action 2", "action 3"],
+    "milestone": "what success looks like"
+  },
+  "month_2": { "theme": "...", "goal": "...", "content_focus": [], "key_actions": [], "milestone": "..." },
+  "month_3": { "theme": "...", "goal": "...", "content_focus": [], "key_actions": [], "milestone": "..." },
+  "signature_content": [
+    { "type": "recurring series|signature post|pillar content", "name": "...", "description": "...", "frequency": "..." }
+  ],
+  "engagement_targets": {
+    "month_1": { "posts_per_week": 5, "comments_per_day": 10, "dms_per_week": 5, "target_followers": "..." },
+    "month_2": { "posts_per_week": 5, "comments_per_day": 15, "dms_per_week": 10, "target_followers": "..." },
+    "month_3": { "posts_per_week": 5, "comments_per_day": 20, "dms_per_week": 15, "target_followers": "..." }
+  }
+}`;
+
+      try {
+        const text = await callClaude({ model: SONNET, system: BRAND_SYSTEM_PROMPT, prompt, maxTokens: 5000 });
+        const parsed = parseJsonResponse(text);
+        if (!parsed) return json(res, { error: 'Failed to generate', raw_preview: (text || '').slice(0, 300) }, 500);
+
+        writeJSON('authority-plan.json', { ...parsed, generated_at: now() });
+        return json(res, { ok: true, ...parsed });
+      } catch (err) {
+        return json(res, { error: err.message }, 500);
+      }
+    }
+
+    // GET /api/authority-plan — get the authority builder plan
+    if (pathname === '/api/authority-plan' && method === 'GET') {
+      return json(res, readJSON('authority-plan.json', null));
+    }
+
+    // POST /api/content/:id/micro-content — extract micro-content pieces (quotes, stats, insights)
+    const microMatch = pathname.match(/^\/api\/content\/([a-f0-9]+)\/micro-content$/);
+    if (microMatch && method === 'POST') {
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      const id = microMatch[1];
+      const allContent = readJSON('content.json', []);
+      const item = allContent.find(c => c.id === id);
+      if (!item) return json(res, { error: 'Content not found' }, 404);
+
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+      const source = Object.values(item.formats || {}).map(f => typeof f?.content === 'string' ? f.content : '').sort((a, b) => b.length - a.length)[0] || '';
+      if (source.length < 100) return json(res, { error: 'Not enough content to extract micro-content' }, 400);
+
+      const prompt = `Extract micro-content pieces from this content. Each piece should work standalone as a social post, graphic, or caption.
+
+Source: ${source.slice(0, 3000)}
+Topic: ${item.trigger_title}
+
+Return JSON (no markdown fences):
+{
+  "quotes": ["quotable line 1 (under 100 chars)", "quote 2", "quote 3"],
+  "stats": ["stat with context", "stat 2"],
+  "one_liners": ["punchy one-liner for X/Twitter", "one-liner 2", "one-liner 3"],
+  "graphic_text": ["text for image graphic 1", "text 2"],
+  "story_hooks": ["story opening that creates curiosity", "hook 2"],
+  "controversial_takes": ["hot take that starts debate", "take 2"],
+  "total_pieces": 0
+}`;
+
+      try {
+        const text = await callClaude({ model: HAIKU, prompt, maxTokens: 2000 });
+        const parsed = parseJsonResponse(text);
+        if (!parsed) return json(res, { error: 'Failed to extract', raw_preview: (text || '').slice(0, 200) }, 500);
+        parsed.total_pieces = (parsed.quotes?.length || 0) + (parsed.stats?.length || 0) + (parsed.one_liners?.length || 0) + (parsed.graphic_text?.length || 0) + (parsed.story_hooks?.length || 0) + (parsed.controversial_takes?.length || 0);
+        return json(res, { ok: true, content_id: id, ...parsed });
+      } catch (err) {
+        return json(res, { error: err.message }, 500);
+      }
+    }
+
     // --- Static file serving ---
 
     // Serve dashboard

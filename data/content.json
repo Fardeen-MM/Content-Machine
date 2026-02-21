@@ -103,7 +103,19 @@
     "youtube_topic": null,
     "blog_post": null,
     "youtube_script": null,
-    "notes": ""
+    "notes": "",
+    "viral_scores": {
+      "linkedin": {
+        "0": "Complete the '5 things' list—partial lists feel unfinished and reduce shares",
+        "1": "Add emotional validation: 'You're not alone' or 'You trusted the wrong person'",
+        "2": "Include a contrasting positive result: 'One firm we audited was paying $300/mo for 2 leads, switched to $X and got 15 leads'",
+        "3": "Stronger CTA at end: 'Drop a comment if you're currently overpaying for web services'",
+        "4": "Add social proof: 'Audited 150+ law firm sites last year' (if true)",
+        "5": "Consider before/after metrics for higher shareability",
+        "6": "Address the 'web guy' industry more pointedly—this becomes a rallying cry",
+        "predicted_at": "2026-02-21T01:32:10.900Z"
+      }
+    }
   },
   {
     "id": "7f77c159bb8ccf6a",
@@ -488,7 +500,18 @@
     "youtube_topic": null,
     "blog_post": null,
     "youtube_script": null,
-    "notes": ""
+    "notes": "",
+    "viral_scores": {
+      "linkedin": {
+        "0": "Expand audience appeal: Lead with universal principle before niche application ('Response speed beats quality in first contact')",
+        "1": "Strengthen emotional hooks: Include a brief client quote or scenario detail ('My phone buzzed 30 seconds later. I knew they cared.')",
+        "2": "Add counterintuitive angle: Emphasize *why* simplicity wins over AI/automation (psychological principle, not just tactics)",
+        "3": "Tease the data source: '78% stat' needs attribution or context to boost credibility in comments",
+        "4": "Include social proof: Add case results beyond conversion rates (dollar amounts recovered, testimonial snippets)",
+        "5": "Stronger CTA: Complete post cuts off—needs magnetic closing line beyond 'Set this up today'",
+        "predicted_at": "2026-02-21T01:32:54.514Z"
+      }
+    }
   },
   {
     "id": "6416c9f94e5c38",
@@ -638,6 +661,57 @@
         ],
         "created_at": "2026-02-21T01:25:24.530Z",
         "winner": null
+      }
+    },
+    "engagement": {
+      "linkedin": {
+        "impressions": 4500,
+        "engagement": 320,
+        "clicks": 89,
+        "shares": 15,
+        "saves": 42,
+        "comments": 28,
+        "engagement_rate": "7.11",
+        "last_updated": "2026-02-21T01:29:47.458Z"
+      }
+    },
+    "viral_scores": {
+      "linkedin": {
+        "viral_score": 72,
+        "hook_strength": {
+          "score": 18,
+          "feedback": "Opening line is highly specific and uses a concrete dollar figure ($57K) paired with a disappointing outcome (12 cases). This creates immediate cognitive dissonance—expensive investment, minimal return. The math ($4,750/case) that follows amplifies the shock. Strong pattern interrupt for the target audience."
+        },
+        "emotional_triggers": {
+          "score": 19,
+          "triggers_found": [
+            "schadenfreude (others got scammed)",
+            "fear (this could happen to me)",
+            "outrage (agencies failing on basic accountability)",
+            "validation (my suspicions about agencies confirmed)"
+          ],
+          "feedback": "Exceptionally strong emotional payload. Law firm owners reading this likely have felt burned by agencies before. The three concrete failure stories (no reporting, vanity metrics, wrong zip code for 4 months) hit hard. The phrase 'hide behind impressions' is particularly effective—it names the exact behavior that frustrates B2B service buyers."
+        },
+        "relatability": {
+          "score": 19,
+          "feedback": "This is almost custom-written for law firm owners/partners who've hired marketing agencies. The specific pain points (lead quality, tracking, reporting transparency) are universal in professional services. The three questions at the end are practical objections this audience has likely encountered. High specificity to niche increases relevance dramatically."
+        },
+        "shareability": {
+          "score": 17,
+          "feedback": "Strong tag potential—'This is us 6 months ago' or 'Send this to [agency name].' The post validates frustrations people want to express. However, it lacks a viral 'hook' for non-B2B audiences, limiting organic spread beyond immediate circles. The three questions are quotable and save-worthy. Warning: could be seen as slightly self-promotional if the poster is positioning themselves as the 'good' alternative."
+        },
+        "actionability": {
+          "score": 18,
+          "feedback": "Three concrete, binary questions to ask before hiring is immediately implementable. Reader knows exactly what to do: audit current agency partnerships against these three criteria or screen new agencies with this framework. The 'run' language is decisive and empowering. One gap: no guidance on what happens *after* identifying a bad agency or where to find a good one."
+        },
+        "improvements": [
+          "Add a micro-credential or case study—'We fixed this for [industry] by focusing on X' builds trust that this isn't just critique but informed opinion. Currently the post diagnoses problems without revealing the author's expertise.",
+          "Quantify what 'good' looks like—'We saw law firms drop cost-per-case to $1,200' gives aspiration and context for what's possible, making the post feel solution-oriented rather than just cautionary.",
+          "Soften the 'run' language slightly for broader appeal—'Proceed with caution' instead of 'run' feels less inflammatory and more professional, potentially increasing saves over reactions."
+        ],
+        "predicted_engagement_rate": "4.2%",
+        "verdict": "High-performing niche post with strong emotional resonance for law firm owners—excellent CTR and shares within professional services vertical, but limited viral potential beyond B2B.",
+        "predicted_at": "2026-02-21T01:30:01.870Z"
       }
     }
   },
@@ -2273,5 +2347,45 @@
     "status": "review",
     "generated_at": "2026-02-21T01:20:14.097Z",
     "generation_mode": "autopilot"
+  },
+  {
+    "id": "0290f613483e7695",
+    "trigger_id": "reddit-vby1g2d",
+    "trigger_title": "[Recycled] Spent $5K/month on Google Ads for my PI firm and got 2 cases",
+    "trigger_source": "recycle",
+    "trigger_category": "PAIN_POINT",
+    "recycled_from": "dd33fd2be463cf5f",
+    "recycle_mode": "new-angle",
+    "recycle_angle": "Original: data-bomb showing wasteful spend. Remix: failure story (we fired them) showing the agency's measurement scam — the real villain is the metric, not the effort. Same numbers, different emotional hook.",
+    "formats": {
+      "linkedin": {
+        "content": "I fired a Google Ads agency last week.\n\nNot because they were lazy. They worked hard.\n\nThey just optimized for the wrong thing.\n\n47 leads last month. Sounds great until you dig in: 31 were garbage. Wrong practice area. Already lawyered up. Just wanted free advice.\n\n16 real prospects. 8 answered the phone. 2 signed.\n\nThat's 94% waste before you even factor in the retainer conversation.\n\nBut the agency's report showed \"47 leads generated.\" Green checkmark. Good work, right?\n\nWrong.\n\nHere's what kills me: they charged $6,500/month ($5K ads + $1,500 fee) for 2 signed cases over 8 months.\n\nThat's not a lead problem. That's a measurement problem.\n\nWe switched agencies. New one uses a simple filter:\n\nBefore we optimize for volume, we optimize for WHO.\n\n- Is this person in the right jurisdiction?\n- Do they have actual damages or a tire-kicker complaint?\n- Will they actually sign, or just negotiate forever?\n\nLead quality went down 40%. Cost per case went down 68%.\n\nSame ad budget. Different lens.\n\nYour agency should be obsessed with cost-per-signed-case. If they lead with \"47 leads\" instead, you're already losing.",
+        "status": "review",
+        "edited": false
+      },
+      "x_single": {
+        "content": "Fired our Google Ads agency. Not for laziness — they delivered 47 leads. Problem? 31 were junk. 16 real prospects. 8 picked up. 2 signed. $6,500/month for that math. Agencies optimize for volume. You need to optimize for quality. Demand cost-per-case, not cost-per-lead.",
+        "status": "review",
+        "edited": false
+      },
+      "x_thread": {
+        "content": [
+          "Fired our Google Ads agency last week. Not because they didn't work hard. They delivered 47 leads last month. But here's the part nobody talks about: what was actually IN those 47 leads? 🧵",
+          "31 of those 47 were junk. Already represented. Wrong practice area. Tire-kickers wanting free advice. The agency's report? \"Great month, 47 leads!\" Green checkmark. My response: show me the 16 real ones.",
+          "Of the 16 actual prospects: 8 answered the phone. 2 signed. $6,500/month (ads + fee) for 2 cases over 8 months. That's $26K per signed case. My accountant almost had a stroke.",
+          "The agency couldn't answer a simple question: \"What's our cost per signed case?\" Their response: \"It depends.\" No. It doesn't depend. It's math. Bad math.",
+          "We switched agencies. New process: score every lead before it hits the intake team. Kill the junk upfront. Lead volume dropped 40%. Cost per case dropped 68%. Same $5K ad budget. Different filter. That's the entire game."
+        ],
+        "status": "review",
+        "edited": false
+      },
+      "hot_take": {
+        "content": "Most agencies deliberately avoid measuring cost-per-signed-case because it makes them look bad. They'd rather you obsess over 'lead volume' — a metric that's easy to game and impossible to dispute. If your agency resists cost-per-case tracking, they know the numbers don't hold up. Fire them.",
+        "status": "review",
+        "edited": false
+      }
+    },
+    "status": "review",
+    "created_at": "2026-02-21T01:30:16.501Z"
   }
 ]

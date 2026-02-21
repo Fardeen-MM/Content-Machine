@@ -1467,6 +1467,8 @@ const state = {
   autopilot: { enabled: false, settings: {}, today: {}, recent_log: [] },
   // Schedule Queue
   scheduleQueue: [],
+  // Engagement Dashboard
+  engagementDashboard: null,
 };
 
 // --- API Calls ---
@@ -1492,7 +1494,7 @@ async function loadData() {
   state.loading = true;
   render();
   try {
-    const [content, triggers, stats, calendar, monthCal, settings, memory, performance, perfAnalytics, meetings, meetingStats, clients, allActions, chatMessages, healthData, inspirations, pestering, pesteringStages, insights, deals, published, series, predictions, playbooks, ctaLibrary, trending, funnel, publishTracker, leadMagnets, contentHealth, scheduleOptimize, templates, dmSequences, hooks, pillarPlan, contentLeads, autopilot, scheduleQueue] = await Promise.all([
+    const [content, triggers, stats, calendar, monthCal, settings, memory, performance, perfAnalytics, meetings, meetingStats, clients, allActions, chatMessages, healthData, inspirations, pestering, pesteringStages, insights, deals, published, series, predictions, playbooks, ctaLibrary, trending, funnel, publishTracker, leadMagnets, contentHealth, scheduleOptimize, templates, dmSequences, hooks, pillarPlan, contentLeads, autopilot, scheduleQueue, engagementDashboard] = await Promise.all([
       api('/api/content'),
       api('/api/triggers'),
       api('/api/stats'),
@@ -1530,7 +1532,8 @@ async function loadData() {
       api('/api/pillars').catch(() => null),
       api('/api/leads').catch(() => []),
       api('/api/autopilot/status').catch(() => ({ enabled: false, settings: {}, today: {}, recent_log: [] })),
-      api('/api/schedule-queue').catch(() => [])
+      api('/api/schedule-queue').catch(() => []),
+      api('/api/engagement/dashboard').catch(() => null)
     ]);
     state.content = content;
     state.triggers = triggers;
@@ -1570,6 +1573,7 @@ async function loadData() {
     state.contentLeads = contentLeads;
     state.autopilot = autopilot;
     state.scheduleQueue = scheduleQueue;
+    state.engagementDashboard = engagementDashboard;
   } catch (err) {
     console.error('Failed to load data:', err);
     toast('Failed to load data', 'error');
@@ -2968,6 +2972,44 @@ function renderDashboardPage() {
         })
       )
     ) : null,
+    // Engagement Dashboard
+    state.engagementDashboard?.total_tracked > 0 ? h('div', { style: { marginBottom: '20px' } },
+      h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
+        h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)' } }, 'ENGAGEMENT ANALYTICS'),
+        h('div', { style: { fontSize: '11px', color: 'var(--gray-500)' } }, `${state.engagementDashboard.total_tracked} tracked posts`)
+      ),
+      h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', marginBottom: '10px' } },
+        h('div', { style: { background: 'white', borderRadius: 'var(--radius-sm)', padding: '10px', textAlign: 'center', border: '1px solid var(--gray-200)' } },
+          h('div', { style: { fontSize: '18px', fontWeight: '700', color: 'var(--blue)' } }, String(state.engagementDashboard.total_impressions?.toLocaleString() || 0)),
+          h('div', { style: { fontSize: '10px', color: 'var(--gray-500)' } }, 'Impressions')
+        ),
+        h('div', { style: { background: 'white', borderRadius: 'var(--radius-sm)', padding: '10px', textAlign: 'center', border: '1px solid var(--gray-200)' } },
+          h('div', { style: { fontSize: '18px', fontWeight: '700', color: '#059669' } }, String(state.engagementDashboard.total_engagement?.toLocaleString() || 0)),
+          h('div', { style: { fontSize: '10px', color: 'var(--gray-500)' } }, 'Engagement')
+        ),
+        h('div', { style: { background: 'white', borderRadius: 'var(--radius-sm)', padding: '10px', textAlign: 'center', border: '1px solid var(--gray-200)' } },
+          h('div', { style: { fontSize: '18px', fontWeight: '700', color: '#d97706' } }, String(state.engagementDashboard.total_clicks?.toLocaleString() || 0)),
+          h('div', { style: { fontSize: '10px', color: 'var(--gray-500)' } }, 'Clicks')
+        ),
+        h('div', { style: { background: 'white', borderRadius: 'var(--radius-sm)', padding: '10px', textAlign: 'center', border: '1px solid var(--gray-200)' } },
+          h('div', { style: { fontSize: '18px', fontWeight: '700', color: '#7c3aed' } },
+            Object.values(state.engagementDashboard.by_platform || {}).length > 0
+              ? (Object.values(state.engagementDashboard.by_platform).reduce((s, p) => s + parseFloat(p.engagement_rate || 0), 0) / Object.values(state.engagementDashboard.by_platform).length).toFixed(1) + '%'
+              : '0%'
+          ),
+          h('div', { style: { fontSize: '10px', color: 'var(--gray-500)' } }, 'Avg Eng Rate')
+        )
+      ),
+      Object.keys(state.engagementDashboard.by_platform || {}).length > 0 ? h('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap' } },
+        ...Object.entries(state.engagementDashboard.by_platform).map(([platform, data]) => {
+          const colors = { linkedin: '#0a66c2', x_single: '#1da1f2', x_thread: '#1da1f2', carousel: '#e4405f', short_video: '#ff0050' };
+          return h('div', { style: { padding: '6px 10px', borderRadius: 'var(--radius-sm)', background: `${colors[platform] || '#64748b'}10`, border: `1px solid ${colors[platform] || '#64748b'}30` } },
+            h('div', { style: { fontSize: '11px', fontWeight: '700', color: colors[platform] || '#64748b' } }, platform.replace('_', ' ')),
+            h('div', { style: { fontSize: '10px', color: 'var(--gray-500)' } }, `${data.posts} posts | ${data.engagement_rate}% rate | ${data.impressions} imp`)
+          );
+        })
+      ) : null
+    ) : null,
     // Trending Topics
     (state.trending?.trending_topics?.length > 0) ? h('div', { style: { marginBottom: '20px' } },
       h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
@@ -4085,6 +4127,66 @@ function renderFormatContent(content, formatKey, fmt) {
           )
         )
       ) : null,
+      // Viral Score button
+      typeof text === 'string' && ['linkedin', 'x_single', 'x_thread'].includes(formatKey) && !content.viral_scores?.[formatKey] ? h('button', {
+        className: 'btn btn-outline btn-sm',
+        style: { fontSize: '10px', padding: '2px 6px', color: '#f59e0b', borderColor: '#f59e0b' },
+        onclick: async () => {
+          toast('Predicting viral score...', 'info');
+          try {
+            const res = await api(`/api/content/${content.id}/predict-viral`, { method: 'POST', body: { platform: formatKey } });
+            toast(`Viral score: ${res.viral_score}/100 — ${res.verdict?.slice(0, 60)}`, 'success');
+            loadData();
+          } catch (err) { toast('Prediction failed: ' + err.message, 'error'); }
+        }
+      }, 'Viral Score') : null,
+      // Show viral score if predicted
+      content.viral_scores?.[formatKey] ? h('div', { style: { marginTop: '6px', padding: '8px', background: content.viral_scores[formatKey].viral_score >= 70 ? '#f0fdf4' : content.viral_scores[formatKey].viral_score >= 50 ? '#fffbeb' : '#fef2f2', borderRadius: '6px', border: `1px solid ${content.viral_scores[formatKey].viral_score >= 70 ? '#bbf7d0' : content.viral_scores[formatKey].viral_score >= 50 ? '#fde68a' : '#fecaca'}` } },
+        h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' } },
+          h('div', {
+            style: {
+              width: '36px', height: '36px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: '14px', fontWeight: '700', color: 'white',
+              background: content.viral_scores[formatKey].viral_score >= 70 ? '#059669' : content.viral_scores[formatKey].viral_score >= 50 ? '#d97706' : '#dc2626'
+            }
+          }, String(content.viral_scores[formatKey].viral_score)),
+          h('div', {},
+            h('div', { style: { fontSize: '11px', fontWeight: '700', color: 'var(--navy)' } }, 'VIRAL SCORE'),
+            h('div', { style: { fontSize: '10px', color: 'var(--gray-500)' } }, content.viral_scores[formatKey].verdict?.slice(0, 80))
+          )
+        ),
+        h('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '4px' } },
+          ...[
+            { label: 'Hook', score: content.viral_scores[formatKey].hook_strength?.score },
+            { label: 'Emotion', score: content.viral_scores[formatKey].emotional_triggers?.score },
+            { label: 'Relate', score: content.viral_scores[formatKey].relatability?.score },
+            { label: 'Share', score: content.viral_scores[formatKey].shareability?.score },
+            { label: 'Action', score: content.viral_scores[formatKey].actionability?.score }
+          ].map(s => h('div', { style: { fontSize: '10px', textAlign: 'center' } },
+            h('div', { style: { fontWeight: '700', color: (s.score || 0) >= 15 ? '#059669' : (s.score || 0) >= 10 ? '#d97706' : '#dc2626' } }, `${s.score || 0}/20`),
+            h('div', { style: { color: 'var(--gray-400)' } }, s.label)
+          ))
+        ),
+        (content.viral_scores[formatKey].improvements || []).length > 0 ? h('div', { style: { marginTop: '4px' } },
+          h('div', { style: { fontSize: '10px', fontWeight: '700', color: 'var(--navy)', marginBottom: '2px' } }, 'TO IMPROVE:'),
+          ...(content.viral_scores[formatKey].improvements || []).map(imp =>
+            h('div', { style: { fontSize: '10px', color: 'var(--gray-500)', paddingLeft: '6px', borderLeft: '2px solid #d97706', marginBottom: '2px' } }, imp.slice(0, 120))
+          )
+        ) : null
+      ) : null,
+      // Recycle button (for approved/published content)
+      typeof text === 'string' && ['approved', 'published'].includes(content.status) ? h('button', {
+        className: 'btn btn-outline btn-sm',
+        style: { fontSize: '10px', padding: '2px 6px', color: '#10b981', borderColor: '#10b981' },
+        onclick: async () => {
+          toast('Recycling with fresh angle...', 'info');
+          try {
+            const res = await api(`/api/content/${content.id}/recycle`, { method: 'POST', body: { platform: formatKey } });
+            toast(`Recycled! New content created.`, 'success');
+            loadData();
+          } catch (err) { toast('Recycle failed: ' + err.message, 'error'); }
+        }
+      }, 'Recycle') : null,
       // Apply template dropdown (for linkedin and x_thread formats)
       typeof text === 'string' && ['linkedin', 'x_thread'].includes(formatKey) && state.templates.length > 0
         ? h('select', {
@@ -4491,6 +4593,30 @@ function renderContentPage() {
               } catch (err) { toast('Bulk hashtag failed: ' + err.message, 'error'); }
             }
           }, 'Bulk #Tags'),
+          h('button', {
+            className: 'btn btn-sm',
+            style: { background: '#f59e0b', color: 'white', border: 'none' },
+            onclick: async () => {
+              toast('Predicting viral scores...', 'info');
+              try {
+                const res = await api('/api/content/batch-predict', { method: 'POST' });
+                toast(`Predicted ${res.predicted} viral scores`, 'success');
+                loadData();
+              } catch (err) { toast('Batch predict failed: ' + err.message, 'error'); }
+            }
+          }, 'Viral Predict'),
+          h('button', {
+            className: 'btn btn-sm',
+            style: { background: '#10b981', color: 'white', border: 'none' },
+            onclick: async () => {
+              toast('Recycling evergreen content...', 'info');
+              try {
+                const res = await api('/api/content/recycle-evergreen', { method: 'POST' });
+                toast(`Recycled ${res.recycled} pieces`, 'success');
+                loadData();
+              } catch (err) { toast('Recycle failed: ' + err.message, 'error'); }
+            }
+          }, 'Recycle Top'),
           h('button', {
             className: 'btn btn-sm',
             onclick: () => { state.selectedContent = new Set(); render(); }

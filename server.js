@@ -6008,6 +6008,330 @@ Return JSON:
       return json(res, { ok: true, variant: ab.variants[vIdx], winner: ab.winner });
     }
 
+    // --- Engagement Tracking API ---
+
+    // POST /api/content/:id/track-engagement — record engagement metrics for a content piece
+    if (pathname.match(/^\/api\/content\/[^/]+\/track-engagement$/) && method === 'POST') {
+      const id = pathname.split('/')[3];
+      const body = await parseBody(req);
+      if (!body.platform) return json(res, { error: 'platform required' }, 400);
+
+      const engagement = readJSON('engagement-tracking.json', []);
+      const entry = {
+        id: generateId(),
+        content_id: id,
+        platform: body.platform,
+        impressions: body.impressions || 0,
+        engagement: body.engagement || 0,
+        clicks: body.clicks || 0,
+        shares: body.shares || 0,
+        saves: body.saves || 0,
+        comments: body.comments || 0,
+        engagement_rate: body.impressions > 0 ? ((body.engagement || 0) / body.impressions * 100).toFixed(2) : '0.00',
+        recorded_at: body.date || now(),
+        created_at: now()
+      };
+      engagement.push(entry);
+      writeJSON('engagement-tracking.json', engagement);
+
+      // Update content with latest engagement data
+      const content = readJSON('content.json');
+      const idx = content.findIndex(c => c.id === id);
+      if (idx !== -1) {
+        if (!content[idx].engagement) content[idx].engagement = {};
+        content[idx].engagement[body.platform] = {
+          impressions: entry.impressions,
+          engagement: entry.engagement,
+          clicks: entry.clicks,
+          shares: entry.shares,
+          saves: entry.saves,
+          comments: entry.comments,
+          engagement_rate: entry.engagement_rate,
+          last_updated: now()
+        };
+        writeJSON('content.json', content);
+      }
+
+      return json(res, { ok: true, entry });
+    }
+
+    // GET /api/engagement/dashboard — aggregated engagement analytics
+    if (pathname === '/api/engagement/dashboard' && method === 'GET') {
+      const tracking = readJSON('engagement-tracking.json', []);
+      const content = readJSON('content.json');
+
+      // Aggregate by platform
+      const byPlatform = {};
+      for (const t of tracking) {
+        if (!byPlatform[t.platform]) byPlatform[t.platform] = { impressions: 0, engagement: 0, clicks: 0, shares: 0, comments: 0, posts: 0 };
+        byPlatform[t.platform].impressions += t.impressions || 0;
+        byPlatform[t.platform].engagement += t.engagement || 0;
+        byPlatform[t.platform].clicks += t.clicks || 0;
+        byPlatform[t.platform].shares += t.shares || 0;
+        byPlatform[t.platform].comments += t.comments || 0;
+        byPlatform[t.platform].posts++;
+      }
+
+      // Calculate engagement rates
+      for (const p of Object.keys(byPlatform)) {
+        byPlatform[p].engagement_rate = byPlatform[p].impressions > 0
+          ? (byPlatform[p].engagement / byPlatform[p].impressions * 100).toFixed(2)
+          : '0.00';
+      }
+
+      // Top performing content
+      const withEngagement = content.filter(c => c.engagement && Object.keys(c.engagement).length > 0);
+      const topContent = withEngagement.sort((a, b) => {
+        const scoreA = Object.values(a.engagement).reduce((s, e) => s + (e.engagement || 0) + (e.clicks || 0) * 2, 0);
+        const scoreB = Object.values(b.engagement).reduce((s, e) => s + (e.engagement || 0) + (e.clicks || 0) * 2, 0);
+        return scoreB - scoreA;
+      }).slice(0, 10).map(c => ({
+        id: c.id,
+        title: c.trigger_title,
+        engagement: c.engagement,
+        total_engagement: Object.values(c.engagement).reduce((s, e) => s + (e.engagement || 0), 0)
+      }));
+
+      // Best posting day/time analysis
+      const byDay = {};
+      for (const t of tracking) {
+        const d = new Date(t.recorded_at);
+        const dayName = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][d.getDay()];
+        if (!byDay[dayName]) byDay[dayName] = { impressions: 0, engagement: 0, posts: 0 };
+        byDay[dayName].impressions += t.impressions || 0;
+        byDay[dayName].engagement += t.engagement || 0;
+        byDay[dayName].posts++;
+      }
+
+      return json(res, {
+        total_tracked: tracking.length,
+        total_impressions: tracking.reduce((s, t) => s + (t.impressions || 0), 0),
+        total_engagement: tracking.reduce((s, t) => s + (t.engagement || 0), 0),
+        total_clicks: tracking.reduce((s, t) => s + (t.clicks || 0), 0),
+        by_platform: byPlatform,
+        top_content: topContent,
+        by_day: byDay
+      });
+    }
+
+    // --- Content Recycling API ---
+
+    // GET /api/content/recyclable — list content that can be recycled
+    if (pathname === '/api/content/recyclable' && method === 'GET') {
+      const content = readJSON('content.json');
+      const now_ts = Date.now();
+      const thirtyDaysAgo = now_ts - 30 * 24 * 60 * 60 * 1000;
+
+      // Recyclable = published/approved, older than 30 days, not recently recycled
+      const recyclable = content.filter(c => {
+        if (!['approved', 'published'].includes(c.status)) return false;
+        const created = new Date(c.created_at).getTime();
+        if (created > thirtyDaysAgo) return false;
+        const lastRecycled = c.recycled_at ? new Date(c.recycled_at).getTime() : 0;
+        if (lastRecycled > thirtyDaysAgo) return false;
+        return true;
+      }).map(c => ({
+        id: c.id,
+        title: c.trigger_title,
+        status: c.status,
+        created_at: c.created_at,
+        formats: Object.keys(c.formats || {}),
+        engagement: c.engagement,
+        recycle_count: c.recycle_count || 0
+      }));
+
+      return json(res, recyclable);
+    }
+
+    // POST /api/content/:id/recycle — AI rewrites content with fresh angle
+    if (pathname.match(/^\/api\/content\/[^/]+\/recycle$/) && method === 'POST') {
+      const id = pathname.split('/')[3];
+      const body = await parseBody(req);
+      const platform = body.platform || 'linkedin';
+
+      const content = readJSON('content.json');
+      const item = content.find(c => c.id === id);
+      if (!item) return json(res, { error: 'content not found' }, 404);
+
+      const sourceContent = typeof item.formats?.[platform]?.content === 'string'
+        ? item.formats[platform].content : '';
+      if (!sourceContent) return json(res, { error: 'no content for this platform' }, 400);
+
+      const { callClaude, HAIKU } = require('./lib/claude');
+      const prompt = `Recycle this content with a fresh angle. Keep the core message but change:
+1. The hook (use a completely different opening style)
+2. The framing (different perspective, e.g., from data-driven to story-driven)
+3. Updated references (current year, fresh language)
+
+ORIGINAL:
+${sourceContent.slice(0, 2000)}
+
+Previous recycle count: ${item.recycle_count || 0}
+${item.recycled_versions ? 'Avoid similar angles to previous versions.' : ''}
+
+Return ONLY the refreshed content. Make it feel completely new while preserving the core insight.`;
+
+      const recycled = await callClaude({ model: HAIKU, system: 'Content recycling expert. Make old content feel brand new with different hooks and angles.', prompt, maxTokens: 1500 });
+
+      if (recycled) {
+        const allContent = readJSON('content.json');
+        const idx = allContent.findIndex(c => c.id === id);
+        if (idx !== -1) {
+          if (!allContent[idx].recycled_versions) allContent[idx].recycled_versions = [];
+          allContent[idx].recycled_versions.push({
+            platform,
+            content: recycled.trim(),
+            recycled_at: now()
+          });
+          allContent[idx].recycle_count = (allContent[idx].recycle_count || 0) + 1;
+          allContent[idx].recycled_at = now();
+          writeJSON('content.json', allContent);
+        }
+      }
+      return json(res, { ok: true, recycled: recycled?.trim(), platform });
+    }
+
+    // POST /api/content/recycle-evergreen — batch find and recycle top evergreen content
+    if (pathname === '/api/content/recycle-evergreen' && method === 'POST') {
+      const content = readJSON('content.json');
+      const now_ts = Date.now();
+      const thirtyDaysAgo = now_ts - 30 * 24 * 60 * 60 * 1000;
+
+      // Find evergreen candidates
+      const candidates = content.filter(c => {
+        if (!['approved', 'published'].includes(c.status)) return false;
+        const created = new Date(c.created_at).getTime();
+        return created < thirtyDaysAgo;
+      }).sort((a, b) => {
+        // Prioritize high engagement content
+        const scoreA = Object.values(a.engagement || {}).reduce((s, e) => s + (e.engagement || 0), 0);
+        const scoreB = Object.values(b.engagement || {}).reduce((s, e) => s + (e.engagement || 0), 0);
+        return scoreB - scoreA;
+      }).slice(0, 5);
+
+      let recycled = 0;
+      for (const item of candidates) {
+        try {
+          const platform = 'linkedin';
+          const sourceContent = typeof item.formats?.[platform]?.content === 'string'
+            ? item.formats[platform].content : '';
+          if (!sourceContent) continue;
+
+          const { callClaude, HAIKU } = require('./lib/claude');
+          const prompt = `Recycle with a completely fresh angle: "${sourceContent.slice(0, 1000)}"\n\nReturn ONLY the refreshed content.`;
+          const result = await callClaude({ model: HAIKU, system: 'Content recycling expert.', prompt, maxTokens: 1000 });
+
+          if (result) {
+            const allContent = readJSON('content.json');
+            const idx = allContent.findIndex(c => c.id === item.id);
+            if (idx !== -1) {
+              if (!allContent[idx].recycled_versions) allContent[idx].recycled_versions = [];
+              allContent[idx].recycled_versions.push({ platform, content: result.trim(), recycled_at: now() });
+              allContent[idx].recycle_count = (allContent[idx].recycle_count || 0) + 1;
+              allContent[idx].recycled_at = now();
+              writeJSON('content.json', allContent);
+              recycled++;
+            }
+          }
+        } catch (e) { /* skip */ }
+      }
+      return json(res, { ok: true, recycled, candidates: candidates.length });
+    }
+
+    // --- Viral Score Predictor API ---
+
+    // POST /api/content/:id/predict-viral — AI predicts viral potential
+    if (pathname.match(/^\/api\/content\/[^/]+\/predict-viral$/) && method === 'POST') {
+      const id = pathname.split('/')[3];
+      const body = await parseBody(req);
+      const platform = body.platform || 'linkedin';
+
+      const content = readJSON('content.json');
+      const item = content.find(c => c.id === id);
+      if (!item) return json(res, { error: 'content not found' }, 404);
+
+      const contentText = typeof item.formats?.[platform]?.content === 'string'
+        ? item.formats[platform].content : '';
+      if (!contentText) return json(res, { error: 'no content for this platform' }, 400);
+
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+      const prompt = `Analyze this ${platform} post for viral potential. Score each factor 0-20:
+
+POST:
+${contentText.slice(0, 2000)}
+
+Scoring criteria:
+1. Hook Strength (0-20): Does the first line stop the scroll? Is it specific, emotional, or surprising?
+2. Emotional Triggers (0-20): Fear of missing out, curiosity, outrage, aspiration, schadenfreude, empathy?
+3. Relatability (0-20): Would the target audience (law firm owners/partners) see themselves in this?
+4. Shareability (0-20): Would someone tag a colleague, save this, or repost it? Is there a "I need to share this" moment?
+5. Actionability (0-20): Does it give concrete, implementable advice? Does the reader know what to do next?
+
+Return JSON:
+{
+  "viral_score": 0-100,
+  "hook_strength": { "score": 0-20, "feedback": "..." },
+  "emotional_triggers": { "score": 0-20, "triggers_found": ["..."], "feedback": "..." },
+  "relatability": { "score": 0-20, "feedback": "..." },
+  "shareability": { "score": 0-20, "feedback": "..." },
+  "actionability": { "score": 0-20, "feedback": "..." },
+  "improvements": ["specific suggestion 1", "specific suggestion 2", "specific suggestion 3"],
+  "predicted_engagement_rate": "X.X%",
+  "verdict": "one-sentence assessment"
+}`;
+
+      const text = await callClaude({ model: HAIKU, system: 'Viral content analyst for B2B social media. Be honest and specific — never inflate scores.', prompt, maxTokens: 800 });
+      const parsed = parseJsonResponse(text);
+
+      if (parsed) {
+        const allContent = readJSON('content.json');
+        const idx = allContent.findIndex(c => c.id === id);
+        if (idx !== -1) {
+          if (!allContent[idx].viral_scores) allContent[idx].viral_scores = {};
+          allContent[idx].viral_scores[platform] = { ...parsed, predicted_at: now() };
+          writeJSON('content.json', allContent);
+        }
+      }
+      return json(res, { ok: true, ...parsed });
+    }
+
+    // POST /api/content/batch-predict — predict viral scores for multiple content pieces
+    if (pathname === '/api/content/batch-predict' && method === 'POST') {
+      const content = readJSON('content.json');
+      const pending = content.filter(c => c.status === 'review' && !c.viral_scores?.linkedin);
+      let predicted = 0;
+
+      for (const item of pending.slice(0, 8)) {
+        try {
+          const contentText = typeof item.formats?.linkedin?.content === 'string'
+            ? item.formats.linkedin.content : '';
+          if (!contentText) continue;
+
+          const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+          const prompt = `Rate this LinkedIn post's viral potential (0-100). Score: hook_strength, emotional_triggers, relatability, shareability, actionability (each 0-20).
+
+POST: "${contentText.slice(0, 800)}"
+
+Return JSON: { "viral_score": N, "hook_strength": { "score": N }, "emotional_triggers": { "score": N }, "relatability": { "score": N }, "shareability": { "score": N }, "actionability": { "score": N }, "improvements": ["..."], "verdict": "..." }`;
+
+          const text = await callClaude({ model: HAIKU, system: 'Viral content analyst. Be honest.', prompt, maxTokens: 500 });
+          const parsed = parseJsonResponse(text);
+
+          if (parsed) {
+            const allContent = readJSON('content.json');
+            const idx = allContent.findIndex(c => c.id === item.id);
+            if (idx !== -1) {
+              if (!allContent[idx].viral_scores) allContent[idx].viral_scores = {};
+              allContent[idx].viral_scores.linkedin = { ...parsed, predicted_at: now() };
+              writeJSON('content.json', allContent);
+              predicted++;
+            }
+          }
+        } catch (e) { /* skip */ }
+      }
+      return json(res, { ok: true, predicted, total_pending: pending.length });
+    }
+
     // --- Content Series API ---
 
     // GET /api/series — list all content series

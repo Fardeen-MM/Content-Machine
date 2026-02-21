@@ -19354,6 +19354,232 @@ Content: ${firstContent.substring(0, 2000)}`;
       return json(res, readJSON('content-dependency-map.json') || { total_nodes: 0, total_edges: 0, nodes: [], edges: [] });
     }
 
+    // --- Content Engagement Forecast ---
+    if (method === 'POST' && pathname === '/api/engagement-forecast') {
+      const engagement = readJSON('engagement-tracker.json');
+      const engList = Array.isArray(engagement) ? engagement : [];
+      const now = Date.now();
+      const dayMs = 86400000;
+      const dailyEng = {};
+      for (const e of engList) {
+        const d = new Date(e.timestamp || e.created_at || 0).toISOString().split('T')[0];
+        dailyEng[d] = (dailyEng[d] || 0) + (e.engagement || e.likes || 1);
+      }
+      const days = Object.entries(dailyEng).sort((a, b) => a[0].localeCompare(b[0]));
+      const last7 = days.slice(-7);
+      const avgDaily = last7.length > 0 ? last7.reduce((s, [, v]) => s + v, 0) / last7.length : 0;
+      const trend = last7.length >= 2 ? (last7[last7.length - 1][1] - last7[0][1]) / last7.length : 0;
+      const forecast = [];
+      for (let i = 1; i <= 30; i++) {
+        const date = new Date(now + i * dayMs).toISOString().split('T')[0];
+        forecast.push({ date, predicted_engagement: Math.max(0, Math.round((avgDaily + trend * i) * 100) / 100) });
+      }
+      const report = {
+        historical_days: days.length, avg_daily_engagement: Math.round(avgDaily * 100) / 100,
+        trend_direction: trend > 0.5 ? 'growing' : trend < -0.5 ? 'declining' : 'stable',
+        trend_rate: Math.round(trend * 100) / 100,
+        forecast_7d: forecast.slice(0, 7), forecast_30d: forecast,
+        predicted_7d_total: Math.round(forecast.slice(0, 7).reduce((s, f) => s + f.predicted_engagement, 0)),
+        predicted_30d_total: Math.round(forecast.reduce((s, f) => s + f.predicted_engagement, 0)),
+        generated_at: new Date().toISOString()
+      };
+      writeJSON('engagement-forecast.json', report);
+      return json(res, report);
+    }
+    if (method === 'GET' && pathname === '/api/engagement-forecast') {
+      return json(res, readJSON('engagement-forecast.json') || { historical_days: 0, forecast_7d: [], forecast_30d: [] });
+    }
+
+    // --- Content Readability Scorer ---
+    if (method === 'POST' && pathname === '/api/content-readability-scorer') {
+      const content = readJSON('content.json');
+      const results = [];
+      for (const c of content) {
+        const formats = c.formats || {};
+        const firstFmt = Object.keys(formats)[0];
+        if (!firstFmt) continue;
+        const fmtData = formats[firstFmt];
+        const text = typeof fmtData === 'string' ? fmtData : (typeof fmtData?.content === 'string' ? fmtData.content : '');
+        if (!text) continue;
+        const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
+        const words = text.split(/\s+/).filter(w => w.length > 0);
+        const syllables = words.reduce((count, word) => {
+          const w = word.toLowerCase().replace(/[^a-z]/g, '');
+          if (w.length <= 3) return count + 1;
+          const vowels = w.match(/[aeiouy]+/g);
+          return count + (vowels ? vowels.length : 1);
+        }, 0);
+        const avgWPS = sentences.length > 0 ? words.length / sentences.length : 0;
+        const avgSPW = words.length > 0 ? syllables / words.length : 0;
+        const fleschScore = Math.max(0, Math.min(100, Math.round(206.835 - 1.015 * avgWPS - 84.6 * avgSPW)));
+        const level = fleschScore >= 80 ? 'easy' : fleschScore >= 60 ? 'standard' : fleschScore >= 40 ? 'moderate' : 'difficult';
+        results.push({ id: c.id, title: c.trigger_title || c.title || 'Untitled', readability_score: fleschScore, level, word_count: words.length, sentence_count: sentences.length, avg_words_per_sentence: Math.round(avgWPS * 10) / 10 });
+      }
+      results.sort((a, b) => b.readability_score - a.readability_score);
+      const report = {
+        total_analyzed: results.length,
+        avg_readability: results.length > 0 ? Math.round(results.reduce((s, r) => s + r.readability_score, 0) / results.length) : 0,
+        easy: results.filter(r => r.level === 'easy').length, standard: results.filter(r => r.level === 'standard').length,
+        moderate: results.filter(r => r.level === 'moderate').length, difficult: results.filter(r => r.level === 'difficult').length,
+        most_readable: results.slice(0, 10), least_readable: results.slice(-10).reverse(),
+        generated_at: new Date().toISOString()
+      };
+      writeJSON('content-readability-scorer.json', report);
+      return json(res, report);
+    }
+    if (method === 'GET' && pathname === '/api/content-readability-scorer') {
+      return json(res, readJSON('content-readability-scorer.json') || { total_analyzed: 0, avg_readability: 0 });
+    }
+
+    // --- Audience Growth Predictor ---
+    if (method === 'POST' && pathname === '/api/audience-growth-predictor') {
+      const engagement = readJSON('engagement-tracker.json');
+      const engList = Array.isArray(engagement) ? engagement : [];
+      const published = readJSON('published.json');
+      const pubList = Array.isArray(published) ? published : [];
+      const content = readJSON('content.json');
+      const now = Date.now();
+      const weekMs = 7 * 86400000;
+      const monthMs = 30 * 86400000;
+      const pubThisWeek = pubList.filter(p => (now - new Date(p.published_at || p.created_at || 0).getTime()) < weekMs).length;
+      const pubThisMonth = pubList.filter(p => (now - new Date(p.published_at || p.created_at || 0).getTime()) < monthMs).length;
+      const engThisMonth = engList.filter(e => (now - new Date(e.timestamp || e.created_at || 0).getTime()) < monthMs);
+      const totalImp = engThisMonth.reduce((s, e) => s + (e.impressions || 0), 0);
+      const estimatedFollowers = Math.round(totalImp * 0.02);
+      const monthlyGrowth = pubThisMonth * 15;
+      const projections = [];
+      let cum = estimatedFollowers;
+      for (let m = 1; m <= 12; m++) {
+        cum += monthlyGrowth;
+        projections.push({ month: m, projected_followers: cum, projected_impressions: cum * 50, projected_leads: Math.round(cum * 0.01) });
+      }
+      const report = {
+        current_estimated_followers: estimatedFollowers, posts_this_week: pubThisWeek, posts_this_month: pubThisMonth,
+        weekly_growth_rate: pubThisWeek * 15, content_in_pipeline: content.filter(c => c.status === 'approved').length,
+        projections, projected_6m_followers: projections[5]?.projected_followers || 0,
+        projected_12m_followers: projections[11]?.projected_followers || 0,
+        recommendations: [], generated_at: new Date().toISOString()
+      };
+      if (pubThisWeek < 3) report.recommendations.push('Publishing less than 3x/week — increase to accelerate growth');
+      if (totalImp < 100) report.recommendations.push('Low impressions — focus on engagement-first content');
+      writeJSON('audience-growth-predictor.json', report);
+      return json(res, report);
+    }
+    if (method === 'GET' && pathname === '/api/audience-growth-predictor') {
+      return json(res, readJSON('audience-growth-predictor.json') || { current_estimated_followers: 0, projections: [] });
+    }
+
+    // --- Content Repurpose Tracker ---
+    if (method === 'POST' && pathname === '/api/content-repurpose-tracker') {
+      const content = readJSON('content.json');
+      const items = [];
+      const social = ['linkedin', 'x_single', 'x_thread', 'short_video', 'carousel', 'poll', 'quote_cards', 'stat_graphic', 'hot_take', 'before_after', 'listicle'];
+      const longform = ['blog', 'newsletter', 'case_study', 'lead_magnet', 'youtube_script'];
+      for (const c of content) {
+        const formats = Object.keys(c.formats || {});
+        items.push({
+          id: c.id, title: c.trigger_title || c.title || 'Untitled',
+          total_formats: formats.length, social_formats: formats.filter(f => social.includes(f)).length,
+          longform_formats: formats.filter(f => longform.includes(f)).length,
+          repurpose_pct: Math.round((formats.length / 16) * 100), status: c.status || 'draft',
+          untapped: 16 - formats.length
+        });
+      }
+      items.sort((a, b) => b.total_formats - a.total_formats);
+      const report = {
+        total_content: items.length,
+        avg_formats_per_piece: items.length > 0 ? Math.round((items.reduce((s, i) => s + i.total_formats, 0) / items.length) * 10) / 10 : 0,
+        fully_repurposed: items.filter(i => i.repurpose_pct >= 80).length,
+        under_repurposed: items.filter(i => i.repurpose_pct < 30).length,
+        top_repurposed: items.slice(0, 10), least_repurposed: items.filter(i => i.total_formats < 5).slice(0, 10),
+        total_format_instances: items.reduce((s, i) => s + i.total_formats, 0),
+        generated_at: new Date().toISOString()
+      };
+      writeJSON('content-repurpose-tracker.json', report);
+      return json(res, report);
+    }
+    if (method === 'GET' && pathname === '/api/content-repurpose-tracker') {
+      return json(res, readJSON('content-repurpose-tracker.json') || { total_content: 0, top_repurposed: [] });
+    }
+
+    // --- Social Proof Aggregator ---
+    if (method === 'POST' && pathname === '/api/social-proof-aggregator') {
+      const engagement = readJSON('engagement-tracker.json');
+      const engList = Array.isArray(engagement) ? engagement : [];
+      const published = readJSON('published.json');
+      const pubList = Array.isArray(published) ? published : [];
+      const metrics = { total_likes: 0, total_comments: 0, total_shares: 0, total_saves: 0, total_views: 0, total_impressions: 0 };
+      for (const e of engList) {
+        metrics.total_likes += e.likes || 0; metrics.total_comments += e.comments || 0;
+        metrics.total_shares += e.shares || 0; metrics.total_saves += e.saves || 0;
+        metrics.total_views += e.views || 0; metrics.total_impressions += e.impressions || 0;
+      }
+      const platformMetrics = {};
+      for (const e of engList) {
+        const p = e.platform || 'unknown';
+        if (!platformMetrics[p]) platformMetrics[p] = { likes: 0, comments: 0, shares: 0, impressions: 0, posts: 0 };
+        platformMetrics[p].likes += e.likes || 0; platformMetrics[p].comments += e.comments || 0;
+        platformMetrics[p].shares += e.shares || 0; platformMetrics[p].impressions += e.impressions || 0;
+        platformMetrics[p].posts++;
+      }
+      const proofItems = [];
+      if (metrics.total_impressions > 0) proofItems.push({ type: 'reach', value: metrics.total_impressions + '+ reached' });
+      if (pubList.length > 0) proofItems.push({ type: 'published', value: pubList.length + ' published' });
+      if (metrics.total_likes > 0) proofItems.push({ type: 'engagement', value: metrics.total_likes + ' likes' });
+      const report = {
+        totals: metrics, by_platform: platformMetrics, proof_items: proofItems,
+        engagement_rate: metrics.total_impressions > 0 ? Math.round(((metrics.total_likes + metrics.total_comments + metrics.total_shares) / metrics.total_impressions) * 10000) / 100 : 0,
+        total_published: pubList.length, generated_at: new Date().toISOString()
+      };
+      writeJSON('social-proof-aggregator.json', report);
+      return json(res, report);
+    }
+    if (method === 'GET' && pathname === '/api/social-proof-aggregator') {
+      return json(res, readJSON('social-proof-aggregator.json') || { totals: {}, by_platform: {}, proof_items: [] });
+    }
+
+    // --- Weekly Content Scorecard ---
+    if (method === 'POST' && pathname === '/api/weekly-content-scorecard') {
+      const content = readJSON('content.json');
+      const published = readJSON('published.json');
+      const pubList = Array.isArray(published) ? published : [];
+      const engagement = readJSON('engagement-tracker.json');
+      const engList = Array.isArray(engagement) ? engagement : [];
+      const now = Date.now();
+      const weekMs = 7 * 86400000;
+      const thisWeekContent = content.filter(c => (now - new Date(c.created_at || c.generated_at || 0).getTime()) < weekMs);
+      const thisWeekPub = pubList.filter(p => (now - new Date(p.published_at || p.created_at || 0).getTime()) < weekMs);
+      const thisWeekEng = engList.filter(e => (now - new Date(e.timestamp || e.created_at || 0).getTime()) < weekMs);
+      const totalEng = thisWeekEng.reduce((s, e) => s + (e.engagement || e.likes || 0), 0);
+      const totalImp = thisWeekEng.reduce((s, e) => s + (e.impressions || 0), 0);
+      const pScore = Math.min(25, Math.round((thisWeekContent.length / 15) * 25));
+      const pubScore = Math.min(25, Math.round((thisWeekPub.length / 10) * 25));
+      const eScore = Math.min(25, Math.round((totalEng / 100) * 25));
+      const rScore = Math.min(25, Math.round((totalImp / 5000) * 25));
+      const total = pScore + pubScore + eScore + rScore;
+      const grade = total >= 90 ? 'A+' : total >= 80 ? 'A' : total >= 70 ? 'B' : total >= 60 ? 'C' : total >= 40 ? 'D' : 'F';
+      const report = {
+        week_of: new Date(now - weekMs).toISOString().split('T')[0] + ' to ' + new Date().toISOString().split('T')[0],
+        total_score: total, grade,
+        scores: {
+          production: { score: pScore, max: 25, detail: thisWeekContent.length + ' created' },
+          publishing: { score: pubScore, max: 25, detail: thisWeekPub.length + ' published' },
+          engagement: { score: eScore, max: 25, detail: totalEng + ' engagements' },
+          reach: { score: rScore, max: 25, detail: totalImp + ' impressions' }
+        },
+        highlights: [], improvements: [], generated_at: new Date().toISOString()
+      };
+      if (thisWeekContent.length >= 10) report.highlights.push('Strong production week');
+      if (thisWeekPub.length >= 5) report.highlights.push('Good publishing cadence');
+      if (pScore < 10) report.improvements.push('Increase content production');
+      if (pubScore < 10) report.improvements.push('Publish more approved content');
+      writeJSON('weekly-content-scorecard.json', report);
+      return json(res, report);
+    }
+    if (method === 'GET' && pathname === '/api/weekly-content-scorecard') {
+      return json(res, readJSON('weekly-content-scorecard.json') || { total_score: 0, grade: 'F', scores: {} });
+    }
+
     // --- Static file serving ---
 
     // Serve dashboard

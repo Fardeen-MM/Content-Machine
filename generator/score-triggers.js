@@ -1,4 +1,5 @@
 const { keywordScore, daysAgo, readJSON } = require('../lib/utils');
+const db = require('../lib/db');
 
 // Source reliability cache — recalculated every 10 minutes
 let _sourceReliability = null;
@@ -127,6 +128,173 @@ function scoreEmotionalValence(text) {
   return Math.min(score, 4);
 }
 
+// Performance boost — factor published content performance into scoring
+let _perfCache = null;
+let _perfCachedAt = 0;
+
+function getPerformanceBoost(trigger) {
+  try {
+    if (!_perfCache || Date.now() - _perfCachedAt > RELIABILITY_CACHE_MS) {
+      const perfData = readJSON('performance.json', []);
+      const content = readJSON('content.json');
+
+      // Build category -> avg engagement map
+      const catEngagement = {};
+      for (const p of perfData) {
+        const item = content.find(c => c.id === p.content_id);
+        const cat = item?.trigger_category || p.category || 'unknown';
+        if (!catEngagement[cat]) catEngagement[cat] = { total: 0, engagement: 0 };
+        catEngagement[cat].total++;
+        catEngagement[cat].engagement += (p.engagement || 0);
+      }
+
+      // Calculate avg engagement per category
+      const catAvgs = {};
+      let allAvg = 0;
+      let allCount = 0;
+      for (const [cat, data] of Object.entries(catEngagement)) {
+        if (data.total > 0) {
+          catAvgs[cat] = data.engagement / data.total;
+          allAvg += data.engagement;
+          allCount += data.total;
+        }
+      }
+      const globalAvg = allCount > 0 ? allAvg / allCount : 0;
+
+      // Build high-performing title keywords
+      const highPerfKeywords = new Set();
+      for (const p of perfData) {
+        if ((p.engagement || 0) > globalAvg * 1.5) {
+          const item = content.find(c => c.id === p.content_id);
+          const words = (item?.trigger_title || '').toLowerCase().split(/\s+/).filter(w => w.length > 4);
+          for (const w of words) highPerfKeywords.add(w);
+        }
+      }
+
+      _perfCache = { catAvgs, globalAvg, highPerfKeywords, hasData: perfData.length >= 3 };
+      _perfCachedAt = Date.now();
+    }
+
+    if (!_perfCache.hasData) return 0;
+
+    let boost = 0;
+    const catAvg = _perfCache.catAvgs[trigger.category];
+
+    if (catAvg !== undefined && _perfCache.globalAvg > 0) {
+      const ratio = catAvg / _perfCache.globalAvg;
+      if (ratio >= 1.5) boost += 4;       // Top-quartile category
+      else if (ratio >= 1.0) boost += 2;  // Above-average
+      else if (ratio < 0.7) boost -= 1;   // Below-average
+    }
+
+    // Keyword overlap with high-performing titles
+    const titleWords = (trigger.title || '').toLowerCase().split(/\s+/).filter(w => w.length > 4);
+    const kwOverlap = titleWords.filter(w => _perfCache.highPerfKeywords.has(w)).length;
+    if (kwOverlap >= 2) boost += 2;
+
+    return boost;
+  } catch {
+    return 0;
+  }
+}
+
+// Rejection penalty — penalize triggers similar to previously rejected content
+let _rejectionCache = null;
+let _rejectionCachedAt = 0;
+
+function getRejectionPenalty(trigger) {
+  try {
+    if (!_rejectionCache || Date.now() - _rejectionCachedAt > RELIABILITY_CACHE_MS) {
+      const memory = readJSON('memory.json', {});
+      const rejections = memory.rejection_patterns || [];
+      const content = readJSON('content.json');
+
+      // Build source rejection rates
+      const sourceStats = {};
+      for (const r of rejections) {
+        const src = r.trigger_source || 'unknown';
+        if (!sourceStats[src]) sourceStats[src] = { total: 0, rejected: 0 };
+        sourceStats[src].rejected++;
+      }
+      for (const c of content) {
+        const src = c.trigger_source || 'unknown';
+        if (!sourceStats[src]) sourceStats[src] = { total: 0, rejected: 0 };
+        sourceStats[src].total++;
+      }
+
+      // Build rejected keyword set from titles
+      const rejectedWords = new Set();
+      for (const r of rejections) {
+        const words = (r.trigger_title || r.content_preview || '').toLowerCase().split(/\s+/).filter(w => w.length > 4);
+        for (const w of words) rejectedWords.add(w);
+      }
+
+      // Build rejected category counts
+      const rejectedCategories = {};
+      for (const r of rejections) {
+        if (r.category) rejectedCategories[r.category] = (rejectedCategories[r.category] || 0) + 1;
+      }
+
+      _rejectionCache = { sourceStats, rejectedWords, rejectedCategories, totalRejections: rejections.length };
+      _rejectionCachedAt = Date.now();
+    }
+
+    if (_rejectionCache.totalRejections === 0) return 0;
+
+    let penalty = 0;
+
+    // Source with >3 rejections and >60% rejection rate: -3pts
+    const srcInfo = _rejectionCache.sourceStats[trigger.source];
+    if (srcInfo && srcInfo.rejected > 3 && srcInfo.total > 0) {
+      const rejectRate = srcInfo.rejected / srcInfo.total;
+      if (rejectRate > 0.6) penalty -= 3;
+    }
+
+    // Title keyword overlap with rejected content (>2 matches): -2pts
+    const titleWords = (trigger.title || '').toLowerCase().split(/\s+/).filter(w => w.length > 4);
+    const overlap = titleWords.filter(w => _rejectionCache.rejectedWords.has(w)).length;
+    if (overlap > 2) penalty -= 2;
+
+    // Category matching frequently rejected categories: -1pt
+    const catCount = _rejectionCache.rejectedCategories[trigger.category] || 0;
+    if (catCount >= 3) penalty -= 1;
+
+    return Math.max(penalty, -6);
+  } catch {
+    return 0;
+  }
+}
+
+// Pattern frequency boost — triggers matching high-frequency patterns from meetings/deals
+let _patternCache = null;
+let _patternCachedAt = 0;
+const PATTERN_CACHE_MS = 10 * 60 * 1000;
+
+function getPatternBoost(trigger) {
+  try {
+    if (!_patternCache || Date.now() - _patternCachedAt > PATTERN_CACHE_MS) {
+      db.initDb();
+      _patternCache = db.getPatterns({ limit: 30 });
+      _patternCachedAt = Date.now();
+    }
+    if (!_patternCache || _patternCache.length === 0) return 0;
+
+    const text = `${trigger.title || ''} ${trigger.raw_content || ''}`.toLowerCase();
+    let boost = 0;
+
+    for (const pattern of _patternCache) {
+      const words = (pattern.description || '').toLowerCase().split(/\s+/).filter(w => w.length > 4);
+      const matches = words.filter(w => text.includes(w)).length;
+      if (matches >= 2 || (words.length <= 3 && matches >= 1)) {
+        boost += Math.min(pattern.frequency || 1, 5);
+      }
+    }
+    return Math.min(boost, 10);
+  } catch {
+    return 0;
+  }
+}
+
 function scoreTrigger(trigger, allTriggers) {
   let score = 0;
   const text = `${trigger.title || ''} ${trigger.raw_content || ''}`;
@@ -227,6 +395,15 @@ function scoreTrigger(trigger, allTriggers) {
   if (srcInfo && srcInfo.factor !== 1.0) {
     score = Math.round(score * srcInfo.factor);
   }
+
+  // Performance boost — factor published content metrics into scoring
+  score += getPerformanceBoost(trigger);
+
+  // Pattern frequency boost — triggers matching meeting/deal patterns score higher
+  score += getPatternBoost(trigger);
+
+  // Rejection penalty — penalize triggers similar to previously rejected content
+  score += getRejectionPenalty(trigger);
 
   return Math.max(0, score);
 }

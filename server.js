@@ -3089,6 +3089,15 @@ ${context}`;
       } else if (body.outcome === 'lost') {
         sendTelegramAlert(`❌ <b>DEAL LOST</b>: ${body.client_name || 'Unknown'}${body.loss_reason ? ' — ' + body.loss_reason : ''}`);
       }
+      // Fire-and-forget: extract patterns + auto-create content triggers
+      setImmediate(async () => {
+        try {
+          const { processDealOutcome } = require('./lib/intelligence');
+          await processDealOutcome({ ...body, ...deal });
+        } catch (err) {
+          console.error('[deals] processDealOutcome failed:', err.message);
+        }
+      });
       return json(res, { ok: true, deal });
     }
 
@@ -20117,6 +20126,30 @@ cron.schedule('0 */2 * * *', async () => {
       sendTelegramAlert(
         `\u{1F534} ${deal.name || deal.firm_name} silent ${deal.days_silent} days. Yaseer: call or WhatsApp NOW.`
       );
+    }
+
+    // Health-driven auto-pestering — red clients (<30 score) get auto-enrolled
+    try {
+      const healthOverview = db.getHealthOverview();
+      const redClients = (healthOverview.clients || []).filter(c => c.health_status === 'red');
+
+      for (const client of redClients) {
+        // Check if already has pending pestering entries
+        const pendingPester = conn.prepare(
+          "SELECT COUNT(*) as c FROM pestering_log WHERE client_id = ? AND status = 'pending'"
+        ).get(client.client_id);
+
+        if (pendingPester.c === 0) {
+          const { createPesterSchedule } = require('./lib/pestering');
+          createPesterSchedule(client.client_id, 'interested');
+          sendTelegramAlert(
+            `🔴 <b>RED ALERT</b>: ${client.client_name || 'Unknown'} health score ${client.score}/100. Auto-enrolled in pestering. Yaseer: call NOW.`
+          );
+          console.log(`[cron] Auto-enrolled red client ${client.client_name} in pestering`);
+        }
+      }
+    } catch (err) {
+      console.error('[cron] Health-driven pestering failed:', err.message);
     }
 
     // Proposals overdue (discovery calls 4+ hours ago without a proposal)

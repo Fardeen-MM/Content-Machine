@@ -7444,5 +7444,28 @@
     "captured_at": "2026-02-21T21:11:29.784Z",
     "status": "pending",
     "score": 0
+  },
+  {
+    "id": "deal-7797abcc51fc7c47",
+    "source": "deal_insight",
+    "title": "Deal lost: Budget too high, they went with a cheaper agency that promised the same results ",
+    "raw_content": "Loss reason: Budget too high, they went with a cheaper agency that promised the same results for half the price\nWhat failed: Proposal was too expensive for a 2-attorney firm\nPractice area: personal_injury",
+    "category": "PAIN_POINT",
+    "url": null,
+    "captured_at": "2026-02-21T21:49:59.687Z",
+    "status": "pending"
+  },
+  {
+    "id": "deal-cd0f0b2b011fcccc",
+    "source": "deal_insight",
+    "title": "Win story: Speed to lead system impressed them, 60-second response time demo sealed the dea",
+    "raw_content": "What worked: Speed to lead system impressed them, 60-second response time demo sealed the deal\nValue: $5000/mo\nPractice area: criminal_defense",
+    "category": "DATA_POINT",
+    "tags": [
+      "case-study-candidate"
+    ],
+    "url": null,
+    "captured_at": "2026-02-21T21:50:26.957Z",
+    "status": "pending"
   }
 ]

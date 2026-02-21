@@ -1,5 +1,6 @@
 const { generateSocialContent, generateBlogPost, generateYouTubeScript, generateLeadMagnet, generateNewsletter, generateCaseStudy, extractSpokes } = require('../lib/claude');
 const { generateId, now, readJSON } = require('../lib/utils');
+const db = require('../lib/db');
 
 function makeSlot(content) {
   return { content, status: 'review', edited: false };
@@ -195,6 +196,19 @@ function buildSystemPromptWithMemory() {
     }
   } catch (err) {
     console.log('[writer] No memory loaded:', err.message);
+  }
+  // Add client patterns from real sales calls
+  try {
+    db.initDb();
+    const patterns = db.getPatterns({ limit: 15 }).filter(p => p.frequency >= 2);
+    if (patterns.length > 0) {
+      prompt += '\n\nCLIENT PATTERNS (from real sales calls — prioritize content addressing these):\n';
+      for (const p of patterns) {
+        prompt += `- [${p.type}] "${p.description}" (seen ${p.frequency}x)\n`;
+      }
+    }
+  } catch (err) {
+    // Patterns not available — skip
   }
   // Add performance insights from published content
   try {

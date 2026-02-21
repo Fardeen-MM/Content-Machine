@@ -98,6 +98,62 @@ function gatherBriefData() {
   const allContent = readJSON('content.json');
   const pendingContent = allContent.filter(c => c.status === 'review').slice(0, 10);
 
+  // Deal outcomes from past 7 days
+  let recentDeals = [];
+  try {
+    recentDeals = d.prepare(`
+      SELECT d.*, c.name as client_name, c.firm_name
+      FROM deal_outcomes d LEFT JOIN clients c ON d.client_id = c.id
+      WHERE d.recorded_at >= ? ORDER BY d.recorded_at DESC LIMIT 10
+    `).all(weekAgo);
+  } catch {}
+
+  // Performance metrics from performance.json (7-day window)
+  let perfSummary = null;
+  try {
+    const perfData = readJSON('performance.json', []);
+    const recentPerf = perfData.filter(p => p.recorded_at >= weekAgo || p.published_at >= weekAgo);
+    if (recentPerf.length > 0) {
+      const totalEng = recentPerf.reduce((s, p) => s + (p.engagement || 0), 0);
+      const totalImp = recentPerf.reduce((s, p) => s + (p.impressions || 0), 0);
+      const totalLeads = recentPerf.reduce((s, p) => s + (p.leads || 0), 0);
+      perfSummary = {
+        posts: recentPerf.length,
+        engagement: totalEng,
+        impressions: totalImp,
+        leads: totalLeads,
+        avg_engagement: recentPerf.length > 0 ? Math.round(totalEng / recentPerf.length) : 0
+      };
+    }
+  } catch {}
+
+  // Rejection trends from memory.json (recent)
+  let rejectionTrend = null;
+  try {
+    const memory = readJSON('memory.json', {});
+    const rejections = memory.rejection_patterns || [];
+    const recentRejections = rejections.filter(r => r.rejected_at >= weekAgo);
+    if (recentRejections.length > 0) {
+      const reasons = {};
+      for (const r of recentRejections) {
+        const key = r.reason || 'other';
+        reasons[key] = (reasons[key] || 0) + 1;
+      }
+      rejectionTrend = {
+        count: recentRejections.length,
+        topReasons: Object.entries(reasons).sort((a, b) => b[1] - a[1]).slice(0, 3)
+      };
+    }
+  } catch {}
+
+  // New/updated patterns from past 7 days
+  let newPatterns = [];
+  try {
+    newPatterns = d.prepare(`
+      SELECT * FROM patterns WHERE last_seen >= ? ORDER BY frequency DESC LIMIT 5
+    `).all(weekAgo);
+  } catch {}
+
   return {
     date: now.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' }),
     health: healthOverview.summary || {},
@@ -108,7 +164,11 @@ function gatherBriefData() {
     patterns,
     staleClients,
     duePestering,
-    pendingContent
+    pendingContent,
+    recentDeals,
+    perfSummary,
+    rejectionTrend,
+    newPatterns
   };
 }
 
@@ -180,6 +240,31 @@ async function generateBrief() {
     ctx.push('Approve in dashboard or reply "approve [id]"');
   }
 
+  if (data.recentDeals.length > 0) {
+    const won = data.recentDeals.filter(d => d.outcome === 'won');
+    const lost = data.recentDeals.filter(d => d.outcome === 'lost' || d.outcome === 'ghosted');
+    ctx.push(`\nDEAL OUTCOMES THIS WEEK (${data.recentDeals.length} total — ${won.length} won, ${lost.length} lost):`);
+    for (const d of data.recentDeals.slice(0, 5)) {
+      const icon = d.outcome === 'won' ? '✅' : '❌';
+      ctx.push(`${icon} ${d.client_name || 'Unknown'}${d.monthly_value ? ' $' + d.monthly_value + '/mo' : ''} — ${d.outcome}${d.loss_reason ? ': ' + d.loss_reason : ''}${d.what_worked ? ' | Worked: ' + d.what_worked : ''}`);
+    }
+  }
+
+  if (data.perfSummary) {
+    ctx.push(`\nCONTENT PERFORMANCE (7-day): ${data.perfSummary.posts} posts, ${data.perfSummary.engagement} engagements, ${data.perfSummary.impressions} impressions, ${data.perfSummary.leads} leads. Avg engagement: ${data.perfSummary.avg_engagement}/post`);
+  }
+
+  if (data.rejectionTrend) {
+    ctx.push(`\nREJECTION TREND: ${data.rejectionTrend.count} rejected this week. Top reasons: ${data.rejectionTrend.topReasons.map(([r, c]) => r + ' (' + c + 'x)').join(', ')}`);
+  }
+
+  if (data.newPatterns.length > 0) {
+    ctx.push('\nNEW/UPDATED PATTERNS THIS WEEK:');
+    for (const p of data.newPatterns) {
+      ctx.push(`- [${p.type}] ${p.description} (${p.frequency}x)`);
+    }
+  }
+
   const liveData = ctx.join('\n');
 
   const prompt = `Generate the morning brief for ${data.date}. This replaces the daily whiteboard session.
@@ -190,10 +275,12 @@ MAX 3500 chars. Use HTML tags (<b>, <i>, bullet •). NO markdown.
 
 Structure:
 1. THE BOTTLENECK — one line. The #1 constraint right now. A number.
-2. YASEER — 3-5 SPECIFIC actions. Handhold completely. Names, what to say, links. He needs to be told exactly what to do.
-3. MONTY — content/outreach tasks. If pending content exists, tell him exactly how many posts to review and approve in the dashboard.
-4. FARDEEN — the strategic fix or system to build today.
-5. STALE DEALS — if any: name, days silent, suggested action.
+2. DEAL OUTCOMES — if any: wins/losses this week, revenue impact, key learnings from losses.
+3. YASEER — 3-5 SPECIFIC actions. Handhold completely. Names, what to say, links. He needs to be told exactly what to do.
+4. MONTY — content/outreach tasks. If pending content exists, tell him exactly how many posts to review and approve. If content performance data exists, mention what's working.
+5. FARDEEN — the strategic fix or system to build today.
+6. STALE DEALS — if any: name, days silent, suggested action.
+7. CONTENT PERFORMANCE — if data exists: what formats/topics are getting engagement, what to double down on, what to stop.
 
 Be DIRECTIVE. "$4K deal dies Friday if nobody calls." Not "consider following up."
 Keep it scannable on a phone screen. No fluff.`;

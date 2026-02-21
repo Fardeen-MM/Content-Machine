@@ -1473,6 +1473,10 @@ const state = {
   contentBriefs: [],
   // Workflow Pipeline
   workflowPipeline: null,
+  // Personas
+  personas: [],
+  // Calendar Week
+  calendarWeek: null,
 };
 
 // --- API Calls ---
@@ -1498,7 +1502,7 @@ async function loadData() {
   state.loading = true;
   render();
   try {
-    const [content, triggers, stats, calendar, monthCal, settings, memory, performance, perfAnalytics, meetings, meetingStats, clients, allActions, chatMessages, healthData, inspirations, pestering, pesteringStages, insights, deals, published, series, predictions, playbooks, ctaLibrary, trending, funnel, publishTracker, leadMagnets, contentHealth, scheduleOptimize, templates, dmSequences, hooks, pillarPlan, contentLeads, autopilot, scheduleQueue, engagementDashboard, contentBriefs, workflowPipeline] = await Promise.all([
+    const [content, triggers, stats, calendar, monthCal, settings, memory, performance, perfAnalytics, meetings, meetingStats, clients, allActions, chatMessages, healthData, inspirations, pestering, pesteringStages, insights, deals, published, series, predictions, playbooks, ctaLibrary, trending, funnel, publishTracker, leadMagnets, contentHealth, scheduleOptimize, templates, dmSequences, hooks, pillarPlan, contentLeads, autopilot, scheduleQueue, engagementDashboard, contentBriefs, workflowPipeline, personas, calendarWeek] = await Promise.all([
       api('/api/content'),
       api('/api/triggers'),
       api('/api/stats'),
@@ -1539,7 +1543,9 @@ async function loadData() {
       api('/api/schedule-queue').catch(() => []),
       api('/api/engagement/dashboard').catch(() => null),
       api('/api/content-briefs').catch(() => []),
-      api('/api/workflow/pipeline').catch(() => null)
+      api('/api/workflow/pipeline').catch(() => null),
+      api('/api/personas').catch(() => []),
+      api('/api/calendar/week').catch(() => null)
     ]);
     state.content = content;
     state.triggers = triggers;
@@ -1582,6 +1588,8 @@ async function loadData() {
     state.engagementDashboard = engagementDashboard;
     state.contentBriefs = contentBriefs;
     state.workflowPipeline = workflowPipeline;
+    state.personas = personas;
+    state.calendarWeek = calendarWeek;
   } catch (err) {
     console.error('Failed to load data:', err);
     toast('Failed to load data', 'error');
@@ -2980,6 +2988,39 @@ function renderDashboardPage() {
         })
       )
     ) : null,
+    // Calendar Week View
+    state.calendarWeek ? h('div', { style: { marginBottom: '20px' } },
+      h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
+        h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)' } }, `THIS WEEK (${state.calendarWeek.total_posts} posts)`),
+        h('div', { style: { display: 'flex', gap: '6px' } },
+          state.calendarWeek.gaps?.length > 0 ? h('span', { style: { fontSize: '10px', color: '#dc2626' } }, `Gaps: ${state.calendarWeek.gaps.join(', ')}`) : h('span', { style: { fontSize: '10px', color: '#059669' } }, 'No gaps!'),
+          h('button', {
+            className: 'btn btn-outline btn-sm',
+            style: { fontSize: '10px', padding: '2px 8px' },
+            onclick: async () => {
+              try {
+                const res = await api('/api/calendar/suggest', { method: 'POST' });
+                if (res.suggestions?.length > 0) {
+                  await api('/api/calendar/apply-suggestions', { method: 'POST', body: { suggestions: res.suggestions } });
+                  toast(`Scheduled ${res.suggestions.length} posts to fill gaps`, 'success');
+                  loadData();
+                } else { toast('No suggestions — approve more content first', 'info'); }
+              } catch (err) { toast('Suggest failed: ' + err.message, 'error'); }
+            }
+          }, 'Fill Gaps')
+        )
+      ),
+      h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '4px' } },
+        ...state.calendarWeek.days.map(day => {
+          const platformColors = { linkedin: '#0a66c2', x_single: '#1da1f2', x_thread: '#1da1f2', carousel: '#e4405f', short_video: '#ff0050' };
+          return h('div', { style: { padding: '8px', background: day.count > 0 ? '#f0fdf4' : '#fff', borderRadius: 'var(--radius-sm)', border: `1px solid ${day.count > 0 ? '#bbf7d0' : 'var(--gray-200)'}`, minHeight: '60px' } },
+            h('div', { style: { fontSize: '10px', fontWeight: '700', color: 'var(--gray-500)', marginBottom: '4px' } }, `${day.day_name} ${day.date.slice(8)}`),
+            ...day.posts.map(p => h('div', { style: { fontSize: '9px', padding: '2px 4px', marginBottom: '2px', borderRadius: '3px', background: `${platformColors[p.platform] || '#64748b'}15`, color: platformColors[p.platform] || '#64748b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } }, `${p.time} ${p.platform.replace('_', ' ')}`)),
+            day.count === 0 ? h('div', { style: { fontSize: '9px', color: '#dc2626', fontStyle: 'italic' } }, 'empty') : null
+          );
+        })
+      )
+    ) : null,
     // Workflow Pipeline
     state.workflowPipeline ? h('div', { style: { marginBottom: '20px' } },
       h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)', marginBottom: '8px' } }, 'CONTENT PIPELINE'),
@@ -4249,6 +4290,42 @@ function renderFormatContent(content, formatKey, fmt) {
           ...content.quality_checks[formatKey].issues.map(i => h('div', { style: { paddingLeft: '6px', borderLeft: '2px solid #dc2626', marginBottom: '2px' } }, i.slice(0, 100)))
         ) : null
       ) : null,
+      // Persona targeting dropdown
+      typeof text === 'string' && ['linkedin', 'x_single', 'x_thread'].includes(formatKey) && state.personas.length > 0
+        ? h('select', {
+            style: { fontSize: '10px', padding: '2px 6px', borderRadius: '4px', border: '1px solid #a78bfa', background: 'var(--card-bg)', color: '#7c3aed', cursor: 'pointer', maxWidth: '110px' },
+            value: '',
+            onchange: async (e) => {
+              const pid = e.target.value;
+              if (!pid) return;
+              e.target.value = '';
+              toast(`Adapting for ${state.personas.find(p => p.id === pid)?.name}...`, 'info');
+              try {
+                const res = await api(`/api/content/${content.id}/target-persona`, { method: 'POST', body: { persona_id: pid, platform: formatKey } });
+                toast(`Adapted for ${res.persona}!`, 'success');
+                loadData();
+              } catch (err) { toast('Persona targeting failed: ' + err.message, 'error'); }
+            }
+          },
+            h('option', { value: '' }, 'Target Persona'),
+            ...state.personas.map(p => h('option', { value: p.id }, p.name))
+          )
+        : null,
+      // Show persona versions if they exist
+      content.persona_versions && Object.keys(content.persona_versions).length > 0
+        ? h('div', { style: { marginTop: '6px' } },
+            ...Object.entries(content.persona_versions).map(([pid, pv]) =>
+              h('details', { style: { marginBottom: '4px', background: '#faf5ff', borderRadius: '4px', padding: '4px 8px', border: '1px solid #e9d5ff' } },
+                h('summary', { style: { fontSize: '10px', fontWeight: '600', color: '#7c3aed', cursor: 'pointer' } }, `${pv.persona_name} version`),
+                h('pre', { style: { fontSize: '10px', color: 'var(--gray-600)', whiteSpace: 'pre-wrap', margin: '4px 0', maxHeight: '120px', overflow: 'auto' } }, (pv.content || '').slice(0, 500)),
+                h('button', {
+                  style: { fontSize: '9px', padding: '1px 6px', background: '#7c3aed', color: 'white', border: 'none', borderRadius: '3px', cursor: 'pointer' },
+                  onclick: () => { navigator.clipboard.writeText(pv.content); toast('Copied persona version', 'success'); }
+                }, 'Copy')
+              )
+            )
+          )
+        : null,
       // Apply template dropdown (for linkedin and x_thread formats)
       typeof text === 'string' && ['linkedin', 'x_thread'].includes(formatKey) && state.templates.length > 0
         ? h('select', {

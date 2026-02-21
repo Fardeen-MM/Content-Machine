@@ -6587,6 +6587,206 @@ POST: "${contentText.slice(0, 800)}"`;
       return json(res, { ok: true, checked, passed, failed: checked - passed, total_unchecked: toCheck.length });
     }
 
+    // --- Repurposing Matrix + Cross-Platform Analytics ---
+
+    // GET /api/content/:id/repurpose-matrix — show platform coverage and gaps
+    if (pathname.match(/^\/api\/content\/[^/]+\/repurpose-matrix$/) && method === 'GET') {
+      const id = pathname.split('/')[3];
+      const content = readJSON('content.json');
+      const item = content.find(c => c.id === id);
+      if (!item) return json(res, { error: 'content not found' }, 404);
+
+      const allPlatforms = ['linkedin', 'x_single', 'x_thread', 'short_video', 'carousel', 'blog', 'newsletter', 'youtube_script', 'case_study', 'lead_magnet'];
+      const matrix = allPlatforms.map(p => ({
+        platform: p,
+        has_content: !!(item.formats?.[p]?.content),
+        content_length: typeof item.formats?.[p]?.content === 'string' ? item.formats[p].content.length : 0,
+        has_hashtags: !!(item.hashtags?.[p]),
+        has_optimized: !!(item.formats?.[p]?.optimized),
+        has_viral_score: !!(item.viral_scores?.[p]),
+        has_quality_check: !!(item.quality_checks?.[p]),
+        engagement: item.engagement?.[p] || null
+      }));
+
+      const queue = readJSON('schedule-queue.json', []);
+      for (const m of matrix) {
+        m.scheduled = queue.some(q => q.content_id === id && q.platform === m.platform && q.status === 'scheduled');
+      }
+
+      return json(res, { content_id: id, title: item.trigger_title, matrix, coverage: `${matrix.filter(m => m.has_content).length}/${allPlatforms.length}`, gaps: matrix.filter(m => !m.has_content).map(m => m.platform) });
+    }
+
+    // GET /api/analytics/cross-platform — compare performance across platforms
+    if (pathname === '/api/analytics/cross-platform' && method === 'GET') {
+      const content = readJSON('content.json');
+
+      const platforms = {};
+      for (const item of content) {
+        for (const [fmt, data] of Object.entries(item.formats || {})) {
+          if (!data?.content) continue;
+          if (!platforms[fmt]) platforms[fmt] = { content_count: 0, total_length: 0, with_engagement: 0, total_engagement: 0, total_impressions: 0 };
+          platforms[fmt].content_count++;
+          platforms[fmt].total_length += typeof data.content === 'string' ? data.content.length : 0;
+          if (item.engagement?.[fmt]) {
+            platforms[fmt].with_engagement++;
+            platforms[fmt].total_engagement += item.engagement[fmt].engagement || 0;
+            platforms[fmt].total_impressions += item.engagement[fmt].impressions || 0;
+          }
+        }
+      }
+
+      for (const p of Object.values(platforms)) {
+        p.avg_length = p.content_count > 0 ? Math.round(p.total_length / p.content_count) : 0;
+        p.engagement_rate = p.total_impressions > 0 ? (p.total_engagement / p.total_impressions * 100).toFixed(2) : '0.00';
+      }
+
+      return json(res, { platforms, total_content: content.length });
+    }
+
+    // --- Audience Persona Targeting ---
+
+    // GET /api/personas — list all personas
+    if (pathname === '/api/personas' && method === 'GET') {
+      const defaults = [
+        { id: 'pi-attorney', name: 'PI Attorney', title: 'Personal Injury Attorney', firm_size: '2-15 attorneys', budget: '$5K-$25K/mo', pain_points: ['Rising Google Ads costs', 'Low-quality leads', 'Competing against mass tort firms'], goals: ['More signed cases', 'Better cost per case', 'Reviews & reputation'], tone: 'results-driven, ROI-focused, skeptical of agencies' },
+        { id: 'family-law', name: 'Family Law Partner', title: 'Family Law Managing Partner', firm_size: '1-8 attorneys', budget: '$2K-$10K/mo', pain_points: ['Emotional clients hard to convert online', 'Seasonal fluctuations', 'Low avg case value'], goals: ['Consistent lead flow', 'Higher-value cases', 'Community authority'], tone: 'empathetic, trust-building, community-focused' },
+        { id: 'criminal-defense', name: 'Criminal Defense Solo', title: 'Solo Criminal Defense Attorney', firm_size: '1-3 attorneys', budget: '$1K-$8K/mo', pain_points: ['Urgent need for leads', 'Reputation management', 'Public defender competition'], goals: ['24/7 lead capture', 'Fast intake', 'DUI niche dominance'], tone: 'urgent, direct, no-BS' },
+        { id: 'estate-planning', name: 'Estate Planning Firm', title: 'Estate Planning Attorney', firm_size: '1-5 attorneys', budget: '$2K-$8K/mo', pain_points: ['Long sales cycle', 'DIY legal service competition', 'Difficulty showing urgency'], goals: ['Educational trust content', 'Seminar attendance', 'Referral growth'], tone: 'educational, authoritative, patient' },
+        { id: 'multi-practice', name: 'Multi-Practice Firm', title: 'Managing Partner', firm_size: '5-30 attorneys', budget: '$10K-$50K/mo', pain_points: ['Unified brand across practices', 'Attribution across campaigns', 'Partner buy-in'], goals: ['Practice area-specific leads', 'Centralized dashboard', 'Scalable growth'], tone: 'strategic, data-heavy, executive-level' }
+      ];
+      const fs = require('fs'), path = require('path');
+      const personasPath = path.join(__dirname, 'data', 'personas.json');
+      if (!fs.existsSync(personasPath)) { writeJSON('personas.json', defaults); }
+      const personas = readJSON('personas.json', defaults);
+      return json(res, personas);
+    }
+
+    // POST /api/personas — add a custom persona
+    if (pathname === '/api/personas' && method === 'POST') {
+      const body = await parseBody(req);
+      if (!body.name) return json(res, { error: 'name required' }, 400);
+      const personas = readJSON('personas.json', []);
+      const persona = { id: generateId(), name: body.name, title: body.title || '', firm_size: body.firm_size || '', budget: body.budget || '', pain_points: body.pain_points || [], goals: body.goals || [], tone: body.tone || '', created_at: now() };
+      personas.push(persona);
+      writeJSON('personas.json', personas);
+      return json(res, { ok: true, persona });
+    }
+
+    // POST /api/content/:id/target-persona — AI adapts content for a specific persona
+    if (pathname.match(/^\/api\/content\/[^/]+\/target-persona$/) && method === 'POST') {
+      const id = pathname.split('/')[3];
+      const body = await parseBody(req);
+      if (!body.persona_id) return json(res, { error: 'persona_id required' }, 400);
+      const platform = body.platform || 'linkedin';
+
+      const content = readJSON('content.json');
+      const item = content.find(c => c.id === id);
+      if (!item) return json(res, { error: 'content not found' }, 404);
+
+      const personas = readJSON('personas.json', []);
+      const persona = personas.find(p => p.id === body.persona_id);
+      if (!persona) return json(res, { error: 'persona not found' }, 404);
+
+      const contentText = typeof item.formats?.[platform]?.content === 'string' ? item.formats[platform].content : '';
+      if (!contentText) return json(res, { error: 'no content for this platform' }, 400);
+
+      const { callClaude, HAIKU } = require('./lib/claude');
+      const prompt = `Rewrite this ${platform} post targeting: ${persona.name} — ${persona.title}
+Firm: ${persona.firm_size} | Budget: ${persona.budget}
+Pain points: ${(persona.pain_points || []).join(', ')}
+Goals: ${(persona.goals || []).join(', ')}
+Tone: ${persona.tone}
+
+ORIGINAL: ${contentText.slice(0, 2000)}
+
+Keep same core message. Adjust language, examples, pain points for this persona. Return ONLY the rewritten content.`;
+
+      const adapted = await callClaude({ model: HAIKU, system: 'Content personalization expert for legal marketing.', prompt, maxTokens: 1500 });
+
+      if (adapted) {
+        const allContent = readJSON('content.json');
+        const idx = allContent.findIndex(c => c.id === id);
+        if (idx !== -1) {
+          if (!allContent[idx].persona_versions) allContent[idx].persona_versions = {};
+          allContent[idx].persona_versions[persona.id] = { platform, persona_name: persona.name, content: adapted.trim(), created_at: now() };
+          writeJSON('content.json', allContent);
+        }
+      }
+      return json(res, { ok: true, persona: persona.name, adapted: adapted?.trim(), platform });
+    }
+
+    // --- Enhanced Calendar ---
+
+    // GET /api/calendar/week — week view with scheduled posts by platform
+    if (pathname === '/api/calendar/week' && method === 'GET') {
+      const queue = readJSON('schedule-queue.json', []);
+      const weekParam = url.searchParams.get('week');
+
+      const startOfWeek = weekParam ? new Date(weekParam) : (() => { const d = new Date(); d.setDate(d.getDate() - d.getDay() + 1); return d; })();
+      const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+      const days = [];
+
+      for (let i = 0; i < 7; i++) {
+        const day = new Date(startOfWeek);
+        day.setDate(startOfWeek.getDate() + i);
+        const dateStr = day.toISOString().slice(0, 10);
+        const scheduled = queue.filter(q => q.scheduled_at?.slice(0, 10) === dateStr && q.status === 'scheduled');
+        days.push({
+          date: dateStr, day_name: dayNames[i],
+          posts: scheduled.map(s => ({ id: s.id, content_id: s.content_id, platform: s.platform, time: s.scheduled_at?.slice(11, 16), title: s.trigger_title })),
+          count: scheduled.length
+        });
+      }
+
+      return json(res, {
+        week_start: startOfWeek.toISOString().slice(0, 10), days,
+        total_posts: days.reduce((s, d) => s + d.count, 0),
+        gaps: days.filter(d => d.count === 0).map(d => d.day_name)
+      });
+    }
+
+    // POST /api/calendar/suggest — AI suggests posts to fill calendar gaps
+    if (pathname === '/api/calendar/suggest' && method === 'POST') {
+      const queue = readJSON('schedule-queue.json', []);
+      const content = readJSON('content.json');
+      const unscheduled = content.filter(c => c.status === 'approved' && !queue.some(q => q.content_id === c.id && q.status === 'scheduled'));
+
+      if (unscheduled.length === 0) return json(res, { ok: true, suggestions: [], message: 'No approved content to schedule' });
+
+      const today = new Date();
+      const suggestions = [];
+      const slots = [
+        { day: 1, platform: 'linkedin', time: '09:00' }, { day: 2, platform: 'x_single', time: '12:00' },
+        { day: 3, platform: 'linkedin', time: '09:30' }, { day: 4, platform: 'x_thread', time: '08:30' },
+        { day: 5, platform: 'linkedin', time: '09:00' }, { day: 5, platform: 'short_video', time: '12:00' }
+      ];
+
+      for (const slot of slots) {
+        const d = new Date(today);
+        d.setDate(d.getDate() + ((slot.day - d.getDay() + 7) % 7 || 7));
+        const dateStr = d.toISOString().slice(0, 10);
+        if (queue.find(q => q.scheduled_at?.slice(0, 10) === dateStr && q.platform === slot.platform && q.status === 'scheduled')) continue;
+        const match = unscheduled.find(c => c.formats?.[slot.platform]?.content);
+        if (match) suggestions.push({ content_id: match.id, title: match.trigger_title, platform: slot.platform, date: dateStr, time: slot.time });
+      }
+
+      return json(res, { ok: true, suggestions });
+    }
+
+    // POST /api/calendar/apply-suggestions — schedule all suggested posts
+    if (pathname === '/api/calendar/apply-suggestions' && method === 'POST') {
+      const body = await parseBody(req);
+      const suggestions = body.suggestions || [];
+      const queue = readJSON('schedule-queue.json', []);
+      let applied = 0;
+      for (const s of suggestions) {
+        queue.push({ id: generateId(), content_id: s.content_id, trigger_title: s.title, platform: s.platform, format: s.platform, scheduled_at: `${s.date}T${s.time}:00.000Z`, status: 'scheduled', notes: 'AI suggested', created_at: now() });
+        applied++;
+      }
+      writeJSON('schedule-queue.json', queue);
+      return json(res, { ok: true, applied });
+    }
+
     // --- Content Series API ---
 
     // GET /api/series — list all content series

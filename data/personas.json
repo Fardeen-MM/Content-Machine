@@ -1,0 +1,92 @@
+[
+  {
+    "id": "pi-attorney",
+    "name": "PI Attorney",
+    "title": "Personal Injury Attorney",
+    "firm_size": "2-15 attorneys",
+    "budget": "$5K-$25K/mo",
+    "pain_points": [
+      "Rising Google Ads costs",
+      "Low-quality leads",
+      "Competing against mass tort firms"
+    ],
+    "goals": [
+      "More signed cases",
+      "Better cost per case",
+      "Reviews & reputation"
+    ],
+    "tone": "results-driven, ROI-focused, skeptical of agencies"
+  },
+  {
+    "id": "family-law",
+    "name": "Family Law Partner",
+    "title": "Family Law Managing Partner",
+    "firm_size": "1-8 attorneys",
+    "budget": "$2K-$10K/mo",
+    "pain_points": [
+      "Emotional clients hard to convert online",
+      "Seasonal fluctuations",
+      "Low avg case value"
+    ],
+    "goals": [
+      "Consistent lead flow",
+      "Higher-value cases",
+      "Community authority"
+    ],
+    "tone": "empathetic, trust-building, community-focused"
+  },
+  {
+    "id": "criminal-defense",
+    "name": "Criminal Defense Solo",
+    "title": "Solo Criminal Defense Attorney",
+    "firm_size": "1-3 attorneys",
+    "budget": "$1K-$8K/mo",
+    "pain_points": [
+      "Urgent need for leads",
+      "Reputation management",
+      "Public defender competition"
+    ],
+    "goals": [
+      "24/7 lead capture",
+      "Fast intake",
+      "DUI niche dominance"
+    ],
+    "tone": "urgent, direct, no-BS"
+  },
+  {
+    "id": "estate-planning",
+    "name": "Estate Planning Firm",
+    "title": "Estate Planning Attorney",
+    "firm_size": "1-5 attorneys",
+    "budget": "$2K-$8K/mo",
+    "pain_points": [
+      "Long sales cycle",
+      "DIY legal service competition",
+      "Difficulty showing urgency"
+    ],
+    "goals": [
+      "Educational trust content",
+      "Seminar attendance",
+      "Referral growth"
+    ],
+    "tone": "educational, authoritative, patient"
+  },
+  {
+    "id": "multi-practice",
+    "name": "Multi-Practice Firm",
+    "title": "Managing Partner",
+    "firm_size": "5-30 attorneys",
+    "budget": "$10K-$50K/mo",
+    "pain_points": [
+      "Unified brand across practices",
+      "Attribution across campaigns",
+      "Partner buy-in"
+    ],
+    "goals": [
+      "Practice area-specific leads",
+      "Centralized dashboard",
+      "Scalable growth"
+    ],
+    "tone": "strategic, data-heavy, executive-level"
+  }
+]

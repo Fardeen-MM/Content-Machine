@@ -1533,6 +1533,10 @@ const state = {
   flywheelData: null,
   velocityData: null,
   audienceSegments: null,
+  // Batch 56: Content DNA + Topic Clusters + Voice Profiles
+  contentDna: null,
+  topicClusters: null,
+  voiceProfiles: [],
 };
 
 // --- API Calls ---
@@ -1558,7 +1562,7 @@ async function loadData() {
   state.loading = true;
   render();
   try {
-    const [content, triggers, stats, calendar, monthCal, settings, memory, performance, perfAnalytics, meetings, meetingStats, clients, allActions, chatMessages, healthData, inspirations, pestering, pesteringStages, insights, deals, published, series, predictions, playbooks, ctaLibrary, trending, funnel, publishTracker, leadMagnets, contentHealth, scheduleOptimize, templates, dmSequences, hooks, pillarPlan, contentLeads, autopilot, scheduleQueue, engagementDashboard, contentBriefs, workflowPipeline, personas, calendarWeek, benchmarkReport, contentIdeas, socialProof, roiReport, audienceGrowth, contentThemes, distributionPlans, dmPipelines, competitorsTracked, dripCampaigns, autoResponses, expiringContent, amplifications, leadFunnels, calendarInsights, weeklyDigest, splitTests, workflowRules, youtubePipelines, carousels, contentMatrix, ctaStrategy, seriesTemplates, contentBank, engagementPlaybook, atomizations, platformRules, emailSequences, weeklyContentPlan, repurposeChains, lmFunnels, perfReport, contentPillars, compAnalyses, nurtureCampaigns, authorityPlan, flywheelData, velocityData, audienceSegments] = await Promise.all([
+    const [content, triggers, stats, calendar, monthCal, settings, memory, performance, perfAnalytics, meetings, meetingStats, clients, allActions, chatMessages, healthData, inspirations, pestering, pesteringStages, insights, deals, published, series, predictions, playbooks, ctaLibrary, trending, funnel, publishTracker, leadMagnets, contentHealth, scheduleOptimize, templates, dmSequences, hooks, pillarPlan, contentLeads, autopilot, scheduleQueue, engagementDashboard, contentBriefs, workflowPipeline, personas, calendarWeek, benchmarkReport, contentIdeas, socialProof, roiReport, audienceGrowth, contentThemes, distributionPlans, dmPipelines, competitorsTracked, dripCampaigns, autoResponses, expiringContent, amplifications, leadFunnels, calendarInsights, weeklyDigest, splitTests, workflowRules, youtubePipelines, carousels, contentMatrix, ctaStrategy, seriesTemplates, contentBank, engagementPlaybook, atomizations, platformRules, emailSequences, weeklyContentPlan, repurposeChains, lmFunnels, perfReport, contentPillars, compAnalyses, nurtureCampaigns, authorityPlan, flywheelData, velocityData, audienceSegments, contentDna, topicClusters, voiceProfiles] = await Promise.all([
       api('/api/content'),
       api('/api/triggers'),
       api('/api/stats'),
@@ -1640,7 +1644,10 @@ async function loadData() {
       api('/api/authority-plan').catch(() => null),
       api('/api/content-flywheel', { method: 'POST' }).catch(() => null),
       api('/api/content-velocity').catch(() => null),
-      api('/api/audience-segments').catch(() => null)
+      api('/api/audience-segments').catch(() => null),
+      api('/api/content-dna').catch(() => null),
+      api('/api/topic-clusters').catch(() => null),
+      api('/api/voice-profiles').catch(() => [])
     ]);
     state.content = content;
     state.triggers = triggers;
@@ -1724,6 +1731,9 @@ async function loadData() {
     state.flywheelData = flywheelData;
     state.velocityData = velocityData;
     state.audienceSegments = audienceSegments;
+    state.contentDna = contentDna;
+    state.topicClusters = topicClusters;
+    state.voiceProfiles = voiceProfiles;
   } catch (err) {
     console.error('Failed to load data:', err);
     toast('Failed to load data', 'error');
@@ -3085,6 +3095,32 @@ function renderDashboardPage() {
                 } catch (err) { toast('Batch generate failed: ' + err.message, 'error'); }
               }
             }, 'Batch 5'),
+            h('button', {
+              className: 'btn btn-sm',
+              style: { background: '#6366f1', color: 'white', border: 'none' },
+              onclick: async () => {
+                toast('Analyzing content DNA...', 'info');
+                try {
+                  const res = await api('/api/content-dna', { method: 'POST' });
+                  state.contentDna = res;
+                  toast(`DNA extracted! Formula: "${(res.formula || '').slice(0, 50)}..."`, 'success');
+                  render();
+                } catch (err) { toast('DNA analysis failed: ' + err.message, 'error'); }
+              }
+            }, 'DNA'),
+            h('button', {
+              className: 'btn btn-sm',
+              style: { background: '#0d9488', color: 'white', border: 'none' },
+              onclick: async () => {
+                toast('Generating topic clusters...', 'info');
+                try {
+                  const res = await api('/api/topic-clusters', { method: 'POST' });
+                  state.topicClusters = res;
+                  toast(`${res.clusters?.length || 0} topic clusters created!`, 'success');
+                  render();
+                } catch (err) { toast('Clusters failed: ' + err.message, 'error'); }
+              }
+            }, 'Clusters'),
             h('button', { className: 'btn btn-ghost btn-sm', onclick: () => { state.page = 'content'; render(); } }, 'View Content')
           )
         ),
@@ -3689,6 +3725,42 @@ function renderDashboardPage() {
             ),
             h('span', { style: { fontSize: '9px', padding: '2px 6px', background: '#eff6ff', color: '#2563eb', borderRadius: '8px', fontWeight: '600' } }, s.estimated_size || '?'),
             h('span', { style: { fontSize: '9px', padding: '2px 6px', background: '#f0fdf4', color: '#059669', borderRadius: '8px', fontWeight: '600' } }, s.messaging_tone || 'direct')
+          )
+        )
+      )
+    ) : null,
+
+    // Content DNA
+    state.contentDna?.formula ? h('div', { style: { marginBottom: '20px' } },
+      h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)', marginBottom: '8px' } }, 'CONTENT DNA'),
+      h('div', { style: { padding: '10px 14px', background: 'linear-gradient(135deg, #faf5ff, #eff6ff)', borderRadius: 'var(--radius-sm)', border: '1px solid #c7d2fe' } },
+        h('div', { style: { fontSize: '11px', fontWeight: '700', color: '#6366f1', marginBottom: '6px' } }, 'OUR FORMULA'),
+        h('div', { style: { fontSize: '12px', color: 'var(--navy)', fontStyle: 'italic', marginBottom: '8px' } }, state.contentDna.formula),
+        state.contentDna.differentiators ? h('div', { style: { marginTop: '6px' } },
+          h('div', { style: { fontSize: '10px', fontWeight: '700', color: '#059669', marginBottom: '3px' } }, 'DIFFERENTIATORS'),
+          ...(state.contentDna.differentiators || []).slice(0, 3).map(d =>
+            h('div', { style: { fontSize: '10px', color: 'var(--gray-600)', paddingLeft: '6px', borderLeft: '2px solid #059669', marginBottom: '2px' } }, d)
+          )
+        ) : null,
+        state.contentDna.voice_patterns?.signature_phrases ? h('div', { style: { marginTop: '6px', display: 'flex', gap: '4px', flexWrap: 'wrap' } },
+          ...state.contentDna.voice_patterns.signature_phrases.slice(0, 5).map(p =>
+            h('span', { style: { fontSize: '9px', padding: '2px 6px', background: '#6366f120', color: '#6366f1', borderRadius: '8px', fontWeight: '600' } }, `"${p}"`)
+          )
+        ) : null
+      )
+    ) : null,
+
+    // Topic Clusters
+    state.topicClusters?.clusters ? h('div', { style: { marginBottom: '20px' } },
+      h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)', marginBottom: '8px' } }, `TOPIC CLUSTERS (${state.topicClusters.clusters.length})`),
+      h('div', { style: { display: 'grid', gap: '4px' } },
+        ...state.topicClusters.clusters.map(c =>
+          h('div', { style: { padding: '8px 12px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)' } },
+            h('div', { style: { fontSize: '11px', fontWeight: '600', color: 'var(--navy)' } }, c.pillar_topic),
+            h('div', { style: { display: 'flex', gap: '4px', marginTop: '4px' } },
+              h('span', { style: { fontSize: '9px', padding: '2px 6px', background: '#eff6ff', color: '#2563eb', borderRadius: '8px', fontWeight: '600' } }, c.pillar_keyword),
+              h('span', { style: { fontSize: '9px', padding: '2px 6px', background: '#f0fdf4', color: '#059669', borderRadius: '8px', fontWeight: '600' } }, `${c.supporting_topics?.length || 0} subtopics`)
+            )
           )
         )
       )
@@ -5313,6 +5385,34 @@ function renderFormatContent(content, formatKey, fmt) {
               } catch (err) { toast('Atomize failed: ' + err.message, 'error'); }
             }
           }, 'Atomize')
+        : null,
+      // Post Mortem button (for published/approved content)
+      typeof text === 'string' && ['approved', 'published'].includes(content.status) && ['linkedin', 'x_single'].includes(formatKey)
+        ? h('button', {
+            className: 'btn btn-outline btn-sm',
+            style: { color: '#6b7280', borderColor: '#6b7280' },
+            onclick: async () => {
+              toast('Running post mortem...', 'info');
+              try {
+                const res = await api(`/api/content/${content.id}/post-mortem`, { method: 'POST', body: { format: formatKey } });
+                toast(`${res.performance_rating}: ${res.lessons_learned?.slice(0, 60)}`, 'success');
+              } catch (err) { toast('Post mortem failed: ' + err.message, 'error'); }
+            }
+          }, 'Mortem')
+        : null,
+      // Cross-Platform button (for any format with 100+ chars)
+      typeof text === 'string' && text.length >= 100
+        ? h('button', {
+            className: 'btn btn-outline btn-sm',
+            style: { color: '#0d9488', borderColor: '#0d9488' },
+            onclick: async () => {
+              toast('Adapting to 5 platforms...', 'info');
+              try {
+                const res = await api(`/api/content/${content.id}/cross-platform`, { method: 'POST' });
+                toast('Adapted for LinkedIn, Twitter, Email, YouTube!', 'success');
+              } catch (err) { toast('Cross-platform failed: ' + err.message, 'error'); }
+            }
+          }, 'X-Plat')
         : null,
       // Grade button (for any text content)
       typeof text === 'string' && ['linkedin', 'x_single', 'x_thread'].includes(formatKey)

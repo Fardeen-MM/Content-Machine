@@ -10915,6 +10915,254 @@ Write the post directly. No JSON wrapper needed.`;
       });
     }
 
+    // --- Batch 56: Content DNA + Topic Clusters + Cross-Platform Sync + Post Mortem + Voice Cloner ---
+
+    // POST /api/content-dna — analyze your best performing content to find patterns
+    if (pathname === '/api/content-dna' && method === 'POST') {
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      const { callClaude, parseJsonResponse, SONNET } = require('./lib/claude');
+      const content = readJSON('content.json', []);
+
+      // Get approved/published content as "best performers"
+      const best = content.filter(c => c.status === 'approved' || c.status === 'published');
+      if (best.length < 3) return json(res, { error: 'Need at least 3 approved/published pieces to analyze DNA' }, 400);
+
+      const samples = best.slice(0, 10).map(c => {
+        const text = Object.values(c.formats || {}).map(f => typeof f?.content === 'string' ? f.content : '').sort((a, b) => b.length - a.length)[0] || '';
+        return `Title: ${c.trigger_title}\nContent: ${text.slice(0, 500)}\n---`;
+      }).join('\n');
+
+      const prompt = `Analyze these top-performing content pieces and extract the "Content DNA" — the patterns, structures, and elements that make them work.
+
+${samples}
+
+Find the common threads across all pieces. This becomes our content playbook.
+
+Return JSON (no markdown fences):
+{
+  "voice_patterns": {
+    "tone": "how we sound",
+    "sentence_length": "typical pattern",
+    "vocabulary_level": "simple|moderate|technical",
+    "signature_phrases": ["phrases we use often"],
+    "forbidden_words": ["words/phrases to avoid"]
+  },
+  "structural_patterns": {
+    "typical_hook": "how our hooks work",
+    "body_structure": "how we organize content",
+    "typical_cta": "how we close",
+    "avg_length": "typical post length"
+  },
+  "topic_patterns": {
+    "themes": ["recurring themes"],
+    "angles": ["how we approach topics"],
+    "data_usage": "how we use numbers/stats"
+  },
+  "differentiators": ["what makes our content unique vs competitors"],
+  "formula": "our content formula in one sentence",
+  "replication_guide": "step-by-step how to write like this"
+}`;
+
+      try {
+        const text = await callClaude({ model: SONNET, prompt, maxTokens: 4000 });
+        const parsed = parseJsonResponse(text);
+        if (!parsed) return json(res, { error: 'Failed to analyze DNA', raw_preview: (text || '').slice(0, 300) }, 500);
+
+        writeJSON('content-dna.json', { ...parsed, pieces_analyzed: best.length, generated_at: now() });
+        return json(res, { ok: true, ...parsed });
+      } catch (err) {
+        return json(res, { error: err.message }, 500);
+      }
+    }
+
+    // GET /api/content-dna — get content DNA analysis
+    if (pathname === '/api/content-dna' && method === 'GET') {
+      return json(res, readJSON('content-dna.json', null));
+    }
+
+    // POST /api/topic-clusters — generate SEO-optimized topic clusters
+    if (pathname === '/api/topic-clusters' && method === 'POST') {
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+      const { BRAND_SYSTEM_PROMPT } = require('./generator/content-writer');
+      const body = await parseBody(req);
+
+      const prompt = `Create 5 topic clusters for Mortar Metrics' content strategy. Each cluster should have a pillar page + supporting content.
+
+Focus area: ${body.focus || 'Law firm marketing, Google Ads, intake optimization'}
+
+Return JSON (no markdown fences):
+{
+  "clusters": [
+    {
+      "pillar_topic": "main topic (broad, evergreen)",
+      "pillar_keyword": "target SEO keyword",
+      "supporting_topics": [
+        { "topic": "specific subtopic", "keyword": "target keyword", "format": "blog|video|linkedin|carousel", "search_intent": "informational|commercial|navigational" }
+      ],
+      "internal_linking_strategy": "how pieces connect",
+      "content_gap": "what competitors miss in this cluster"
+    }
+  ]
+}`;
+
+      try {
+        const text = await callClaude({ model: HAIKU, system: BRAND_SYSTEM_PROMPT, prompt, maxTokens: 4000 });
+        const parsed = parseJsonResponse(text);
+        if (!parsed) return json(res, { error: 'Failed to generate clusters', raw_preview: (text || '').slice(0, 200) }, 500);
+
+        writeJSON('topic-clusters.json', { ...parsed, generated_at: now() });
+        return json(res, { ok: true, ...parsed });
+      } catch (err) {
+        return json(res, { error: err.message }, 500);
+      }
+    }
+
+    // GET /api/topic-clusters — get topic clusters
+    if (pathname === '/api/topic-clusters' && method === 'GET') {
+      return json(res, readJSON('topic-clusters.json', null));
+    }
+
+    // POST /api/content/:id/post-mortem — analyze why a piece performed well or poorly
+    const postMortemMatch = pathname.match(/^\/api\/content\/([a-f0-9]+)\/post-mortem$/);
+    if (postMortemMatch && method === 'POST') {
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      const id = postMortemMatch[1];
+      const allContent = readJSON('content.json', []);
+      const item = allContent.find(c => c.id === id);
+      if (!item) return json(res, { error: 'Content not found' }, 404);
+
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+      const body = await parseBody(req);
+      const formatKey = body.format || 'linkedin';
+      const text = typeof item.formats?.[formatKey]?.content === 'string' ? item.formats[formatKey].content : '';
+      const metrics = body.metrics || {};
+
+      const prompt = `Perform a post-mortem analysis on this ${formatKey} content.
+
+Content: ${text.slice(0, 2000)}
+Performance metrics: ${JSON.stringify(metrics)}
+
+Assume this was ${body.outcome || 'average'} performing. Analyze why and give specific improvement advice.
+
+Return JSON (no markdown fences):
+{
+  "performance_rating": "great|good|average|poor",
+  "what_worked": ["element that helped performance"],
+  "what_didnt": ["element that hurt performance"],
+  "hook_analysis": "was the hook strong enough?",
+  "timing_factor": "was timing a factor?",
+  "audience_fit": "did it match the right audience?",
+  "improvements": [
+    { "change": "specific change", "expected_impact": "high|medium|low", "reasoning": "why this helps" }
+  ],
+  "rewrite_hook": "improved version of the hook",
+  "lessons_learned": "key takeaway for future content"
+}`;
+
+      try {
+        const text2 = await callClaude({ model: HAIKU, prompt, maxTokens: 2000 });
+        const parsed = parseJsonResponse(text2);
+        if (!parsed) return json(res, { error: 'Failed to analyze', raw_preview: (text2 || '').slice(0, 200) }, 500);
+        return json(res, { ok: true, content_id: id, format: formatKey, ...parsed });
+      } catch (err) {
+        return json(res, { error: err.message }, 500);
+      }
+    }
+
+    // POST /api/voice-clone — analyze writing samples to create a voice profile
+    if (pathname === '/api/voice-clone' && method === 'POST') {
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      const { callClaude, parseJsonResponse, SONNET } = require('./lib/claude');
+      const body = await parseBody(req);
+
+      const samples = body.samples || [];
+      if (samples.length < 2) return json(res, { error: 'Need at least 2 writing samples' }, 400);
+
+      const prompt = `Analyze these writing samples and create a detailed voice profile that can be used to generate content in this exact voice.
+
+Samples:
+${samples.map((s, i) => `--- Sample ${i + 1} ---\n${s.slice(0, 1000)}`).join('\n\n')}
+
+Return JSON (no markdown fences):
+{
+  "voice_profile": {
+    "name": "${body.name || 'Custom Voice'}",
+    "personality": "overall personality description",
+    "tone_spectrum": { "formal_casual": "1-10 scale", "serious_humorous": "1-10", "technical_simple": "1-10", "empathetic_direct": "1-10" },
+    "sentence_patterns": ["typical sentence structures used"],
+    "vocabulary": {
+      "favorite_words": ["words used frequently"],
+      "avoided_words": ["words never used"],
+      "jargon_level": "none|light|moderate|heavy"
+    },
+    "rhetorical_devices": ["devices used (metaphors, analogies, lists, etc.)"],
+    "opening_patterns": ["how they typically start content"],
+    "closing_patterns": ["how they typically end"],
+    "punctuation_style": "description of punctuation habits",
+    "paragraph_length": "typical paragraph length",
+    "system_prompt": "a system prompt that would make an AI write in this voice"
+  }
+}`;
+
+      try {
+        const text = await callClaude({ model: SONNET, prompt, maxTokens: 3000 });
+        const parsed = parseJsonResponse(text);
+        if (!parsed) return json(res, { error: 'Failed to clone voice', raw_preview: (text || '').slice(0, 300) }, 500);
+
+        const voices = readJSON('voice-profiles.json', []);
+        const profile = { id: generateId(), ...parsed.voice_profile || parsed, samples_count: samples.length, created_at: now() };
+        voices.push(profile);
+        writeJSON('voice-profiles.json', voices);
+        return json(res, { ok: true, profile });
+      } catch (err) {
+        return json(res, { error: err.message }, 500);
+      }
+    }
+
+    // GET /api/voice-profiles — list voice profiles
+    if (pathname === '/api/voice-profiles' && method === 'GET') {
+      return json(res, readJSON('voice-profiles.json', []));
+    }
+
+    // POST /api/content/:id/cross-platform — adapt content for multiple platforms simultaneously
+    const crossPlatMatch = pathname.match(/^\/api\/content\/([a-f0-9]+)\/cross-platform$/);
+    if (crossPlatMatch && method === 'POST') {
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      const id = crossPlatMatch[1];
+      const allContent = readJSON('content.json', []);
+      const item = allContent.find(c => c.id === id);
+      if (!item) return json(res, { error: 'Content not found' }, 404);
+
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+      const { BRAND_SYSTEM_PROMPT } = require('./generator/content-writer');
+      const source = Object.values(item.formats || {}).map(f => typeof f?.content === 'string' ? f.content : '').sort((a, b) => b.length - a.length)[0] || '';
+      if (source.length < 100) return json(res, { error: 'Need at least 100 chars to adapt' }, 400);
+
+      const prompt = `Adapt this content for 5 platforms simultaneously. Each version should feel NATIVE to the platform.
+
+Source: ${source.slice(0, 2000)}
+Topic: ${item.trigger_title}
+
+Return JSON (no markdown fences):
+{
+  "linkedin": { "content": "professional, insight-led, 1200-1500 chars", "posting_tip": "when and how to post" },
+  "twitter": { "content": "punchy, under 280 chars", "posting_tip": "..." },
+  "email_subject": "compelling subject line",
+  "email_body": "200 word personal email version",
+  "youtube_community": "YouTube community tab post (under 500 chars, asks for engagement)"
+}`;
+
+      try {
+        const text = await callClaude({ model: HAIKU, system: BRAND_SYSTEM_PROMPT, prompt, maxTokens: 4000 });
+        const parsed = parseJsonResponse(text);
+        if (!parsed) return json(res, { error: 'Failed to adapt', raw_preview: (text || '').slice(0, 200) }, 500);
+        return json(res, { ok: true, content_id: id, platforms: parsed });
+      } catch (err) {
+        return json(res, { error: err.message }, 500);
+      }
+    }
+
     // --- Static file serving ---
 
     // Serve dashboard

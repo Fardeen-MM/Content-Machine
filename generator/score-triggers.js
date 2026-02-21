@@ -60,10 +60,79 @@ const HIGH_VALUE_TERMS = [
   'content strategy', 'video marketing', 'reputation management'
 ];
 
-function scoreTrigger(trigger) {
+// Hook strength scoring — information gap, specific numbers, contrarian framing
+function scoreHook(text) {
+  let score = 0;
+  const firstLine = (text || '').split('\n')[0] || '';
+  const firstLineLower = firstLine.toLowerCase();
+  // Specific number in hook (+3)
+  if (/\$[\d,]+|\d+%|\d+x|\d+\/month/.test(firstLine)) score += 3;
+  // Information gap — implies more to learn (+2)
+  if (/but|however|except|the problem|what nobody|the truth|turns out|here'?s (what|why|how)/i.test(firstLineLower)) score += 2;
+  // Contrarian framing (+2)
+  if (/wrong|myth|stop|don'?t|isn'?t|won'?t work|overrated|waste|broken|dead/i.test(firstLineLower)) score += 2;
+  // Short and punchy hook under 100 chars (+1)
+  if (firstLine.length > 10 && firstLine.length < 100) score += 1;
+  return Math.min(score, 8);
+}
+
+// Specificity score — concrete numbers, dollar amounts, named tools
+function scoreSpecificity(text) {
+  let score = 0;
+  const numbers = (text.match(/\$[\d,]+|\d+%|\d+x|\d+ (cases|clients|leads|firms|calls|months?|weeks?)/g) || []).length;
+  score += Math.min(numbers, 4);
+  // Named tools show practitioner knowledge
+  const tools = ['CallRail', 'Clio', 'Google Ads', 'Lawmatics', 'HubSpot', 'PracticePanther', 'Salesforce', 'LSA', 'Google Business', 'Smith.ai', 'Ruby', 'Filevine', 'Litify'];
+  for (const tool of tools) {
+    if (text.includes(tool)) { score += 1; break; } // +1 for any named tool
+  }
+  return Math.min(score, 5);
+}
+
+// Trending velocity — same topic appearing across 3+ sources in 48h
+let _velocityCache = null;
+let _velocityCachedAt = 0;
+function scoreTrendingVelocity(trigger, allTriggers) {
+  // Cache trigger titles for 5 minutes
+  if (!_velocityCache || Date.now() - _velocityCachedAt > 5 * 60 * 1000) {
+    const recent = (allTriggers || []).filter(t => daysAgo(t.captured_at) <= 2);
+    _velocityCache = recent.map(t => ({
+      id: t.id,
+      words: new Set((t.title || '').toLowerCase().split(/\s+/).filter(w => w.length > 4))
+    }));
+    _velocityCachedAt = Date.now();
+  }
+  const titleWords = new Set((trigger.title || '').toLowerCase().split(/\s+/).filter(w => w.length > 4));
+  if (titleWords.size === 0) return 0;
+  let matches = 0;
+  for (const cached of _velocityCache) {
+    if (cached.id === trigger.id) continue;
+    for (const w of titleWords) {
+      if (cached.words.has(w)) { matches++; break; }
+    }
+  }
+  return Math.min(matches, 5); // 0-5 points
+}
+
+// Emotional valence — frustration/anger/surprise signals outperform neutral 2-3x
+function scoreEmotionalValence(text) {
+  const lower = (text || '').toLowerCase();
+  let score = 0;
+  // Frustration/anger signals
+  if (/wasted|bleeding|losing|killing|crushing|destroying|failing|broken|terrible|awful|insane/i.test(lower)) score += 2;
+  // Surprise/shock signals
+  if (/shocking|surprising|unexpected|unbelievable|mind.?blowing|jaw.?dropping|nobody.*knows|hidden/i.test(lower)) score += 2;
+  // Urgency signals
+  if (/right now|immediately|urgent|before it'?s too late|running out|deadline/i.test(lower)) score += 1;
+  return Math.min(score, 4);
+}
+
+function scoreTrigger(trigger, allTriggers) {
   let score = 0;
   const text = `${trigger.title || ''} ${trigger.raw_content || ''}`;
   const textLower = text.toLowerCase();
+
+  // --- Core signals ---
 
   // Specific numbers (+3)
   if (/\$[\d,]+|\d+%|\d+x|\d+ cases|\d+ clients|\d+ leads/.test(text)) {
@@ -92,6 +161,24 @@ function scoreTrigger(trigger) {
   // General keyword density (+1 per keyword, max 4)
   score += Math.min(keywordScore(text), 4);
 
+  // --- Enhanced signals (research-backed) ---
+
+  // Hook strength (0-8 points, weighted at 25%)
+  score += scoreHook(trigger.title || trigger.raw_content || '');
+
+  // Specificity score (0-5 points)
+  score += scoreSpecificity(text);
+
+  // Trending velocity (0-5 points) — same topic across multiple sources
+  if (allTriggers) {
+    score += scoreTrendingVelocity(trigger, allTriggers);
+  }
+
+  // Emotional valence (0-4 points)
+  score += scoreEmotionalValence(text);
+
+  // --- Source signals ---
+
   // Reddit engagement (+2 if >20 upvotes or >10 comments)
   if (trigger.source === 'reddit' && trigger.engagement) {
     if ((trigger.engagement.upvotes || 0) > 20) score += 2;
@@ -108,6 +195,13 @@ function scoreTrigger(trigger) {
     score += 1;
   }
 
+  // Competitor content is inherently more strategic (+2)
+  if (trigger.source === 'competitor') {
+    score += 2;
+  }
+
+  // --- Temporal signals ---
+
   // Recency bonus
   const age = daysAgo(trigger.captured_at);
   if (age <= 1) score += 2;
@@ -123,9 +217,6 @@ function scoreTrigger(trigger) {
   }
 
   // Freshness decay — old triggers lose relevance
-  // After 7 days: 0.95^7 = 0.70 (30% penalty)
-  // After 14 days: 0.95^14 = 0.49 (51% penalty)
-  // After 30 days: 0.95^30 = 0.21 (79% penalty)
   if (age > 3) {
     score = Math.round(score * Math.pow(0.95, age - 3));
   }
@@ -140,10 +231,19 @@ function scoreTrigger(trigger) {
   return Math.max(0, score);
 }
 
+// Quality tier for auto-generation decisions
+function getQualityTier(score) {
+  if (score >= 30) return { tier: 'exceptional', action: 'auto-generate all 16 formats', formats: 'all' };
+  if (score >= 22) return { tier: 'high', action: 'generate top 5 social + blog', formats: ['linkedin', 'x_single', 'x_thread', 'carousel', 'short_video', 'blog'] };
+  if (score >= 15) return { tier: 'good', action: 'generate top 3 social', formats: ['linkedin', 'x_single', 'x_thread'] };
+  if (score >= 10) return { tier: 'moderate', action: 'generate LinkedIn only', formats: ['linkedin'] };
+  return { tier: 'low', action: 'skip or manual review', formats: [] };
+}
+
 function scoreAndSort(triggers) {
   return triggers
     .filter(t => t.status === 'pending')
-    .map(t => ({ ...t, score: scoreTrigger(t) }))
+    .map(t => ({ ...t, score: scoreTrigger(t, triggers) }))
     .sort((a, b) => b.score - a.score);
 }
 
@@ -152,4 +252,4 @@ function selectTopTriggers(triggers, count = 10) {
   return scored.slice(0, count);
 }
 
-module.exports = { scoreTrigger, scoreAndSort, selectTopTriggers, getSourceReliability };
+module.exports = { scoreTrigger, scoreAndSort, selectTopTriggers, getSourceReliability, getQualityTier, scoreHook, scoreSpecificity, scoreEmotionalValence };

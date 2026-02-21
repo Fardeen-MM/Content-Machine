@@ -3464,6 +3464,21 @@ function renderFormatContent(content, formatKey, fmt) {
             )
           : null
       ) : null,
+      // Atomize button (for pillar formats: blog, newsletter, case_study, youtube_script)
+      ['blog', 'newsletter', 'case_study', 'youtube_script'].includes(formatKey) && typeof text === 'string' && text.length > 500
+        ? h('button', {
+            className: 'btn btn-outline btn-sm',
+            style: { color: 'var(--purple)', borderColor: 'var(--purple)' },
+            onclick: async () => {
+              toast('Atomizing content...', 'info');
+              try {
+                const res = await api(`/api/content/${content.id}/atomize`, { method: 'POST' });
+                toast(`Extracted ${res.atoms.length} atoms from ${res.source_format}`, 'success');
+                loadData();
+              } catch (err) { toast('Atomize failed: ' + err.message, 'error'); }
+            }
+          }, 'Atomize')
+        : null,
       // Quality flags
       content.quality_score?.flags?.length > 0 && (formatKey === 'linkedin' || formatKey === 'x_single')
         ? h('span', {

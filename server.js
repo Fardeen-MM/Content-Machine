@@ -3622,6 +3622,243 @@ Return JSON array (no fences):
       }
     }
 
+    // --- Content Atomizer ---
+
+    // POST /api/content/:id/atomize — break a pillar piece into 10-20 micro-content atoms
+    const atomizeMatch = pathname.match(/^\/api\/content\/([a-f0-9]+)\/atomize$/);
+    if (atomizeMatch && method === 'POST') {
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      const content = readJSON('content.json');
+      const item = content.find(c => c.id === atomizeMatch[1]);
+      if (!item) return json(res, { error: 'Not found' }, 404);
+
+      // Find the pillar content (blog, newsletter, case_study, youtube_script)
+      const pillarFormats = ['blog', 'newsletter', 'case_study', 'youtube_script'];
+      let pillarContent = null;
+      let pillarFormat = null;
+      for (const fmt of pillarFormats) {
+        if (item.formats?.[fmt]?.content) {
+          pillarContent = item.formats[fmt].content;
+          pillarFormat = fmt;
+          break;
+        }
+      }
+      // Fall back to LinkedIn if no pillar content
+      if (!pillarContent && item.formats?.linkedin?.content) {
+        pillarContent = item.formats.linkedin.content;
+        pillarFormat = 'linkedin';
+      }
+      if (!pillarContent) return json(res, { error: 'No pillar content to atomize' }, 400);
+
+      try {
+        const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+        const { buildSystemPromptWithMemory } = require('./generator/content-writer');
+        const systemPrompt = buildSystemPromptWithMemory();
+
+        const prompt = `Atomize this ${pillarFormat} content into micro-content pieces. Extract every reusable element.
+
+PILLAR CONTENT:
+${(typeof pillarContent === 'string' ? pillarContent : JSON.stringify(pillarContent)).slice(0, 6000)}
+
+Return a JSON object (raw JSON, no markdown fences):
+{
+  "atoms": [
+    {
+      "type": "stat",
+      "content": "The exact statistic or number with its context (e.g., '$4,183/month wasted on unanswered calls')",
+      "format_suggestions": ["stat_graphic", "x_single", "quote_cards"]
+    },
+    {
+      "type": "framework_step",
+      "content": "One actionable step from any framework mentioned (e.g., 'Answer calls in under 10 seconds — not 30')",
+      "format_suggestions": ["carousel", "listicle"]
+    },
+    {
+      "type": "hook",
+      "content": "A standalone opening line that creates curiosity (e.g., 'A PI firm installed call tracking. The data was brutal.')",
+      "format_suggestions": ["linkedin", "x_single", "short_video"]
+    },
+    {
+      "type": "quote",
+      "content": "A punchy, quotable one-liner (e.g., 'Speed to lead isn't a buzzword — it's the difference between a $4K month and a $40K month')",
+      "format_suggestions": ["quote_cards", "x_single"]
+    },
+    {
+      "type": "before_after",
+      "content": "A before/after transformation pair",
+      "format_suggestions": ["before_after", "carousel"]
+    },
+    {
+      "type": "hot_take",
+      "content": "A contrarian or provocative opinion from the content",
+      "format_suggestions": ["hot_take", "poll", "x_single"]
+    }
+  ],
+  "derivative_count": 15
+}
+
+Extract 8-15 atoms. Each must be self-contained and usable as standalone content.`;
+
+        const text = await callClaude({ model: HAIKU, system: systemPrompt, prompt, maxTokens: 3000 });
+        const parsed = parseJsonResponse(text);
+        if (!parsed?.atoms) return json(res, { error: 'Failed to parse atoms' }, 500);
+
+        // Store atoms on the content item
+        const idx = content.findIndex(c => c.id === atomizeMatch[1]);
+        content[idx].atoms = parsed.atoms;
+        content[idx].atomized_at = now();
+        content[idx].atomized_from = pillarFormat;
+        writeJSON('content.json', content);
+
+        return json(res, { ok: true, atoms: parsed.atoms, source_format: pillarFormat });
+      } catch (err) {
+        return json(res, { error: err.message }, 500);
+      }
+    }
+
+    // POST /api/content/:id/atoms/generate — generate content from a specific atom
+    const atomGenMatch = pathname.match(/^\/api\/content\/([a-f0-9]+)\/atoms\/generate$/);
+    if (atomGenMatch && method === 'POST') {
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      const body = await parseBody(req);
+      const atomIdx = body.atom_index;
+      const targetFormat = body.format;
+      if (atomIdx === undefined || !targetFormat) return json(res, { error: 'atom_index and format required' }, 400);
+
+      const content = readJSON('content.json');
+      const item = content.find(c => c.id === atomGenMatch[1]);
+      if (!item?.atoms?.[atomIdx]) return json(res, { error: 'Atom not found' }, 404);
+
+      try {
+        const { repurposeContent } = require('./lib/claude');
+        const { buildSystemPromptWithMemory } = require('./generator/content-writer');
+        const systemPrompt = buildSystemPromptWithMemory();
+        const atom = item.atoms[atomIdx];
+
+        const generated = await repurposeContent(atom.content, atom.type, targetFormat, systemPrompt);
+
+        // Create new content item from atom
+        const newId = generateId();
+        const newItem = {
+          id: newId,
+          trigger_id: item.trigger_id,
+          trigger_title: `[Atom] ${(typeof atom.content === 'string' ? atom.content : '').slice(0, 60)}`,
+          trigger_source: 'atomizer',
+          trigger_category: item.trigger_category,
+          parent_id: item.id,
+          atom_source: { index: atomIdx, type: atom.type },
+          formats: { [targetFormat]: { content: generated, status: 'review', edited: false } },
+          status: 'review',
+          created_at: now()
+        };
+        content.push(newItem);
+        writeJSON('content.json', content);
+
+        return json(res, { ok: true, content_id: newId });
+      } catch (err) {
+        return json(res, { error: err.message }, 500);
+      }
+    }
+
+    // --- Content Recycle Engine ---
+
+    // GET /api/recycle-candidates — find content eligible for recycling (30-90 days old, high performance)
+    if (pathname === '/api/recycle-candidates' && method === 'GET') {
+      const content = readJSON('content.json');
+      const published = readJSON('published.json');
+      const perfData = readJSON('performance.json');
+      const nowMs = Date.now();
+
+      const candidates = [];
+      for (const item of content) {
+        if (item.status === 'rejected' || item.status === 'archived') continue;
+        const createdMs = new Date(item.created_at || 0).getTime();
+        const ageInDays = Math.floor((nowMs - createdMs) / (24 * 60 * 60 * 1000));
+
+        // Only recycle content 30-180 days old
+        if (ageInDays < 30 || ageInDays > 180) continue;
+
+        // Check if it was published and had engagement
+        const pubEntries = published.filter(p => p.content_id === item.id);
+        const perf = perfData.filter(p => p.content_id === item.id);
+        const totalEngagement = perf.reduce((s, p) => s + (p.engagement || 0) + (p.clicks || 0) + (p.leads || 0), 0);
+
+        // Check if already approved (quality indicator)
+        const hasApproved = Object.values(item.formats || {}).some(f => f.status === 'approved' || f.status === 'published');
+
+        if (hasApproved || pubEntries.length > 0 || totalEngagement > 0) {
+          candidates.push({
+            content_id: item.id,
+            title: item.trigger_title || 'Untitled',
+            age_days: ageInDays,
+            formats: Object.keys(item.formats || {}),
+            published_count: pubEntries.length,
+            total_engagement: totalEngagement,
+            quality_score: item.quality_score?.score || 0,
+            recycled: item.recycled_from ? true : false,
+            recycle_score: (totalEngagement * 2) + (item.quality_score?.score || 0) + (pubEntries.length * 5)
+          });
+        }
+      }
+
+      candidates.sort((a, b) => b.recycle_score - a.recycle_score);
+      return json(res, candidates.slice(0, 20));
+    }
+
+    // POST /api/content/:id/recycle — create a fresh version of old content
+    const recycleMatch = pathname.match(/^\/api\/content\/([a-f0-9]+)\/recycle$/);
+    if (recycleMatch && method === 'POST') {
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      const body = await parseBody(req);
+      const mode = body.mode || 'new-angle';
+
+      const content = readJSON('content.json');
+      const original = content.find(c => c.id === recycleMatch[1]);
+      if (!original) return json(res, { error: 'Not found' }, 404);
+
+      try {
+        const { remixContent } = require('./lib/claude');
+        const { buildSystemPromptWithMemory } = require('./generator/content-writer');
+        const systemPrompt = buildSystemPromptWithMemory();
+
+        // Find the best format to recycle from
+        const bestFormat = ['linkedin', 'blog', 'x_thread', 'newsletter', 'x_single']
+          .find(f => original.formats?.[f]?.content);
+        if (!bestFormat) return json(res, { error: 'No content to recycle' }, 400);
+
+        const originalContent = original.formats[bestFormat].content;
+        const remixed = await remixContent(originalContent, original.trigger_title, mode, systemPrompt);
+
+        // Create new content item
+        const newId = generateId();
+        const formats = {};
+        if (remixed.linkedin_post) formats.linkedin = { content: remixed.linkedin_post, status: 'review', edited: false };
+        if (remixed.x_single) formats.x_single = { content: remixed.x_single, status: 'review', edited: false };
+        if (remixed.x_thread) formats.x_thread = { content: remixed.x_thread, status: 'review', edited: false };
+        if (remixed.hot_take) formats.hot_take = { content: remixed.hot_take, status: 'review', edited: false };
+
+        const newItem = {
+          id: newId,
+          trigger_id: original.trigger_id,
+          trigger_title: `[Recycled] ${original.trigger_title}`,
+          trigger_source: 'recycle',
+          trigger_category: original.trigger_category,
+          recycled_from: original.id,
+          recycle_mode: mode,
+          recycle_angle: remixed.remix_angle || '',
+          formats,
+          status: 'review',
+          created_at: now()
+        };
+        content.push(newItem);
+        writeJSON('content.json', content);
+
+        return json(res, { ok: true, content_id: newId, angle: remixed.remix_angle });
+      } catch (err) {
+        return json(res, { error: err.message }, 500);
+      }
+    }
+
     // --- Content Series API ---
 
     // GET /api/series — list all content series

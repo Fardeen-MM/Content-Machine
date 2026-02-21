@@ -1520,6 +1520,10 @@ const state = {
   // Batch 52: Email Sequences + Weekly Plan + Profile Optimizer
   emailSequences: [],
   weeklyContentPlan: null,
+  // Batch 53: Repurpose Chains + Lead Magnet Funnels + Performance Report
+  repurposeChains: [],
+  lmFunnels: [],
+  perfReport: null,
 };
 
 // --- API Calls ---
@@ -1545,7 +1549,7 @@ async function loadData() {
   state.loading = true;
   render();
   try {
-    const [content, triggers, stats, calendar, monthCal, settings, memory, performance, perfAnalytics, meetings, meetingStats, clients, allActions, chatMessages, healthData, inspirations, pestering, pesteringStages, insights, deals, published, series, predictions, playbooks, ctaLibrary, trending, funnel, publishTracker, leadMagnets, contentHealth, scheduleOptimize, templates, dmSequences, hooks, pillarPlan, contentLeads, autopilot, scheduleQueue, engagementDashboard, contentBriefs, workflowPipeline, personas, calendarWeek, benchmarkReport, contentIdeas, socialProof, roiReport, audienceGrowth, contentThemes, distributionPlans, dmPipelines, competitorsTracked, dripCampaigns, autoResponses, expiringContent, amplifications, leadFunnels, calendarInsights, weeklyDigest, splitTests, workflowRules, youtubePipelines, carousels, contentMatrix, ctaStrategy, seriesTemplates, contentBank, engagementPlaybook, atomizations, platformRules, emailSequences, weeklyContentPlan] = await Promise.all([
+    const [content, triggers, stats, calendar, monthCal, settings, memory, performance, perfAnalytics, meetings, meetingStats, clients, allActions, chatMessages, healthData, inspirations, pestering, pesteringStages, insights, deals, published, series, predictions, playbooks, ctaLibrary, trending, funnel, publishTracker, leadMagnets, contentHealth, scheduleOptimize, templates, dmSequences, hooks, pillarPlan, contentLeads, autopilot, scheduleQueue, engagementDashboard, contentBriefs, workflowPipeline, personas, calendarWeek, benchmarkReport, contentIdeas, socialProof, roiReport, audienceGrowth, contentThemes, distributionPlans, dmPipelines, competitorsTracked, dripCampaigns, autoResponses, expiringContent, amplifications, leadFunnels, calendarInsights, weeklyDigest, splitTests, workflowRules, youtubePipelines, carousels, contentMatrix, ctaStrategy, seriesTemplates, contentBank, engagementPlaybook, atomizations, platformRules, emailSequences, weeklyContentPlan, repurposeChains, lmFunnels, perfReport] = await Promise.all([
       api('/api/content'),
       api('/api/triggers'),
       api('/api/stats'),
@@ -1617,7 +1621,10 @@ async function loadData() {
       api('/api/atomizations').catch(() => []),
       api('/api/platform-rules').catch(() => null),
       api('/api/email-sequences').catch(() => []),
-      api('/api/weekly-content-plan').catch(() => null)
+      api('/api/weekly-content-plan').catch(() => null),
+      api('/api/repurpose-chains').catch(() => []),
+      api('/api/lead-magnet-funnels').catch(() => []),
+      api('/api/content-performance-report').catch(() => null)
     ]);
     state.content = content;
     state.triggers = triggers;
@@ -1691,6 +1698,9 @@ async function loadData() {
     state.platformRules = platformRules;
     state.emailSequences = emailSequences;
     state.weeklyContentPlan = weeklyContentPlan;
+    state.repurposeChains = repurposeChains;
+    state.lmFunnels = lmFunnels;
+    state.perfReport = perfReport;
   } catch (err) {
     console.error('Failed to load data:', err);
     toast('Failed to load data', 'error');
@@ -2966,6 +2976,32 @@ function renderDashboardPage() {
                 } catch (err) { toast('Profile optimizer failed: ' + err.message, 'error'); }
               }
             }, 'Profile'),
+            h('button', {
+              className: 'btn btn-sm',
+              style: { background: '#dc2626', color: 'white', border: 'none' },
+              onclick: async () => {
+                toast('Creating lead magnet funnel...', 'info');
+                try {
+                  const res = await api('/api/lead-magnet-funnel', { method: 'POST', body: { topic: 'Google Ads audit for law firms', type: 'audit', audience: 'PI and family law firm owners spending $3K-$15K/month on ads' } });
+                  toast(`Funnel created: ${res.funnel?.funnel_name?.slice(0, 50)}`, 'success');
+                  loadData();
+                } catch (err) { toast('Funnel creation failed: ' + err.message, 'error'); }
+              }
+            }, 'Funnel'),
+            h('button', {
+              className: 'btn btn-sm',
+              style: { background: '#059669', color: 'white', border: 'none' },
+              onclick: async () => {
+                try {
+                  const res = await fetch(API + '/api/calendar/export', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ format: 'csv' }) });
+                  const blob = await res.blob();
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement('a'); a.href = url; a.download = 'content-calendar.csv'; a.click();
+                  URL.revokeObjectURL(url);
+                  toast('Calendar exported!', 'success');
+                } catch (err) { toast('Export failed: ' + err.message, 'error'); }
+              }
+            }, 'Export Cal'),
             h('button', { className: 'btn btn-ghost btn-sm', onclick: () => { state.page = 'content'; render(); } }, 'View Content')
           )
         ),
@@ -3361,6 +3397,70 @@ function renderDashboardPage() {
       ),
       state.weeklyContentPlan.notes ? h('div', { style: { marginTop: '6px', fontSize: '10px', color: 'var(--gray-500)', lineHeight: '1.4' } },
         state.weeklyContentPlan.notes.map(n => `• ${n}`).join(' ')
+      ) : null
+    ) : null,
+
+    // Repurpose Chains
+    state.repurposeChains?.length > 0 ? h('div', { style: { marginBottom: '20px' } },
+      h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)', marginBottom: '8px' } }, `REPURPOSE CHAINS (${state.repurposeChains.length})`),
+      h('div', { style: { display: 'grid', gap: '6px' } },
+        ...state.repurposeChains.slice(0, 5).map(ch =>
+          h('div', { style: { padding: '10px 14px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)' } },
+            h('div', { style: { fontSize: '12px', fontWeight: '600', color: 'var(--navy)', marginBottom: '4px' } }, (ch.title || '').slice(0, 60)),
+            h('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap' } },
+              h('span', { style: { fontSize: '9px', padding: '2px 6px', background: '#eff6ff', color: '#2563eb', borderRadius: '8px', fontWeight: '600' } }, `from: ${ch.source_format}`),
+              ch.x_thread ? h('span', { style: { fontSize: '9px', padding: '2px 6px', background: '#fef2f2', color: '#dc2626', borderRadius: '8px', fontWeight: '600' } }, `${ch.x_thread.length} tweets`) : null,
+              ch.carousel_outline ? h('span', { style: { fontSize: '9px', padding: '2px 6px', background: '#fff7ed', color: '#c2410c', borderRadius: '8px', fontWeight: '600' } }, `${ch.carousel_outline.length} slides`) : null,
+              h('span', { style: { fontSize: '9px', padding: '2px 6px', background: '#f0fdf4', color: '#059669', borderRadius: '8px', fontWeight: '600' } }, '9 formats')
+            )
+          )
+        )
+      )
+    ) : null,
+
+    // Lead Magnet Funnels
+    state.lmFunnels?.length > 0 ? h('div', { style: { marginBottom: '20px' } },
+      h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)', marginBottom: '8px' } }, `LEAD MAGNET FUNNELS (${state.lmFunnels.length})`),
+      h('div', { style: { display: 'grid', gap: '6px' } },
+        ...state.lmFunnels.slice(0, 5).map(f =>
+          h('div', { style: { padding: '10px 14px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)' } },
+            h('div', { style: { fontSize: '12px', fontWeight: '600', color: 'var(--navy)', marginBottom: '4px' } }, (f.funnel_name || f.lead_magnet?.title || '').slice(0, 60)),
+            h('div', { style: { display: 'flex', gap: '6px' } },
+              h('span', { style: { fontSize: '9px', padding: '2px 6px', background: f.status === 'active' ? '#f0fdf4' : '#fefce8', color: f.status === 'active' ? '#059669' : '#ca8a04', borderRadius: '8px', fontWeight: '600' } }, f.status || 'draft'),
+              h('span', { style: { fontSize: '9px', padding: '2px 6px', background: '#eff6ff', color: '#2563eb', borderRadius: '8px', fontWeight: '600' } }, f.lead_magnet?.format || 'PDF'),
+              h('span', { style: { fontSize: '9px', padding: '2px 6px', background: '#faf5ff', color: '#7c3aed', borderRadius: '8px', fontWeight: '600' } }, `${f.email_followup?.length || 0} emails`)
+            )
+          )
+        )
+      )
+    ) : null,
+
+    // Performance Report
+    state.perfReport ? h('div', { style: { marginBottom: '20px' } },
+      h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)', marginBottom: '8px' } }, 'CONTENT PERFORMANCE'),
+      h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' } },
+        h('div', { style: { background: '#eff6ff', borderRadius: 'var(--radius-sm)', padding: '10px', textAlign: 'center', border: '1px solid #bfdbfe' } },
+          h('div', { style: { fontSize: '18px', fontWeight: '700', color: '#2563eb' } }, String(state.perfReport.total_content || 0)),
+          h('div', { style: { fontSize: '10px', color: '#1e40af' } }, 'Total Content')
+        ),
+        h('div', { style: { background: '#f0fdf4', borderRadius: 'var(--radius-sm)', padding: '10px', textAlign: 'center', border: '1px solid #bbf7d0' } },
+          h('div', { style: { fontSize: '18px', fontWeight: '700', color: '#059669' } }, state.perfReport.repurpose_ratio || '0'),
+          h('div', { style: { fontSize: '10px', color: '#065f46' } }, 'Formats/Trigger')
+        ),
+        h('div', { style: { background: '#faf5ff', borderRadius: 'var(--radius-sm)', padding: '10px', textAlign: 'center', border: '1px solid #e9d5ff' } },
+          h('div', { style: { fontSize: '18px', fontWeight: '700', color: '#7c3aed' } }, String(state.perfReport.derivatives_total || 0)),
+          h('div', { style: { fontSize: '10px', color: '#5b21b6' } }, 'Derivatives')
+        ),
+        h('div', { style: { background: '#fffbeb', borderRadius: 'var(--radius-sm)', padding: '10px', textAlign: 'center', border: '1px solid #fde68a' } },
+          h('div', { style: { fontSize: '18px', fontWeight: '700', color: '#d97706' } }, state.perfReport.bank_ratio || 'N/A'),
+          h('div', { style: { fontSize: '10px', color: '#92400e' } }, 'Bank Ratio')
+        )
+      ),
+      (state.perfReport.recommendations || []).length > 0 ? h('div', { style: { marginTop: '8px', padding: '8px 12px', background: '#fefce8', borderRadius: 'var(--radius-sm)', border: '1px solid #fde68a' } },
+        h('div', { style: { fontSize: '10px', fontWeight: '700', color: '#92400e', marginBottom: '4px' } }, 'RECOMMENDATIONS'),
+        ...(state.perfReport.recommendations || []).map(r =>
+          h('div', { style: { fontSize: '11px', color: '#78350f', paddingLeft: '8px', borderLeft: '2px solid #d97706', marginBottom: '4px' } }, r)
+        )
       ) : null
     ) : null,
 
@@ -4983,6 +5083,50 @@ function renderFormatContent(content, formatKey, fmt) {
               } catch (err) { toast('Atomize failed: ' + err.message, 'error'); }
             }
           }, 'Atomize')
+        : null,
+      // Repurpose Chain button (for any format with 200+ chars)
+      typeof text === 'string' && text.length >= 200
+        ? h('button', {
+            className: 'btn btn-outline btn-sm',
+            style: { color: '#6366f1', borderColor: '#6366f1' },
+            onclick: async () => {
+              toast('Building repurpose chain (9 formats)...', 'info');
+              try {
+                const res = await api(`/api/content/${content.id}/repurpose-chain`, { method: 'POST' });
+                toast('Repurpose chain created! 9 platform-native formats.', 'success');
+                loadData();
+              } catch (err) { toast('Repurpose chain failed: ' + err.message, 'error'); }
+            }
+          }, 'Chain')
+        : null,
+      // Predict Engagement button (for social formats)
+      typeof text === 'string' && ['linkedin', 'x_single', 'x_thread'].includes(formatKey)
+        ? h('button', {
+            className: 'btn btn-outline btn-sm',
+            style: { color: '#d97706', borderColor: '#d97706' },
+            onclick: async () => {
+              try {
+                const res = await api(`/api/content/${content.id}/predict-engagement`, { method: 'POST', body: { format: formatKey } });
+                const color = res.engagement_score >= 75 ? '#059669' : res.engagement_score >= 55 ? '#d97706' : '#dc2626';
+                toast(`Engagement: ${res.engagement_score}/100 — ${res.verdict}`, res.engagement_score >= 55 ? 'success' : 'error');
+              } catch (err) { toast('Prediction failed: ' + err.message, 'error'); }
+            }
+          }, 'Predict')
+        : null,
+      // Headline Variants button (for social formats)
+      typeof text === 'string' && ['linkedin', 'x_single'].includes(formatKey)
+        ? h('button', {
+            className: 'btn btn-outline btn-sm',
+            style: { color: '#ec4899', borderColor: '#ec4899' },
+            onclick: async () => {
+              toast('Generating 10 hook variants...', 'info');
+              try {
+                const res = await api(`/api/content/${content.id}/headline-variants`, { method: 'POST', body: { format: formatKey } });
+                const best = res.variants?.[res.recommended || 0];
+                toast(`10 variants generated! Best: "${best?.hook?.slice(0, 50)}..."`, 'success');
+              } catch (err) { toast('Variants failed: ' + err.message, 'error'); }
+            }
+          }, '10 Hooks')
         : null,
       // Email Sequence button (for blog, newsletter, case_study formats)
       ['blog', 'newsletter', 'case_study', 'lead_magnet'].includes(formatKey) && typeof text === 'string'

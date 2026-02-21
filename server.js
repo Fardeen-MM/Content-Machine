@@ -9927,6 +9927,372 @@ Return JSON (no markdown fences):
       });
     }
 
+    // --- Batch 53: Content Repurposing Chain + Lead Magnet Funnels + Engagement Predictor + Calendar Export ---
+
+    // POST /api/content/:id/repurpose-chain — full repurposing chain from one pillar piece
+    const repChainMatch = pathname.match(/^\/api\/content\/([a-f0-9]+)\/repurpose-chain$/);
+    if (repChainMatch && method === 'POST') {
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      const id = repChainMatch[1];
+      const allContent = readJSON('content.json', []);
+      const item = allContent.find(c => c.id === id);
+      if (!item) return json(res, { error: 'Content not found' }, 404);
+
+      const { callClaude, parseJsonResponse, SONNET } = require('./lib/claude');
+      const { BRAND_SYSTEM_PROMPT } = require('./generator/content-writer');
+
+      // Find the longest format as the source
+      const formats = item.formats || {};
+      let sourceFmt = null, sourceText = '';
+      for (const [k, v] of Object.entries(formats)) {
+        const t = typeof v?.content === 'string' ? v.content : '';
+        if (t.length > sourceText.length) { sourceFmt = k; sourceText = t; }
+      }
+      if (!sourceText || sourceText.length < 200) return json(res, { error: 'Need at least one format with 200+ chars to repurpose' }, 400);
+
+      const prompt = `You are a content repurposing expert. Take this ${sourceFmt} content and create a full repurposing chain — each piece should feel NATIVE to its platform, not copy-pasted.
+
+Source (${sourceFmt}): ${sourceText.slice(0, 4000)}
+Topic: ${item.trigger_title}
+
+Create ALL of the following in one response. Return JSON (no markdown fences):
+{
+  "linkedin_post": "full post (1200-1500 chars, hook + story + insight + CTA, no links)",
+  "x_thread": ["tweet 1 (hook, under 280 chars)", "tweet 2", "tweet 3", "tweet 4", "tweet 5 (CTA)"],
+  "x_single": "standalone tweet (under 280 chars, punchy insight)",
+  "newsletter_intro": "email intro paragraph (150-200 words, personal tone, links to full content)",
+  "youtube_short_script": "60-second script (hook in first 3 seconds, one key insight, CTA)",
+  "carousel_outline": ["slide 1: hook", "slide 2-6: key points", "slide 7: CTA"],
+  "poll_question": { "question": "under 140 chars", "options": ["opt1", "opt2", "opt3", "opt4"] },
+  "quote_graphic": "one-sentence quotable insight for an image",
+  "blog_seo_title": "SEO-optimized title for long-form version",
+  "repurpose_notes": "what angle each piece takes and why"
+}`;
+
+      try {
+        const text = await callClaude({ model: SONNET, system: BRAND_SYSTEM_PROMPT, prompt, maxTokens: 6000 });
+        const parsed = parseJsonResponse(text);
+        if (!parsed) return json(res, { error: 'Failed to generate chain', raw_preview: (text || '').slice(0, 300) }, 500);
+
+        const chains = readJSON('repurpose-chains.json', []);
+        const chain = { id: generateId(), content_id: id, title: item.trigger_title, source_format: sourceFmt, ...parsed, created_at: now() };
+        chains.push(chain);
+        writeJSON('repurpose-chains.json', chains);
+        return json(res, { ok: true, chain });
+      } catch (err) {
+        return json(res, { error: err.message }, 500);
+      }
+    }
+
+    // GET /api/repurpose-chains — list all repurposing chains
+    if (pathname === '/api/repurpose-chains' && method === 'GET') {
+      return json(res, readJSON('repurpose-chains.json', []));
+    }
+
+    // POST /api/lead-magnet-funnel — create a lead magnet funnel tracker
+    if (pathname === '/api/lead-magnet-funnel' && method === 'POST') {
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+      const { BRAND_SYSTEM_PROMPT } = require('./generator/content-writer');
+      const body = await parseBody(req);
+
+      const prompt = `Design a lead magnet funnel for a legal marketing agency targeting law firm owners.
+
+Topic: ${body.topic || 'Google Ads for law firms'}
+Lead Magnet Type: ${body.type || 'checklist'}
+Target Audience: ${body.audience || 'PI and family law firm owners spending $3K-$15K/month on ads'}
+
+Return JSON (no markdown fences):
+{
+  "funnel_name": "descriptive name",
+  "lead_magnet": {
+    "title": "compelling title that promises a specific result",
+    "format": "PDF checklist|calculator|audit template|swipe file",
+    "description": "2-sentence pitch",
+    "key_sections": ["section 1", "section 2", "section 3"]
+  },
+  "landing_page": {
+    "headline": "benefit-focused, under 12 words",
+    "subheadline": "specific outcome + timeframe",
+    "bullet_points": ["benefit 1", "benefit 2", "benefit 3"],
+    "social_proof": "what proof to include",
+    "cta_button_text": "action text"
+  },
+  "email_followup": [
+    { "delay_hours": 0, "subject": "...", "purpose": "deliver + quick win", "cta": "..." },
+    { "delay_hours": 24, "subject": "...", "purpose": "expand on one insight", "cta": "..." },
+    { "delay_hours": 72, "subject": "...", "purpose": "case study + book call", "cta": "..." }
+  ],
+  "promotion_posts": {
+    "linkedin": "post that drives downloads without feeling salesy",
+    "x_tweet": "tweet promoting the lead magnet"
+  },
+  "metrics_to_track": ["download rate", "email open rate", "call booking rate"]
+}`;
+
+      try {
+        const text = await callClaude({ model: HAIKU, system: BRAND_SYSTEM_PROMPT, prompt, maxTokens: 3000 });
+        const parsed = parseJsonResponse(text);
+        if (!parsed) return json(res, { error: 'Failed to generate funnel', raw_preview: (text || '').slice(0, 300) }, 500);
+
+        const funnels = readJSON('lead-magnet-funnels.json', []);
+        const funnel = { id: generateId(), ...parsed, status: 'draft', downloads: 0, leads_converted: 0, created_at: now() };
+        funnels.push(funnel);
+        writeJSON('lead-magnet-funnels.json', funnels);
+        return json(res, { ok: true, funnel });
+      } catch (err) {
+        return json(res, { error: err.message }, 500);
+      }
+    }
+
+    // GET /api/lead-magnet-funnels — list all funnels
+    if (pathname === '/api/lead-magnet-funnels' && method === 'GET') {
+      return json(res, readJSON('lead-magnet-funnels.json', []));
+    }
+
+    // POST /api/content/:id/predict-engagement — predict engagement score before posting
+    const engPredMatch = pathname.match(/^\/api\/content\/([a-f0-9]+)\/predict-engagement$/);
+    if (engPredMatch && method === 'POST') {
+      const id = engPredMatch[1];
+      const allContent = readJSON('content.json', []);
+      const item = allContent.find(c => c.id === id);
+      if (!item) return json(res, { error: 'Content not found' }, 404);
+      const body = await parseBody(req);
+      const formatKey = body.format || 'linkedin';
+      const text = item.formats?.[formatKey]?.content || '';
+      if (!text) return json(res, { error: 'No content for that format' }, 400);
+
+      // Algorithm-based scoring (no AI needed — faster, cheaper)
+      let score = 50; // base
+      const factors = [];
+
+      // Hook quality (first line)
+      const firstLine = text.split('\n')[0] || '';
+      if (firstLine.length < 80) { score += 5; factors.push({ factor: 'Short hook (under 80 chars)', impact: +5 }); }
+      if (/\d/.test(firstLine)) { score += 8; factors.push({ factor: 'Numbers in hook', impact: +8 }); }
+      if (/\?$/.test(firstLine.trim())) { score += 3; factors.push({ factor: 'Question hook', impact: +3 }); }
+      if (/\$[\d,]+/.test(firstLine)) { score += 6; factors.push({ factor: 'Dollar amount in hook', impact: +6 }); }
+
+      // Content structure
+      const lines = text.split('\n').filter(l => l.trim());
+      const avgLineLen = lines.reduce((s, l) => s + l.length, 0) / (lines.length || 1);
+      if (avgLineLen < 60) { score += 5; factors.push({ factor: 'Short line lengths (scannable)', impact: +5 }); }
+      if (lines.length >= 10 && lines.length <= 25) { score += 4; factors.push({ factor: 'Good length (10-25 lines)', impact: +4 }); }
+      if (text.length > 2000) { score -= 5; factors.push({ factor: 'Too long (2000+ chars)', impact: -5 }); }
+
+      // Engagement triggers
+      if (/\b(agree|disagree|wrong|mistake|truth|secret|nobody|everyone)\b/i.test(text)) { score += 6; factors.push({ factor: 'Polarizing language', impact: +6 }); }
+      if (/\b(story|happened|remember|year ago|last week|yesterday)\b/i.test(text)) { score += 5; factors.push({ factor: 'Story elements', impact: +5 }); }
+      if (/\n\n/.test(text)) { score += 3; factors.push({ factor: 'White space breaks', impact: +3 }); }
+
+      // CTA presence
+      if (/\b(comment|share|repost|DM me|link in|drop a)\b/i.test(text)) { score += 4; factors.push({ factor: 'Has CTA', impact: +4 }); }
+
+      // Platform-specific
+      if (formatKey === 'linkedin' && text.includes('#')) { score -= 2; factors.push({ factor: 'Hashtags in body (put in comment)', impact: -2 }); }
+      if (formatKey === 'linkedin' && /https?:\/\//.test(text)) { score -= 8; factors.push({ factor: 'External link (60% reach penalty)', impact: -8 }); }
+
+      // Time-of-day bonus
+      const hour = new Date().getHours();
+      if (hour >= 8 && hour <= 10) { score += 3; factors.push({ factor: 'Posting during peak hours (8-10 AM)', impact: +3 }); }
+
+      score = Math.max(0, Math.min(100, score));
+      const verdict = score >= 75 ? 'High engagement predicted — post it' :
+                      score >= 55 ? 'Moderate — consider hook improvements' :
+                      'Low predicted engagement — rework before posting';
+
+      return json(res, { ok: true, content_id: id, format: formatKey, engagement_score: score, verdict, factors: factors.sort((a, b) => b.impact - a.impact) });
+    }
+
+    // POST /api/calendar/export — export weekly calendar as CSV or Markdown
+    if (pathname === '/api/calendar/export' && method === 'POST') {
+      const body = await parseBody(req);
+      const format = body.format || 'csv'; // 'csv' or 'markdown'
+      const series = readJSON('series-templates.json', { series: [] });
+      const plan = readJSON('content-bank.json', { log: [], stats: { value: 0, cta: 0 } });
+      const weekPlan = (series.series || []);
+
+      if (format === 'csv') {
+        const rows = [['Day', 'Series', 'Format', 'Hashtag', 'CTA Tier', 'Post Time', 'Lead Magnet'].join(',')];
+        for (const s of weekPlan) {
+          rows.push([s.day, s.name, s.format, s.hashtag, s.cta_tier, ['tuesday', 'wednesday', 'thursday'].includes(s.day) ? '8-10 AM' : '12-2 PM', `"${(s.lead_magnet_cta || '').replace(/"/g, '""')}"`].join(','));
+        }
+        res.writeHead(200, { 'Content-Type': 'text/csv', 'Content-Disposition': 'attachment; filename=content-calendar.csv' });
+        return res.end(rows.join('\n'));
+      } else {
+        const md = ['# Weekly Content Calendar\n'];
+        for (const s of weekPlan) {
+          md.push(`## ${s.day.charAt(0).toUpperCase() + s.day.slice(1)} — ${s.name}`);
+          md.push(`- **Format:** ${s.format}`);
+          md.push(`- **Hashtag:** ${s.hashtag}`);
+          md.push(`- **CTA Tier:** ${s.cta_tier}`);
+          md.push(`- **Post Time:** ${['tuesday', 'wednesday', 'thursday'].includes(s.day) ? '8-10 AM' : '12-2 PM'}`);
+          if (s.lead_magnet_cta) md.push(`- **Lead Magnet:** ${s.lead_magnet_cta}`);
+          md.push(`- **Template:** ${s.template_prompt?.slice(0, 100)}...`);
+          md.push('');
+        }
+        md.push(`\n---\nBank Balance: ${plan.stats.value} value / ${plan.stats.cta} CTA`);
+        res.writeHead(200, { 'Content-Type': 'text/markdown', 'Content-Disposition': 'attachment; filename=content-calendar.md' });
+        return res.end(md.join('\n'));
+      }
+    }
+
+    // POST /api/content/:id/thread-to-carousel — convert X thread to LinkedIn carousel
+    const t2cMatch = pathname.match(/^\/api\/content\/([a-f0-9]+)\/thread-to-carousel$/);
+    if (t2cMatch && method === 'POST') {
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      const id = t2cMatch[1];
+      const allContent = readJSON('content.json', []);
+      const item = allContent.find(c => c.id === id);
+      if (!item) return json(res, { error: 'Content not found' }, 404);
+
+      const thread = item.formats?.x_thread?.content;
+      if (!thread || !Array.isArray(thread)) return json(res, { error: 'No X thread found for this content' }, 400);
+
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+      const { BRAND_SYSTEM_PROMPT } = require('./generator/content-writer');
+
+      const prompt = `Convert this X/Twitter thread into LinkedIn carousel slides. Each slide should be a single focused point with big text.
+
+Thread:
+${thread.map((t, i) => `Tweet ${i + 1}: ${t}`).join('\n')}
+
+Return JSON (no markdown fences):
+{
+  "title": "carousel title",
+  "slides": [
+    { "slide_number": 1, "headline": "hook text (large)", "body": "supporting text (small)", "visual_note": "what image/icon to use" }
+  ],
+  "companion_post": "LinkedIn post to accompany the carousel document",
+  "design_notes": "color scheme and font suggestions"
+}`;
+
+      try {
+        const text = await callClaude({ model: HAIKU, system: BRAND_SYSTEM_PROMPT, prompt, maxTokens: 3000 });
+        const parsed = parseJsonResponse(text);
+        if (!parsed) return json(res, { error: 'Failed to convert', raw_preview: (text || '').slice(0, 200) }, 500);
+
+        const carousels = readJSON('carousels.json', []);
+        const carousel = { id: generateId(), content_id: id, title: parsed.title || item.trigger_title, ...parsed, source: 'thread_conversion', created_at: now() };
+        carousels.push(carousel);
+        writeJSON('carousels.json', carousels);
+        return json(res, { ok: true, carousel });
+      } catch (err) {
+        return json(res, { error: err.message }, 500);
+      }
+    }
+
+    // POST /api/content/:id/headline-variants — generate 10 headline/hook variants for testing
+    const headlineMatch = pathname.match(/^\/api\/content\/([a-f0-9]+)\/headline-variants$/);
+    if (headlineMatch && method === 'POST') {
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      const id = headlineMatch[1];
+      const allContent = readJSON('content.json', []);
+      const item = allContent.find(c => c.id === id);
+      if (!item) return json(res, { error: 'Content not found' }, 404);
+
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+      const body = await parseBody(req);
+      const formatKey = body.format || 'linkedin';
+      const text = item.formats?.[formatKey]?.content || '';
+      const currentHook = text.split('\n')[0] || item.trigger_title;
+
+      const prompt = `Generate 10 headline/hook variants for this content. Each should use a different proven hook formula.
+
+Current hook: ${currentHook}
+Topic: ${item.trigger_title}
+Platform: ${formatKey}
+
+Hook formulas to use:
+1. Specific Number ("I audited 47 law firm ad accounts...")
+2. Information Gap ("Most law firms don't know this about Google Ads...")
+3. Contrarian ("Stop spending money on SEO. Here's why.")
+4. Pain Point ("Your intake process is losing $4K/month. Here's proof.")
+5. Social Proof ("How one PI firm went from $4K to $92K/month")
+6. Question ("What's your cost per signed case? (Most firms can't answer this)")
+7. Story Opener ("Last Tuesday, a firm owner called me furious...")
+8. Before/After ("From 3 cases/month to 15 — same ad budget")
+9. Challenge ("I bet your Google Ads account has at least 3 of these problems")
+10. Curiosity Gap ("The $200/month tool that saved a firm $4,800/month")
+
+Return JSON (no markdown fences):
+{
+  "variants": [
+    { "hook": "the hook text (under 100 chars)", "formula": "which formula", "why": "why this works for this topic" }
+  ],
+  "recommended": 0
+}`;
+
+      try {
+        const text2 = await callClaude({ model: HAIKU, prompt, maxTokens: 2000 });
+        const parsed = parseJsonResponse(text2);
+        if (!parsed) return json(res, { error: 'Failed to generate variants', raw_preview: (text2 || '').slice(0, 200) }, 500);
+        return json(res, { ok: true, content_id: id, format: formatKey, current_hook: currentHook, ...parsed });
+      } catch (err) {
+        return json(res, { error: err.message }, 500);
+      }
+    }
+
+    // GET /api/content-performance-report — aggregate content performance insights
+    if (pathname === '/api/content-performance-report' && method === 'GET') {
+      const content = readJSON('content.json', []);
+      const bank = readJSON('content-bank.json', { log: [], stats: { value: 0, cta: 0 } });
+      const atomizations = readJSON('atomizations.json', []);
+      const chains = readJSON('repurpose-chains.json', []);
+      const sequences = readJSON('email-sequences.json', []);
+      const pipelines = readJSON('youtube-pipelines.json', []);
+      const carousels = readJSON('carousels.json', []);
+      const matrix = readJSON('content-matrix.json', null);
+
+      // Format distribution
+      const formatCounts = {};
+      for (const c of content) {
+        for (const fmt of Object.keys(c.formats || {})) {
+          formatCounts[fmt] = (formatCounts[fmt] || 0) + 1;
+        }
+      }
+
+      // Status distribution
+      const statusCounts = {};
+      for (const c of content) {
+        statusCounts[c.status] = (statusCounts[c.status] || 0) + 1;
+      }
+
+      // Content age (days since creation)
+      const now2 = Date.now();
+      const ages = content.map(c => Math.floor((now2 - new Date(c.created_at || 0).getTime()) / 86400000));
+      const avgAge = ages.length > 0 ? (ages.reduce((s, a) => s + a, 0) / ages.length).toFixed(1) : 0;
+
+      // Repurposing efficiency
+      const totalFormats = Object.values(formatCounts).reduce((s, c) => s + c, 0);
+      const repurposeRatio = content.length > 0 ? (totalFormats / content.length).toFixed(1) : 0;
+
+      return json(res, {
+        total_content: content.length,
+        status_breakdown: statusCounts,
+        format_breakdown: formatCounts,
+        repurpose_ratio: `${repurposeRatio} formats per trigger`,
+        avg_content_age_days: avgAge,
+        bank_balance: bank.stats,
+        bank_ratio: bank.stats.cta > 0 ? (bank.stats.value / bank.stats.cta).toFixed(1) + ':1' : 'No CTAs yet',
+        atomizations_total: atomizations.length,
+        derivatives_total: atomizations.reduce((s, a) => s + (a.derivatives?.length || 0), 0),
+        repurpose_chains: chains.length,
+        email_sequences: sequences.length,
+        youtube_pipelines: pipelines.length,
+        carousels: carousels.length,
+        matrix_posts: matrix?.total_posts || 0,
+        recommendations: [
+          bank.stats.value < 4 ? 'Post more value content before asking (need 4:1 ratio)' : null,
+          atomizations.length === 0 ? 'Atomize a blog post to get 15-20 derivative pieces' : null,
+          pipelines.length === 0 ? 'Create a YouTube pipeline from your best content' : null,
+          chains.length === 0 ? 'Use repurpose chains to maximize each piece of content' : null,
+          sequences.length === 0 ? 'Build email sequences for lead magnet follow-up' : null,
+          content.filter(c => c.status === 'review').length > 10 ? 'Review backlog growing — approve or reject pending content' : null
+        ].filter(Boolean)
+      });
+    }
+
     // --- Static file serving ---
 
     // Serve dashboard

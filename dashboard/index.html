@@ -1496,6 +1496,10 @@ const state = {
   dripCampaigns: [],
   autoResponses: [],
   expiringContent: null,
+  // Amplifications & Funnels
+  amplifications: [],
+  leadFunnels: [],
+  calendarInsights: null,
 };
 
 // --- API Calls ---
@@ -1521,7 +1525,7 @@ async function loadData() {
   state.loading = true;
   render();
   try {
-    const [content, triggers, stats, calendar, monthCal, settings, memory, performance, perfAnalytics, meetings, meetingStats, clients, allActions, chatMessages, healthData, inspirations, pestering, pesteringStages, insights, deals, published, series, predictions, playbooks, ctaLibrary, trending, funnel, publishTracker, leadMagnets, contentHealth, scheduleOptimize, templates, dmSequences, hooks, pillarPlan, contentLeads, autopilot, scheduleQueue, engagementDashboard, contentBriefs, workflowPipeline, personas, calendarWeek, benchmarkReport, contentIdeas, socialProof, roiReport, audienceGrowth, contentThemes, distributionPlans, dmPipelines, competitorsTracked, dripCampaigns, autoResponses, expiringContent] = await Promise.all([
+    const [content, triggers, stats, calendar, monthCal, settings, memory, performance, perfAnalytics, meetings, meetingStats, clients, allActions, chatMessages, healthData, inspirations, pestering, pesteringStages, insights, deals, published, series, predictions, playbooks, ctaLibrary, trending, funnel, publishTracker, leadMagnets, contentHealth, scheduleOptimize, templates, dmSequences, hooks, pillarPlan, contentLeads, autopilot, scheduleQueue, engagementDashboard, contentBriefs, workflowPipeline, personas, calendarWeek, benchmarkReport, contentIdeas, socialProof, roiReport, audienceGrowth, contentThemes, distributionPlans, dmPipelines, competitorsTracked, dripCampaigns, autoResponses, expiringContent, amplifications, leadFunnels, calendarInsights] = await Promise.all([
       api('/api/content'),
       api('/api/triggers'),
       api('/api/stats'),
@@ -1576,7 +1580,10 @@ async function loadData() {
       api('/api/competitors/tracked').catch(() => []),
       api('/api/drip-campaigns').catch(() => []),
       api('/api/auto-responses').catch(() => []),
-      api('/api/content/expiring').catch(() => null)
+      api('/api/content/expiring').catch(() => null),
+      api('/api/amplifications').catch(() => []),
+      api('/api/lead-funnels').catch(() => []),
+      api('/api/calendar/insights').catch(() => null)
     ]);
     state.content = content;
     state.triggers = triggers;
@@ -1633,6 +1640,9 @@ async function loadData() {
     state.dripCampaigns = dripCampaigns;
     state.autoResponses = autoResponses;
     state.expiringContent = expiringContent;
+    state.amplifications = amplifications;
+    state.leadFunnels = leadFunnels;
+    state.calendarInsights = calendarInsights;
   } catch (err) {
     console.error('Failed to load data:', err);
     toast('Failed to load data', 'error');
@@ -3075,7 +3085,18 @@ function renderDashboardPage() {
                 } else { toast('No suggestions — approve more content first', 'info'); }
               } catch (err) { toast('Suggest failed: ' + err.message, 'error'); }
             }
-          }, 'Fill Gaps')
+          }, 'Fill Gaps'),
+          h('button', {
+            className: 'btn btn-outline btn-sm',
+            style: { fontSize: '10px', padding: '2px 8px' },
+            onclick: async () => {
+              toast('Optimizing calendar...', 'info');
+              try {
+                const res = await api('/api/calendar/optimize', { method: 'POST' });
+                toast(`${res.optimizations?.length || 0} optimizations suggested (score: ${res.overall_score}/100)`, 'success');
+              } catch (err) { toast('Optimize failed: ' + err.message, 'error'); }
+            }
+          }, 'Optimize')
         )
       ),
       h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '4px' } },
@@ -3845,6 +3866,38 @@ function renderContentCard(content) {
                 } catch (err) { toast('DM generation failed: ' + err.message, 'error'); }
               }
             }, 'DM Seq')
+          : null,
+        // Amplify button — create paid ad versions
+        Object.values(content.formats || {}).some(f => f.content)
+          ? h('button', {
+              className: 'btn btn-outline btn-sm',
+              style: { color: '#dc2626', borderColor: '#dc2626', fontSize: '11px' },
+              onclick: async (e) => {
+                e.stopPropagation();
+                toast('Creating paid ad versions...', 'info');
+                try {
+                  const res = await api(`/api/content/${content.id}/amplify`, { method: 'POST' });
+                  toast('Paid ad copy + targeting created!', 'success');
+                  loadData();
+                } catch (err) { toast('Amplify failed: ' + err.message, 'error'); }
+              }
+            }, 'Amplify')
+          : null,
+        // Build Funnel button — create landing page + email sequence
+        (content.formats?.lead_magnet?.content || content.formats?.blog?.content)
+          ? h('button', {
+              className: 'btn btn-outline btn-sm',
+              style: { color: '#059669', borderColor: '#059669', fontSize: '11px' },
+              onclick: async (e) => {
+                e.stopPropagation();
+                toast('Building lead funnel...', 'info');
+                try {
+                  const res = await api(`/api/content/${content.id}/build-funnel`, { method: 'POST' });
+                  toast(`Funnel "${res.funnel?.funnel_name}" created!`, 'success');
+                  loadData();
+                } catch (err) { toast('Funnel build failed: ' + err.message, 'error'); }
+              }
+            }, 'Funnel')
           : null,
         // Distribution Plan button
         Object.values(content.formats || {}).some(f => f.content)

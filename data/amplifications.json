@@ -1,0 +1,96 @@
+[
+  {
+    "id": "9a7e4edab8bf36bc",
+    "content_id": "942509da1ea4f8",
+    "title": "Hired 3 marketing agencies in 2 years — all terrible. What am I doing wrong?",
+    "linkedin_ad": {
+      "text": "Spent $57K on 3 marketing agencies in 2 years. Got 12 signed cases.\n\nThat's $4,750 per case.\n\nAll three failed because they optimized vanity metrics instead of what actually matters: signed cases.\n\nBefore you hire your next agency, ask:\n\n1. How do you define a lead? (If they say clicks, run.)\n2. What's my cost per signed case? (If they don't know, run.)\n3. Can I access all accounts? (If no, run.)\n\nGood agencies welcome accountability. Bad ones hide behind impressions.",
+      "headline": "Why Your Marketing Agency Failed (And How to Spot the Next One)",
+      "cta_button": "Learn More",
+      "budget_suggestion": "$15/day"
+    },
+    "meta_ad": {
+      "primary_text": "We hired 3 marketing agencies. Spent $57K. Got 12 cases.\n\n$4,750 per signed case because NONE measured what matters.\n\nIf your agency can't answer these 3 questions, they're the problem:\n\n✋ How do you define a lead?\n✋ What's my cost per signed case?\n✋ Can I access all accounts?\n\nDon't waste another dollar. Learn what separates good agencies from the rest.",
+      "headline": "$57K Wasted on Bad Marketing Agencies",
+      "description": "3 agencies, 2 years, 12 cases. Here's what went wrong.",
+      "cta_button": "Learn More",
+      "budget_suggestion": "$12/day"
+    },
+    "google_display": {
+      "headline_1": "$57K on 3 Agencies. Only 12 Cases.",
+      "headline_2": "Your Agency Isn't Measuring What Matters",
+      "description": "Discover the 3 questions that separate good marketing agencies from terrible ones. Stop wasting money on vanity metrics.",
+      "budget_suggestion": "$10/day"
+    },
+    "targeting": {
+      "linkedin": {
+        "job_titles": [
+          "Managing Partner",
+          "Partner",
+          "Law Firm Owner",
+          "Practice Manager",
+          "Office Manager",
+          "Marketing Director",
+          "Chief Operating Officer"
+        ],
+        "industries": [
+          "Legal Services",
+          "Law Practice"
+        ],
+        "company_size": "1-500 employees",
+        "seniority": "C-level, Owner, Manager",
+        "exclude_job_titles": "Marketing Analyst, Junior Marketer"
+      },
+      "meta": {
+        "interests": [
+          "Law firm marketing",
+          "Digital marketing agencies",
+          "Legal technology",
+          "Small business marketing",
+          "Marketing ROI",
+          "B2B marketing",
+          "Legal services"
+        ],
+        "demographics": "Age 35-65, Decision makers, Law firm owners/partners, household income $75K+",
+        "lookalike": "Website visitors who viewed pricing/contact pages, Lead magnet downloaders, Legal services audience seed",
+        "exclude_interests": "Legal education students, Job seekers"
+      },
+      "google": {
+        "keywords": [
+          "law firm marketing agency",
+          "legal marketing services",
+          "personal injury law marketing",
+          "law firm lead generation",
+          "marketing agencies for lawyers",
+          "best marketing agency",
+          "cost per lead marketing",
+          "legal services marketing ROI",
+          "law firm advertising",
+          "hiring marketing agency"
+        ],
+        "audiences": [
+          "Legal industry professionals",
+          "Business decision makers",
+          "High-intent search (cost per lead, ROI, agency reviews)",
+          "Remarketing: website visitors",
+          "Similar audiences to law firm clients"
+        ],
+        "placements": "Legal blogs, practice management sites, legal news sites, business publications"
+      }
+    },
+    "estimated_cpl": "$8-15 per lead (law firm owner inquiry)",
+    "recommended_budget": "$150-200/week total",
+    "platform_breakdown": {
+      "linkedin": "45% ($67-90/week) — high-intent, decision makers",
+      "meta": "35% ($52-70/week) — scale reach, frequency",
+      "google_display": "20% ($30-40/week) — remarketing, retargeting"
+    },
+    "creative_rotation": [
+      "Problem-focused (this version): Agency failures",
+      "Solution-focused: 3 questions to ask before hiring",
+      "Social proof: Case study results from good agency",
+      "Testimonial: Law firm owner quote about ROI accountability"
+    ],
+    "created_at": "2026-02-21T02:18:57.626Z"
+  }
+]

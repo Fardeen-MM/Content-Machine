@@ -7897,6 +7897,212 @@ Rules: New opening hook, update dated references, add fresh data point, keep cor
       return json(res, { ok: true, refreshed_content: refreshed.slice(0, 300) + '...' });
     }
 
+    // === Batch 47: Amplification Engine + Lead Magnet Funnel + Calendar Optimizer ===
+
+    // POST /api/content/:id/amplify — AI creates paid ad copy + targeting
+    if (pathname.match(/^\/api\/content\/[^/]+\/amplify$/) && method === 'POST') {
+      const id = pathname.split('/')[3];
+      const allContent = readJSON('content.json', []);
+      const item = allContent.find(c => c.id === id);
+      if (!item) return json(res, { error: 'not found' }, 404);
+
+      const bestContent = item.formats?.linkedin?.content || Object.values(item.formats || {})[0]?.content || '';
+      if (!bestContent) return json(res, { error: 'No content to amplify' }, 400);
+
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude.js');
+      let text, parsed;
+      try {
+        text = await callClaude({
+          model: HAIKU,
+          system: 'You create paid social ad campaigns for law firms. Return JSON only.',
+          prompt: `Create paid ad versions and targeting for this organic content.
+
+CONTENT TITLE: ${item.trigger_title}
+ORGANIC CONTENT: ${bestContent.slice(0, 1500)}
+
+Create:
+1. LinkedIn Sponsored Content version (shorter, more direct CTA)
+2. Facebook/Instagram ad version
+3. Google Display ad copy (headline + description)
+4. Targeting recommendations per platform
+
+Return JSON: {
+  "linkedin_ad": { "text": "...", "headline": "...", "cta_button": "Learn More|Download|Book Now", "budget_suggestion": "$X/day" },
+  "meta_ad": { "primary_text": "...", "headline": "...", "description": "...", "cta_button": "...", "budget_suggestion": "$X/day" },
+  "google_display": { "headline_1": "...", "headline_2": "...", "description": "...", "budget_suggestion": "$X/day" },
+  "targeting": {
+    "linkedin": { "job_titles": ["..."], "industries": ["..."], "company_size": "..." },
+    "meta": { "interests": ["..."], "demographics": "...", "lookalike": "..." },
+    "google": { "keywords": ["..."], "audiences": ["..."] }
+  },
+  "estimated_cpl": "cost per lead estimate",
+  "recommended_budget": "$X/week total"
+}`,
+          maxTokens: 2000
+        });
+        parsed = parseJsonResponse(text);
+      } catch (err) {
+        return json(res, { error: 'AI error: ' + err.message }, 500);
+      }
+      if (!parsed) return json(res, { error: 'Failed to create ads', raw_preview: (text || '').slice(0, 200) }, 500);
+
+      const amplifications = readJSON('amplifications.json', []);
+      const amp = { id: generateId(), content_id: id, title: item.trigger_title, ...parsed, created_at: now() };
+      amplifications.push(amp);
+      writeJSON('amplifications.json', amplifications);
+      return json(res, { ok: true, amplification: amp });
+    }
+
+    // GET /api/amplifications — list all amplified content
+    if (pathname === '/api/amplifications' && method === 'GET') {
+      return json(res, readJSON('amplifications.json', []));
+    }
+
+    // POST /api/content/:id/build-funnel — AI builds landing page + email sequence from lead magnet
+    if (pathname.match(/^\/api\/content\/[^/]+\/build-funnel$/) && method === 'POST') {
+      const id = pathname.split('/')[3];
+      const allContent = readJSON('content.json', []);
+      const item = allContent.find(c => c.id === id);
+      if (!item) return json(res, { error: 'not found' }, 404);
+
+      const leadMagnetContent = item.formats?.lead_magnet?.content || item.formats?.blog?.content || '';
+      if (!leadMagnetContent) return json(res, { error: 'No lead magnet or blog content to build funnel from' }, 400);
+
+      const { callClaude, parseJsonResponse, SONNET } = require('./lib/claude.js');
+      const { BRAND_SYSTEM_PROMPT } = require('./generator/content-writer.js');
+      let text, parsed;
+      try {
+        text = await callClaude({
+          model: SONNET,
+          system: BRAND_SYSTEM_PROMPT + '\nReturn JSON only.',
+          prompt: `Build a complete lead generation funnel from this content.
+
+CONTENT TITLE: ${item.trigger_title}
+CONTENT: ${(typeof leadMagnetContent === 'string' ? leadMagnetContent : JSON.stringify(leadMagnetContent)).slice(0, 3000)}
+
+Create:
+1. Landing page copy (headline, subheadline, 3 bullet points, CTA, social proof line)
+2. Thank you page copy
+3. 3-email nurture sequence (delivered over 5 days)
+
+Return JSON: {
+  "funnel_name": "...",
+  "landing_page": {
+    "headline": "...",
+    "subheadline": "...",
+    "bullet_points": ["..."],
+    "cta_text": "...",
+    "social_proof": "...",
+    "objection_handler": "..."
+  },
+  "thank_you_page": { "headline": "...", "next_step": "..." },
+  "email_sequence": [{
+    "day": 1,
+    "subject": "...",
+    "body": "...",
+    "cta": "..."
+  }],
+  "conversion_estimate": "X%",
+  "lead_magnet_type": "..."
+}`,
+          maxTokens: 4000
+        });
+        parsed = parseJsonResponse(text);
+      } catch (err) {
+        return json(res, { error: 'AI error: ' + err.message }, 500);
+      }
+      if (!parsed) return json(res, { error: 'Failed to build funnel', raw_preview: (text || '').slice(0, 200) }, 500);
+
+      const funnels = readJSON('lead-funnels.json', []);
+      const funnel = { id: generateId(), content_id: id, title: item.trigger_title, ...parsed, status: 'draft', created_at: now() };
+      funnels.push(funnel);
+      writeJSON('lead-funnels.json', funnels);
+      return json(res, { ok: true, funnel });
+    }
+
+    // GET /api/lead-funnels — list all funnels
+    if (pathname === '/api/lead-funnels' && method === 'GET') {
+      return json(res, readJSON('lead-funnels.json', []));
+    }
+
+    // POST /api/calendar/optimize — AI rearranges calendar based on performance
+    if (pathname === '/api/calendar/optimize' && method === 'POST') {
+      const schedule = readJSON('schedule-queue.json', []);
+      const engagement = readJSON('engagement-tracking.json', []);
+      const scheduled = schedule.filter(s => s.status === 'scheduled');
+
+      if (scheduled.length < 2) return json(res, { error: 'Need at least 2 scheduled posts to optimize' }, 400);
+
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude.js');
+      const engData = engagement.slice(0, 10).map(e =>
+        `- ${e.platform}: ${e.engagement_rate}% rate, ${e.impressions} imp (posted at ${e.last_updated?.slice(11, 16) || 'unknown'})`
+      ).join('\n');
+
+      const schedData = scheduled.map(s =>
+        `- ${s.platform} on ${s.scheduled_at?.slice(0, 10)} at ${s.scheduled_at?.slice(11, 16)} | "${(s.trigger_title || '').slice(0, 40)}"`
+      ).join('\n');
+
+      let text, parsed;
+      try {
+        text = await callClaude({
+          model: HAIKU,
+          system: 'You optimize content calendars for maximum engagement. Return JSON only.',
+          prompt: `Optimize this content calendar based on engagement data.
+
+CURRENT SCHEDULE:
+${schedData}
+
+ENGAGEMENT DATA:
+${engData || 'No engagement data yet — use industry best practices'}
+
+Analyze and suggest:
+1. Posts that should be moved to better time slots
+2. Platform adjustments (e.g., LinkedIn works better on Tue AM)
+3. Spacing improvements (avoid posting too close together)
+4. Priority order changes
+
+Return JSON: {
+  "optimizations": [{ "post_id": "...", "current_time": "...", "suggested_time": "...", "reason": "..." }],
+  "insights": ["..."],
+  "best_performing_slots": [{ "platform": "...", "day": "...", "time": "...", "reason": "..." }],
+  "overall_score": 0-100
+}`,
+          maxTokens: 1500
+        });
+        parsed = parseJsonResponse(text);
+      } catch (err) {
+        return json(res, { error: 'AI error: ' + err.message }, 500);
+      }
+      if (!parsed) return json(res, { error: 'Failed to optimize', raw_preview: (text || '').slice(0, 200) }, 500);
+
+      return json(res, { ok: true, ...parsed });
+    }
+
+    // GET /api/calendar/insights — AI-generated calendar insights
+    if (pathname === '/api/calendar/insights' && method === 'GET') {
+      const schedule = readJSON('schedule-queue.json', []);
+      const engagement = readJSON('engagement-tracking.json', []);
+
+      const platformCount = {};
+      const dayCount = {};
+      for (const s of schedule) {
+        platformCount[s.platform] = (platformCount[s.platform] || 0) + 1;
+        const day = new Date(s.scheduled_at).toLocaleDateString('en-US', { weekday: 'short' });
+        dayCount[day] = (dayCount[day] || 0) + 1;
+      }
+
+      return json(res, {
+        total_scheduled: schedule.filter(s => s.status === 'scheduled').length,
+        total_published: schedule.filter(s => s.status === 'published').length,
+        by_platform: platformCount,
+        by_day: dayCount,
+        avg_engagement_rate: engagement.length > 0
+          ? (engagement.reduce((s, e) => s + parseFloat(e.engagement_rate || 0), 0) / engagement.length).toFixed(1) + '%'
+          : 'N/A',
+        tracked_posts: engagement.length
+      });
+    }
+
     // --- Content Series API ---
 
     // GET /api/series — list all content series

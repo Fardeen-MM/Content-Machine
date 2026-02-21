@@ -1469,6 +1469,10 @@ const state = {
   scheduleQueue: [],
   // Engagement Dashboard
   engagementDashboard: null,
+  // Content Briefs
+  contentBriefs: [],
+  // Workflow Pipeline
+  workflowPipeline: null,
 };
 
 // --- API Calls ---
@@ -1494,7 +1498,7 @@ async function loadData() {
   state.loading = true;
   render();
   try {
-    const [content, triggers, stats, calendar, monthCal, settings, memory, performance, perfAnalytics, meetings, meetingStats, clients, allActions, chatMessages, healthData, inspirations, pestering, pesteringStages, insights, deals, published, series, predictions, playbooks, ctaLibrary, trending, funnel, publishTracker, leadMagnets, contentHealth, scheduleOptimize, templates, dmSequences, hooks, pillarPlan, contentLeads, autopilot, scheduleQueue, engagementDashboard] = await Promise.all([
+    const [content, triggers, stats, calendar, monthCal, settings, memory, performance, perfAnalytics, meetings, meetingStats, clients, allActions, chatMessages, healthData, inspirations, pestering, pesteringStages, insights, deals, published, series, predictions, playbooks, ctaLibrary, trending, funnel, publishTracker, leadMagnets, contentHealth, scheduleOptimize, templates, dmSequences, hooks, pillarPlan, contentLeads, autopilot, scheduleQueue, engagementDashboard, contentBriefs, workflowPipeline] = await Promise.all([
       api('/api/content'),
       api('/api/triggers'),
       api('/api/stats'),
@@ -1533,7 +1537,9 @@ async function loadData() {
       api('/api/leads').catch(() => []),
       api('/api/autopilot/status').catch(() => ({ enabled: false, settings: {}, today: {}, recent_log: [] })),
       api('/api/schedule-queue').catch(() => []),
-      api('/api/engagement/dashboard').catch(() => null)
+      api('/api/engagement/dashboard').catch(() => null),
+      api('/api/content-briefs').catch(() => []),
+      api('/api/workflow/pipeline').catch(() => null)
     ]);
     state.content = content;
     state.triggers = triggers;
@@ -1574,6 +1580,8 @@ async function loadData() {
     state.autopilot = autopilot;
     state.scheduleQueue = scheduleQueue;
     state.engagementDashboard = engagementDashboard;
+    state.contentBriefs = contentBriefs;
+    state.workflowPipeline = workflowPipeline;
   } catch (err) {
     console.error('Failed to load data:', err);
     toast('Failed to load data', 'error');
@@ -2972,6 +2980,29 @@ function renderDashboardPage() {
         })
       )
     ) : null,
+    // Workflow Pipeline
+    state.workflowPipeline ? h('div', { style: { marginBottom: '20px' } },
+      h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)', marginBottom: '8px' } }, 'CONTENT PIPELINE'),
+      h('div', { style: { display: 'flex', gap: '4px', alignItems: 'center' } },
+        ...['draft', 'review', 'edited', 'approved', 'scheduled', 'published'].map((stage, i, arr) => {
+          const count = state.workflowPipeline[stage] || 0;
+          const colors = { draft: '#94a3b8', review: '#f59e0b', edited: '#3b82f6', approved: '#059669', scheduled: '#7c3aed', published: '#0ea5e9' };
+          return [
+            h('div', {
+              style: {
+                flex: '1', textAlign: 'center', padding: '8px 4px', borderRadius: 'var(--radius-sm)',
+                background: count > 0 ? `${colors[stage]}15` : '#f8fafc',
+                border: `1px solid ${count > 0 ? colors[stage] + '40' : '#e2e8f0'}`
+              }
+            },
+              h('div', { style: { fontSize: '18px', fontWeight: '700', color: colors[stage] } }, String(count)),
+              h('div', { style: { fontSize: '10px', color: 'var(--gray-500)', textTransform: 'capitalize' } }, stage)
+            ),
+            i < arr.length - 1 ? h('div', { style: { color: 'var(--gray-300)', fontSize: '14px' } }, '\u2192') : null
+          ];
+        }).flat().filter(Boolean)
+      )
+    ) : null,
     // Engagement Dashboard
     state.engagementDashboard?.total_tracked > 0 ? h('div', { style: { marginBottom: '20px' } },
       h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
@@ -4187,6 +4218,37 @@ function renderFormatContent(content, formatKey, fmt) {
           } catch (err) { toast('Recycle failed: ' + err.message, 'error'); }
         }
       }, 'Recycle') : null,
+      // Quality Check button
+      typeof text === 'string' && ['linkedin', 'x_single', 'x_thread'].includes(formatKey) && !content.quality_checks?.[formatKey] ? h('button', {
+        className: 'btn btn-outline btn-sm',
+        style: { fontSize: '10px', padding: '2px 6px', color: '#0891b2', borderColor: '#0891b2' },
+        onclick: async () => {
+          toast('Running quality check...', 'info');
+          try {
+            const res = await api(`/api/content/${content.id}/quality-check`, { method: 'POST', body: { platform: formatKey } });
+            toast(`Quality: ${res.quality_score}/100 ${res.pass ? 'PASS' : 'FAIL'}`, res.pass ? 'success' : 'error');
+            loadData();
+          } catch (err) { toast('Quality check failed: ' + err.message, 'error'); }
+        }
+      }, 'QA Check') : null,
+      // Show quality check results
+      content.quality_checks?.[formatKey] ? h('div', { style: { marginTop: '6px', padding: '6px 10px', background: content.quality_checks[formatKey].pass ? '#f0fdf4' : '#fef2f2', borderRadius: '6px', border: `1px solid ${content.quality_checks[formatKey].pass ? '#bbf7d0' : '#fecaca'}` } },
+        h('div', { style: { display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' } },
+          h('span', { style: { fontSize: '12px', fontWeight: '700', color: content.quality_checks[formatKey].pass ? '#059669' : '#dc2626' } },
+            `QA: ${content.quality_checks[formatKey].quality_score}/100 ${content.quality_checks[formatKey].pass ? 'PASS' : 'FAIL'}`
+          ),
+          ...[
+            { label: 'Voice', val: content.quality_checks[formatKey].brand_voice?.score },
+            { label: 'Grammar', val: content.quality_checks[formatKey].grammar_clarity?.score },
+            { label: 'Hook', val: content.quality_checks[formatKey].hook_quality?.score },
+            { label: 'CTA', val: content.quality_checks[formatKey].cta_presence?.score },
+            { label: 'Format', val: content.quality_checks[formatKey].format_length?.score }
+          ].map(s => h('span', { style: { fontSize: '9px', padding: '1px 4px', borderRadius: '3px', background: (s.val || 0) >= 15 ? '#dcfce7' : (s.val || 0) >= 10 ? '#fef9c3' : '#fef2f2', color: (s.val || 0) >= 15 ? '#166534' : (s.val || 0) >= 10 ? '#854d0e' : '#991b1b' } }, `${s.label}:${s.val || '?'}`))
+        ),
+        (content.quality_checks[formatKey].issues || []).length > 0 ? h('div', { style: { fontSize: '10px', color: '#dc2626' } },
+          ...content.quality_checks[formatKey].issues.map(i => h('div', { style: { paddingLeft: '6px', borderLeft: '2px solid #dc2626', marginBottom: '2px' } }, i.slice(0, 100)))
+        ) : null
+      ) : null,
       // Apply template dropdown (for linkedin and x_thread formats)
       typeof text === 'string' && ['linkedin', 'x_thread'].includes(formatKey) && state.templates.length > 0
         ? h('select', {
@@ -4617,6 +4679,18 @@ function renderContentPage() {
               } catch (err) { toast('Recycle failed: ' + err.message, 'error'); }
             }
           }, 'Recycle Top'),
+          h('button', {
+            className: 'btn btn-sm',
+            style: { background: '#0891b2', color: 'white', border: 'none' },
+            onclick: async () => {
+              toast('Running batch quality checks...', 'info');
+              try {
+                const res = await api('/api/content/batch-quality-check', { method: 'POST' });
+                toast(`Quality checked ${res.checked}: ${res.passed} passed, ${res.failed} failed`, 'success');
+                loadData();
+              } catch (err) { toast('Batch QA failed: ' + err.message, 'error'); }
+            }
+          }, 'QA All'),
           h('button', {
             className: 'btn btn-sm',
             onclick: () => { state.selectedContent = new Set(); render(); }
@@ -5525,6 +5599,22 @@ function renderTriggersPage() {
                         },
                         disabled: state.generating
                       }, 'Pillar')
+                    : null,
+                  trigger.status === 'pending'
+                    ? h('button', {
+                        className: 'btn btn-sm',
+                        style: { background: '#0891b2', color: 'white', padding: '4px 8px', fontSize: '11px', borderRadius: '6px' },
+                        title: 'Generate content brief for this trigger',
+                        onclick: async (e) => {
+                          e.stopPropagation();
+                          toast('Generating brief...', 'info');
+                          try {
+                            const res = await api(`/api/triggers/${trigger.id}/generate-brief`, { method: 'POST' });
+                            toast(`Brief: ${res.brief?.brief_title?.slice(0, 50)}`, 'success');
+                            loadData();
+                          } catch (err) { toast('Brief failed: ' + err.message, 'error'); }
+                        }
+                      }, 'Brief')
                     : null,
                   trigger.status === 'pending'
                     ? h('button', {

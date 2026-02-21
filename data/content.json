@@ -57,6 +57,12 @@
         "niche_score": 92,
         "generated_at": "2026-02-21T01:25:34.166Z"
       }
+    },
+    "quality_checks": {
+      "linkedin": {
+        "0": "CTA is implicit rather than explicit—no direct ask for comments, shares, DMs, or next steps",
+        "checked_at": "2026-02-21T01:40:57.942Z"
+      }
     }
   },
   {
@@ -268,6 +274,48 @@
         ],
         "niche_score": 92,
         "generated_at": "2026-02-21T01:25:36.422Z"
+      }
+    },
+    "quality_checks": {
+      "linkedin": {
+        "quality_score": 84,
+        "pass": true,
+        "brand_voice": {
+          "score": 18,
+          "pass": true,
+          "feedback": "Excellent. Direct, skeptical tone that speaks to law firm owners' pain. Calls out agency incompetence without being preachy. 'Let me translate that' section is particularly strong—shows insider knowledge. Avoids generic marketing fluff entirely."
+        },
+        "grammar_clarity": {
+          "score": 19,
+          "pass": true,
+          "feedback": "Clean, punchy sentences. Varied length keeps rhythm interesting. No typos or awkward phrasing. The technical explanation (location targeting settings) is clear even to non-PPC experts. Only minor: could slightly tighten 'Audit your own account. Today. Don't trust anyone else to do it' for even more impact."
+        },
+        "hook_quality": {
+          "score": 19,
+          "pass": true,
+          "feedback": "Strong opening. Specific ($8,100 waste, 6 months, 31% bad clicks) creates immediate credibility and concern. Concrete, relatable problem for the target audience. The revelation structure ('It gets worse') sustains engagement through multiple paragraphs."
+        },
+        "cta_presence": {
+          "score": 16,
+          "pass": true,
+          "feedback": "Clear call to action: 'Audit your own account. Today.' The follow-up ('Don't trust anyone else to do it') reinforces urgency and subtly positions Mortar Metrics as trustworthy alternative. Could be stronger with explicit next step—contact, book audit, DM, etc. CTA is implied rather than explicit."
+        },
+        "format_length": {
+          "score": 18,
+          "pass": true,
+          "feedback": "Well-structured for LinkedIn. Good use of short paragraphs and line breaks. The escalation ('It gets worse') creates natural pacing. Length is appropriate—substantial enough to demonstrate expertise without overwhelming. Hashtags are relevant and not excessive."
+        },
+        "issues": [
+          "Missing explicit next step/contact CTA—'Audit your account' is good but doesn't tell reader *how* to engage with Mortar Metrics",
+          "No attribution clarity—post doesn't make it obvious this is Mortar Metrics sharing the lesson (could strengthen with 'We audited this account and found...' or similar)"
+        ],
+        "suggestions": [
+          "Add explicit CTA: 'DM me for a free audit' or 'Comment AUDIT below' or link to audit form",
+          "Consider adding one data point about what *correct* setup looks like (you hint at it but could be more prescriptive)",
+          "Could mention this is a common mistake to normalize the issue and make engagement more comfortable",
+          "Post-timestamp engagement comment strategy: Have team ready to reply to 'how do I audit mine?' with step-by-step or offer"
+        ],
+        "checked_at": "2026-02-21T01:41:45.569Z"
       }
     }
   },
@@ -713,7 +761,23 @@
         "verdict": "High-performing niche post with strong emotional resonance for law firm owners—excellent CTR and shares within professional services vertical, but limited viral potential beyond B2B.",
         "predicted_at": "2026-02-21T01:30:01.870Z"
       }
-    }
+    },
+    "workflow_history": [
+      {
+        "from": "approved",
+        "to": "scheduled",
+        "timestamp": "2026-02-21T01:40:04.265Z",
+        "note": "Reviewed and ready for editing"
+      }
+    ],
+    "workflow_stage": "scheduled",
+    "review_notes": [
+      {
+        "note": "Hook is strong but CTA needs work",
+        "author": "Fardeen",
+        "timestamp": "2026-02-21T01:40:05.897Z"
+      }
+    ]
   },
   {
     "id": "a318e2a656b57",

@@ -6332,6 +6332,261 @@ Return JSON: { "viral_score": N, "hook_strength": { "score": N }, "emotional_tri
       return json(res, { ok: true, predicted, total_pending: pending.length });
     }
 
+    // --- Content Brief Generator ---
+
+    // POST /api/triggers/:id/generate-brief — AI generates a strategic content brief
+    if (pathname.match(/^\/api\/triggers\/[^/]+\/generate-brief$/) && method === 'POST') {
+      const id = pathname.split('/')[3];
+      const triggers = readJSON('trigger-queue.json');
+      const trigger = triggers.find(t => t.id === id);
+      if (!trigger) return json(res, { error: 'trigger not found' }, 404);
+
+      const { callClaude, parseJsonResponse, SONNET } = require('./lib/claude');
+      const prompt = `Create a detailed content brief for this trigger:
+
+TRIGGER: "${trigger.title}"
+SOURCE: ${trigger.source}
+CATEGORY: ${trigger.category || 'general'}
+SUMMARY: ${(trigger.summary || trigger.body || '').slice(0, 500)}
+
+Target audience: Law firm owners and partners (PI, family law, criminal defense, estate planning)
+Brand: Mortar Metrics — legal marketing agency that's data-driven, direct, and results-focused
+
+Return JSON:
+{
+  "brief_title": "Compelling brief title",
+  "target_audience": "specific segment of law firm owners this resonates with",
+  "key_angle": "the ONE main insight or argument to build around",
+  "key_messages": ["3-4 core points to communicate"],
+  "tone": "recommended tone (e.g., data-driven, empathetic, provocative, educational)",
+  "competitive_angle": "how this differentiates from generic marketing content",
+  "hook_suggestions": ["3 hook options for the opening"],
+  "cta_strategy": "recommended CTA approach and lead magnet tie-in",
+  "data_points": ["specific stats or claims to include if possible"],
+  "avoid": ["things to NOT say or do"],
+  "content_formats": ["recommended formats ranked by fit"],
+  "estimated_viral_potential": "low/medium/high with reasoning"
+}`;
+
+      let text, parsed;
+      try {
+        text = await callClaude({ model: SONNET, system: 'Content strategist for B2B legal marketing. Create actionable, specific briefs that guide content creation.', prompt, maxTokens: 1200 });
+        parsed = parseJsonResponse(text);
+      } catch (err) {
+        return json(res, { error: 'Claude API error: ' + err.message }, 500);
+      }
+
+      if (parsed) {
+        const briefs = readJSON('content-briefs.json', []);
+        const brief = {
+          id: generateId(),
+          trigger_id: id,
+          trigger_title: trigger.title,
+          ...parsed,
+          status: 'pending', // pending, approved, used
+          created_at: now()
+        };
+        briefs.push(brief);
+        writeJSON('content-briefs.json', briefs);
+        return json(res, { ok: true, brief });
+      }
+      return json(res, { error: 'Failed to parse brief', raw_preview: (text || '').slice(0, 200) }, 500);
+    }
+
+    // GET /api/content-briefs — list all content briefs
+    if (pathname === '/api/content-briefs' && method === 'GET') {
+      const briefs = readJSON('content-briefs.json', []);
+      return json(res, briefs);
+    }
+
+    // POST /api/content-briefs/:id/approve — approve a brief for content generation
+    if (pathname.match(/^\/api\/content-briefs\/[^/]+\/approve$/) && method === 'POST') {
+      const id = pathname.split('/')[3];
+      const briefs = readJSON('content-briefs.json', []);
+      const idx = briefs.findIndex(b => b.id === id);
+      if (idx === -1) return json(res, { error: 'brief not found' }, 404);
+      briefs[idx].status = 'approved';
+      briefs[idx].approved_at = now();
+      writeJSON('content-briefs.json', briefs);
+      return json(res, { ok: true, brief: briefs[idx] });
+    }
+
+    // --- Content Approval Workflow ---
+
+    // POST /api/content/:id/advance-stage — move content through approval pipeline
+    if (pathname.match(/^\/api\/content\/[^/]+\/advance-stage$/) && method === 'POST') {
+      const id = pathname.split('/')[3];
+      const body = await parseBody(req);
+
+      const stages = ['draft', 'review', 'edited', 'approved', 'scheduled', 'published'];
+      const content = readJSON('content.json');
+      const idx = content.findIndex(c => c.id === id);
+      if (idx === -1) return json(res, { error: 'content not found' }, 404);
+
+      const currentStage = content[idx].workflow_stage || content[idx].status || 'review';
+      const currentIdx = stages.indexOf(currentStage);
+
+      let nextStage;
+      if (body.stage) {
+        nextStage = body.stage;
+      } else {
+        nextStage = stages[Math.min(currentIdx + 1, stages.length - 1)];
+      }
+
+      if (!stages.includes(nextStage)) return json(res, { error: 'invalid stage' }, 400);
+
+      // Update workflow
+      if (!content[idx].workflow_history) content[idx].workflow_history = [];
+      content[idx].workflow_history.push({
+        from: currentStage,
+        to: nextStage,
+        timestamp: now(),
+        note: body.note || ''
+      });
+      content[idx].workflow_stage = nextStage;
+
+      // Also update status for backward compatibility
+      if (nextStage === 'approved') content[idx].status = 'approved';
+      if (nextStage === 'published') { content[idx].status = 'published'; content[idx].published_at = now(); }
+
+      writeJSON('content.json', content);
+      return json(res, { ok: true, stage: nextStage, previous: currentStage });
+    }
+
+    // POST /api/content/:id/add-review-note — add a review/feedback note
+    if (pathname.match(/^\/api\/content\/[^/]+\/add-review-note$/) && method === 'POST') {
+      const id = pathname.split('/')[3];
+      const body = await parseBody(req);
+      if (!body.note) return json(res, { error: 'note required' }, 400);
+
+      const content = readJSON('content.json');
+      const idx = content.findIndex(c => c.id === id);
+      if (idx === -1) return json(res, { error: 'content not found' }, 404);
+
+      if (!content[idx].review_notes) content[idx].review_notes = [];
+      content[idx].review_notes.push({
+        note: body.note,
+        author: body.author || 'reviewer',
+        timestamp: now()
+      });
+      writeJSON('content.json', content);
+      return json(res, { ok: true, notes: content[idx].review_notes });
+    }
+
+    // GET /api/workflow/pipeline — get pipeline view with stage counts
+    if (pathname === '/api/workflow/pipeline' && method === 'GET') {
+      const content = readJSON('content.json');
+      const stages = ['draft', 'review', 'edited', 'approved', 'scheduled', 'published'];
+      const pipeline = {};
+      for (const stage of stages) {
+        pipeline[stage] = content.filter(c => (c.workflow_stage || c.status) === stage).length;
+      }
+      // Map old statuses
+      if (!pipeline.draft) pipeline.draft = 0;
+      pipeline.total = content.length;
+      return json(res, pipeline);
+    }
+
+    // --- Content Quality Auto-Scorer ---
+
+    // POST /api/content/:id/quality-check — AI quality check before publishing
+    if (pathname.match(/^\/api\/content\/[^/]+\/quality-check$/) && method === 'POST') {
+      const id = pathname.split('/')[3];
+      const body = await parseBody(req);
+      const platform = body.platform || 'linkedin';
+
+      const content = readJSON('content.json');
+      const item = content.find(c => c.id === id);
+      if (!item) return json(res, { error: 'content not found' }, 404);
+
+      const contentText = typeof item.formats?.[platform]?.content === 'string'
+        ? item.formats[platform].content : '';
+      if (!contentText) return json(res, { error: 'no content for this platform' }, 400);
+
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+      const prompt = `Perform a quality check on this ${platform} post for a legal marketing agency (Mortar Metrics):
+
+POST:
+${contentText.slice(0, 2000)}
+
+Score each dimension 0-20 and give pass/fail:
+
+1. Brand Voice (0-20): Data-driven? Direct, not fluffy? Speaks to law firm owners? Avoids generic marketing speak?
+2. Grammar & Clarity (0-20): Clean writing? No awkward phrasing? Clear sentence structure?
+3. Hook Quality (0-20): First line stops the scroll? Specific? Creates curiosity or emotion?
+4. CTA Presence (0-20): Has a clear next step? Comment trigger, link, question? Reader knows what to do?
+5. Format & Length (0-20): Appropriate for ${platform}? Good use of line breaks, lists, or structure?
+
+Return JSON:
+{
+  "quality_score": 0-100,
+  "pass": true/false (pass if >= 65),
+  "brand_voice": { "score": N, "pass": bool, "feedback": "..." },
+  "grammar_clarity": { "score": N, "pass": bool, "feedback": "..." },
+  "hook_quality": { "score": N, "pass": bool, "feedback": "..." },
+  "cta_presence": { "score": N, "pass": bool, "feedback": "..." },
+  "format_length": { "score": N, "pass": bool, "feedback": "..." },
+  "issues": ["critical issues that must be fixed"],
+  "suggestions": ["nice-to-have improvements"]
+}`;
+
+      let text, parsed;
+      try {
+        text = await callClaude({ model: HAIKU, system: 'Content quality auditor. Be strict and specific. Always respond with valid JSON only.', prompt, maxTokens: 1000 });
+        parsed = parseJsonResponse(text);
+      } catch (err) {
+        return json(res, { error: 'Claude API error: ' + err.message }, 500);
+      }
+
+      if (parsed) {
+        const allContent = readJSON('content.json');
+        const idx = allContent.findIndex(c => c.id === id);
+        if (idx !== -1) {
+          if (!allContent[idx].quality_checks) allContent[idx].quality_checks = {};
+          allContent[idx].quality_checks[platform] = { ...parsed, checked_at: now() };
+          writeJSON('content.json', allContent);
+        }
+        return json(res, { ok: true, ...parsed });
+      }
+      return json(res, { error: 'Failed to parse quality check', raw_preview: (text || '').slice(0, 300) }, 500);
+    }
+
+    // POST /api/content/batch-quality-check — quality check all approved content
+    if (pathname === '/api/content/batch-quality-check' && method === 'POST') {
+      const content = readJSON('content.json');
+      const toCheck = content.filter(c => c.status === 'approved' && !c.quality_checks?.linkedin);
+      let checked = 0, passed = 0;
+
+      for (const item of toCheck.slice(0, 10)) {
+        try {
+          const contentText = typeof item.formats?.linkedin?.content === 'string'
+            ? item.formats.linkedin.content : '';
+          if (!contentText) continue;
+
+          const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+          const prompt = `Quality check this LinkedIn post (legal marketing agency). Score 0-100 across brand voice, grammar, hook, CTA, format. Return JSON: { "quality_score": N, "pass": bool, "brand_voice": { "score": N }, "grammar_clarity": { "score": N }, "hook_quality": { "score": N }, "cta_presence": { "score": N }, "format_length": { "score": N }, "issues": [] }
+
+POST: "${contentText.slice(0, 800)}"`;
+
+          const text = await callClaude({ model: HAIKU, system: 'Content quality auditor. Respond with JSON only.', prompt, maxTokens: 600 });
+          const parsed = parseJsonResponse(text);
+
+          if (parsed) {
+            const allContent = readJSON('content.json');
+            const idx = allContent.findIndex(c => c.id === item.id);
+            if (idx !== -1) {
+              if (!allContent[idx].quality_checks) allContent[idx].quality_checks = {};
+              allContent[idx].quality_checks.linkedin = { ...parsed, checked_at: now() };
+              writeJSON('content.json', allContent);
+              checked++;
+              if (parsed.pass) passed++;
+            }
+          }
+        } catch (e) { /* skip */ }
+      }
+      return json(res, { ok: true, checked, passed, failed: checked - passed, total_unchecked: toCheck.length });
+    }
+
     // --- Content Series API ---
 
     // GET /api/series — list all content series

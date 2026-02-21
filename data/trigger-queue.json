@@ -5884,8 +5884,9 @@
       "num_comments": 1
     },
     "captured_at": "2026-02-20T23:13:46.785Z",
-    "status": "pending",
-    "score": 0
+    "status": "used",
+    "score": 0,
+    "used_at": "2026-02-21T08:12:03.090Z"
   },
   {
     "id": "comp-aHR0cHM6Ly9nbGFk",

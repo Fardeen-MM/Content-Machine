@@ -1,0 +1,89 @@
+{
+  "conversion_score": 42,
+  "current_path": "Single published piece → lead magnet opt-in → email sequence → dead end. No commenting strategy, no DM follow-up system, no clear decision-stage content. Limited touchpoints before asking for commitment.",
+  "optimized_path": {
+    "step_1": {
+      "stage": "awareness",
+      "action": "Publish content that invites engagement and commentary",
+      "content_type": "LinkedIn posts, blog snippets, industry takes (use all 4 approved pieces here)",
+      "conversion_trigger": "High-quality comment = signal of interest. Automated tagging for follow-up."
+    },
+    "step_2": {
+      "stage": "interest",
+      "action": "DM commenters with personalized value message",
+      "content_type": "Direct message with specific reference to their comment + lead magnet offer",
+      "conversion_trigger": "Lead magnet download = permission to nurture. Email added to sequence."
+    },
+    "step_3": {
+      "stage": "consideration",
+      "action": "Nurture with educational sequence + social proof",
+      "content_type": "Email sequence (existing) + case study, comparison content, webinar invite",
+      "conversion_trigger": "Email engagement metrics (open rate >40%, click rate >15%) = move to step 4. OR webinar registration."
+    },
+    "step_4": {
+      "stage": "decision",
+      "action": "Direct outreach for discovery call",
+      "content_type": "Personalized email + phone/calendar link. Case study or ROI calculator if relevant.",
+      "conversion_trigger": "Calendar booking or sales rep phone call scheduled."
+    }
+  },
+  "cta_matrix": [
+    {
+      "content_type": "linkedin_post",
+      "primary_cta": "comment-based (ask specific question to spark discussion)",
+      "secondary_cta": "DM for [specific lead magnet name]",
+      "conversion_rate": "expected 3-8% comment rate, 15-25% of commenters convert to DM"
+    },
+    {
+      "content_type": "blog_post",
+      "primary_cta": "Download lead magnet mid-content (gate after value demo)",
+      "secondary_cta": "Schedule 15-min audit/assessment call",
+      "conversion_rate": "expected 8-15% lead magnet, 2-5% direct call booking"
+    },
+    {
+      "content_type": "case_study",
+      "primary_cta": "Schedule implementation call",
+      "secondary_cta": "Download ROI calculator",
+      "conversion_rate": "expected 5-12% call bookings (high intent)"
+    },
+    {
+      "content_type": "email_sequence",
+      "primary_cta": "Click through to webinar/demo",
+      "secondary_cta": "Reply with questions (manual sales touch)",
+      "conversion_rate": "expected 15-30% click-through, 3-8% reply rate"
+    }
+  ],
+  "missing_assets": [
+    "DM response template library (3-5 versions for different commenter personas)",
+    "Case study or social proof content (testimonial video, ROI breakdown, before/after)",
+    "Webinar or product demo video (consideration-stage content)",
+    "Lead magnet asset checklist: ensure it's gated, downloadable, and tied to first email",
+    "Comparison/alternative content (competitors or old approach vs. new)",
+    "Calendar booking integration (Calendly/HubSpot link in emails)",
+    "Retargeting email sequence (for lead magnet downloaders who don't engage)",
+    "Sales enablement doc (talking points for post-call follow-up)"
+  ],
+  "quick_fixes": [
+    "Add comment CTAs to all 4 approved pieces NOW. Change from 'like' to 'tell me in the comments' format.",
+    "Build simple DM automation: If LinkedIn comment detected → schedule DM with lead magnet link within 2 hours.",
+    "Insert lead magnet CTA in email #1 (not email #3). Move decision earlier.",
+    "Create 'DM offer' slide for each piece: specific value prop + single link to lead magnet.",
+    "Tag all commenters manually (if no automation) and prioritize warm outreach.",
+    "Add UTM tracking to each CTA so you know which content produces highest-intent leads.",
+    "Replace vague CTAs ('Learn more') with specific ones ('Get the [resource] now' or 'See how [company] increased X by Y%').",
+    "Set up email sequence trigger: lead magnet download → email within 30 min (urgency + relevance)."
+  ],
+  "dm_playbook": {
+    "trigger": "Within 2 hours of comment on your post. Prioritize: detailed comments > questions > simple likes.",
+    "opener": "Hi [Name], thanks for [specific comment detail]. That's exactly what we see with our clients. I put together [lead magnet name] that covers X, Y, Z—might be useful. [link] 👇",
+    "follow_up": "If no response in 5 days: 'Hi [Name], checking if you grabbed the [resource]? Happy to answer any Qs—just reply here or grab 15 min: [calendar link]'",
+    "close": "If positive engagement: 'Looks like [resource] was helpful. Would it make sense to do a quick call to map out [specific use case for them]? I can do [2 dates/times].'",
+    "variables": {
+      "reference_their_comment": "Shows you read it, not automated",
+      "lead_magnet_name": "Specific, not 'checklist' or 'guide'",
+      "calendar_link": "Frictionless path to call",
+      "timeline": "2-3 messages max before call ask"
+    }
+  },
+  "generated_at": "2026-02-21T08:11:25.805Z"
+}

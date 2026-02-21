@@ -2700,5 +2700,23 @@
     },
     "status": "review",
     "created_at": "2026-02-21T07:26:53.859Z"
+  },
+  {
+    "id": "17613aa38257031a",
+    "trigger_id": "hn-45102008",
+    "trigger_title": "Show HN: Stripe Specialist Team Scam – 50%+ deals",
+    "status": "approved",
+    "formats": {
+      "linkedin_post": {
+        "text": "Your 'Stripe Specialist Team' just offered you a 50%+ discount.\n\nStop.\n\nThat's a scam.\n\nHere's what's happening: Fraudsters are impersonating Stripe support, targeting law firms with inflated processing fees. They offer massive discounts to \"migrate\" you to their \"specialist team.\" Once you move, they either drain your account or vanish.\n\nWe see this pattern repeat across legal tech vendors. The attackers know:\n\n• Law firms process high-volume payments (trust accounts, retainers, settlements)\n• You're busy and delegate vendor relationships\n• Payment processing feels complex enough that a \"specialist\" sounds credible\n\nThe red flags:\n- Unsolicited contact with urgent discount offers\n- Requests to \"verify\" account details\n- Pressure to move quickly\n- Grammar issues in official communications\n- Links that don't match official domains\n\nIf Stripe (or any vendor) contacts you:\n1. Don't click links—go directly to their official site\n2. Call the verified number on your invoice\n3. Ask your finance team before any account changes\n4. Verify sender email domain matches the company\n\nYour payment processor is a critical vulnerability. Treat it like client data.\n\nHas your firm been targeted? Comment below.",
+        "status": "approved"
+      },
+      "x_single": {
+        "text": "\"Stripe Specialist Team\" offering 50%+ discounts? That's a scam targeting law firms. Never click unsolicited links. Always verify through official channels. Your trust account is the target.",
+        "status": "approved"
+      }
+    },
+    "created_at": "2026-02-21T08:12:03.088Z",
+    "auto_generated": true
   }
 ]

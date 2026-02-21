@@ -1558,6 +1558,9 @@ const state = {
   // Batch 61: AI Review, Trends, Publishing, Authority Score
   trendsAnalysis: null,
   authorityScore: null,
+  // Batch 62: Content Intelligence, Conversion Optimizer
+  contentIntelligence: null,
+  conversionOptimizer: null,
 };
 
 // --- API Calls ---
@@ -1583,7 +1586,7 @@ async function loadData() {
   state.loading = true;
   render();
   try {
-    const [content, triggers, stats, calendar, monthCal, settings, memory, performance, perfAnalytics, meetings, meetingStats, clients, allActions, chatMessages, healthData, inspirations, pestering, pesteringStages, insights, deals, published, series, predictions, playbooks, ctaLibrary, trending, funnel, publishTracker, leadMagnets, contentHealth, scheduleOptimize, templates, dmSequences, hooks, pillarPlan, contentLeads, autopilot, scheduleQueue, engagementDashboard, contentBriefs, workflowPipeline, personas, calendarWeek, benchmarkReport, contentIdeas, socialProof, roiReport, audienceGrowth, contentThemes, distributionPlans, dmPipelines, competitorsTracked, dripCampaigns, autoResponses, expiringContent, amplifications, leadFunnels, calendarInsights, weeklyDigest, splitTests, workflowRules, youtubePipelines, carousels, contentMatrix, ctaStrategy, seriesTemplates, contentBank, engagementPlaybook, atomizations, platformRules, emailSequences, weeklyContentPlan, repurposeChains, lmFunnels, perfReport, contentPillars, compAnalyses, nurtureCampaigns, authorityPlan, flywheelData, velocityData, audienceSegments, contentDna, topicClusters, voiceProfiles, dmScriptsData, replyStrategyData, systemHealthData, contentRecyclerData, commentStrategyData, newslettersData, distributionEngineData, socialProofEngineData, advancedAnalyticsData, growthPlaybookData, genLeadMagnetsData, funnelAnalysisData, autoRepurposeData, weeklyActionPlanData, trendsAnalysisData, authorityScoreData] = await Promise.all([
+    const [content, triggers, stats, calendar, monthCal, settings, memory, performance, perfAnalytics, meetings, meetingStats, clients, allActions, chatMessages, healthData, inspirations, pestering, pesteringStages, insights, deals, published, series, predictions, playbooks, ctaLibrary, trending, funnel, publishTracker, leadMagnets, contentHealth, scheduleOptimize, templates, dmSequences, hooks, pillarPlan, contentLeads, autopilot, scheduleQueue, engagementDashboard, contentBriefs, workflowPipeline, personas, calendarWeek, benchmarkReport, contentIdeas, socialProof, roiReport, audienceGrowth, contentThemes, distributionPlans, dmPipelines, competitorsTracked, dripCampaigns, autoResponses, expiringContent, amplifications, leadFunnels, calendarInsights, weeklyDigest, splitTests, workflowRules, youtubePipelines, carousels, contentMatrix, ctaStrategy, seriesTemplates, contentBank, engagementPlaybook, atomizations, platformRules, emailSequences, weeklyContentPlan, repurposeChains, lmFunnels, perfReport, contentPillars, compAnalyses, nurtureCampaigns, authorityPlan, flywheelData, velocityData, audienceSegments, contentDna, topicClusters, voiceProfiles, dmScriptsData, replyStrategyData, systemHealthData, contentRecyclerData, commentStrategyData, newslettersData, distributionEngineData, socialProofEngineData, advancedAnalyticsData, growthPlaybookData, genLeadMagnetsData, funnelAnalysisData, autoRepurposeData, weeklyActionPlanData, trendsAnalysisData, authorityScoreData, contentIntelData, conversionOptData] = await Promise.all([
       api('/api/content'),
       api('/api/triggers'),
       api('/api/stats'),
@@ -1684,7 +1687,9 @@ async function loadData() {
       api('/api/auto-repurpose').catch(() => null),
       api('/api/weekly-action-plan').catch(() => null),
       api('/api/trends-analysis').catch(() => null),
-      api('/api/authority-score').catch(() => null)
+      api('/api/authority-score').catch(() => null),
+      api('/api/content-intelligence').catch(() => null),
+      api('/api/conversion-optimizer').catch(() => null)
     ]);
     state.content = content;
     state.triggers = triggers;
@@ -1787,6 +1792,8 @@ async function loadData() {
     state.weeklyActionPlan = weeklyActionPlanData;
     state.trendsAnalysis = trendsAnalysisData;
     state.authorityScore = authorityScoreData;
+    state.contentIntelligence = contentIntelData;
+    state.conversionOptimizer = conversionOptData;
   } catch (err) {
     console.error('Failed to load data:', err);
     toast('Failed to load data', 'error');
@@ -3360,6 +3367,44 @@ function renderDashboardPage() {
                 } catch (err) { toast('Trends failed: ' + err.message, 'error'); }
               }
             }, 'Trends'),
+            h('button', {
+              className: 'btn btn-sm',
+              style: { background: '#1e40af', color: 'white', border: 'none' },
+              onclick: async () => {
+                toast('Generating intelligence briefing...', 'info');
+                try {
+                  const res = await api('/api/content-intelligence', { method: 'POST' });
+                  state.contentIntelligence = res;
+                  toast('Intelligence briefing ready!', 'success');
+                  render();
+                } catch (err) { toast('Intelligence failed: ' + err.message, 'error'); }
+              }
+            }, 'Intel'),
+            h('button', {
+              className: 'btn btn-sm',
+              style: { background: '#9333ea', color: 'white', border: 'none' },
+              onclick: async () => {
+                toast('Optimizing conversion path...', 'info');
+                try {
+                  const res = await api('/api/conversion-optimizer', { method: 'POST' });
+                  state.conversionOptimizer = res;
+                  toast(`Conversion score: ${res.conversion_score}/100`, 'success');
+                  render();
+                } catch (err) { toast('Conversion optimizer failed: ' + err.message, 'error'); }
+              }
+            }, 'Convert'),
+            h('button', {
+              className: 'btn btn-sm',
+              style: { background: '#059669', color: 'white', border: 'none' },
+              onclick: async () => {
+                toast('Running content audit...', 'info');
+                try {
+                  const res = await api('/api/content-audit', { method: 'POST' });
+                  const recs = res.recommendations || [];
+                  toast(`Audit: ${res.total_content} items, ${res.approval_rate}% approved. ${recs[0] || 'Looking good!'}`, 'success');
+                } catch (err) { toast('Audit failed: ' + err.message, 'error'); }
+              }
+            }, 'Audit'),
             h('button', { className: 'btn btn-ghost btn-sm', onclick: () => { state.page = 'content'; render(); } }, 'View Content')
           )
         ),
@@ -4253,6 +4298,35 @@ function renderDashboardPage() {
           )
         )
       )
+    ) : null,
+
+    // Content Intelligence (Batch 62)
+    state.contentIntelligence ? h('div', { style: { marginBottom: '20px' } },
+      h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)', marginBottom: '8px' } }, 'INTELLIGENCE BRIEFING'),
+      state.contentIntelligence.executive_summary ? h('div', { style: { padding: '8px 12px', background: '#eff6ff', borderRadius: 'var(--radius-sm)', fontSize: '11px', color: '#1e40af', marginBottom: '6px', fontStyle: 'italic' } }, state.contentIntelligence.executive_summary) : null,
+      state.contentIntelligence.biggest_opportunity ? h('div', { style: { padding: '6px 10px', background: '#f0fdf4', borderRadius: 'var(--radius-sm)', border: '1px solid #bbf7d0', marginBottom: '4px' } },
+        h('div', { style: { fontSize: '10px', fontWeight: '700', color: '#059669' } }, 'OPPORTUNITY'),
+        h('div', { style: { fontSize: '10px', color: '#065f46' } }, state.contentIntelligence.biggest_opportunity.what),
+        h('div', { style: { fontSize: '9px', color: '#059669', marginTop: '2px' } }, state.contentIntelligence.biggest_opportunity.how)
+      ) : null,
+      state.contentIntelligence.biggest_risk ? h('div', { style: { padding: '6px 10px', background: '#fef2f2', borderRadius: 'var(--radius-sm)', border: '1px solid #fecaca' } },
+        h('div', { style: { fontSize: '10px', fontWeight: '700', color: '#dc2626' } }, 'RISK'),
+        h('div', { style: { fontSize: '10px', color: '#991b1b' } }, state.contentIntelligence.biggest_risk.what),
+        h('div', { style: { fontSize: '9px', color: '#dc2626', marginTop: '2px' } }, state.contentIntelligence.biggest_risk.mitigation)
+      ) : null
+    ) : null,
+
+    // Conversion Optimizer (Batch 62)
+    state.conversionOptimizer ? h('div', { style: { marginBottom: '20px' } },
+      h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
+        h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)' } }, 'CONVERSION'),
+        h('div', { style: { fontSize: '12px', fontWeight: '700', padding: '2px 8px', borderRadius: '8px', background: state.conversionOptimizer.conversion_score >= 70 ? '#dcfce7' : state.conversionOptimizer.conversion_score >= 40 ? '#fef3c7' : '#fee2e2', color: state.conversionOptimizer.conversion_score >= 70 ? '#059669' : state.conversionOptimizer.conversion_score >= 40 ? '#d97706' : '#dc2626' } }, `${state.conversionOptimizer.conversion_score}/100`)
+      ),
+      state.conversionOptimizer.quick_fixes ? h('div', { style: { display: 'grid', gap: '2px' } },
+        ...(state.conversionOptimizer.quick_fixes || []).slice(0, 3).map(f =>
+          h('div', { style: { padding: '4px 10px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px', color: 'var(--gray-600)' } }, typeof f === 'string' ? f : f.fix || f.action || '')
+        )
+      ) : null
     ) : null,
 
     // Autopilot Status
@@ -6021,6 +6095,20 @@ function renderFormatContent(content, formatKey, fmt) {
               } catch (err) { toast('Social proof failed: ' + err.message, 'error'); }
             }
           }, 'Proof Post')
+        : null,
+      // Persona Adapt button (for any format with 200+ chars)
+      typeof text === 'string' && text.length >= 200
+        ? h('button', {
+            className: 'btn btn-outline btn-sm',
+            style: { color: '#0d9488', borderColor: '#0d9488' },
+            onclick: async () => {
+              toast('Adapting for personas...', 'info');
+              try {
+                const res = await api(`/api/content/${content.id}/persona-adapt`, { method: 'POST', body: { format: formatKey } });
+                toast(`${res.adaptations?.length || 3} persona versions created!`, 'success');
+              } catch (err) { toast('Persona adapt failed: ' + err.message, 'error'); }
+            }
+          }, 'Personas')
         : null,
       // AI Review button (for any social format)
       typeof text === 'string' && ['linkedin', 'x_single', 'x_thread', 'hot_take'].includes(formatKey)

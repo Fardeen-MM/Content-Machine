@@ -12726,6 +12726,303 @@ Return JSON:
       return json(res, { ok: true, content_id: contentId, format: formatKey, ...parsed });
     }
 
+    // ======= BATCH 62: Content Intelligence, Conversion Optimization, Automated Workflows =======
+
+    // POST /api/content-intelligence — AI-powered content strategy recommendations
+    if (method === 'POST' && pathname === '/api/content-intelligence') {
+      const allContent = readJSON('content.json', []);
+      const triggers = readJSON('trigger-queue.json', []);
+      const published = readJSON('published.json', []);
+      const contentDna = readJSON('content-dna.json', null);
+      const trendsAnalysis = readJSON('trends-analysis.json', null);
+      const funnelAnalysis = readJSON('funnel-analysis.json', null);
+
+      const { callClaude, parseJsonResponse, SONNET } = require('./lib/claude');
+      const result = await callClaude({
+        model: SONNET,
+        system: 'You are a chief content strategist with data-driven insights. Analyze the full content ecosystem and provide specific, actionable intelligence that will grow the audience and generate leads. No vague advice — every recommendation should be "do X by Y to achieve Z". Return JSON only.',
+        prompt: `Analyze our content ecosystem and provide intelligence briefing.
+
+Current state:
+- ${allContent.length} content pieces, ${published.length} published
+- ${triggers.filter(t => t.status === 'pending').length} pending triggers
+- DNA analysis: ${contentDna ? 'done' : 'not done'}
+- Trends: ${trendsAnalysis?.emerging_trends?.length || 0} emerging trends
+- Funnel: ${funnelAnalysis?.funnel_health || 'not analyzed'}
+- Approval rate: ${allContent.length > 0 ? Math.round(allContent.filter(c => c.status === 'approved' || c.status === 'published').length / allContent.length * 100) : 0}%
+- Top sources: ${Object.entries(triggers.reduce((acc, t) => { acc[t.source || 'unknown'] = (acc[t.source || 'unknown'] || 0) + 1; return acc; }, {})).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([s, c]) => `${s}(${c})`).join(', ')}
+
+Return JSON:
+{
+  "executive_summary": "2-3 sentence state of the content program",
+  "biggest_opportunity": {
+    "what": "specific opportunity",
+    "why": "why now",
+    "how": "exact steps to capture it",
+    "expected_impact": "quantified outcome"
+  },
+  "biggest_risk": {
+    "what": "specific risk",
+    "impact": "what happens if ignored",
+    "mitigation": "how to prevent it"
+  },
+  "this_week_priorities": [
+    { "priority": 1, "action": "specific action", "expected_outcome": "...", "time_needed": "30 min" }
+  ],
+  "content_gaps": [
+    { "gap": "what's missing", "impact": "why it matters", "solution": "what to create" }
+  ],
+  "performance_insights": [
+    { "insight": "data-driven observation", "action": "what to do about it" }
+  ],
+  "competitor_intelligence": "what competitors are doing that we should respond to"
+}`,
+        maxTokens: 4000
+      });
+      const parsed = parseJsonResponse(result);
+      const intel = { ...parsed, generated_at: now() };
+      writeJSON('content-intelligence.json', intel);
+      return json(res, { ok: true, ...intel });
+    }
+
+    // GET /api/content-intelligence
+    if (method === 'GET' && pathname === '/api/content-intelligence') {
+      return json(res, readJSON('content-intelligence.json', null));
+    }
+
+    // POST /api/conversion-optimizer — Optimize content for lead conversion
+    if (method === 'POST' && pathname === '/api/conversion-optimizer') {
+      const allContent = readJSON('content.json', []);
+      const published = readJSON('published.json', []);
+      const leadMagnets = readJSON('generated-lead-magnets.json', []);
+      const emailSeqs = readJSON('email-sequences.json', []);
+
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+      const result = await callClaude({
+        model: HAIKU,
+        system: 'You are a conversion rate optimization expert for B2B content marketing. Focus on turning content consumers into leads: comment → DM → email → call. Every piece of content should have a clear conversion path. Return JSON only.',
+        prompt: `Optimize our content-to-conversion pipeline.
+
+Assets: ${published.length} published, ${leadMagnets.length} lead magnets, ${emailSeqs.length} email sequences.
+Content ready: ${allContent.filter(c => c.status === 'approved').length} approved pieces.
+
+Return JSON:
+{
+  "conversion_score": 0-100,
+  "current_path": "description of current conversion journey",
+  "optimized_path": {
+    "step_1": { "stage": "awareness", "action": "what happens", "content_type": "what to use", "conversion_trigger": "what moves them forward" },
+    "step_2": { "stage": "interest", "action": "...", "content_type": "...", "conversion_trigger": "..." },
+    "step_3": { "stage": "consideration", "action": "...", "content_type": "...", "conversion_trigger": "..." },
+    "step_4": { "stage": "decision", "action": "...", "content_type": "...", "conversion_trigger": "..." }
+  },
+  "cta_matrix": [
+    { "content_type": "linkedin_post", "primary_cta": "comment-based", "secondary_cta": "DM offer", "conversion_rate": "expected %" }
+  ],
+  "missing_assets": ["what needs to be created for the funnel to work"],
+  "quick_fixes": ["immediate changes to increase conversion"],
+  "dm_playbook": {
+    "trigger": "when to DM someone",
+    "opener": "first message",
+    "follow_up": "if no response",
+    "close": "moving to a call"
+  }
+}`,
+        maxTokens: 3000
+      });
+      const parsed = parseJsonResponse(result);
+      writeJSON('conversion-optimizer.json', { ...parsed, generated_at: now() });
+      return json(res, { ok: true, ...parsed });
+    }
+
+    // GET /api/conversion-optimizer
+    if (method === 'GET' && pathname === '/api/conversion-optimizer') {
+      return json(res, readJSON('conversion-optimizer.json', null));
+    }
+
+    // POST /api/content/:id/persona-adapt — Adapt content for specific audience persona
+    if (method === 'POST' && pathname.match(/^\/api\/content\/([^/]+)\/persona-adapt$/)) {
+      const contentId = pathname.split('/')[3];
+      const allContent = readJSON('content.json', []);
+      const item = allContent.find(c => c.id === contentId);
+      if (!item) return json(res, { error: 'Content not found' }, 404);
+      const body = await parseBody(req);
+      const formatKey = body.format || Object.keys(item.formats || {})[0];
+      const text = item.formats?.[formatKey]?.text || item.formats?.[formatKey];
+      if (!text) return json(res, { error: 'No content found' }, 400);
+
+      const audienceSegments = readJSON('audience-segments.json', null);
+      const personas = audienceSegments?.segments || [
+        { name: 'Solo PI Attorney', pain: 'Overwhelmed, needs cases but no time for marketing' },
+        { name: 'Managing Partner', pain: 'Wants growth, skeptical of agencies after bad experiences' },
+        { name: 'Marketing Director', pain: 'Needs to prove ROI to partners, limited budget' }
+      ];
+
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+      const result = await callClaude({
+        model: HAIKU,
+        system: 'You are an audience adaptation specialist. Take one piece of content and rewrite it specifically for different audience personas. Each version should speak directly to that persona\'s pain points, language, and decision-making criteria. Return JSON only.',
+        prompt: `Adapt this content for each audience persona.
+
+Original:
+${typeof text === 'string' ? text.slice(0, 2000) : JSON.stringify(text).slice(0, 2000)}
+
+Personas:
+${personas.slice(0, 3).map((p, i) => `${i + 1}. ${p.name}: ${p.pain || p.description || ''}`).join('\n')}
+
+Return JSON:
+{
+  "adaptations": [
+    {
+      "persona": "persona name",
+      "adapted_content": "full rewritten content for this persona",
+      "key_changes": ["what was changed and why"],
+      "best_platform": "where this persona is most active",
+      "cta": "persona-specific CTA"
+    }
+  ],
+  "universal_elements": ["what works for all personas"],
+  "testing_suggestion": "which persona version to test first and why"
+}`,
+        maxTokens: 4000
+      });
+      const parsed = parseJsonResponse(result);
+      return json(res, { ok: true, content_id: contentId, format: formatKey, ...parsed });
+    }
+
+    // POST /api/content-audit — Full audit of all content quality and strategy alignment
+    if (method === 'POST' && pathname === '/api/content-audit') {
+      const allContent = readJSON('content.json', []);
+      const triggers = readJSON('trigger-queue.json', []);
+      const series = readJSON('series-templates.json', { series: [] });
+
+      // Calculate audit metrics without AI
+      const totalContent = allContent.length;
+      const byStatus = { review: 0, approved: 0, rejected: 0, published: 0 };
+      allContent.forEach(c => { byStatus[c.status] = (byStatus[c.status] || 0) + 1; });
+
+      const formatDistribution = {};
+      allContent.forEach(c => {
+        Object.keys(c.formats || {}).forEach(f => {
+          formatDistribution[f] = (formatDistribution[f] || 0) + 1;
+        });
+      });
+
+      const avgFormats = totalContent > 0 ? (Object.values(formatDistribution).reduce((a, b) => a + b, 0) / totalContent).toFixed(1) : 0;
+
+      // Source quality
+      const sourceQuality = {};
+      triggers.forEach(t => {
+        const src = t.source || 'unknown';
+        if (!sourceQuality[src]) sourceQuality[src] = { total: 0, high_score: 0, used: 0 };
+        sourceQuality[src].total++;
+        if ((t.score || 0) >= 70) sourceQuality[src].high_score++;
+        if (t.status === 'used') sourceQuality[src].used++;
+      });
+
+      // Age distribution
+      const now_ts = Date.now();
+      const ageGroups = { today: 0, this_week: 0, this_month: 0, older: 0 };
+      allContent.forEach(c => {
+        const age = now_ts - new Date(c.created_at).getTime();
+        if (age < 86400000) ageGroups.today++;
+        else if (age < 604800000) ageGroups.this_week++;
+        else if (age < 2592000000) ageGroups.this_month++;
+        else ageGroups.older++;
+      });
+
+      return json(res, {
+        ok: true,
+        total_content: totalContent,
+        status_breakdown: byStatus,
+        format_distribution: formatDistribution,
+        avg_formats_per_piece: parseFloat(avgFormats),
+        source_quality: sourceQuality,
+        age_distribution: ageGroups,
+        series_defined: (series.series || []).length,
+        approval_rate: totalContent > 0 ? Math.round((byStatus.approved + byStatus.published) / totalContent * 100) : 0,
+        recommendations: [
+          byStatus.review > 10 ? `Review backlog: ${byStatus.review} pieces need review` : null,
+          byStatus.approved > 5 ? `${byStatus.approved} approved pieces ready to publish` : null,
+          Object.keys(formatDistribution).length < 5 ? 'Limited format diversity — try carousels, polls, or video scripts' : null,
+          ageGroups.older > totalContent * 0.5 ? 'Over 50% of content is 30+ days old — recycle or refresh' : null
+        ].filter(Boolean),
+        audited_at: now()
+      });
+    }
+
+    // POST /api/one-click-publish — One-click generation + optimization + publishing package
+    if (method === 'POST' && pathname === '/api/one-click-publish') {
+      const body = await parseBody(req);
+      const triggerId = body.trigger_id;
+
+      if (!triggerId) return json(res, { error: 'trigger_id required' }, 400);
+
+      const triggers = readJSON('trigger-queue.json', []);
+      const trigger = triggers.find(t => t.id === triggerId);
+      if (!trigger) return json(res, { error: 'Trigger not found' }, 404);
+
+      // Step 1: Generate content
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+      const genResult = await callClaude({
+        model: HAIKU,
+        system: 'You are a content writer for Mortar Metrics, a legal marketing agency that helps law firms get more signed cases. Write in a direct, data-driven style. No fluff. Every post should teach something or provoke thought. Return JSON only.',
+        prompt: `Create a LinkedIn post and an X tweet from this trigger.
+
+Trigger: ${trigger.title || trigger.topic}
+Source: ${trigger.source || 'unknown'}
+Context: ${trigger.summary || trigger.description || ''}
+
+Return JSON:
+{
+  "linkedin_post": "full LinkedIn post (800-1200 chars, hook first line, end with CTA)",
+  "x_tweet": "single tweet (280 chars max, punchy)",
+  "hashtags": ["3 LinkedIn hashtags"],
+  "best_posting_time": "when to post for max reach",
+  "engagement_prediction": "low|medium|high"
+}`,
+        maxTokens: 2000
+      });
+      const genParsed = parseJsonResponse(genResult);
+
+      // Step 2: Save as content
+      const allContent = readJSON('content.json', []);
+      const contentId = generateId();
+      const newContent = {
+        id: contentId,
+        trigger_id: triggerId,
+        trigger_title: trigger.title || trigger.topic,
+        status: 'approved',
+        formats: {
+          linkedin_post: { text: genParsed.linkedin_post, status: 'approved' },
+          x_single: { text: genParsed.x_tweet, status: 'approved' }
+        },
+        created_at: now(),
+        auto_generated: true
+      };
+      allContent.push(newContent);
+      writeJSON('content.json', allContent);
+
+      // Step 3: Mark trigger as used
+      const tIdx = triggers.findIndex(t => t.id === triggerId);
+      if (tIdx !== -1) {
+        triggers[tIdx].status = 'used';
+        triggers[tIdx].used_at = now();
+        writeJSON('trigger-queue.json', triggers);
+      }
+
+      return json(res, {
+        ok: true,
+        content_id: contentId,
+        linkedin_post: genParsed.linkedin_post,
+        x_tweet: genParsed.x_tweet,
+        hashtags: genParsed.hashtags,
+        best_posting_time: genParsed.best_posting_time,
+        engagement_prediction: genParsed.engagement_prediction,
+        next_step: 'Copy the LinkedIn post and X tweet above. Post them now!'
+      });
+    }
+
     // --- Static file serving ---
 
     // Serve dashboard

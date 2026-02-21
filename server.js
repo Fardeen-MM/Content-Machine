@@ -3956,6 +3956,295 @@ Return JSON: { "trigger_keyword": "AUDIT", "cta_text": "Comment AUDIT for the fr
       return json(res, { platform_times: platformTimes, day_performance: dayPerformance, next_week: nextWeek });
     }
 
+    // --- DM Sequence Builder ---
+
+    // GET /api/dm-sequences — list all DM follow-up sequences
+    if (pathname === '/api/dm-sequences' && method === 'GET') {
+      const sequences = readJSON('dm-sequences.json', []);
+      return json(res, sequences);
+    }
+
+    // POST /api/dm-sequences — create a new DM sequence
+    if (pathname === '/api/dm-sequences' && method === 'POST') {
+      const body = await parseBody(req);
+      if (!body.trigger_keyword) return json(res, { error: 'trigger_keyword required' }, 400);
+
+      const sequences = readJSON('dm-sequences.json', []);
+      const seq = {
+        id: generateId(),
+        trigger_keyword: body.trigger_keyword.toUpperCase(),
+        name: body.name || `${body.trigger_keyword} Sequence`,
+        lead_magnet: body.lead_magnet || '',
+        lead_magnet_url: body.lead_magnet_url || '',
+        steps: body.steps || [
+          { day: 0, type: 'deliver', message: `Hey {name}! Here's the {lead_magnet} I mentioned. {link} — Let me know if you have any questions!` },
+          { day: 1, type: 'value_add', message: `Quick follow-up — did you get a chance to look at the {lead_magnet}? Here's one thing most firms miss: {insight}` },
+          { day: 3, type: 'soft_cta', message: `{name}, I noticed you grabbed our {lead_magnet}. Would it be helpful if I put together a quick custom analysis for your firm? Takes about 15 minutes.` },
+          { day: 7, type: 'meeting_ask', message: `Last thought — we do free 15-min marketing audits for firms that downloaded the {lead_magnet}. Want me to block some time this week? Here's my calendar: {calendar_link}` }
+        ],
+        content_ids: body.content_ids || [],
+        active: true,
+        leads_captured: 0,
+        meetings_booked: 0,
+        created_at: now()
+      };
+
+      sequences.push(seq);
+      writeJSON('dm-sequences.json', sequences);
+      return json(res, { ok: true, sequence: seq });
+    }
+
+    // PUT /api/dm-sequences/:id — update a DM sequence
+    const dmSeqUpdateMatch = pathname.match(/^\/api\/dm-sequences\/([a-f0-9]+)$/);
+    if (dmSeqUpdateMatch && method === 'PUT') {
+      const body = await parseBody(req);
+      const sequences = readJSON('dm-sequences.json', []);
+      const idx = sequences.findIndex(s => s.id === dmSeqUpdateMatch[1]);
+      if (idx === -1) return json(res, { error: 'Not found' }, 404);
+
+      const updates = ['name', 'trigger_keyword', 'lead_magnet', 'lead_magnet_url', 'steps', 'active', 'content_ids'];
+      for (const key of updates) {
+        if (body[key] !== undefined) sequences[idx][key] = body[key];
+      }
+      sequences[idx].updated_at = now();
+      writeJSON('dm-sequences.json', sequences);
+      return json(res, { ok: true, sequence: sequences[idx] });
+    }
+
+    // POST /api/dm-sequences/auto-generate — AI generates DM sequences for content with CTAs
+    if (pathname === '/api/dm-sequences/auto-generate' && method === 'POST') {
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+
+      const content = readJSON('content.json');
+      const sequences = readJSON('dm-sequences.json', []);
+      const existingKeywords = new Set(sequences.map(s => s.trigger_keyword));
+
+      // Find content with CTAs that don't have sequences yet
+      const needSequences = content.filter(c =>
+        c.comment_ctas?.ctas?.length > 0 &&
+        c.comment_ctas.ctas.some(cta => !existingKeywords.has(cta.trigger_keyword))
+      );
+
+      if (needSequences.length === 0) return json(res, { ok: true, generated: 0, message: 'All CTAs already have sequences' });
+
+      try {
+        const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+        let generated = 0;
+
+        for (const item of needSequences.slice(0, 5)) {
+          for (const cta of item.comment_ctas.ctas) {
+            if (existingKeywords.has(cta.trigger_keyword)) continue;
+
+            const prompt = `Create a 4-step DM follow-up sequence for someone who commented "${cta.trigger_keyword}" on a LinkedIn post about "${item.trigger_title}".
+
+The lead magnet is: ${cta.lead_magnet}
+The CTA was: ${cta.cta_text}
+
+Return JSON (raw, no fences):
+{
+  "steps": [
+    { "day": 0, "type": "deliver", "message": "Day 0: Deliver the resource immediately..." },
+    { "day": 1, "type": "value_add", "message": "Day 1: Add extra value, share an insight..." },
+    { "day": 3, "type": "soft_cta", "message": "Day 3: Soft ask about their situation..." },
+    { "day": 7, "type": "meeting_ask", "message": "Day 7: Ask for a meeting..." }
+  ]
+}
+
+Use {name} as placeholder for lead's name. Keep messages conversational, value-first. Each under 280 chars for DM readability.`;
+
+            const text = await callClaude({ model: HAIKU, system: 'You are a sales sequence copywriter for a legal marketing agency.', prompt, maxTokens: 800 });
+            const parsed = parseJsonResponse(text);
+            if (parsed?.steps) {
+              const seq = {
+                id: generateId(),
+                trigger_keyword: cta.trigger_keyword,
+                name: `${cta.trigger_keyword} — ${(item.trigger_title || '').slice(0, 40)}`,
+                lead_magnet: cta.lead_magnet,
+                lead_magnet_url: '',
+                steps: parsed.steps,
+                content_ids: [item.id],
+                active: true,
+                leads_captured: 0,
+                meetings_booked: 0,
+                created_at: now()
+              };
+              sequences.push(seq);
+              existingKeywords.add(cta.trigger_keyword);
+              generated++;
+            }
+          }
+        }
+
+        writeJSON('dm-sequences.json', sequences);
+        return json(res, { ok: true, generated, total: sequences.length });
+      } catch (err) {
+        return json(res, { error: err.message }, 500);
+      }
+    }
+
+    // --- Engagement Hooks Library ---
+
+    // GET /api/hooks — list engagement hooks
+    if (pathname === '/api/hooks' && method === 'GET') {
+      const hooks = readJSON('hooks.json', []);
+      return json(res, hooks);
+    }
+
+    // POST /api/hooks — add a new hook
+    if (pathname === '/api/hooks' && method === 'POST') {
+      const body = await parseBody(req);
+      if (!body.text) return json(res, { error: 'text required' }, 400);
+
+      const hooks = readJSON('hooks.json', []);
+      const hook = {
+        id: generateId(),
+        text: body.text,
+        category: body.category || 'general',
+        format: body.format || 'linkedin',
+        tags: body.tags || [],
+        uses: 0,
+        performance_score: 0,
+        created_at: now()
+      };
+      hooks.push(hook);
+      writeJSON('hooks.json', hooks);
+      return json(res, { ok: true, hook });
+    }
+
+    // POST /api/content/:id/apply-hook — rewrite content's first line using a hook pattern
+    const applyHookMatch = pathname.match(/^\/api\/content\/([a-f0-9]+)\/apply-hook$/);
+    if (applyHookMatch && method === 'POST') {
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+
+      const body = await parseBody(req);
+      const format = body.format || 'linkedin';
+      const hookId = body.hook_id;
+
+      const content = readJSON('content.json');
+      const idx = content.findIndex(c => c.id === applyHookMatch[1]);
+      if (idx === -1) return json(res, { error: 'Not found' }, 404);
+
+      const item = content[idx];
+      const currentContent = typeof item.formats?.[format]?.content === 'string' ? item.formats[format].content : '';
+      if (!currentContent) return json(res, { error: `No ${format} content` }, 400);
+
+      const hooks = readJSON('hooks.json', []);
+      const hook = hookId ? hooks.find(h => h.id === hookId) : null;
+
+      try {
+        const { callClaude, HAIKU } = require('./lib/claude');
+        const { buildSystemPromptWithMemory } = require('./generator/content-writer');
+
+        const prompt = `Rewrite ONLY the first 1-2 lines (the hook) of this ${format} post to be more engaging and stop-the-scroll.
+
+${hook ? `USE THIS HOOK PATTERN: "${hook.text}"` : 'Use the most engaging hook pattern possible (data bomb, contrarian take, story opener, or shocking stat).'}
+
+CURRENT POST:
+${currentContent.slice(0, 800)}
+
+Return ONLY the full rewritten post with the new hook. Keep the body and CTA unchanged. Just improve the opening.`;
+
+        const newContent = await callClaude({ model: HAIKU, system: buildSystemPromptWithMemory(), prompt, maxTokens: 2000 });
+        if (newContent && newContent.length > 50) {
+          content[idx].formats[format].content = newContent.trim();
+          content[idx].formats[format].hook_rewritten = true;
+          content[idx].formats[format].original_hook = currentContent.split('\n')[0];
+          writeJSON('content.json', content);
+
+          if (hook) {
+            const hIdx = hooks.findIndex(h => h.id === hookId);
+            if (hIdx !== -1) { hooks[hIdx].uses++; writeJSON('hooks.json', hooks); }
+          }
+          return json(res, { ok: true, format, rewritten: true, new_hook: newContent.split('\n')[0] });
+        }
+        return json(res, { error: 'AI returned insufficient content' }, 500);
+      } catch (err) {
+        return json(res, { error: err.message }, 500);
+      }
+    }
+
+    // --- Auto-Repurpose Chain ---
+
+    // POST /api/content/:id/repurpose-all — generate all missing formats from the best available source
+    const repurposeAllMatch = pathname.match(/^\/api\/content\/([a-f0-9]+)\/repurpose-all$/);
+    if (repurposeAllMatch && method === 'POST') {
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+
+      const content = readJSON('content.json');
+      const idx = content.findIndex(c => c.id === repurposeAllMatch[1]);
+      if (idx === -1) return json(res, { error: 'Not found' }, 404);
+
+      const item = content[idx];
+      const allFormats = ['linkedin', 'x_single', 'x_thread', 'short_video', 'carousel', 'blog', 'newsletter', 'lead_magnet', 'youtube_script'];
+
+      // Find the best source format (longest content)
+      let bestSource = null;
+      let bestLen = 0;
+      for (const [fmt, data] of Object.entries(item.formats || {})) {
+        const len = typeof data?.content === 'string' ? data.content.length : Array.isArray(data?.content) ? data.content.join(' ').length : 0;
+        if (len > bestLen) { bestLen = len; bestSource = fmt; }
+      }
+      if (!bestSource) return json(res, { error: 'No source content to repurpose from' }, 400);
+
+      // Find missing formats
+      const missing = allFormats.filter(f => {
+        const d = item.formats?.[f];
+        return !d?.content || (typeof d.content === 'string' && d.content.length < 50);
+      });
+
+      if (missing.length === 0) return json(res, { ok: true, message: 'All formats already have content', repurposed: 0 });
+
+      const batchId = generateId();
+      _batchProgress[batchId] = { total: missing.length, completed: 0, errors: 0, results: [], status: 'running', type: 'repurpose_all' };
+
+      setImmediate(async () => {
+        const { repurposeContent } = require('./lib/claude');
+        const { buildSystemPromptWithMemory } = require('./generator/content-writer');
+        const systemPrompt = buildSystemPromptWithMemory();
+
+        const sourceContent = typeof item.formats[bestSource].content === 'string'
+          ? item.formats[bestSource].content
+          : Array.isArray(item.formats[bestSource].content)
+            ? item.formats[bestSource].content.join('\n\n')
+            : '';
+
+        for (const targetFormat of missing) {
+          try {
+            const result = await repurposeContent({
+              sourceContent,
+              sourceFormat: bestSource,
+              targetFormat,
+              title: item.trigger_title || '',
+              systemPrompt
+            });
+            if (result) {
+              const fresh = readJSON('content.json');
+              const fIdx = fresh.findIndex(c => c.id === repurposeAllMatch[1]);
+              if (fIdx !== -1) {
+                if (!fresh[fIdx].formats) fresh[fIdx].formats = {};
+                fresh[fIdx].formats[targetFormat] = {
+                  content: result,
+                  status: 'review',
+                  generated_at: now(),
+                  repurposed_from: bestSource
+                };
+                writeJSON('content.json', fresh);
+              }
+              _batchProgress[batchId].results.push(targetFormat);
+            }
+            _batchProgress[batchId].completed++;
+          } catch (err) {
+            _batchProgress[batchId].errors++;
+            _batchProgress[batchId].completed++;
+          }
+        }
+        _batchProgress[batchId].status = 'done';
+        setTimeout(() => { delete _batchProgress[batchId]; }, 30 * 60 * 1000);
+      });
+
+      return json(res, { ok: true, batch_id: batchId, source: bestSource, generating: missing, total: missing.length });
+    }
+
     // --- Content Health Overview ---
 
     // GET /api/content-health — comprehensive content health metrics

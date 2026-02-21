@@ -1449,6 +1449,10 @@ const state = {
   scheduleOptimize: null,
   // Templates
   templates: [],
+  // DM Sequences
+  dmSequences: [],
+  // Hooks Library
+  hooks: [],
 };
 
 // --- API Calls ---
@@ -1474,7 +1478,7 @@ async function loadData() {
   state.loading = true;
   render();
   try {
-    const [content, triggers, stats, calendar, monthCal, settings, memory, performance, perfAnalytics, meetings, meetingStats, clients, allActions, chatMessages, healthData, inspirations, pestering, pesteringStages, insights, deals, published, series, predictions, playbooks, ctaLibrary, trending, funnel, publishTracker, leadMagnets, contentHealth, scheduleOptimize, templates] = await Promise.all([
+    const [content, triggers, stats, calendar, monthCal, settings, memory, performance, perfAnalytics, meetings, meetingStats, clients, allActions, chatMessages, healthData, inspirations, pestering, pesteringStages, insights, deals, published, series, predictions, playbooks, ctaLibrary, trending, funnel, publishTracker, leadMagnets, contentHealth, scheduleOptimize, templates, dmSequences, hooks] = await Promise.all([
       api('/api/content'),
       api('/api/triggers'),
       api('/api/stats'),
@@ -1506,7 +1510,9 @@ async function loadData() {
       api('/api/lead-magnets').catch(() => []),
       api('/api/content-health').catch(() => null),
       api('/api/schedule/optimize').catch(() => null),
-      api('/api/templates').catch(() => [])
+      api('/api/templates').catch(() => []),
+      api('/api/dm-sequences').catch(() => []),
+      api('/api/hooks').catch(() => [])
     ]);
     state.content = content;
     state.triggers = triggers;
@@ -1540,6 +1546,8 @@ async function loadData() {
     state.contentHealth = contentHealth;
     state.scheduleOptimize = scheduleOptimize;
     state.templates = templates;
+    state.dmSequences = dmSequences;
+    state.hooks = hooks;
   } catch (err) {
     console.error('Failed to load data:', err);
     toast('Failed to load data', 'error');
@@ -2996,6 +3004,28 @@ function renderContentCard(content) {
               title: 'Generate mini case study'
             }, '+ Case Study')
           : null,
+        // Repurpose All — generate all missing formats from the best available source
+        (() => {
+          const allFmts = ['linkedin', 'x_single', 'x_thread', 'short_video', 'carousel', 'blog', 'newsletter', 'lead_magnet', 'youtube_script'];
+          const existing = Object.entries(content.formats || {}).filter(([,v]) => v?.content).length;
+          const missing = allFmts.length - existing;
+          if (existing > 0 && missing > 0) {
+            return h('button', {
+              className: 'btn btn-outline btn-sm',
+              style: { color: '#7c3aed', borderColor: '#7c3aed', fontSize: '11px' },
+              title: `Generate ${missing} missing formats from existing content`,
+              onclick: async () => {
+                toast(`Generating ${missing} missing formats...`, 'info');
+                try {
+                  const res = await api(`/api/content/${content.id}/repurpose-all`, { method: 'POST' });
+                  toast(`Repurposing ${res.total} formats from ${res.source}! Results in ~60s.`, 'success');
+                  setTimeout(() => loadData(), 30000);
+                } catch (err) { toast('Repurpose failed: ' + err.message, 'error'); }
+              }
+            }, `+ All (${missing})`);
+          }
+          return null;
+        })(),
         h('button', {
           className: 'btn btn-outline btn-sm',
           style: { color: '#8B5CF6', borderColor: '#8B5CF6' },
@@ -3598,6 +3628,30 @@ function renderFormatContent(content, formatKey, fmt) {
             h('option', { value: '' }, 'Apply Template'),
             ...state.templates.filter(t => t.format === formatKey || t.format === 'any').map(t =>
               h('option', { value: t.id }, t.name)
+            )
+          )
+        : null,
+      // Apply hook dropdown (for social formats with content)
+      typeof text === 'string' && ['linkedin', 'x_single', 'x_thread'].includes(formatKey) && state.hooks.length > 0
+        ? h('select', {
+            style: { fontSize: '10px', padding: '2px 6px', borderRadius: '4px', border: '1px solid var(--gray-200)', background: 'var(--card-bg)', color: 'var(--gray-500)', cursor: 'pointer', maxWidth: '100px' },
+            value: '',
+            onchange: async (e) => {
+              const hid = e.target.value;
+              if (!hid) return;
+              e.target.value = '';
+              toast('Rewriting hook...', 'info');
+              try {
+                const res = await api(`/api/content/${content.id}/apply-hook`, { method: 'POST', body: { hook_id: hid === 'auto' ? undefined : hid, format: formatKey } });
+                toast(`Hook rewritten: ${res.new_hook?.slice(0, 60)}...`, 'success');
+                loadData();
+              } catch (err) { toast('Hook rewrite failed: ' + err.message, 'error'); }
+            }
+          },
+            h('option', { value: '' }, 'Rewrite Hook'),
+            h('option', { value: 'auto' }, 'Auto (best fit)'),
+            ...state.hooks.filter(hk => hk.format === formatKey || hk.format === 'linkedin').slice(0, 8).map(hk =>
+              h('option', { value: hk.id }, `${hk.category}: ${hk.text.slice(0, 30)}...`)
             )
           )
         : null,
@@ -5848,7 +5902,57 @@ function renderSeriesPage() {
             )
           )
         )
-      : null
+      : null,
+    // DM Sequences section
+    h('div', { style: { marginTop: '32px' } },
+      h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' } },
+        h('div', {},
+          h('h3', { style: { fontFamily: "'Fraunces', serif", fontSize: '18px' } }, `DM Sequences (${(state.dmSequences || []).length})`),
+          h('p', { style: { fontSize: '12px', color: 'var(--gray-500)' } }, 'Auto follow-up sequences for comment-trigger leads')
+        ),
+        h('button', {
+          className: 'btn btn-primary btn-sm',
+          onclick: async () => {
+            toast('Auto-generating DM sequences from CTAs...', 'info');
+            try {
+              const res = await api('/api/dm-sequences/auto-generate', { method: 'POST' });
+              toast(res.generated > 0 ? `Generated ${res.generated} new sequences!` : (res.message || 'All CTAs covered'), res.generated > 0 ? 'success' : 'info');
+              loadData();
+            } catch (err) { toast('Failed: ' + err.message, 'error'); }
+          }
+        }, 'Auto-Generate from CTAs')
+      ),
+      (state.dmSequences || []).length > 0
+        ? h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '12px' } },
+            ...(state.dmSequences || []).map(seq =>
+              h('div', { style: { background: 'white', borderRadius: 'var(--radius-sm)', padding: '16px', border: '1px solid var(--gray-200)' } },
+                h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
+                  h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } },
+                    h('span', { style: { background: '#059669', color: 'white', fontSize: '11px', fontWeight: '700', padding: '3px 8px', borderRadius: '4px' } }, seq.trigger_keyword),
+                    h('span', { style: { fontSize: '13px', fontWeight: '600' } }, seq.name)
+                  ),
+                  h('span', { style: { fontSize: '10px', color: seq.active ? '#059669' : 'var(--gray-400)', fontWeight: '600' } }, seq.active ? 'ACTIVE' : 'PAUSED')
+                ),
+                seq.lead_magnet ? h('div', { style: { fontSize: '11px', color: 'var(--gray-500)', marginBottom: '8px' } }, `Lead magnet: ${seq.lead_magnet}`) : null,
+                h('div', { style: { display: 'flex', flexDirection: 'column', gap: '4px' } },
+                  ...(seq.steps || []).map(step =>
+                    h('div', { style: { display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px' } },
+                      h('span', { style: { background: step.type === 'deliver' ? '#dbeafe' : step.type === 'value_add' ? '#dcfce7' : step.type === 'soft_cta' ? '#fef3c7' : '#fce7f3', color: step.type === 'deliver' ? '#2563eb' : step.type === 'value_add' ? '#059669' : step.type === 'soft_cta' ? '#d97706' : '#be185d', padding: '1px 6px', borderRadius: '3px', fontWeight: '600', flexShrink: '0', fontSize: '10px' } }, `Day ${step.day}`),
+                      h('span', { style: { color: 'var(--gray-600)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, step.message.slice(0, 80) + (step.message.length > 80 ? '...' : ''))
+                    )
+                  )
+                ),
+                h('div', { style: { display: 'flex', gap: '8px', marginTop: '8px', paddingTop: '8px', borderTop: '1px solid var(--gray-100)' } },
+                  h('span', { style: { fontSize: '10px', color: 'var(--gray-400)' } }, `${seq.leads_captured || 0} leads`),
+                  h('span', { style: { fontSize: '10px', color: 'var(--gray-400)' } }, `${seq.meetings_booked || 0} meetings`)
+                )
+              )
+            )
+          )
+        : h('div', { style: { textAlign: 'center', padding: '32px', color: 'var(--gray-400)', fontSize: '14px' } },
+            'No DM sequences yet. Click "Auto-Generate from CTAs" to create sequences from your comment-trigger CTAs.'
+          )
+    )
   );
 }
 

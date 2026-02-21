@@ -1,80 +1,450 @@
-{
-  "contrarian": [
-    "Everyone says {common_belief}. They're wrong.",
-    "Stop {common_action}. Here's why:",
-    "The worst advice I see law firms follow: {bad_advice}",
-    "{common_belief} is a myth. Here's the data:",
-    "Unpopular opinion: {unpopular_take}",
-    "I'm going to say something that pisses off most marketing agencies: {take}"
-  ],
-  "specific_result": [
-    "We took a {practice_area} firm from {before_metric} to {after_metric} in {timeframe}.",
-    "One Google Ads change added {dollar_amount}/mo in signed cases.",
-    "This single LSA tweak generated {number} calls in {timeframe}.",
-    "{number} signed cases in {timeframe} — here's the exact playbook.",
-    "We cut cost-per-lead from {before_cost} to {after_cost} for a {practice_area} firm.",
-    "A {practice_area} firm went from page 3 to the Map Pack in {timeframe}. Here's how."
-  ],
-  "story_open": [
-    "A {practice_area} attorney called us last {month}. He was ready to quit.",
-    "I just audited a firm spending {dollar_amount}/mo on ads. They had zero call tracking.",
-    "Last week I watched a law firm lose a {dollar_amount} case to a competitor with worse reviews.",
-    "True story: a solo attorney fired their agency and {unexpected_outcome}.",
-    "I got a call from a managing partner in tears. {situation}.",
-    "We inherited a Google Ads account burning {dollar_amount}/mo. What we found was criminal."
-  ],
-  "framework": [
-    "The 3-part intake script that converts {percentage} of leads:",
-    "Our {number}-step system for turning Google reviews into signed cases:",
-    "The {name} Framework: how top firms dominate their market.",
-    "Steal this {number}-step process for ranking in the Map Pack:",
-    "The exact {number}-point audit we run on every firm's Google Ads account:",
-    "Here's our {number}-step client reactivation playbook for slow months:"
-  ],
-  "data_drop": [
-    "{percentage} of law firm leads never get a callback. Let that sink in.",
-    "We analyzed {number} law firm websites. Only {percentage} had call tracking.",
-    "The average PI firm wastes {dollar_amount}/mo on clicks that never convert.",
-    "Firms that respond in under 5 minutes sign {multiplier}x more cases.",
-    "{percentage} of legal searches happen on mobile. Your site loads in {seconds}s.",
-    "Law firms using CallRail close {percentage} more leads than those guessing."
-  ],
-  "cost_of_inaction": [
-    "Every day without call tracking is costing you {dollar_amount} in lost cases.",
-    "Your competitors are running LSAs. You're not. Here's what that's costing you.",
-    "That unresponded lead from yesterday? Worth {dollar_amount} in lifetime value.",
-    "You're losing {number} cases/mo to firms with worse attorneys but better marketing.",
-    "No CRM? You're bleeding {dollar_amount}/yr in cases your intake team forgot.",
-    "Every month you delay SEO, your competitor's lead widens."
-  ],
-  "question": [
-    "What's your cost per signed case? (Most firms have no idea.)",
-    "Would you spend {dollar_amount} to make {dollar_amount}? Then why aren't you?",
-    "Can you name your top 3 lead sources right now?",
-    "How many leads did your firm get last month? From where?",
-    "What happens when someone calls your firm at 5:01 PM?",
-    "When's the last time you Googled your own firm? Try it."
-  ],
-  "myth_buster": [
-    "\"SEO is dead for law firms.\" Wrong. Here's what actually changed.",
-    "\"Google Ads doesn't work for {practice_area}.\" It does. You're doing it wrong.",
-    "\"We get all our cases from referrals.\" That's not a strategy. That's luck.",
-    "\"More website traffic = more cases.\" Not even close.",
-    "\"We tried PPC once and it didn't work.\" No — your agency didn't work.",
-    "\"Social media doesn't get cases.\" It does. Just not the way you think."
-  ],
-  "hot_take": [
-    "Most law firm websites are expensive billboards that no one reads.",
-    "Your Clio data is more valuable than your next marketing campaign.",
-    "Avvo is dead. Stop paying for a premium profile.",
-    "The best marketing hire a law firm can make isn't a marketer — it's an intake specialist.",
-    "Half of legal marketing agencies have never signed a case in their life.",
-    "If your agency can't show you cost-per-signed-case, fire them today."
-  ],
-  "behind_the_scenes": [
-    "Here's the exact Google Ads dashboard we review every Monday for our PI firms:",
-    "Inside look: how we rebuilt a {practice_area} firm's entire intake process.",
-    "The CallRail report that made a managing partner rethink everything:",
-    "Raw screenshots from a real LSA campaign doing {dollar_amount}/mo in signed cases:"
-  ]
-}
+[
+  {
+    "id": "h-data-1",
+    "text": "I analyzed [number] [things]. The number that stopped me: [specific stat].",
+    "category": "data",
+    "format": "linkedin",
+    "tags": [
+      "stats",
+      "shock",
+      "authority"
+    ],
+    "uses": 1,
+    "performance_score": 0,
+    "created_at": "2026-02-20"
+  },
+  {
+    "id": "h-data-2",
+    "text": "We analyzed [number] law firm websites. Only [percentage] had call tracking.",
+    "category": "data",
+    "format": "linkedin",
+    "tags": [
+      "stats",
+      "audit",
+      "pain"
+    ],
+    "uses": 0,
+    "performance_score": 0,
+    "created_at": "2026-02-20"
+  },
+  {
+    "id": "h-data-3",
+    "text": "[percentage] of law firm leads never get a callback. Let that sink in.",
+    "category": "data",
+    "format": "linkedin",
+    "tags": [
+      "stats",
+      "shock",
+      "pain"
+    ],
+    "uses": 0,
+    "performance_score": 0,
+    "created_at": "2026-02-20"
+  },
+  {
+    "id": "h-data-4",
+    "text": "Your [thing] is costing you $[amount] per month. Here's the math:",
+    "category": "data",
+    "format": "linkedin",
+    "tags": [
+      "money",
+      "pain",
+      "specificity"
+    ],
+    "uses": 0,
+    "performance_score": 0,
+    "created_at": "2026-02-20"
+  },
+  {
+    "id": "h-data-5",
+    "text": "After working with [number] law firms, I keep seeing the same pattern:",
+    "category": "data",
+    "format": "linkedin",
+    "tags": [
+      "pattern",
+      "authority",
+      "experience"
+    ],
+    "uses": 0,
+    "performance_score": 0,
+    "created_at": "2026-02-20"
+  },
+  {
+    "id": "h-data-6",
+    "text": "Stop scrolling. This one stat will change how you think about [topic]:",
+    "category": "data",
+    "format": "linkedin",
+    "tags": [
+      "urgency",
+      "direct",
+      "stats"
+    ],
+    "uses": 0,
+    "performance_score": 0,
+    "created_at": "2026-02-20"
+  },
+  {
+    "id": "h-data-7",
+    "text": "Nobody talks about the [hidden problem] in legal marketing. But it's costing firms [amount/metric].",
+    "category": "data",
+    "format": "linkedin",
+    "tags": [
+      "hidden",
+      "expose",
+      "pain"
+    ],
+    "uses": 0,
+    "performance_score": 0,
+    "created_at": "2026-02-20"
+  },
+  {
+    "id": "h-story-1",
+    "text": "A [practice area] firm called us last [time period]. Their [metric] was brutal.",
+    "category": "story",
+    "format": "linkedin",
+    "tags": [
+      "story",
+      "failure",
+      "empathy"
+    ],
+    "uses": 0,
+    "performance_score": 0,
+    "created_at": "2026-02-20"
+  },
+  {
+    "id": "h-story-2",
+    "text": "I need to be honest about something. We [mistake/failure]. Here's what I learned:",
+    "category": "story",
+    "format": "linkedin",
+    "tags": [
+      "vulnerability",
+      "authenticity",
+      "lesson"
+    ],
+    "uses": 0,
+    "performance_score": 0,
+    "created_at": "2026-02-20"
+  },
+  {
+    "id": "h-story-3",
+    "text": "A client told us: \"[powerful quote]\". That changed everything about how we [approach].",
+    "category": "story",
+    "format": "linkedin",
+    "tags": [
+      "quote",
+      "client",
+      "turning-point"
+    ],
+    "uses": 0,
+    "performance_score": 0,
+    "created_at": "2026-02-20"
+  },
+  {
+    "id": "h-story-4",
+    "text": "Here's something we don't usually share publicly. Our [internal metric/process]:",
+    "category": "story",
+    "format": "linkedin",
+    "tags": [
+      "transparency",
+      "insider",
+      "trust"
+    ],
+    "uses": 0,
+    "performance_score": 0,
+    "created_at": "2026-02-20"
+  },
+  {
+    "id": "h-story-5",
+    "text": "I just audited a firm spending $[amount]/mo on ads. They had zero call tracking.",
+    "category": "story",
+    "format": "linkedin",
+    "tags": [
+      "audit",
+      "shock",
+      "waste"
+    ],
+    "uses": 0,
+    "performance_score": 0,
+    "created_at": "2026-02-20"
+  },
+  {
+    "id": "h-story-6",
+    "text": "We inherited a Google Ads account burning $[amount]/mo. What we found was criminal.",
+    "category": "story",
+    "format": "linkedin",
+    "tags": [
+      "audit",
+      "dramatic",
+      "waste"
+    ],
+    "uses": 0,
+    "performance_score": 0,
+    "created_at": "2026-02-20"
+  },
+  {
+    "id": "h-contra-1",
+    "text": "\"[Common advice]\" is the worst advice in legal marketing. Here's why:",
+    "category": "contrarian",
+    "format": "linkedin",
+    "tags": [
+      "myth",
+      "contrarian",
+      "debate"
+    ],
+    "uses": 0,
+    "performance_score": 0,
+    "created_at": "2026-02-20"
+  },
+  {
+    "id": "h-contra-2",
+    "text": "Unpopular opinion: [bold claim]. And I have the data to prove it.",
+    "category": "contrarian",
+    "format": "linkedin",
+    "tags": [
+      "hot-take",
+      "bold",
+      "debate"
+    ],
+    "uses": 0,
+    "performance_score": 0,
+    "created_at": "2026-02-20"
+  },
+  {
+    "id": "h-contra-3",
+    "text": "Average firms do [common approach]. Top firms do [different approach]. The difference is [result].",
+    "category": "contrarian",
+    "format": "linkedin",
+    "tags": [
+      "comparison",
+      "elite",
+      "framework"
+    ],
+    "uses": 0,
+    "performance_score": 0,
+    "created_at": "2026-02-20"
+  },
+  {
+    "id": "h-contra-4",
+    "text": "In 12 months, [bold prediction]. Most firms aren't ready. Here's why:",
+    "category": "contrarian",
+    "format": "linkedin",
+    "tags": [
+      "prediction",
+      "future",
+      "urgency"
+    ],
+    "uses": 0,
+    "performance_score": 0,
+    "created_at": "2026-02-20"
+  },
+  {
+    "id": "h-contra-5",
+    "text": "If you're still [outdated practice] in 2026, you're leaving [specific amount] on the table.",
+    "category": "contrarian",
+    "format": "linkedin",
+    "tags": [
+      "urgency",
+      "money",
+      "modernize"
+    ],
+    "uses": 0,
+    "performance_score": 0,
+    "created_at": "2026-02-20"
+  },
+  {
+    "id": "h-contra-6",
+    "text": "If your agency can't show you cost-per-signed-case, fire them today.",
+    "category": "contrarian",
+    "format": "linkedin",
+    "tags": [
+      "hot-take",
+      "accountability",
+      "bold"
+    ],
+    "uses": 0,
+    "performance_score": 0,
+    "created_at": "2026-02-20"
+  },
+  {
+    "id": "h-transform-1",
+    "text": "[Time period] ago, this firm was [specific painful state]. Today: [specific result].",
+    "category": "transformation",
+    "format": "linkedin",
+    "tags": [
+      "case-study",
+      "proof",
+      "results"
+    ],
+    "uses": 0,
+    "performance_score": 0,
+    "created_at": "2026-02-20"
+  },
+  {
+    "id": "h-transform-2",
+    "text": "One change. That's all it took for this firm to go from [bad state] to [good state].",
+    "category": "transformation",
+    "format": "linkedin",
+    "tags": [
+      "simplicity",
+      "result",
+      "transformation"
+    ],
+    "uses": 0,
+    "performance_score": 0,
+    "created_at": "2026-02-20"
+  },
+  {
+    "id": "h-transform-3",
+    "text": "We took a [practice area] firm from [before_metric] to [after_metric] in [timeframe].",
+    "category": "transformation",
+    "format": "linkedin",
+    "tags": [
+      "results",
+      "specificity",
+      "proof"
+    ],
+    "uses": 0,
+    "performance_score": 0,
+    "created_at": "2026-02-20"
+  },
+  {
+    "id": "h-question-1",
+    "text": "What would you do if [specific scenario]? Most firms get this wrong.",
+    "category": "question",
+    "format": "linkedin",
+    "tags": [
+      "question",
+      "engage",
+      "scenario"
+    ],
+    "uses": 0,
+    "performance_score": 0,
+    "created_at": "2026-02-20"
+  },
+  {
+    "id": "h-question-2",
+    "text": "There are two types of law firms: those that [positive] and those that [negative]. Which are you?",
+    "category": "question",
+    "format": "linkedin",
+    "tags": [
+      "binary",
+      "challenge",
+      "self-identify"
+    ],
+    "uses": 0,
+    "performance_score": 0,
+    "created_at": "2026-02-20"
+  },
+  {
+    "id": "h-question-3",
+    "text": "What's your cost per signed case? (Most firms have no idea.)",
+    "category": "question",
+    "format": "linkedin",
+    "tags": [
+      "question",
+      "accountability",
+      "awareness"
+    ],
+    "uses": 0,
+    "performance_score": 0,
+    "created_at": "2026-02-20"
+  },
+  {
+    "id": "h-question-4",
+    "text": "What happens when someone calls your firm at 5:01 PM?",
+    "category": "question",
+    "format": "linkedin",
+    "tags": [
+      "question",
+      "pain",
+      "after-hours"
+    ],
+    "uses": 0,
+    "performance_score": 0,
+    "created_at": "2026-02-20"
+  },
+  {
+    "id": "h-framework-1",
+    "text": "Every successful firm I know follows this framework. They just don't talk about it.",
+    "category": "framework",
+    "format": "linkedin",
+    "tags": [
+      "framework",
+      "insider",
+      "system"
+    ],
+    "uses": 0,
+    "performance_score": 0,
+    "created_at": "2026-02-20"
+  },
+  {
+    "id": "h-framework-2",
+    "text": "The [number]-step system for turning [input] into [result]:",
+    "category": "framework",
+    "format": "linkedin",
+    "tags": [
+      "framework",
+      "system",
+      "actionable"
+    ],
+    "uses": 0,
+    "performance_score": 0,
+    "created_at": "2026-02-20"
+  },
+  {
+    "id": "h-list-1",
+    "text": "[Number] things I wish I knew about [topic] [time period] ago:",
+    "category": "list",
+    "format": "linkedin",
+    "tags": [
+      "list",
+      "wisdom",
+      "experience"
+    ],
+    "uses": 0,
+    "performance_score": 0,
+    "created_at": "2026-02-20"
+  },
+  {
+    "id": "h-x-thread-1",
+    "text": "I spent [time] studying [number] [things]. Here are [X] lessons nobody talks about:",
+    "category": "list",
+    "format": "x_thread",
+    "tags": [
+      "thread",
+      "research",
+      "lessons"
+    ],
+    "uses": 0,
+    "performance_score": 0,
+    "created_at": "2026-02-20"
+  },
+  {
+    "id": "h-x-single-1",
+    "text": "Hot take: [bold one-liner that challenges conventional wisdom]",
+    "category": "contrarian",
+    "format": "x_single",
+    "tags": [
+      "tweet",
+      "hot-take",
+      "viral"
+    ],
+    "uses": 0,
+    "performance_score": 0,
+    "created_at": "2026-02-20"
+  },
+  {
+    "id": "h-x-single-2",
+    "text": "The [thing] that [impressive result]? It's not what you think. It's [unexpected answer].",
+    "category": "data",
+    "format": "x_single",
+    "tags": [
+      "tweet",
+      "curiosity",
+      "reveal"
+    ],
+    "uses": 0,
+    "performance_score": 0,
+    "created_at": "2026-02-20"
+  }
+]

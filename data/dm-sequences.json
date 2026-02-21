@@ -1,0 +1,146 @@
+[
+  {
+    "id": "140b934a0969468d",
+    "trigger_keyword": "SCORECARD",
+    "name": "SCORECARD — Call insight: Your intake team stops wor",
+    "lead_magnet": "After-Hours Intake Scorecard (PDF) — 7-question diagnostic that shows exactly how much revenue you're leaving on the table between 5 PM and 9 AM",
+    "lead_magnet_url": "",
+    "steps": [
+      {
+        "day": 0,
+        "type": "deliver",
+        "message": "Hey {name}! 👋 Thanks for commenting. Your After-Hours Intake Scorecard is attached. It'll show you exactly which hours you're losing revenue. Let me know what you find."
+      },
+      {
+        "day": 1,
+        "type": "value_add",
+        "message": "Quick insight: Most firms we work with discover they're missing 3-5 qualified leads weekly after hours. Your scorecard reveals if that's you. Check questions 4-6 first."
+      },
+      {
+        "day": 3,
+        "type": "soft_cta",
+        "message": "Curious—after reviewing the scorecard, what surprised you most about your after-hours intake? I've got some ideas if you want to chat about it."
+      },
+      {
+        "day": 7,
+        "type": "meeting_ask",
+        "message": "Most firms who complete the scorecard want to see how other practices captured those missed leads. Free 15-min call? I'll show you exactly what's working."
+      }
+    ],
+    "content_ids": [
+      "28ac7a9f58a263c6"
+    ],
+    "active": true,
+    "leads_captured": 0,
+    "meetings_booked": 0,
+    "created_at": "2026-02-21T01:02:53.889Z"
+  },
+  {
+    "id": "bf83fd7f7bd5f2ea",
+    "trigger_keyword": "INTAKE",
+    "name": "INTAKE — Call insight: Your intake team is asking",
+    "lead_magnet": "Intake script templates (3 versions)",
+    "lead_magnet_url": "",
+    "steps": [
+      {
+        "day": 0,
+        "type": "deliver",
+        "message": "Hey {name}! 🎯 Attached are the 3 intake scripts that took firms from 52% to 89% conversion. These are the exact templates they use. Let me know what stands out!"
+      },
+      {
+        "day": 1,
+        "type": "value_add",
+        "message": "Quick insight: The #1 difference in these scripts? They stop trying to qualify and start discovering real pain points. Most firms do the opposite. Notice how version 2 handles objections?"
+      },
+      {
+        "day": 3,
+        "type": "soft_cta",
+        "message": "Curious—when leads call your intake team right now, what's the biggest drop-off point? Is it qualifying them out too early or something else? Would love to know what you're seeing."
+      },
+      {
+        "day": 7,
+        "type": "meeting_ask",
+        "message": "{name}, I'm working with 2-3 firms this month on intake optimization. If you want to discuss how to implement these scripts with YOUR team, let's grab 15 mins. Worth it?"
+      }
+    ],
+    "content_ids": [
+      "ec092ef2822c6bc1"
+    ],
+    "active": true,
+    "leads_captured": 0,
+    "meetings_booked": 0,
+    "created_at": "2026-02-21T01:02:57.409Z"
+  },
+  {
+    "id": "79ca026838bfd7ee",
+    "trigger_keyword": "BREAKDOWN",
+    "name": "BREAKDOWN — Call insight: Your intake team is asking",
+    "lead_magnet": "Call flow audit checklist + failure points mapped",
+    "lead_magnet_url": "",
+    "steps": [
+      {
+        "day": 0,
+        "type": "deliver",
+        "message": "Hey {name}! Got your BREAKDOWN request. Sending over the call flow audit checklist + failure points map now. This shows exactly where most intake calls derail. Check it out →"
+      },
+      {
+        "day": 1,
+        "type": "value_add",
+        "message": "{name}, quick insight: most firms ask 8-12 questions when they only need 3-4. That's where you lose prospects. Your checklist highlights this. Curious—how many questions is YOUR intake asking?"
+      },
+      {
+        "day": 3,
+        "type": "soft_cta",
+        "message": "Did the checklist resonate? I've seen teams cut intake time by 40% just by restructuring those questions. Happy to walk through what that looks like for your practice if helpful."
+      },
+      {
+        "day": 7,
+        "type": "meeting_ask",
+        "message": "{name}, I'm working with a few firms on optimizing their intake process right now. Would a quick 15-min call make sense to discuss your biggest bottleneck? No pressure either way."
+      }
+    ],
+    "content_ids": [
+      "ec092ef2822c6bc1"
+    ],
+    "active": true,
+    "leads_captured": 0,
+    "meetings_booked": 0,
+    "created_at": "2026-02-21T01:03:00.671Z"
+  },
+  {
+    "id": "f703dd3e377d9358",
+    "trigger_keyword": "SCRIPT",
+    "name": "SCRIPT — Call insight: Your intake team is asking",
+    "lead_magnet": "5-question urgency detection framework",
+    "lead_magnet_url": "",
+    "steps": [
+      {
+        "day": 0,
+        "type": "deliver",
+        "message": "Hey {name}! Here's that 5-question urgency detection framework. These are the exact questions that helped us go from 3 missed cases to 0. Drop them into your intake calls and watch what happens 👇"
+      },
+      {
+        "day": 1,
+        "type": "value_add",
+        "message": "Quick follow-up: The magic isn't just the questions—it's *when* you ask them. Most intake teams ask them at the end. We moved them to minute 2. That timing shift alone caught the high-urgency cases everyone was missing."
+      },
+      {
+        "day": 3,
+        "type": "soft_cta",
+        "message": "How's it going with the framework? Curious—are your intake calls consistent across your team right now, or does quality vary person to person? That usually tells us a lot about where firms are losing cases."
+      },
+      {
+        "day": 7,
+        "type": "meeting_ask",
+        "message": "One more thing: We built a quick intake audit that shows exactly where cases slip through the cracks. Takes 15 min. Worth a look? Happy to walk through yours if you want."
+      }
+    ],
+    "content_ids": [
+      "ec092ef2822c6bc1"
+    ],
+    "active": true,
+    "leads_captured": 0,
+    "meetings_booked": 0,
+    "created_at": "2026-02-21T01:03:04.207Z"
+  }
+]

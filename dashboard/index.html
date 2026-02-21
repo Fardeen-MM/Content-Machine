@@ -1447,6 +1447,8 @@ const state = {
   // Content Health
   contentHealth: null,
   scheduleOptimize: null,
+  // Templates
+  templates: [],
 };
 
 // --- API Calls ---
@@ -1472,7 +1474,7 @@ async function loadData() {
   state.loading = true;
   render();
   try {
-    const [content, triggers, stats, calendar, monthCal, settings, memory, performance, perfAnalytics, meetings, meetingStats, clients, allActions, chatMessages, healthData, inspirations, pestering, pesteringStages, insights, deals, published, series, predictions, playbooks, ctaLibrary, trending, funnel, publishTracker, leadMagnets, contentHealth, scheduleOptimize] = await Promise.all([
+    const [content, triggers, stats, calendar, monthCal, settings, memory, performance, perfAnalytics, meetings, meetingStats, clients, allActions, chatMessages, healthData, inspirations, pestering, pesteringStages, insights, deals, published, series, predictions, playbooks, ctaLibrary, trending, funnel, publishTracker, leadMagnets, contentHealth, scheduleOptimize, templates] = await Promise.all([
       api('/api/content'),
       api('/api/triggers'),
       api('/api/stats'),
@@ -1503,7 +1505,8 @@ async function loadData() {
       api('/api/publish-tracker').catch(() => ({ items: [], platforms: [] })),
       api('/api/lead-magnets').catch(() => []),
       api('/api/content-health').catch(() => null),
-      api('/api/schedule/optimize').catch(() => null)
+      api('/api/schedule/optimize').catch(() => null),
+      api('/api/templates').catch(() => [])
     ]);
     state.content = content;
     state.triggers = triggers;
@@ -1536,6 +1539,7 @@ async function loadData() {
     state.leadMagnets = leadMagnets;
     state.contentHealth = contentHealth;
     state.scheduleOptimize = scheduleOptimize;
+    state.templates = templates;
   } catch (err) {
     console.error('Failed to load data:', err);
     toast('Failed to load data', 'error');
@@ -3561,6 +3565,42 @@ function renderFormatContent(content, formatKey, fmt) {
           } catch (err) { toast('A/B test failed: ' + err.message, 'error'); }
         }
       }, 'A/B Test') : null,
+      // Generate CTA button (for social formats with content)
+      typeof text === 'string' && ['linkedin', 'x_single', 'x_thread', 'carousel'].includes(formatKey) ? h('button', {
+        className: 'btn btn-outline btn-sm',
+        style: { color: '#059669', borderColor: '#059669', fontSize: '11px' },
+        onclick: async () => {
+          toast('Generating CTAs...', 'info');
+          try {
+            const res = await api(`/api/content/${content.id}/generate-cta`, { method: 'POST' });
+            toast(`Generated ${res.ctas?.ctas?.length || 0} CTAs!`, 'success');
+            loadData();
+          } catch (err) { toast('CTA generation failed: ' + err.message, 'error'); }
+        }
+      }, 'Gen CTA') : null,
+      // Apply template dropdown (for linkedin and x_thread formats)
+      typeof text === 'string' && ['linkedin', 'x_thread'].includes(formatKey) && state.templates.length > 0
+        ? h('select', {
+            style: { fontSize: '10px', padding: '2px 6px', borderRadius: '4px', border: '1px solid var(--gray-200)', background: 'var(--card-bg)', color: 'var(--gray-500)', cursor: 'pointer', maxWidth: '110px' },
+            value: '',
+            onchange: async (e) => {
+              const tid = e.target.value;
+              if (!tid) return;
+              e.target.value = '';
+              toast('Applying template...', 'info');
+              try {
+                await api(`/api/content/${content.id}/apply-template`, { method: 'POST', body: { template_id: tid, format: formatKey } });
+                toast('Template applied!', 'success');
+                loadData();
+              } catch (err) { toast('Template failed: ' + err.message, 'error'); }
+            }
+          },
+            h('option', { value: '' }, 'Apply Template'),
+            ...state.templates.filter(t => t.format === formatKey || t.format === 'any').map(t =>
+              h('option', { value: t.id }, t.name)
+            )
+          )
+        : null,
       // Show A/B test variants if they exist
       content.ab_tests?.[formatKey] && !content.ab_tests[formatKey].winner
         ? h('div', { style: { display: 'flex', gap: '4px', marginTop: '4px' } },
@@ -3590,6 +3630,34 @@ function renderFormatContent(content, formatKey, fmt) {
                 toast('Original kept!', 'success'); loadData();
               }
             }, 'Keep Original')
+          )
+        : null,
+      // Show generated CTAs if they exist
+      content.comment_ctas?.ctas?.length > 0
+        ? h('div', { style: { marginTop: '6px', padding: '8px 10px', background: 'linear-gradient(135deg, #ecfdf5, #f0fdf4)', borderRadius: '8px', border: '1px solid #86efac' } },
+            h('div', { style: { fontSize: '10px', fontWeight: '700', color: '#059669', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' } }, 'Comment-Trigger CTAs'),
+            ...content.comment_ctas.ctas.map(cta =>
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' } },
+                h('span', { style: { background: '#059669', color: 'white', fontSize: '10px', fontWeight: '700', padding: '2px 6px', borderRadius: '4px', flexShrink: '0' } }, cta.trigger_keyword),
+                h('span', { style: { fontSize: '11px', color: 'var(--gray-600)', flex: '1' } }, cta.cta_text),
+                h('button', {
+                  className: 'btn btn-sm',
+                  style: { fontSize: '9px', padding: '1px 6px', flexShrink: '0' },
+                  onclick: () => copyToClipboard(cta.cta_text, 'CTA')
+                }, 'Copy')
+              )
+            ),
+            content.comment_ctas.first_comment
+              ? h('div', { style: { marginTop: '6px', paddingTop: '6px', borderTop: '1px solid #bbf7d0' } },
+                  h('span', { style: { fontSize: '10px', fontWeight: '600', color: '#059669' } }, 'First comment: '),
+                  h('span', { style: { fontSize: '11px', color: 'var(--gray-600)' } }, content.comment_ctas.first_comment),
+                  h('button', {
+                    className: 'btn btn-sm',
+                    style: { fontSize: '9px', padding: '1px 6px', marginLeft: '6px' },
+                    onclick: () => copyToClipboard(content.comment_ctas.first_comment, 'First comment')
+                  }, 'Copy')
+                )
+              : null
           )
         : null,
       // Quality flags
@@ -3854,6 +3922,32 @@ function renderContentPage() {
             className: 'btn btn-sm',
             onclick: bulkReject
           }, h('span', { innerHTML: icons.x, style: { width: '14px', height: '14px' } }), ' Reject All'),
+          h('button', {
+            className: 'btn btn-sm',
+            style: { background: 'var(--amber)', color: 'white', border: 'none' },
+            onclick: async () => {
+              const ids = [...state.selectedContent];
+              toast(`Improving ${ids.length} items...`, 'info');
+              try {
+                await api('/api/content/bulk-improve', { method: 'POST', body: { ids } });
+                toast('Bulk improve started! Results in ~30s.', 'success');
+                setTimeout(() => loadData(), 15000);
+              } catch (err) { toast('Bulk improve failed: ' + err.message, 'error'); }
+            }
+          }, 'Improve All'),
+          h('button', {
+            className: 'btn btn-sm',
+            style: { background: '#059669', color: 'white', border: 'none' },
+            onclick: async () => {
+              const ids = [...state.selectedContent];
+              toast(`Generating CTAs for ${ids.length} items...`, 'info');
+              try {
+                await api('/api/content/bulk-generate-ctas', { method: 'POST', body: { ids } });
+                toast('Bulk CTA generation started! Results in ~30s.', 'success');
+                setTimeout(() => loadData(), 15000);
+              } catch (err) { toast('Bulk CTA failed: ' + err.message, 'error'); }
+            }
+          }, 'Gen CTAs'),
           h('button', {
             className: 'btn btn-sm',
             onclick: () => { state.selectedContent = new Set(); render(); }

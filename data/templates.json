@@ -1,0 +1,87 @@
+[
+  {
+    "id": "data-bomb",
+    "name": "Data Bomb",
+    "category": "hook",
+    "format": "linkedin",
+    "structure": "Lead with a single shocking stat. Show the math. Translate to dollars. Give 3 action steps.",
+    "hook_formula": "I analyzed [number] [things]. The number that stopped me: [specific stat].",
+    "cta_pattern": "Comment [KEYWORD] and I'll send you the full breakdown.",
+    "example": "I analyzed 500 law firm Google Ads accounts this quarter.\n\nThe stat that stopped me: 67% are paying for clicks that never convert.\n\nThat's $3,400/month — gone.\n\nHere's why:\n\n1. No call tracking (42% of firms)\n2. Broad match keywords eating budget (78%)\n3. Landing pages with 6+ form fields (avg 3.2% conversion vs 11.4% for 3 fields)\n\nThe fix takes 2 hours.\n\nComment AUDIT and I'll send you our free Google Ads waste calculator.",
+    "tags": [
+      "data",
+      "stats",
+      "shock"
+    ],
+    "uses": 1,
+    "created_at": "2026-02-20"
+  },
+  {
+    "id": "failure-story",
+    "name": "Failure Story",
+    "category": "hook",
+    "format": "linkedin",
+    "structure": "Open with a specific failure. Show the financial impact. Reveal the root cause. Give the fix. End with action steps.",
+    "hook_formula": "A [practice area] firm called us last [time period]. Their [problem] was brutal.",
+    "cta_pattern": "Want to know if this is happening to your firm? Comment CHECK.",
+    "example": "A PI firm called us last month.\n\nTheir intake numbers were brutal.\n\n90 calls from Google Ads.\n34 went to voicemail.\n22 rang for 30+ seconds.\n\nThat's 47 out of 90 calls — 52% — either unanswered or abandoned.\n\nAt $89 per call, they were wasting $4,183 every month.\n\nThe fix wasn't more ad budget. It was:\n\n1. Answer in under 10 seconds\n2. Add overflow service ($200/mo)\n3. Track ring time, not just calls\n\nSpeed to lead isn't a buzzword.\n\nWant to know your call answer rate? Comment CHECK.",
+    "tags": [
+      "story",
+      "failure",
+      "fix"
+    ],
+    "uses": 0,
+    "created_at": "2026-02-20"
+  },
+  {
+    "id": "myth-buster",
+    "name": "Myth Buster",
+    "category": "hook",
+    "format": "linkedin",
+    "structure": "State the myth. Show why it's wrong with data. Reveal the truth. Give what to do instead.",
+    "hook_formula": "\"[Common advice]\" is the worst advice in legal marketing. Here's why:",
+    "cta_pattern": "What's the biggest marketing myth you've heard? Drop it below.",
+    "example": "\"Just get more reviews\" is the worst advice in legal marketing.\n\nHere's why:\n\nWe audited 200 law firm GMB profiles.\n\nFirms with 100+ reviews averaged the SAME conversion rate as firms with 30-50 reviews.\n\nThe difference? Response time.\n\nFirms responding to reviews within 24h saw 34% more calls.\n\nFirms with 200+ reviews but no responses? Below average.\n\nGoogle cares about engagement, not just volume.\n\nWhat's the biggest marketing myth you've heard? Drop it below.",
+    "tags": [
+      "contrarian",
+      "myth",
+      "data"
+    ],
+    "uses": 0,
+    "created_at": "2026-02-20"
+  },
+  {
+    "id": "before-after-framework",
+    "name": "Before/After Framework",
+    "category": "structure",
+    "format": "linkedin",
+    "structure": "Paint the 'before' state with specific numbers. Show the transformation. Reveal the 'after' with exact results. Share 3-5 steps that got there.",
+    "hook_formula": "[Time period] ago, this [practice area] firm was [specific painful state]. Today: [specific result].",
+    "cta_pattern": "Comment PLAYBOOK for the step-by-step.",
+    "example": "",
+    "tags": [
+      "transformation",
+      "case-study",
+      "proof"
+    ],
+    "uses": 0,
+    "created_at": "2026-02-20"
+  },
+  {
+    "id": "x-thread-numbered",
+    "name": "Numbered Thread",
+    "category": "structure",
+    "format": "x_thread",
+    "structure": "Tweet 1: Hook with number (X things I learned). Tweet 2-6: One insight per tweet, each standalone. Tweet 7: Summary or call to action. Tweet 8: Repost CTA.",
+    "hook_formula": "I [did something] for [specific time/number]. Here are [X] things I wish someone told me:",
+    "cta_pattern": "Reply [KEYWORD] and I'll DM you the full template.",
+    "example": "",
+    "tags": [
+      "thread",
+      "numbered",
+      "lessons"
+    ],
+    "uses": 0,
+    "created_at": "2026-02-20"
+  }
+]

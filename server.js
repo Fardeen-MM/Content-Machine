@@ -3622,6 +3622,268 @@ Return JSON array (no fences):
       }
     }
 
+    // --- Comment-Trigger CTA Generator ---
+
+    // POST /api/content/:id/generate-cta — generate comment-trigger CTAs for a content piece
+    const ctaGenMatch = pathname.match(/^\/api\/content\/([a-f0-9]+)\/generate-cta$/);
+    if (ctaGenMatch && method === 'POST') {
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+
+      const content = readJSON('content.json');
+      const idx = content.findIndex(c => c.id === ctaGenMatch[1]);
+      if (idx === -1) return json(res, { error: 'Not found' }, 404);
+
+      const item = content[idx];
+      const linkedinContent = item.formats?.linkedin?.content || '';
+      const title = item.trigger_title || '';
+
+      try {
+        const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+        const { buildSystemPromptWithMemory } = require('./generator/content-writer');
+        const systemPrompt = buildSystemPromptWithMemory();
+
+        const prompt = `Generate 3 comment-trigger CTA variants for this content. These are calls-to-action that ask the reader to comment a keyword to receive a resource via DM.
+
+CONTENT TITLE: ${title}
+CONTENT PREVIEW: ${(typeof linkedinContent === 'string' ? linkedinContent : '').slice(0, 500)}
+
+Return JSON (raw, no fences):
+{
+  "ctas": [
+    {
+      "trigger_keyword": "AUDIT",
+      "cta_text": "Comment AUDIT and I'll send you our free law firm marketing scorecard",
+      "lead_magnet": "Marketing scorecard or audit",
+      "dm_template": "Hey {name}! Here's the marketing scorecard I mentioned. [Link] — Want me to walk you through your results in a quick 15-min call?",
+      "platform": "linkedin"
+    },
+    {
+      "trigger_keyword": "PLAYBOOK",
+      "cta_text": "Comment PLAYBOOK if you want the step-by-step version of this",
+      "lead_magnet": "Step-by-step guide PDF",
+      "dm_template": "Hey {name}! Here's the playbook. [Link] — Happy to answer any questions.",
+      "platform": "linkedin"
+    },
+    {
+      "trigger_keyword": "DATA",
+      "cta_text": "Reply DATA if you want the full breakdown sent to your DMs",
+      "lead_magnet": "Data report or cheat sheet",
+      "dm_template": "Here's the full data breakdown. [Link] — Want a custom version for your firm? Reply YES.",
+      "platform": "x"
+    }
+  ],
+  "first_comment": "Full version of this with all the data: [lead magnet link]. DM me 'audit' if you want a custom analysis for your firm."
+}
+
+Make the CTAs natural and non-salesy. Use the "comment [keyword]" pattern. The DM templates should offer value first, then a soft meeting ask.`;
+
+        const text = await callClaude({ model: HAIKU, system: systemPrompt, prompt, maxTokens: 1500 });
+        const parsed = parseJsonResponse(text);
+        if (!parsed?.ctas) return json(res, { error: 'Failed to generate CTAs' }, 500);
+
+        content[idx].comment_ctas = parsed;
+        content[idx].comment_ctas.generated_at = now();
+        writeJSON('content.json', content);
+
+        return json(res, { ok: true, ctas: parsed });
+      } catch (err) {
+        return json(res, { error: err.message }, 500);
+      }
+    }
+
+    // --- Content Templates Library ---
+
+    // GET /api/templates — list content templates
+    if (pathname === '/api/templates' && method === 'GET') {
+      const templates = readJSON('templates.json', []);
+      return json(res, templates);
+    }
+
+    // POST /api/templates — save a new template
+    if (pathname === '/api/templates' && method === 'POST') {
+      const body = await parseBody(req);
+      if (!body.name || !body.structure) return json(res, { error: 'name and structure required' }, 400);
+      const templates = readJSON('templates.json', []);
+      const template = {
+        id: generateId(),
+        name: body.name,
+        category: body.category || 'general',
+        format: body.format || 'linkedin',
+        structure: body.structure,
+        hook_formula: body.hook_formula || '',
+        cta_pattern: body.cta_pattern || '',
+        example: body.example || '',
+        tags: body.tags || [],
+        uses: 0,
+        created_at: now()
+      };
+      templates.push(template);
+      writeJSON('templates.json', templates);
+      return json(res, { ok: true, template });
+    }
+
+    // POST /api/content/:id/apply-template — apply a template to content
+    const applyTemplateMatch = pathname.match(/^\/api\/content\/([a-f0-9]+)\/apply-template$/);
+    if (applyTemplateMatch && method === 'POST') {
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      const body = await parseBody(req);
+      const { template_id, format } = body;
+      if (!template_id || !format) return json(res, { error: 'template_id and format required' }, 400);
+
+      const templates = readJSON('templates.json', []);
+      const template = templates.find(t => t.id === template_id);
+      if (!template) return json(res, { error: 'Template not found' }, 404);
+
+      const content = readJSON('content.json');
+      const idx = content.findIndex(c => c.id === applyTemplateMatch[1]);
+      if (idx === -1) return json(res, { error: 'Content not found' }, 404);
+
+      const currentContent = content[idx].formats?.[format]?.content;
+      if (!currentContent) return json(res, { error: 'No content in this format' }, 400);
+
+      try {
+        const { callClaude, HAIKU } = require('./lib/claude');
+        const { buildSystemPromptWithMemory } = require('./generator/content-writer');
+        const systemPrompt = buildSystemPromptWithMemory();
+        const contentStr = typeof currentContent === 'string' ? currentContent : JSON.stringify(currentContent);
+
+        const prompt = `Rewrite this content using the template structure below. Keep the same data, insights, and core message — just restructure it.
+
+TEMPLATE: "${template.name}"
+STRUCTURE: ${template.structure}
+${template.hook_formula ? `HOOK FORMULA: ${template.hook_formula}` : ''}
+${template.cta_pattern ? `CTA PATTERN: ${template.cta_pattern}` : ''}
+${template.example ? `EXAMPLE:\n${template.example}` : ''}
+
+CURRENT CONTENT:
+${contentStr.slice(0, 2000)}
+
+Return ONLY the rewritten content. No explanation, no JSON wrapper.`;
+
+        const rewritten = await callClaude({ model: HAIKU, system: systemPrompt, prompt, maxTokens: 2000 });
+        content[idx].formats[format].content = rewritten;
+        content[idx].formats[format].template_applied = template.name;
+        content[idx].formats[format].edited = true;
+        writeJSON('content.json', content);
+
+        // Increment template usage
+        const tIdx = templates.findIndex(t => t.id === template_id);
+        if (tIdx !== -1) { templates[tIdx].uses = (templates[tIdx].uses || 0) + 1; writeJSON('templates.json', templates); }
+
+        return json(res, { ok: true, template: template.name });
+      } catch (err) {
+        return json(res, { error: err.message }, 500);
+      }
+    }
+
+    // --- Bulk Operations ---
+
+    // POST /api/content/bulk-improve — improve multiple content pieces
+    if (pathname === '/api/content/bulk-improve' && method === 'POST') {
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      const body = await parseBody(req);
+      const ids = body.ids || [];
+      const format = body.format || 'linkedin';
+      if (!ids.length) return json(res, { error: 'ids required' }, 400);
+
+      const batchId = generateId();
+      _batchProgress[batchId] = { total: ids.length, completed: 0, errors: 0, results: [], status: 'running', type: 'bulk_improve' };
+
+      setImmediate(async () => {
+        const { callClaude, HAIKU } = require('./lib/claude');
+        const { buildSystemPromptWithMemory } = require('./generator/content-writer');
+        const { scoreHook, scoreSpecificity, scoreEmotionalValence } = require('./generator/score-triggers');
+        const systemPrompt = buildSystemPromptWithMemory();
+
+        for (const id of ids) {
+          try {
+            const content = readJSON('content.json');
+            const idx = content.findIndex(c => c.id === id);
+            if (idx === -1) { _batchProgress[batchId].errors++; continue; }
+
+            const currentContent = content[idx].formats?.[format]?.content;
+            if (!currentContent || typeof currentContent !== 'string') { _batchProgress[batchId].errors++; continue; }
+
+            const hookScore = scoreHook(currentContent);
+            const specScore = scoreSpecificity(currentContent);
+            const emoScore = scoreEmotionalValence(currentContent);
+            const weaknesses = [];
+            if (hookScore < 4) weaknesses.push('WEAK HOOK');
+            if (specScore < 3) weaknesses.push('LOW SPECIFICITY');
+            if (emoScore < 2) weaknesses.push('LOW EMOTIONAL VALENCE');
+            if (!/comment|reply|dm|book|audit|free/i.test(currentContent)) weaknesses.push('MISSING CTA');
+
+            if (weaknesses.length > 0) {
+              const prompt = `Improve this ${format} content. Fix: ${weaknesses.join(', ')}.\n\nCONTENT:\n${currentContent.slice(0, 2000)}\n\nReturn ONLY the improved content.`;
+              const improved = await callClaude({ model: HAIKU, system: systemPrompt, prompt, maxTokens: 2000 });
+              content[idx].formats[format].content = improved;
+              content[idx].formats[format].improved_at = now();
+              writeJSON('content.json', content);
+              _batchProgress[batchId].results.push({ id, improved: true, fixes: weaknesses.length });
+            } else {
+              _batchProgress[batchId].results.push({ id, improved: false });
+            }
+            _batchProgress[batchId].completed++;
+          } catch (err) {
+            _batchProgress[batchId].errors++;
+          }
+        }
+        _batchProgress[batchId].status = 'done';
+        setTimeout(() => { delete _batchProgress[batchId]; }, 30 * 60 * 1000);
+      });
+
+      return json(res, { ok: true, batch_id: batchId });
+    }
+
+    // POST /api/content/bulk-generate-ctas — generate CTAs for multiple pieces
+    if (pathname === '/api/content/bulk-generate-ctas' && method === 'POST') {
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      const body = await parseBody(req);
+      const ids = body.ids || [];
+      if (!ids.length) return json(res, { error: 'ids required' }, 400);
+
+      const batchId = generateId();
+      _batchProgress[batchId] = { total: ids.length, completed: 0, errors: 0, results: [], status: 'running', type: 'bulk_ctas' };
+
+      setImmediate(async () => {
+        const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+        const { buildSystemPromptWithMemory } = require('./generator/content-writer');
+        const systemPrompt = buildSystemPromptWithMemory();
+
+        for (const id of ids) {
+          try {
+            const content = readJSON('content.json');
+            const idx = content.findIndex(c => c.id === id);
+            if (idx === -1) { _batchProgress[batchId].errors++; continue; }
+            const item = content[idx];
+            const linkedinContent = (typeof item.formats?.linkedin?.content === 'string' ? item.formats.linkedin.content : '').slice(0, 300);
+
+            const prompt = `Generate a comment-trigger CTA for this content.
+
+TITLE: ${item.trigger_title || ''}
+PREVIEW: ${linkedinContent}
+
+Return JSON: { "trigger_keyword": "AUDIT", "cta_text": "Comment AUDIT for the free scorecard", "lead_magnet": "type", "dm_template": "Hey {name}! Here's...", "first_comment": "Full version..." }`;
+
+            const text = await callClaude({ model: HAIKU, system: systemPrompt, prompt, maxTokens: 500 });
+            const parsed = parseJsonResponse(text);
+            if (parsed) {
+              content[idx].comment_ctas = { ctas: [parsed], generated_at: now() };
+              writeJSON('content.json', content);
+              _batchProgress[batchId].results.push({ id, keyword: parsed.trigger_keyword });
+            }
+            _batchProgress[batchId].completed++;
+          } catch (err) {
+            _batchProgress[batchId].errors++;
+          }
+        }
+        _batchProgress[batchId].status = 'done';
+        setTimeout(() => { delete _batchProgress[batchId]; }, 30 * 60 * 1000);
+      });
+
+      return json(res, { ok: true, batch_id: batchId });
+    }
+
     // --- Smart Scheduling ---
 
     // GET /api/schedule/optimize — suggest best posting times per format

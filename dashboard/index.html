@@ -1487,7 +1487,8 @@ async function loadData() {
       api('/api/predictions').catch(() => ({ predictions: [], has_enough_data: false })),
       api('/api/playbooks').catch(() => ({})),
       api('/api/cta-library').catch(() => ({})),
-      api('/api/trending').catch(() => ({ trending_topics: [], trending_phrases: [], categories: {}, source_velocity: {} }))
+      api('/api/trending').catch(() => ({ trending_topics: [], trending_phrases: [], categories: {}, source_velocity: {} })),
+      api('/api/funnel').catch(() => ({ funnel: [], queue: {}, totals: {} }))
     ]);
     state.content = content;
     state.triggers = triggers;
@@ -1515,6 +1516,7 @@ async function loadData() {
     state.playbooks = playbooks;
     state.ctaLibrary = ctaLibrary;
     state.trending = trending;
+    state.funnel = funnel;
   } catch (err) {
     console.error('Failed to load data:', err);
     toast('Failed to load data', 'error');
@@ -2656,6 +2658,34 @@ function renderDashboardPage() {
           )
         )
       ) : null
+    ) : null,
+    // Content Funnel + Queue Health
+    state.funnel?.funnel?.length > 0 ? h('div', { style: { marginBottom: '20px' } },
+      h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
+        h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)' } }, 'CONTENT FUNNEL'),
+        state.funnel.queue ? h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } },
+          h('span', { style: {
+            fontSize: '11px', fontWeight: '600', padding: '3px 10px', borderRadius: '6px',
+            background: state.funnel.queue.health === 'healthy' ? '#f0fdf4' : state.funnel.queue.health === 'low' ? '#fffbeb' : '#fef2f2',
+            color: state.funnel.queue.health === 'healthy' ? '#059669' : state.funnel.queue.health === 'low' ? '#d97706' : '#DC2626'
+          }}, `${state.funnel.queue.days_remaining}d of content left`),
+          h('span', { style: { fontSize: '10px', color: '#64748b' } }, `${state.funnel.queue.approved_formats} approved formats`)
+        ) : null
+      ),
+      h('div', { className: 'card', style: { padding: '16px 20px', overflow: 'hidden' } },
+        h('div', { style: { display: 'flex', alignItems: 'flex-end', gap: '4px', height: '80px' } },
+          ...state.funnel.funnel.map((stage, i) => {
+            const maxCount = Math.max(...state.funnel.funnel.map(s => s.count), 1);
+            const height = Math.max(8, (stage.count / maxCount) * 100);
+            const colors = ['#94a3b8', '#60a5fa', '#3b82f6', '#2563eb', '#059669', '#10b981', '#f59e0b'];
+            return h('div', { style: { flex: '1', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' } },
+              h('div', { style: { fontSize: '12px', fontWeight: '700', color: colors[i] || '#334155' } }, String(stage.count)),
+              h('div', { style: { width: '100%', height: `${height}%`, background: colors[i] || '#94a3b8', borderRadius: '4px 4px 0 0', minHeight: '8px', transition: 'height 0.3s' } }),
+              h('div', { style: { fontSize: '9px', color: '#64748b', textAlign: 'center', marginTop: '2px' } }, stage.stage)
+            );
+          })
+        )
+      )
     ) : null,
     // Recent meetings
     recentMeetings.length > 0 ? h('div', { style: { marginBottom: '20px' } },

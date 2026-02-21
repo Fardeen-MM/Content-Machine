@@ -345,6 +345,49 @@ async function handleRequest(req, res) {
       });
     }
 
+    // GET /api/funnel — content funnel analytics
+    if (pathname === '/api/funnel' && method === 'GET') {
+      const triggers = readJSON('trigger-queue.json');
+      const content = readJSON('content.json');
+      const published = readJSON('published.json');
+      const perfData = readJSON('performance.json');
+      const archived = readJSON('archived-triggers.json');
+      // Funnel stages
+      const totalTriggers = triggers.length + archived.length;
+      const pendingTriggers = triggers.filter(t => t.status === 'pending').length;
+      const usedTriggers = triggers.filter(t => t.status === 'used').length;
+      const generated = content.length;
+      const reviewed = content.filter(c => c.status !== 'review').length;
+      const approved = content.filter(c => {
+        return Object.values(c.formats || {}).some(f => f.status === 'approved');
+      }).length;
+      const publishedCount = published.length;
+      const withLeads = perfData.filter(p => (p.leads || 0) > 0).length;
+      const totalLeads = perfData.reduce((s, p) => s + (p.leads || 0), 0);
+      // Conversion rates
+      const funnel = [
+        { stage: 'Scraped', count: totalTriggers, rate: 100 },
+        { stage: 'Pending', count: pendingTriggers, rate: totalTriggers > 0 ? Math.round(pendingTriggers / totalTriggers * 100) : 0 },
+        { stage: 'Generated', count: generated, rate: totalTriggers > 0 ? Math.round(generated / totalTriggers * 100) : 0 },
+        { stage: 'Reviewed', count: reviewed, rate: generated > 0 ? Math.round(reviewed / generated * 100) : 0 },
+        { stage: 'Approved', count: approved, rate: generated > 0 ? Math.round(approved / generated * 100) : 0 },
+        { stage: 'Published', count: publishedCount, rate: approved > 0 ? Math.round(publishedCount / approved * 100) : 0 },
+        { stage: 'Got Leads', count: withLeads, rate: publishedCount > 0 ? Math.round(withLeads / publishedCount * 100) : 0 }
+      ];
+      // Content queue health
+      const approvedFormats = content.reduce((sum, c) => {
+        return sum + Object.values(c.formats || {}).filter(f => f.status === 'approved' && !f.published_at).length;
+      }, 0);
+      const postsPerDay = 2; // Assume 2 posts/day
+      const daysOfContent = Math.floor(approvedFormats / postsPerDay);
+      const queueHealth = daysOfContent >= 7 ? 'healthy' : daysOfContent >= 3 ? 'low' : 'critical';
+      return json(res, {
+        funnel,
+        queue: { approved_formats: approvedFormats, days_remaining: daysOfContent, health: queueHealth, posts_per_day: postsPerDay },
+        totals: { triggers: totalTriggers, content: generated, published: publishedCount, leads: totalLeads }
+      });
+    }
+
     // GET /api/triggers
     if (pathname === '/api/triggers' && method === 'GET') {
       let triggers = readJSON('trigger-queue.json');
@@ -3807,6 +3850,27 @@ cron.schedule('0 11 * * *', async () => {
   } catch (err) {
     console.error('[cron] Daily scrape failed:', err.message);
     try { db.logError('cron', 'daily_scrape', err.message); } catch {}
+  }
+});
+
+// Content queue auto-generation — check every 4 hours, generate if queue is low
+cron.schedule('0 */4 * * *', async () => {
+  try {
+    const content = readJSON('content.json');
+    const approvedFormats = content.reduce((sum, c) => {
+      return sum + Object.values(c.formats || {}).filter(f => f.status === 'approved' && !f.published_at).length;
+    }, 0);
+    const daysLeft = Math.floor(approvedFormats / 2);
+    if (daysLeft < 3 && process.env.ANTHROPIC_API_KEY) {
+      console.log(`[cron] Content queue low (${approvedFormats} approved, ~${daysLeft}d left). Auto-generating 3 pieces...`);
+      const { runDaily } = require('./generator/run-daily');
+      const result = await runDaily({ count: 3 });
+      const generated = result || [];
+      for (const item of generated) autoScheduleContent(item);
+      console.log(`[cron] Auto-generated ${generated.length} content pieces`);
+    }
+  } catch (err) {
+    console.error('[cron] Queue auto-generation failed:', err.message);
   }
 });
 

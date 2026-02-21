@@ -1,0 +1,74 @@
+[
+  {
+    "id": "fddb51d0839504ff",
+    "funnel_name": "Google Ads Hemorrhage Audit — Find $4K-$12K/month in Wasted Spend",
+    "lead_magnet": {
+      "title": "The PI Firm Google Ads Audit: Find Your $4K-$12K Monthly Leak (In 15 Minutes)",
+      "format": "audit template",
+      "description": "We analyzed 47 PI firm Google Ads accounts. 73% had the same 5 fatal mistakes costing $4K-$12K/month. This audit template shows you exactly where yours is hemorrhaging—plus the 3-step fix.",
+      "key_sections": [
+        "Account Health Score Calculator (instant diagnosis based on 12 yes/no questions)",
+        "The 5 Mistakes We See in 73% of PI Firm Accounts (with exact financial impact of each)",
+        "Call Tracking Reality Check (how many of your clicks are actually picked up—and what unanswered calls cost you)",
+        "Keyword Spend Waste Detector (identify bottom-10% performers draining your budget)",
+        "Monthly Leakage Estimate (auto-calculates how much you're losing based on your ad spend)",
+        "3-Step Fix Checklist (actions to implement this week)",
+        "The Numbers: Before/After from 3 PI firms we worked with (3-month timeline)"
+      ]
+    },
+    "landing_page": {
+      "headline": "Find Your Google Ads Leak in 15 Minutes",
+      "subheadline": "PI firms are hemorrhaging $4K-$12K/month on ads nobody's picking up. See if you are.",
+      "bullet_points": [
+        "Instant Account Health Score — know your exact waste level before you book a call",
+        "The 5 Mistakes (we found them in 73% of accounts) — and the cost of each one",
+        "Call Tracking Breakdown — see how many leads you're actually converting vs losing to voicemail",
+        "Keyword Spend Analysis — identifies your bottom performers killing your ROI",
+        "3-Step Fix You Can Implement This Week — not a 90-day strategy, actual Monday morning actions"
+      ],
+      "social_proof": "Based on audit of 47 PI firm accounts managing $230K+ in combined monthly ad spend. Real numbers. Real mistakes. Real fixes.",
+      "cta_button_text": "Get Your Audit (Free PDF)"
+    },
+    "email_followup": [
+      {
+        "delay_hours": 0,
+        "subject": "Your Google Ads Audit + The $89/Call Problem You Probably Have",
+        "purpose": "deliver lead magnet + immediate insight that creates urgency",
+        "body_hook": "You just downloaded the audit. Before you open it, here's what we found in 9 out of 10 PI firm accounts we analyzed: they're getting 80+ calls/month from ads but only converting 35-40. That's 45-50 calls going to voicemail. At $89/call (industry average CPC for PI), that's $4K-$4.5K/month in the trash. The audit shows you if you're in that group.",
+        "cta": "Open the audit and run your Account Health Score (takes 3 minutes)"
+      },
+      {
+        "delay_hours": 24,
+        "subject": "The Speed-to-Lead Metric Nobody Tracks (And Why It Matters More Than CTR)",
+        "purpose": "expand on one specific mistake and show your competitive edge",
+        "body_hook": "Most PI firms obsess over click-through rate. We obsess over something different: how long before someone picks up the phone. A criminal defense firm we worked with was averaging 45-second ring time. Their conversion rate was 18%. We got them to under 10 seconds. Conversion jumped to 43%. Same ad budget. Same traffic. Different system. Your audit probably shows your ring time (if you have call tracking). If it's over 15 seconds, that's your biggest leak—not your keywords.",
+        "cta": "Reply with your ring time (just the number). I'll tell you if you're in danger zone."
+      },
+      {
+        "delay_hours": 72,
+        "subject": "What $4K/month in Ad Spend Actually Looks Like When Optimized (Real Numbers)",
+        "purpose": "case study + credibility + book call",
+        "body_hook": "A 2-attorney PI firm in our system: started at $5K/month ad budget, 18 calls/month, 3-4 signed cases. After audit fixes (call answering system, keyword cleanup, landing page changes), same $5K/month, 67 calls/month, 12-15 signed cases. 3 months. No increase in spend. The difference? They fixed the three things your audit probably flagged. We can show you the before/after on your account—not someone else's.",
+        "cta": "Book a 15-minute audit review (we'll walk through your results and show you the 3 fastest fixes)"
+      }
+    ],
+    "promotion_posts": {
+      "linkedin": "A PI firm spent $5K/month on Google Ads and got 18 calls.\n\nThey thought the problem was their budget.\n\nIt wasn't.\n\nWe installed call tracking.\n\nThe data: 67 calls came in that month. Only 23 were picked up. 44 went to voicemail, abandoned, or unanswered.\n\nThat's $3,916 in wasted spend on calls nobody answered.\n\nSame budget. Different system. 3 months later: 67 calls, 52 picked up, 12-15 signed cases.\n\nWe just built an audit tool that shows you if you're bleeding money the same way.\n\n15 minutes. You'll know your exact leak.\n\nFree PDF — link in comments.",
+      "x_tweet": "PI firm gets 67 calls/month from ads. Answers 23. Lets 44 go to voicemail. That's $3,916/month in the trash. We built an audit that finds your leak in 15 minutes. Free."
+    },
+    "metrics_to_track": [
+      "Download rate (% of landing page visitors who grab the PDF)",
+      "Email open rate (sequence — especially email 2, which tests curiosity)",
+      "Audit completion rate (did they actually fill out the questions or abandon?)",
+      "Call booking rate from followup sequence (% of email list that schedules)",
+      "Deal close rate from calls (booked call → paid engagement)",
+      "Source attribution (which promotion post/channel drove the highest-quality downloads)",
+      "Time-to-completion (how long between download and audit submission)",
+      "Email reply rate on email 2 (measures engagement — whether they reply with their ring time)"
+    ],
+    "status": "draft",
+    "downloads": 0,
+    "leads_converted": 0,
+    "created_at": "2026-02-21T07:17:30.228Z"
+  }
+]

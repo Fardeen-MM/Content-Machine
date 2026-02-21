@@ -1,0 +1,249 @@
+{
+  "clusters": [
+    {
+      "pillar_topic": "Google Ads for Law Firms: The Complete System for Getting Signed Cases",
+      "pillar_keyword": "google ads for law firms",
+      "supporting_topics": [
+        {
+          "topic": "Why Your Law Firm's Google Ads CTR is 40% Below Industry Standard",
+          "keyword": "law firm google ads click through rate",
+          "format": "blog",
+          "search_intent": "informational"
+        },
+        {
+          "topic": "The $4,183 Mistake: Law Firms Overspending on High-CPC Keywords That Don't Convert",
+          "keyword": "google ads keyword bidding strategy law firms",
+          "format": "linkedin",
+          "search_intent": "commercial"
+        },
+        {
+          "topic": "Google Ads Landing Page Optimization for Legal Services (Real Numbers)",
+          "keyword": "law firm landing page conversion rate optimization",
+          "format": "blog",
+          "search_intent": "commercial"
+        },
+        {
+          "topic": "How to Set Up Conversion Tracking in Google Ads Without Losing Data",
+          "keyword": "google ads conversion tracking law firms",
+          "format": "video",
+          "search_intent": "navigational"
+        },
+        {
+          "topic": "Google Ads Budget Allocation: PI vs Family Law vs Criminal Defense",
+          "keyword": "google ads budget allocation by practice area",
+          "format": "carousel",
+          "search_intent": "commercial"
+        },
+        {
+          "topic": "The Call Tracking Audit That Exposed $18K in Wasted Ad Spend",
+          "keyword": "law firm call tracking google ads integration",
+          "format": "linkedin",
+          "search_intent": "informational"
+        }
+      ],
+      "internal_linking_strategy": "Pillar page links to all supporting topics. Each blog post links back to pillar + related subtopics (landing page post → conversion tracking post). LinkedIn posts link to pillar page in 'About' section. Video description links to blog post + pillar. Carousel links to full blog post.",
+      "content_gap": "Competitors focus on 'best practices' and CTR optimization. We show the COST of mistakes (specific dollar amounts), tie Google Ads to signed cases (not just leads), and address the intake bottleneck that wastes 40-60% of paid traffic."
+    },
+    {
+      "pillar_topic": "Law Firm Intake Systems: From Lead to Signed Case in Under 24 Hours",
+      "pillar_keyword": "law firm intake process optimization",
+      "supporting_topics": [
+        {
+          "topic": "The Speed-to-Lead Benchmark: Why Your 3-Hour Response Time is Costing You 47% of Cases",
+          "keyword": "law firm response time intake speed",
+          "format": "blog",
+          "search_intent": "informational"
+        },
+        {
+          "topic": "Intake Software Shootout: Lawmatics vs Clio vs Zapier (Real Implementation Costs)",
+          "keyword": "best intake software for law firms",
+          "format": "blog",
+          "search_intent": "commercial"
+        },
+        {
+          "topic": "Why Your Law Firm's Voicemail Box is a $47K Annual Problem",
+          "keyword": "law firm phone system voicemail",
+          "format": "linkedin",
+          "search_intent": "informational"
+        },
+        {
+          "topic": "After-Hours Call Coverage for Law Firms (DIY vs Outsourced Pricing)",
+          "keyword": "law firm after hours answering service",
+          "format": "blog",
+          "search_intent": "commercial"
+        },
+        {
+          "topic": "The Intake Script That Increased PI Firm Case Values by 34%",
+          "keyword": "law firm intake call script template",
+          "format": "video",
+          "search_intent": "commercial"
+        },
+        {
+          "topic": "Lead Qualification Scorecard: Stop Chasing Unqualified Prospects",
+          "keyword": "law firm lead qualification criteria",
+          "format": "carousel",
+          "search_intent": "informational"
+        },
+        {
+          "topic": "CRM Integration Failures: Why Your Lawmatics Setup Is Siloing Data",
+          "keyword": "lawmatics setup best practices",
+          "format": "linkedin",
+          "search_intent": "commercial"
+        }
+      ],
+      "internal_linking_strategy": "Pillar page anchors to speed-to-lead section, software comparison section, and qualification section. Speed-to-lead blog links to voicemail post + answering service post. Software blog links to CRM integration post. Video script embeds on intake software blog. Carousel links to full speed-to-lead blog. LinkedIn posts reference pillar + link to specific software/speed posts.",
+      "content_gap": "Everyone talks about 'improving intake.' We quantify the exact cost per hour of delay, compare system pricing with ROI math, and expose how CRM setup mistakes cost firms 15-20% of leads. Competitors don't show the math."
+    },
+    {
+      "pillar_topic": "Law Firm Call Tracking: The Hidden Data That Reveals Leaked Revenue",
+      "pillar_keyword": "call tracking for law firms",
+      "supporting_topics": [
+        {
+          "topic": "CallRail for Law Firms: Setup, Integration, and the Metrics That Actually Matter",
+          "keyword": "callrail law firms setup",
+          "format": "blog",
+          "search_intent": "navigational"
+        },
+        {
+          "topic": "We Audited 47 Law Firm Google Ads Accounts. Here's What Call Tracking Revealed.",
+          "keyword": "law firm call tracking audit results",
+          "format": "linkedin",
+          "search_intent": "informational"
+        },
+        {
+          "topic": "The 8-Second Rule: How Long Your Firm Has to Answer Before Losing the Lead",
+          "keyword": "law firm answer time conversion rate",
+          "format": "video",
+          "search_intent": "informational"
+        },
+        {
+          "topic": "Track This or Waste $5K/Month: Essential Call Metrics for Law Firms",
+          "keyword": "law firm call metrics dashboard",
+          "format": "carousel",
+          "search_intent": "commercial"
+        },
+        {
+          "topic": "Call Recording for Compliance: PI, Criminal Defense, and Family Law Requirements",
+          "keyword": "law firm call recording legal requirements",
+          "format": "blog",
+          "search_intent": "informational"
+        },
+        {
+          "topic": "Dynamic Number Insertion: Stop Wasting Attribution Data from Your Website",
+          "keyword": "dynamic phone number insertion law firms",
+          "format": "blog",
+          "search_intent": "commercial"
+        },
+        {
+          "topic": "The Voicemail Trap: 34% of Your Callers Hang Up Before the Beep",
+          "keyword": "law firm voicemail abandonment rates",
+          "format": "linkedin",
+          "search_intent": "informational"
+        }
+      ],
+      "internal_linking_strategy": "Pillar page intro section links to CallRail setup blog. CallRail blog links to dynamic number insertion + call recording posts. The '8-second rule' video embeds on speed-focused blogs (intake + Google Ads clusters). Carousel links to metrics dashboard blog. LinkedIn audit post links to pillar + all supporting blogs. Call recording blog links to compliance requirements within criminal/PI/family practice blogs.",
+      "content_gap": "Competitors explain call tracking in generic terms. We show exact metrics (52% abandonment = $4,183/month waste), compliance gotchas by practice area, and the integration chain (CallRail → Google Ads → Lawmatics) that most firms botch."
+    },
+    {
+      "pillar_topic": "Law Firm Website Conversion Optimization: Turn Traffic Into Intake Calls",
+      "pillar_keyword": "law firm website conversion rate optimization",
+      "supporting_topics": [
+        {
+          "topic": "The Homepage Audit: Why 73% of Law Firm Websites Kill Leads in the First 5 Seconds",
+          "keyword": "law firm homepage design conversion",
+          "format": "blog",
+          "search_intent": "informational"
+        },
+        {
+          "topic": "Above-the-Fold CTA Testing: Which Button Copy Actually Gets Clicked (Real A/B Results)",
+          "keyword": "law firm call to action button optimization",
+          "format": "linkedin",
+          "search_intent": "commercial"
+        },
+        {
+          "topic": "Lead Form Friction: How Adding One Field Drops Submissions by 31%",
+          "keyword": "law firm contact form optimization",
+          "format": "blog",
+          "search_intent": "commercial"
+        },
+        {
+          "topic": "Video Testimonials vs Text Reviews: Which Converts Better (And Why)",
+          "keyword": "law firm social proof conversion optimization",
+          "format": "video",
+          "search_intent": "informational"
+        },
+        {
+          "topic": "Trust Signals for Law Firms: What Actually Moves Cold Prospects to Call",
+          "keyword": "law firm credibility elements website",
+          "format": "carousel",
+          "search_intent": "commercial"
+        },
+        {
+          "topic": "Mobile Conversion Hell: Why 60% of Your Mobile Leads Never Call",
+          "keyword": "mobile website conversion law firms",
+          "format": "blog",
+          "search_intent": "informational"
+        },
+        {
+          "topic": "Exit-Intent Popups for Law Firms: The Banned Tactic That Still Works (If Done Right)",
+          "keyword": "law firm exit intent popup",
+          "format": "linkedin",
+          "search_intent": "commercial"
+        }
+      ],
+      "internal_linking_strategy": "Pillar page links to all conversion audit posts. Homepage audit blog links to CTA button + form friction + mobile posts. Video testimonials blog links to trust signals carousel. Mobile conversion blog links to form friction blog (mobile + form overlap). LinkedIn posts link to detailed blog versions. Carousel embeds on multiple blogs.",
+      "content_gap": "Competitors talk about 'best practices' (clear CTA, fast load times, testimonials). We show the EXACT cost of friction (one field = -31% submissions = X lost cases), practice-area-specific trust signals (immigration = government credentials; PI = case results; criminal = 24/7 availability), and mobile-specific disasters."
+    },
+    {
+      "pillar_topic": "Law Firm Marketing Budget Allocation: Where to Actually Spend $5K-$50K/Month",
+      "pillar_keyword": "law firm marketing budget allocation",
+      "supporting_topics": [
+        {
+          "topic": "The Math of ROI: Calculating True Cost Per Signed Case (Not Just Lead Cost)",
+          "keyword": "law firm cost per case calculation",
+          "format": "blog",
+          "search_intent": "commercial"
+        },
+        {
+          "topic": "Google Ads vs Local SEO vs Referral Systems: Real Numbers by Practice Area",
+          "keyword": "google ads vs seo law firms ROI comparison",
+          "format": "blog",
+          "search_intent": "commercial"
+        },
+        {
+          "topic": "Budget Reality Check: Your PI Firm Needs $3K/Month Minimum for Google Ads. Here's Why.",
+          "keyword": "law firm google ads minimum budget",
+          "format": "linkedin",
+          "search_intent": "informational"
+        },
+        {
+          "topic": "The $200 Answering Service That Pays for Itself in 2 Leads",
+          "keyword": "law firm answering service ROI",
+          "format": "carousel",
+          "search_intent": "commercial"
+        },
+        {
+          "topic": "Hiring a Marketing Director vs Agency: Which Costs Less (Spoiler: Neither)",
+          "keyword": "law firm marketing director vs agency cost",
+          "format": "video",
+          "search_intent": "commercial"
+        },
+        {
+          "topic": "The Invisible Budget Killer: Unbilled Hours Spent 'Managing' Your Marketing",
+          "keyword": "law firm marketing management overhead",
+          "format": "linkedin",
+          "search_intent": "informational"
+        },
+        {
+          "topic": "Budget Allocation by Year: Year 1 (Build) vs Year 2 (Scale) vs Year 3 (Optimize)",
+          "keyword": "law firm marketing budget growth strategy",
+          "format": "blog",
+          "search_intent": "commercial"
+        }
+      ],
+      "internal_linking_strategy": "Pillar page has section anchors for Google Ads vs SEO, cost per case, and timeline budgeting. Cost per case blog links to signed case definition + practice-area-specific values. Google Ads vs SEO blog links to full Google Ads pillar + local SEO resources. Answering service carousel links to intake/speed-to-lead cluster. Video on marketing director vs agency links to hiring framework blog. LinkedIn posts reference pillar page + specific budget blogs.",
+      "content_gap": "Industry content focuses on 'average spend' ($2K-$10K/month) without context. We show the math (practice area → case value → required ad spend → required conversion rate → required intake speed), expose overhead costs (unbilled partner hours), and break the myth that 'ROI happens at 6 months' (for law firms, it's month 1-2 or the system is broken)."
+    }
+  ],
+  "generated_at": "2026-02-21T07:31:09.373Z"
+}

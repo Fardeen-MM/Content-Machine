@@ -1,0 +1,60 @@
+[
+  {
+    "id": "cf61f10a14f39253",
+    "content_id": "4aa23b276fa5218b",
+    "title": "Lessons Learned From 5,000 Days of Crisp — Episode 438",
+    "sequence_name": "5,000 Days of Agency Mistakes (So You Don't Have To Make Them)",
+    "target_audience": "Law firm owners/marketers who downloaded a lead magnet or engaged with content about agency selection, marketing ROI, or case generation but haven't booked a call. Likely frustrated with current agency or considering hiring one.",
+    "emails": [
+      {
+        "day": 1,
+        "subject": "The $127K mistake I made in year 3",
+        "preview_text": "And why most agencies repeat it with your money",
+        "body": "Hey [First Name],\n\nThanks for grabbing the guide. Before we get into the tactics, I need to tell you about the worst year of my agency career.\n\nYear 3. We had 14 law firm clients. Revenue looked great on paper.\n\nThen I did the math:\n\n- 6 clients weren't profitable (cost more to service than they paid)\n- 4 were stuck in \"optimization hell\" — endless tweaks, no new cases\n- Only 4 were actually growing their revenue\n\nWe wasted $127,000 that year on clients we couldn't help and services that didn't move the needle.\n\nThe brutal truth? Most agencies are still making this mistake. They take every client. They say yes to every service request. They optimize campaigns that should be killed.\n\nOver the next week, I'm sending you 5 lessons from 5,000+ days of running Mortar Metrics — things I wish someone had told me before I wasted six figures learning them.\n\nToday's lesson: Not every law firm is ready for paid ads.\n\nIf your intake process answers calls in 60+ seconds, if your staff doesn't know how to qualify a lead, if you're not tracking which marketing source actually signs cases — paid ads will just expose those problems faster and cost you more money.\n\nWe've turned down 11 potential clients this year because their intake was broken. Fixed intake first, then ran ads. Results were 3-4x better.\n\nTomorrow: The metric 90% of law firms track wrong (and how it kills your budget).\n\nTalk soon,\n\n[Your Name]\nMortar Metrics\n\nP.S. — If you're currently running Google Ads and want me to eyeball your account for the most common mistakes, just reply \"audit\" and I'll send you a quick Loom.",
+        "cta": "Reply 'audit' for a free account review",
+        "cta_type": "reply"
+      },
+      {
+        "day": 3,
+        "subject": "The PI firm tracking the wrong number",
+        "preview_text": "They had 90 'leads' but only 12 cases. Here's why.",
+        "body": "Hey [First Name],\n\nLesson #2 from 5,000 days: The metric you're tracking is probably lying to you.\n\nLast month, a PI firm sent me their Google Ads report. They were celebrating.\n\n\"90 leads from ads! Great month!\"\n\nI asked: \"How many signed?\"\n\nLong pause.\n\n\"Uh... 12.\"\n\nThat's a 13% conversion rate. At $89 per lead, they spent $8,010 to sign 12 cases.\n\nBut here's the real problem: They were tracking \"form fills\" as leads. Not calls. Not consultations. Not signed retainers.\n\nWhen we installed call tracking and dug into their intake data:\n\n- 47 of those 90 \"leads\" never spoke to a human\n- 23 were unqualified (wrong case type, out of state)\n- 8 went with another firm who called back faster\n\nOnly 12 actually signed.\n\nThe fix wasn't better ads. It was:\n\n1. Track CALLS, not just forms (forms convert at 8%, calls at 35%)\n2. Answer in under 60 seconds (every 10-second delay drops conversion 4%)\n3. Measure signed cases per $1,000 spent — not cost per lead\n\nWhen we switched their tracking, we found their real cost per signed case was $667 — not the $89 they thought.\n\nThat changes everything about budget, strategy, and what's actually working.\n\nWhat are YOU tracking right now? Cost per click? Form fills? Or signed cases?\n\nTomorrow: Why your Google Ads budget is probably 40% too low (or 60% too high).\n\n[Your Name]\nMortar Metrics\n\nP.S. — Using CallRail or Invoca for tracking? Reply and I'll send you the 3 reports every law firm should be checking weekly.",
+        "cta": "Reply with your current tracking setup",
+        "cta_type": "reply"
+      },
+      {
+        "day": 5,
+        "subject": "You're either starving your campaigns or drowning them",
+        "preview_text": "There's a formula. Most agencies ignore it.",
+        "body": "Hey [First Name],\n\nLesson #3: Your Google Ads budget is wrong. I can say that without seeing your account.\n\nHere's why.\n\nMost law firms pick a budget based on:\n- What they feel comfortable spending\n- What their competitor spends\n- What their last agency recommended\n\nNone of that matters.\n\nYour budget should be based on ONE thing: How many cases you need to sign this month × your cost per signed case.\n\nExample:\n\nFamily law firm in Dallas. They need 8 new cases/month to hit revenue goals.\n\nTheir cost per signed case (after we fixed intake): $412.\n\n8 cases × $412 = $3,296/month minimum.\n\nThey were spending $1,800. Wondering why they \"only got 4 cases.\"\n\nWe doubled the budget to $3,600. They signed 9 cases. One month later: 11 cases at $4,200 spend.\n\nThe math worked.\n\nBut here's the flip side:\n\nA criminal defense firm was spending $9,000/month. Signing 6 cases. Cost per signed case: $1,500.\n\nWe cut the budget to $4,200, tightened targeting, fixed their phone answering speed.\n\nResult: 7 cases at $600 cost per signed case.\n\nThey saved $4,800/month AND got more cases.\n\nThe lesson: Your budget isn't a number you guess. It's a function of:\n\n1. Cases needed\n2. Cost per signed case (REAL cost, not cost per lead)\n3. Intake conversion rate\n\nIf you don't know #2 and #3, your budget is a coin flip.\n\nTomorrow: The intake question that loses 40% of your cases (and how to fix it).\n\n[Your Name]\nMortar Metrics\n\nP.S. — Want to calculate your real cost per signed case? I built a simple spreadsheet. Reply \"formula\" and I'll send it over.",
+        "cta": "Reply 'formula' for the cost-per-case calculator",
+        "cta_type": "reply"
+      },
+      {
+        "day": 7,
+        "subject": "\"Can I call you back in 20 minutes?\"",
+        "preview_text": "That one sentence just cost you a $40K case.",
+        "body": "Hey [First Name],\n\nLesson #4: Your intake is killing more cases than your ads.\n\nWe recorded 200+ intake calls for a PI firm last quarter. One phrase showed up 47 times:\n\n\"Can I call you back in 20 minutes?\"\n\nOf those 47 callbacks:\n\n- 19 never answered when the firm called back\n- 14 had already called another firm\n- 8 signed with someone else\n- 6 answered and moved forward\n\nThat's a 13% success rate on callbacks.\n\nWhy? Because the person who just got in a car accident, just got arrested, just got divorce papers — they're calling 4-5 firms in a row.\n\nThe first firm that answers AND keeps them on the phone wins.\n\nNot the firm with the best website. Not the firm with the most Google reviews. The firm that picked up the phone and said:\n\n\"I have time right now. Tell me what happened.\"\n\nHere's what we changed:\n\n1. No callbacks during business hours — ever. If you can't talk, route to an overflow service.\n2. Intake staff gets a $50 bonus per signed case (they now FIGHT to take calls).\n3. First question: \"Are you safe right now? Do you need immediate help?\" (PI/criminal)\n4. Second question: \"Tell me what happened.\" (not \"what's your case type?\")\n\nResult: Callback rate dropped to 8 per month. Conversion rate jumped from 13% to 41%.\n\nSame ad budget. Same traffic. 3x more signed cases.\n\nYour Google Ads are working. Your intake isn't.\n\nTomorrow: The final lesson — why we fire 30% of our clients (and why you should fire 30% of your marketing spend).\n\n[Your Name]\nMortar Metrics\n\nP.S. — If you want the full intake script we use for PI, family, and criminal defense firms, just reply \"script.\" I'll send it over.",
+        "cta": "Reply 'script' for the intake framework",
+        "cta_type": "reply"
+      },
+      {
+        "day": 10,
+        "subject": "I fired a $4,800/month client yesterday",
+        "preview_text": "Best decision I've made all year. Here's why.",
+        "body": "Hey [First Name],\n\nLesson #5 (the last one): Fire bad fits early. For both of us.\n\nYesterday I got off a call with a law firm owner. Nice guy. 3-attorney family law practice. $4,800/month retainer on the table.\n\nI told him we weren't the right fit.\n\nWhy?\n\nBecause in 15 minutes, I learned:\n\n- They don't have a CRM (tracking leads in a Google Sheet)\n- Their intake person works 9am-4pm, no overflow\n- They've fired 4 agencies in 2 years\n- He wanted \"more leads\" but didn't know his current cost per signed case\n\nI could take his money. Run ads. Generate calls.\n\nAnd in 90 days, he'd fire us too — because the leads wouldn't convert.\n\nNot because the ads were bad. Because the system is broken.\n\nI've learned this the hard way:\n\nEvery bad client fit costs us $30K+ in wasted hours, refunds, and stress.\n\nEvery law firm that hires the wrong agency wastes $15K+ before they realize it's not working.\n\nSo here's my filter now (and yours should be similar):\n\n1. Do you answer calls in under 60 seconds? If not, fix that first.\n2. Do you know your cost per signed case? If not, we start with tracking.\n3. Are you willing to spend at least $3K/month for 90 days? If not, SEO or referrals are better.\n4. Do you have someone who manages marketing daily? If not, you need an integrator (we can refer one).\n\nIf the answer to any of those is no — pause. Fix the foundation. Then spend money on ads.\n\nWe've turned down $180K in potential revenue this year by saying no to bad fits.\n\nBest year we've ever had.\n\nBecause the clients we DO work with? They grow. Fast.\n\nMandall Law: $4K/month ad spend → $92K/month revenue. 30+ signed cases/month.\n\nThat's what happens when the system works.\n\n---\n\nSo, [First Name] — where are you at?\n\nIf you've read all 5 emails and you're thinking: \"We have tracking, our intake is fast, we're ready to scale\" — let's talk.\n\nBook 20 minutes here: [calendar_link]\n\nIf you're thinking: \"We need to fix intake first\" — reply and I'll send you the 3 things to fix before you spend another dollar on ads.\n\nEither way, thanks for reading. I don't do fluff. I hope these 5 lessons saved you a few mistakes.\n\n[Your Name]\nMortar Metrics\n\nP.S. — Not ready yet? No problem. I send a weekly email with one case study from our work with law firms. Real numbers. Real systems. Reply \"weekly\" and I'll add you.",
+        "cta": "Book a 20-minute call OR reply for pre-ad fixes",
+        "cta_type": "book_call"
+      }
+    ],
+    "expected_metrics": {
+      "open_rate": "38-48% (Email 1 highest, Email 5 lowest but most qualified)",
+      "click_rate": "10-15% (Email 5 calendar link)",
+      "reply_rate": "12-18% (Emails 2-4 drive most replies due to resource offers)",
+      "booking_rate": "4-7% (from engaged readers who make it to Email 5)"
+    },
+    "send_schedule": "every_other_day (allows time for replies and feels less aggressive than daily; skip weekends so emails land Mon/Wed/Fri/Tue/Thu)",
+    "status": "draft",
+    "created_at": "2026-02-21T02:58:20.159Z"
+  }
+]

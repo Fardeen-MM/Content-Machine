@@ -1,0 +1,114 @@
+{
+  "target_accounts": [
+    {
+      "type": "thought leader",
+      "description": "Established legal industry voices, law firm consultants, and legal tech founders with engaged audiences discussing firm growth, client acquisition, and legal operations",
+      "example_accounts": "Legal tech founders, legal business consultants, law firm managing partners, legal marketing agencies, bar association leaders",
+      "follower_range": "10K-500K"
+    },
+    {
+      "type": "adjacent industry",
+      "description": "B2B service providers (accounting, consulting, staffing, insurance) discussing similar growth challenges: client retention, pricing, team scaling, sales processes",
+      "example_accounts": "Accounting firm leaders, consulting firm founders, staffing agency owners, business coaches, sales strategists",
+      "follower_range": "5K-250K"
+    },
+    {
+      "type": "potential client",
+      "description": "Law firm owners and partners actively discussing growth pain points, hiring challenges, client acquisition, or firm scaling on public posts",
+      "example_accounts": "Managing partners, practice group leaders, law firm entrepreneurs, attorneys transitioning to leadership",
+      "follower_range": "500-50K"
+    },
+    {
+      "type": "direct competitor",
+      "description": "Other legal marketing agencies and law firm consultants—not to attack, but to comment thoughtfully on their content and introduce nuance your audience would value",
+      "example_accounts": "Legal marketing agencies, law firm coaches, practice management consultants",
+      "follower_range": "2K-100K"
+    }
+  ],
+  "reply_templates": [
+    {
+      "situation": "Thought leader posts about a common law firm challenge (client acquisition, associate retention, pricing pressure)",
+      "template": "[Validate the insight] This tracks with what we're seeing with [specific client type/firm size]. [Add specific nuance or data point they didn't mention]. [Reframe slightly to introduce your angle without self-promotion]. One thing we've found: [actionable micro-insight that sounds original].",
+      "example": "This tracks—we're seeing this exact issue with mid-market firms hitting $2-5M revenue. The retention problem often isn't pay, it's [the firm's inability to offer career trajectory without expanding]. One thing we've found: partners who get clear on 'what success looks like for this person in 3 years' cut departures by 40%.",
+      "why_it_works": "Validates their insight (builds social proof for them, makes them respect your reply), adds specificity their followers haven't heard, hints at expertise without selling, provides one memorable takeaway their audience can use immediately"
+    },
+    {
+      "situation": "Someone shares a win or case study about firm growth, client acquisition, or scaling",
+      "template": "[Celebrate specific detail from their win]. This is harder than it looks because [name the hidden complexity most people miss]. Did you find [ask specific tactical question about their approach]? Curious how you handled [legitimate follow-up question].",
+      "example": "The '3x pipeline in 6 months' is impressive—what's harder is maintaining quality when velocity increases. Did you find the intake process was the bottleneck, or was it case selection? Asking because most firms we work with see quality drop first.",
+      "why_it_works": "Shows you actually read their post (not a bot comment), asks a question that makes others want to read their reply, positions you as someone thinking deeper about the problem, creates conversation thread that keeps reply visible longer"
+    },
+    {
+      "situation": "Post contains a common misconception or incomplete advice about legal marketing/firm growth",
+      "template": "[Acknowledge what's true in their point]. However, [introduce nuance/missing context without being contrarian]. [Specific counter-example]. Worth noting: [the thing most people get wrong here].",
+      "example": "The volume play definitely works for some practices. However, most firms can't sustain high-volume client acquisition without a referral engine—it exhausts the team. We worked with a personal injury firm that tried this: acquisition cost stayed high, but referrals eventually covered 60% of new clients, which changed economics entirely. Worth noting: most firms measure this wrong—they track client source, not cost per sustainable client.",
+      "why_it_works": "Respectful disagreement increases engagement (algorithms favor debate), shows depth of experience, educates their audience (they'll engage to learn), positions you as expert without arrogance"
+    },
+    {
+      "situation": "Someone posts a question about law firm growth, client acquisition, team challenges, or pricing",
+      "template": "[Answer their question with one specific recommendation]. The reason this works: [explain the mechanism]. Most firms miss [the execution detail that actually matters]. If you're [specific firm type/situation], [additional context].",
+      "example": "You'll want to segment your outreach by practice area—a personal injury firm's 'ideal client' looks totally different from an employment law firm's. The reason: case economics are different, so your budget allocation needs to change. Most firms miss that this also affects which referral sources to invest in. If you're under $2M, start with referral sources before paid acquisition.",
+      "why_it_works": "Directly helpful (people upvote/reply to useful answers), shows you understand their specific situation, the explanation builds credibility, the caveat shows nuance and draws more questions"
+    },
+    {
+      "situation": "Industry news, legal tech updates, or changes affecting law firms (AI, regulation, market shifts)",
+      "template": "[Reframe the news in terms of law firm business impact]. Most firms will [common reactive response]. Better move: [proactive strategy]. [One specific thing to actually do].",
+      "example": "The AI paralegals news looks threatening but most firms will just watch. Better move: figure out which of your tasks actually free up attorney time vs. which just look automatable. Start tracking: 'Is this task billable? Does the client care about quality?' Then automate from there. Most firms waste time automating low-value work.",
+      "why_it_works": "Makes breaking news relevant to your niche audience, contrarian take increases engagement, actionable advice makes you seem plugged in, practical focus stands out against theoretical commentary"
+    },
+    {
+      "situation": "Post about hiring, team scaling, or culture challenges in any B2B service business",
+      "template": "[Validate the challenge]. This is especially tough for [service provider type] because [specific reason]. We've seen firms solve this by [specific approach]. The key: [one principle that makes it work].",
+      "example": "Hiring senior attorneys is brutal. This is especially tough for firms because experienced lawyers have options—and they're evaluating culture fast. We've seen firms solve this by being explicitly clear: 'Here's the leadership path, here's what success looks like, here's what we pay comparable people.' The key: candidates feel like insiders, not applicants.",
+      "why_it_works": "Shows you work in similar space (B2B services), offers specific solution (not theory), positions your understanding as earned from real work, the principle is memorable"
+    }
+  ],
+  "daily_routine": {
+    "time_commitment": "35-45 minutes",
+    "schedule": [
+      {
+        "time_block": "8:00-8:10 AM",
+        "action": "Open Twitter/X. Search 3-4 keywords relevant to your niche: 'law firm growth', 'client acquisition legal', 'attorney hiring', 'legal tech'. Set to 'Latest'. Identify 4-5 posts from target accounts with 50-2K engagement (sweet spot for visibility without being too saturated)."
+      },
+      {
+        "time_block": "8:10-8:30 AM",
+        "action": "Write 2-3 strategic replies on X. Each reply should be 1-3 sentences max. Use one template above per reply. Make sure each adds specific insight or asks a follow-up question. Do not mention your service/product."
+      },
+      {
+        "time_block": "8:30-8:40 AM",
+        "action": "Open LinkedIn. Search for posts from 'Legal', 'Law Firm', 'Business Development' keywords. Find 3-4 posts from thought leaders or potential clients with 20-500 engagement. LinkedIn posts get less engagement, so target slightly lower numbers."
+      },
+      {
+        "time_block": "8:40-8:55 AM",
+        "action": "Write 2 longer-form replies on LinkedIn (2-4 sentences). LinkedIn rewards more substantial replies. Use templates but expand slightly—LinkedIn audiences expect more depth. Add 1 follow-up question per reply."
+      },
+      {
+        "time_block": "8:55-9:00 AM",
+        "action": "Check replies from yesterday. Respond to any replies you got (especially from bigger accounts or people asking questions). This extends engagement window."
+      }
+    ]
+  },
+  "rules": [
+    "Always reply within 2-4 hours of post going live (algorithmic sweet spot for engagement weight)",
+    "Never self-promote in the reply—your credibility IS the sell",
+    "Never use the same reply template twice in a row; rotate through templates",
+    "Always add one specific detail or data point (not generic advice)",
+    "Target posts with 50-2K engagement on X, 20-500 on LinkedIn (sweet spot for visibility without oversaturation)",
+    "Ask one genuine follow-up question per reply (increases reply-to-reply engagement 75x)",
+    "Never reply to more than 5 posts per day per platform (quality over volume—one great reply beats 10 mediocre ones)",
+    "Spend 70% effort on thought leaders/adjacent industry (they have bigger audiences), 30% on direct competitors and potential clients",
+    "Reply to the same top accounts 1-2x per week max (builds familiarity without looking thirsty)",
+    "Always read the full post and 3-4 top replies before commenting (make sure your angle isn't already said)",
+    "Never be contrarian just to be contrarian—only disagree if you have real insight",
+    "Track which reply templates and accounts drive most engagement; double down on those",
+    "If a reply gets 20+ engagement, pin or like top replies to extend visibility window"
+  ],
+  "growth_milestones": {
+    "week_1": "0-5 new engaged followers; 2-3 conversations started; establish rhythm and find which templates work best for your voice",
+    "week_2": "5-15 new followers; 4-6 meaningful reply threads; algorithm starts recognizing you as commenter (your replies show to more people organically)",
+    "week_4": "20-40 new followers; several replies hitting 50+ engagement; DMs from interested parties or people asking about your work; get invited to conversations",
+    "month_2": "80-150 new followers; 10-15% of replies hitting 100+ engagement; 2-3 DMs from warm leads or collaboration opportunities; started getting tagged in relevant discussions",
+    "month_3": "200-400 new followers from replies strategy alone; consistent 20-30% of replies hitting 50+ engagement; regular inbound inquiries; positioned as visible expert in legal marketing/B2B services; building network of thought leaders who know your name and engage with your content"
+  },
+  "generated_at": "2026-02-21T07:39:52.699Z"
+}

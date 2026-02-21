@@ -1,0 +1,41 @@
+[
+  {
+    "id": "616a3ea0cace149c",
+    "content_id": "ec092ef2822c6bc1",
+    "title": "Call insight: Your intake team is asking the same questions in the same or",
+    "source_format": "linkedin",
+    "linkedin_post": "I analyzed 23 law firm intake processes last month.\n\nThe number that stopped me: 73% treat a $4K PPC lead the same as a $400 organic caller.\n\nThat's costing them cases.\n\nHere's the math:\n\nA PI firm gets 40 PPC leads/month. Average case value: $85K.\n\nIf even 3 of those 40 leads slip through intake cracks due to slow qualification—that's $255K in potential revenue lost annually.\n\nWhy it happens:\n\n1. No urgency detection (arrest date? court deadline? They don't ask first.)\n2. Form fields asking for case details before asking if they're actually ready to hire\n3. CRM doesn't flag which channel the lead came from, so intake treats hot PPC the same as cold organic\n\nThe fix:\n\nRoute PPC leads to a 90-second urgency screen first (arrest date, court deadline, representation status). Organic leads get the full intake form.\n\nTag every lead source in your CRM—not just \"website\" but \"Google Ads – Criminal Defense – Arrest.\"\n\nTrain intake staff on one question: \"How soon do you need representation?\" That filters urgency faster than any 12-field form.\n\nYour $150/click PPC lead isn't the same as someone who Googled your firm name and filled out a contact form at 2pm on a Tuesday.\n\nStop treating them the same.",
+    "x_thread": [
+      "73% of law firms treat a $4,000 PPC lead exactly the same as a $400 organic lead.\n\nThat mistake costs them $255K/year in missed cases.\n\nHere's why your intake is broken:",
+      "A PI firm: 40 PPC leads/month. Average case value: $85K.\n\nJust 3 leads slip through bad intake = $255K gone.\n\nThe problem? No urgency detection. Same questions. Same speed. Same form for every lead source.",
+      "Your intake asks:\n• Case details (long)\n• Background info (longer)\n• Contact preferences (why?)\n\nBut never asks:\n• Do you have a court date?\n• Are you represented now?\n• How soon do you need help?\n\nUrgency = revenue.",
+      "The fix:\n\n1. Route PPC leads to a 90-second urgency screen\n2. Tag lead source in CRM (not just \"website\")\n3. Ask \"How soon do you need representation?\" FIRST\n\nHot leads deserve hot treatment.",
+      "A $150/click Google Ad lead who just got arrested isn't the same as someone browsing your site at lunch.\n\nYour intake shouldn't treat them the same either.\n\nSpeed + urgency filtering = signed cases."
+    ],
+    "x_single": "Your intake team asks the same questions in the same order no matter if the lead cost $4 or $400.\n\nThat's why you're losing cases.",
+    "newsletter_intro": "Last month I pulled intake recordings from 23 law firms. Criminal defense, PI, family law—didn't matter. The pattern was identical.\n\n73% of them were asking a $4,000 PPC lead (someone who just got arrested, clicked a $150 Google Ad, and called within 10 minutes) the exact same questions, in the exact same order, as someone who found them organically and filled out a form at 2pm on a Wednesday.\n\nNo urgency screening. No channel awareness. Just a script.\n\nHere's what that costs: A PI firm gets 40 PPC leads a month. Average case value is $85K. If just 3 leads—3—slip through the cracks because intake didn't prioritize urgency, that's $255K in potential revenue lost every year.\n\nThe fix isn't hiring more intake staff. It's asking one question first: \"How soon do you need representation?\" That filters urgency faster than any 12-field form ever could. Read the full breakdown below.",
+    "youtube_short_script": "[HOOK — first 3 seconds]\n73% of law firms lose $255K a year because of this intake mistake.\n\n[PROBLEM]\nThey treat every lead the same.\n\nA $4,000 Google Ads lead who just got arrested? Same intake questions as someone browsing your site at lunch.\n\nNo urgency screening. No prioritization.\n\n[INSIGHT]\nHere's the fix: Ask ONE question first—\n\n\"How soon do you need representation?\"\n\nThat tells you if this is a hot lead or a cold one.\n\nRoute PPC leads to a 90-second urgency screen. Tag the source in your CRM. Train intake on speed.\n\n[CTA]\nYour $150/click lead isn't the same as a free organic caller. Stop treating them the same.\n\nLink in bio for the full intake audit process.",
+    "carousel_outline": [
+      "Slide 1: Your intake is costing you $255K/year. Here's why. [bold text on dark background]",
+      "Slide 2: 73% of law firms treat a $4K PPC lead the same as a $400 organic lead. Same questions. Same speed. Same form.",
+      "Slide 3: The cost: A PI firm gets 40 PPC leads/month at $85K/case. Just 3 slip through = $255K lost annually.",
+      "Slide 4: Why it happens: ❌ No urgency detection ❌ Long forms before qualification ❌ CRM doesn't flag lead source",
+      "Slide 5: The fix: Route PPC leads to a 90-second urgency screen. Ask: Court date? Deadline? Represented now?",
+      "Slide 6: Tag every lead source in your CRM. Not \"website\"—\"Google Ads – PI – Car Accident – Mobile.\" Specificity = speed.",
+      "Slide 7: Train your intake team on ONE question: \"How soon do you need representation?\" That filters urgency instantly. Stop losing $255K. [CTA: DM for intake audit]"
+    ],
+    "poll_question": {
+      "question": "Does your CRM flag which marketing channel each lead came from?",
+      "options": [
+        "Yes, tagged automatically",
+        "Sort of (manually entered)",
+        "No, just says 'website'",
+        "Wait, we should track this?"
+      ]
+    },
+    "quote_graphic": "A $150/click PPC lead isn't the same as a free organic caller. Stop treating them the same.",
+    "blog_seo_title": "Law Firm Intake Process Mistakes That Cost $255K Per Year (And How to Fix Them)",
+    "repurpose_notes": "LinkedIn = full story with math and framework (credibility play). X thread = breaks the insight into digestible chunks, builds narrative tension across 5 tweets. X single = confrontational one-liner to spark replies. Newsletter = personal/confessional angle, positions as insider sharing data. YouTube Short = visual/spoken delivery, leads with the $ loss number. Carousel = step-by-step visual breakdown for Instagram/LinkedIn. Poll = engagement bait, reveals how broken most firms' systems are. Quote graphic = punchy soundbite for social sharing. Blog title = SEO play targeting 'law firm intake process' keyword. Each format emphasizes different proof points: LinkedIn focuses on the 23-firm audit, Twitter on the math, YouTube on the one-question fix, carousel on the step-by-step system.",
+    "created_at": "2026-02-21T07:18:29.990Z"
+  }
+]

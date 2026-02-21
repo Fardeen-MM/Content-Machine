@@ -1,0 +1,103 @@
+[
+  {
+    "0": {
+      "trigger": "Commented on post about call tracking, intake speed, or wasted ad spend",
+      "message_1": {
+        "text": "Hey [Name] — saw your comment on the call tracking post. Quick question before I send over what we're seeing: are you currently tracking which calls actually convert to signed cases, or just counting total volume? (Lot of PI/crim defense firms we audit are shocked when they see the answer.)",
+        "timing": "Within 2 hours of engagement (while they're still thinking about the post)"
+      },
+      "message_2": {
+        "text": "The reason I ask: we audited a 4-attorney [practice area] firm last month. 156 calls from Google Ads. Only 34 turned into actual consultations. Ring time alone was killing them—average answer time was 47 seconds. At their $120/call cost, they were hemorrhaging ~$14.6K/month on calls that never converted. Fixed the intake process, response time, and intake scripting. 6 weeks later: 89 calls, 67 consultations. Same ad budget. What's your intake looking like right now?",
+        "timing": "If they respond to message 1 within 24 hours, send within 4 hours. If silence after 48h, skip to message 3 with slight pivot."
+      },
+      "message_3": {
+        "text": "I'm doing 15-min audits this week for [practice area] firms—basically pulling your last 30 days of call data (if you have CallRail or similar) and showing you exactly where the leak is. No pitch, no deck. Just: here's what's broken and what it's costing you monthly. Worth 15 minutes to see the math? I have Tuesday or Thursday afternoon open.",
+        "timing": "72 hours after message 1 if no response to message 2, OR immediately after they answer message 2 if engaged"
+      },
+      "if_no_response": "After 72 hours of silence on message 1, send a single alt-angle message: 'Hey [Name]—no pressure, but one stat I should've led with: firms with intake response time under 60 seconds book 3x more cases from the same ad budget. Curious if that's a problem for you?' If still silent after 24h, move to nurture list (save for future content engagement retargeting)."
+    },
+    "1": {
+      "trigger": "Commented specifically about Google Ads cost, CPC, or ROI frustration",
+      "message_1": {
+        "text": "Hi [Name] — your comment about CPCs spiraling hit different. Before we talk about 'optimizing bids' or 'better keywords' (which is what agencies usually pitch), I need to understand: of your Google Ads leads, what % actually turn into signed cases? Not consultations—actual retainers/cases.",
+        "timing": "Within 1 hour of comment"
+      },
+      "message_2": {
+        "text": "Here's why I ask: most law firms we talk to have zero idea. They track CPC ($150-280 for PI, $40-120 for criminal defense, etc.) but they never connect it to actual case value. So they're optimizing the wrong metric. We worked with a PI firm stuck at $180/click, 8-12 signed cases/month. They thought the problem was CPCs. It wasn't. They were burning $3,400/month on leads that came in after 10pm (no intake staff) and never got followed up on. Fixed the intake, not the keywords. Cases jumped to 18-24/month in 60 days. Same CPCs. Here's the real question: are your high-cost leads going unanswered during evenings/weekends?",
+        "timing": "24-48 hours after message 1, only if they engage"
+      },
+      "message_3": {
+        "text": "Look, I don't know if CPCs are actually your problem or if it's intake/follow-up. But I can tell in 15 minutes. I pull your Google Ads data + call tracking data (if you have it), map cost-per-lead to actual case conversion, and show you where the real leak is. Usually it's not where people think. Open to a quick look?",
+        "timing": "72 hours after message 1 if dormant, or after message 2 if they're engaged"
+      },
+      "if_no_response": "After 72h, send: 'Hey [Name]—I get it, inbox is insane. One stat: 73% of law firms we audit have zero visibility into which ads actually close cases. They just see CPCs and guess. If that sounds familiar, might be worth a 15-min conversation. No pressure either way.' Then let it die."
+    },
+    "2": {
+      "trigger": "Reacted/liked post but didn't comment (cold engagement)",
+      "message_1": {
+        "text": "Hey [Name]—saw you engaged with our post on call metrics for law firms. Genuinely curious: are you currently tracking which marketing channels actually produce signed cases, or are you operating on gut feel (like most firms do)?",
+        "timing": "Within 4 hours of engagement"
+      },
+      "message_2": {
+        "text": "I ask because we pulled analytics on 47 law firm accounts last quarter. Average finding: firms are spending $8-12K/month on ads but only have visibility into ~40% of the actual ROI. The rest is invisible—calls that converted but weren't tracked, leads that came from multiple sources and got attributed to the wrong channel, etc. The firms that close that visibility gap typically find $3-5K/month in wasted spend they can redirect OR more cases from the same budget. What's your current tracking setup like?",
+        "timing": "If they reply to message 1, send within 2 hours. If silence after 48h, send as standalone follow-up."
+      },
+      "message_3": {
+        "text": "I run a free diagnostic for law firms—takes 20 minutes. I look at your ads, call tracking (if you have it), and CRM data, and I map it back to actual cases closed. Usually surfaces 2-3 quick wins you can implement immediately. Worth a conversation?",
+        "timing": "72 hours after message 1, or after they respond to message 2"
+      },
+      "if_no_response": "This is a cold prospect. Don't chase. After 72h, add to content retargeting list. Engage on 2-3 future posts over next month, then try message 1 variant again in 30 days."
+    },
+    "3": {
+      "trigger": "Commented on post about agency failure/switching agencies/frustration with current marketing",
+      "message_1": {
+        "text": "Hey [Name]—your comment about [agency failure/frustration] resonates. Real talk: before we even talk about what we do, I want to understand what actually went wrong. Was it lack of communication, misaligned metrics, or something else?",
+        "timing": "Within 30 minutes of comment (this is peak frustration, best time to engage)"
+      },
+      "message_2": {
+        "text": "I ask because we see a pattern: firms fire agencies but the real problem wasn't the agency—it was that nobody was tracking actual case ROI. Previous agency disappears, firm hires new one, same problem repeats because nobody defined 'what does success look like.' We had a crim defense firm go through 3 agencies in 18 months, $67K spent. When we audited them, turns out all 3 were generating solid leads—but nobody was measuring conversion to actual cases. They just saw spend and assumed failure. Once we built the tracking system, turns out the SECOND agency was actually performing best, but nobody knew it. Does that story land at all?",
+        "timing": "24-48 hours after message 1 if they engage, OR send as standalone follow-up after 48h of silence"
+      },
+      "message_3": {
+        "text": "Here's the difference with how we work: we don't touch your ads or campaigns until we've got total visibility into what's actually closing cases. Then we optimize from a position of truth instead of guessing. Worth a 20-minute conversation to see if we're a fit?",
+        "timing": "72 hours after message 1, or immediately after they respond to message 2"
+      },
+      "if_no_response": "After 72h of no response: 'Hey [Name]—no worries if timing's off. But if you ever want to audit why the last agency didn't work before hiring the next one, my calendar's open. Could save you $20-40K in misspent budget.' Then step back and let them come to you."
+    },
+    "4": {
+      "trigger": "Shared the post (highest intent signal)",
+      "message_1": {
+        "text": "Hey [Name]—I noticed you shared our post on intake metrics. That tells me you're either dealing with this problem right now or you're thinking about it. Which one is it?",
+        "timing": "Within 30 minutes (this is hot)"
+      },
+      "message_2": {
+        "text": "The reason I ask: sharing something like this usually means either (a) you've got visibility into a problem (intake is broken, calls are slipping, etc.) or (b) you suspect something's wrong but can't quite see it in the data. Both are fixable, but the fix is different. If I had to guess, I'd say you're probably tracking *something*—calls, leads, whatever—but you're not sure if those leads actually turn into cases. Sound about right?",
+        "timing": "Within 2 hours if they respond to message 1. If silence after 24h, this is a warm prospect who went silent—don't push hard, just send message 3 as a soft ask."
+      },
+      "message_3": {
+        "text": "I've got 30 minutes this Thursday to do a full diagnostic: pull your data, map leads to actual cases, and show you the real ROI picture. Bet I find something worth fixing. Interested?",
+        "timing": "Immediately if they engage, or 48 hours after message 1 if they've gone dormant"
+      },
+      "if_no_response": "After 48h of silence: 'Hey [Name]—guessing you're slammed. But I set aside time Thursday just in case. If you want to grab 30 minutes to see where your real leaks are, I'm around. No pressure.' Then honor their silence and don't follow up again for 2+ weeks."
+    },
+    "5": {
+      "trigger": "Replied with a question or objection (email/DM question, 'how does this work?', 'sounds expensive')",
+      "message_1": {
+        "text": "[Directly answer their specific question in 2-3 sentences, then add:] Quick context though—what's driving the question? Are you currently working with someone on this, or is it something you've been meaning to tackle?",
+        "timing": "Within 15 minutes of their question"
+      },
+      "message_2": {
+        "text": "[Acknowledge their situation with a 2-3 sentence validation, then share a specific data point or outcome that directly addresses their concern.] The firms that see the biggest ROI on this are the ones already spending $2K+/month on ads but have no clue what % actually convert. If that's you, the answer is usually 'significantly less than we think,' which means there's a LOT of money being left on the table. Worth looking at together?",
+        "timing": "If they engage message 1, send within 4 hours. If they object again, move straight to message 3."
+      },
+      "message_3": {
+        "text": "How about this: let me spend 20 minutes pulling your data (ads, calls, whatever you've got) and show you exactly where the math is working and where it's not. Then you'll know if this is worth pursuing. Sound fair?",
+        "timing": "Immediately if objection, or 48h after message 2 if they've gone quiet"
+      },
+      "if_no_response": "If they ask a question then disappear, assume they're not ready. Don't chase. Send them one piece of relevant content in 2 weeks and circle back only if they engage on that."
+    },
+    "id": "d048288ec28b03ca",
+    "context": "general",
+    "created_at": "2026-02-21T07:39:09.924Z"
+  }
+]

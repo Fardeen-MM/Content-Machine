@@ -1,0 +1,126 @@
+[
+  {
+    "id": "8dff8ba33b6c0509",
+    "content_id": "ec092ef2822c6bc1",
+    "title": "Call insight: Your intake team is asking the same questions in the same or",
+    "campaign_name": "Intake Triage: From Leaky Funnel to Signed Cases",
+    "touchpoints": [
+      {
+        "day": 1,
+        "channel": "linkedin_post",
+        "action": "Post the core insight with urgency math — hook with specific failure, show the money loss, end with a question that primes them for Day 3",
+        "content_snippet": "I analyzed 23 law firm intake processes last month.\n\n73% treat a $4K PPC lead the same as a $400 organic caller.\n\nThat's costing them $255K+ annually.",
+        "intent": "educate",
+        "call_to_action": "None — just engagement expected in comments"
+      },
+      {
+        "day": 2,
+        "channel": "email",
+        "action": "Send a 'reply-all' style email to engaged commenters or warm audience segment — tell the story of the PI firm that found 3 slipped PPC leads in one month",
+        "content_snippet": "Subject: The 90-second fix that recovered $255K\n\nA PI firm I worked with pulled their intake logs.\n\n3 PPC leads in March went unanswered for 8+ hours.\n\nAll 3 became referrals to competitors.",
+        "intent": "relate",
+        "call_to_action": "Soft: 'Want to see where YOUR intake is leaking?' (primes for Day 4)"
+      },
+      {
+        "day": 3,
+        "channel": "comment",
+        "action": "Reply to top commenters from Day 1 post — add a micro-story about urgency detection (arrest date vs. consultation inquiry) showing the qualification difference",
+        "content_snippet": "Exactly. The difference is asking 'What's your timeline?' first vs. last.\n\nOne PPC lead had an arrest date in 72 hours. Intake asked about case facts first.\n\nLead hired someone else in 6 hours.",
+        "intent": "prove",
+        "call_to_action": "None — keep conversation going naturally"
+      },
+      {
+        "day": 4,
+        "channel": "email",
+        "action": "Send a short framework email — the 90-second urgency screen (arrest date, court deadline, representation status). No pitch. Just the template.",
+        "content_snippet": "Subject: The 3 questions that separate hot PPC from cold organic\n\nHere's the urgency screen we built:\n\n1. Is there a deadline? (arrest, court date, custody order)\n2. Do you have representation? (yes/no/exploring)\n3. Ready to move this week? (yes/no/maybe)",
+        "intent": "educate",
+        "call_to_action": "Soft: 'Reply with your biggest intake bottleneck — I'll send a specific fix'"
+      },
+      {
+        "day": 5,
+        "channel": "dm",
+        "action": "DM commenters or email repliers from Days 2-4 — ask 1 qualifying question to surface their specific pain: 'Is your intake bottleneck speed, qualification, or something else?'",
+        "content_snippet": "Hey [Name] — noticed you engaged on the intake post.\n\nQuick question: When a hot PPC lead comes in right now, what's the biggest delay before your team qualifies them?",
+        "intent": "relate",
+        "call_to_action": "None — just a question"
+      },
+      {
+        "day": 6,
+        "channel": "email",
+        "action": "Send a case study / proof email — show the before/after of a firm that implemented the urgency screen (use Mandall Law if they do intake this way, or describe a general 3-attorney PI firm pattern without a fake name)",
+        "content_snippet": "Subject: How a PI firm recovered 47 lost leads with a 90-second screen\n\nMarch: Intake averaged 6 hours to first contact on PPC leads.\nSept: Down to 22 minutes.\n\nHere's what changed...",
+        "intent": "prove",
+        "call_to_action": "Soft: 'Want to see the exact checklist they use?'"
+      },
+      {
+        "day": 7,
+        "channel": "linkedin_post",
+        "action": "Post a contrarian take — 'Your CRM isn't broken. Your lead routing is.' Show the cost of treating all leads equally (re-angle the $255K math from Day 1 with new data point)",
+        "content_snippet": "Most law firms have the right CRM.\n\nThey just don't use it to route PPC leads differently than organic leads.\n\nCost: 3-5 cases lost per month.",
+        "intent": "educate",
+        "call_to_action": "None"
+      },
+      {
+        "day": 8,
+        "channel": "email",
+        "action": "Send the 'cost of inaction' email — show what happens when a firm does NOTHING (lost revenue, competitor wins, intake morale). Make it emotional, not preachy.",
+        "content_snippet": "Subject: What happens on the days you don't fix intake\n\nEvery hour a PPC lead waits for first contact:\n\n- 40% higher chance they call a competitor\n- 6-8x longer to close (if you even get them back)\n- Your intake team answers the same questions twice\n\nThis month alone, that's costing you...",
+        "intent": "convert",
+        "call_to_action": "Soft: 'Let's audit your intake in 20 minutes — no obligation'"
+      },
+      {
+        "day": 9,
+        "channel": "comment",
+        "action": "Reply to Day 7 post — add a specific stat (73% from original content) and ask a poll-style question in the comment: 'Do you treat PPC the same as organic?'",
+        "content_snippet": "Quick poll in the replies:\n\nDo your intake questions change based on WHERE the lead came from?\n\n(Most firms say no. That's the problem.)",
+        "intent": "engage",
+        "call_to_action": "None — conversation starter"
+      },
+      {
+        "day": 10,
+        "channel": "email",
+        "action": "Send a 'quick win' email — one small change they can implement TODAY (90-second urgency screen or CRM tag by channel). Position as easy, low-risk, high-impact.",
+        "content_snippet": "Subject: One thing you can change in 30 minutes\n\nAdd a CRM tag: 'Channel: PPC' or 'Channel: Organic'\n\nThen route them differently in your intake flow.\n\nThat's it. Do that, watch what happens.",
+        "intent": "convert",
+        "call_to_action": "Soft: 'I can walk you through it in 15 minutes if you want'"
+      },
+      {
+        "day": 11,
+        "channel": "linkedin_post",
+        "action": "Post a myth-busting take — 'Your intake form isn't the problem. Your first 90 seconds are.' Show the difference between a qualification question and a data-collection question.",
+        "content_snippet": "Your intake form asks 23 questions.\n\nYou need 3.\n\nEverything else is just noise that slows you down on hot leads.",
+        "intent": "educate",
+        "call_to_action": "None"
+      },
+      {
+        "day": 12,
+        "channel": "dm",
+        "action": "Follow-up DM to Day 5 responders — personalize based on their answer. If they said 'speed,' send the urgency screen. If 'qualification,' send the form template. If they didn't reply, ask if they want a 20-min audit.",
+        "content_snippet": "Hey [Name] — you mentioned [their pain point] was slowing down intake.\n\nI pulled together something specific for that. Worth 15 min to look at?",
+        "intent": "convert",
+        "call_to_action": "Soft but direct: 'Let's schedule a quick call to see where you're leaking cases'"
+      },
+      {
+        "day": 13,
+        "channel": "email",
+        "action": "Send a 'last touch' offer email — frame it as a free audit or 20-minute intake walkthrough. Urgency: 'Only running this for firms in [practice area] this month.' Include a specific time option.",
+        "content_snippet": "Subject: Free intake audit (only 5 spots left)\n\nI'm doing free 20-minute walkthroughs for PI/family law firms.\n\nWe'll review:\n- Where leads are slipping through\n- Your current urgency screen (or build one)\n- Exact ROI fix\n\nSpots fill fast.",
+        "intent": "convert",
+        "call_to_action": "Direct: 'Pick a time: [calendar link]'"
+      },
+      {
+        "day": 14,
+        "channel": "email",
+        "action": "Send a final 'closing' email — make them choose. Either they say yes to the call, or you're moving on (but stay in the nurture sequence in case they re-engage). This is the last hard ask.",
+        "content_snippet": "Subject: Last spot available (closes EOD tomorrow)\n\nI'm finishing up the free intake audits.\n\nIf you want to see where your firm is losing cases, book now.\n\nIf not, totally fine — just let me know so I stop emailing.",
+        "intent": "convert",
+        "call_to_action": "Direct: 'Yes, audit my intake' or 'No thanks, remove me'"
+      }
+    ],
+    "conversion_trigger": "Engagement on Days 1-3 (comment, email reply, DM response) OR click through the calendar link on Day 13 OR direct message asking for the audit",
+    "expected_timeline": "7-10 days to first call booking (Day 13-14 conversion typical); full nurture 14 days for cold engagement, 5-7 days for warm/engaged audience",
+    "status": "draft",
+    "created_at": "2026-02-21T07:22:57.256Z"
+  }
+]

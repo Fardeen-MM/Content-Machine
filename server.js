@@ -11163,6 +11163,295 @@ Return JSON (no markdown fences):
       }
     }
 
+    // --- Batch 57: X/Twitter Optimizer + DM Scripts + Reply Strategy + Bio Optimizer + Thread Builder ---
+
+    // POST /api/content/:id/x-optimize — optimize content specifically for X/Twitter algorithm
+    const xOptMatch = pathname.match(/^\/api\/content\/([a-f0-9]+)\/x-optimize$/);
+    if (xOptMatch && method === 'POST') {
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      const id = xOptMatch[1];
+      const allContent = readJSON('content.json', []);
+      const item = allContent.find(c => c.id === id);
+      if (!item) return json(res, { error: 'Content not found' }, 404);
+
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+      const { BRAND_SYSTEM_PROMPT } = require('./generator/content-writer');
+      const source = Object.values(item.formats || {}).map(f => typeof f?.content === 'string' ? f.content : '').sort((a, b) => b.length - a.length)[0] || '';
+
+      const prompt = `Optimize this content for maximum X/Twitter engagement. Key algorithm facts:
+- Replies weighted 13.5-27x a like, reply-to-reply is 75x
+- External links get near-zero reach — NEVER include links
+- Text-only posts get 3.24% engagement rate (highest)
+- 1-2 hashtags max, 3+ triggers spam detection
+- First 30-60 min engagement determines everything
+
+Source content: ${source.slice(0, 2000)}
+Topic: ${item.trigger_title}
+
+Return JSON (no markdown fences):
+{
+  "single_tweet": "under 280 chars, punchy, designed to provoke replies",
+  "thread": ["tweet 1 (hook — spend 80% of effort here)", "tweet 2 (context/credibility)", "tweet 3-7 (one insight each)", "tweet 8 (lesson)", "tweet 9 (soft CTA)", "tweet 10 (DM CTA)"],
+  "hot_take_version": "contrarian take under 280 chars that starts arguments",
+  "question_version": "engagement question that drives replies (75x weight)",
+  "quote_tweet_bait": "something so strong people quote-tweet it with their own take (20x weight)",
+  "reply_strategy": "which accounts to reply to with this content for borrowed audience",
+  "posting_notes": "best time, day, and context for this post"
+}`;
+
+      try {
+        const text = await callClaude({ model: HAIKU, system: BRAND_SYSTEM_PROMPT, prompt, maxTokens: 3000 });
+        const parsed = parseJsonResponse(text);
+        if (!parsed) return json(res, { error: 'Failed to optimize', raw_preview: (text || '').slice(0, 200) }, 500);
+        return json(res, { ok: true, content_id: id, ...parsed });
+      } catch (err) {
+        return json(res, { error: err.message }, 500);
+      }
+    }
+
+    // POST /api/dm-scripts — generate DM conversation scripts for converting engagers to calls
+    if (pathname === '/api/dm-scripts' && method === 'POST') {
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+      const { BRAND_SYSTEM_PROMPT } = require('./generator/content-writer');
+      const body = await parseBody(req);
+
+      const prompt = `Create DM conversation scripts for converting X/LinkedIn engagers into booked discovery calls.
+
+Context: ${body.context || 'Someone commented on our post about law firm marketing'}
+Service: ${body.service || 'Google Ads management + intake optimization for law firms'}
+Lead type: ${body.lead_type || 'Law firm owner who engaged with our content'}
+
+The scripts should feel natural, not salesy. Follow the proven 3-message sequence:
+1. Acknowledge + deliver value + qualify
+2. Share specific insight for their situation
+3. Low-friction meeting ask
+
+Return JSON (no markdown fences):
+{
+  "scripts": [
+    {
+      "trigger": "what they did (commented, liked, DM'd keyword)",
+      "message_1": { "text": "initial outreach (deliver promised value + one qualifying question)", "timing": "when to send" },
+      "message_2": { "text": "follow-up with specific insight (only if they respond)", "timing": "how long to wait" },
+      "message_3": { "text": "bridge to meeting (low-friction ask)", "timing": "..." },
+      "if_no_response": "what to do if they don't reply"
+    }
+  ],
+  "qualifying_questions": ["question to identify hot leads vs tire kickers"],
+  "objection_handlers": { "too_busy": "response", "not_ready": "response", "already_have_agency": "response" }
+}`;
+
+      try {
+        const text = await callClaude({ model: HAIKU, system: BRAND_SYSTEM_PROMPT, prompt, maxTokens: 3000 });
+        const parsed = parseJsonResponse(text);
+        if (!parsed) return json(res, { error: 'Failed to generate scripts', raw_preview: (text || '').slice(0, 200) }, 500);
+
+        const scripts = readJSON('dm-scripts.json', []);
+        scripts.push({ id: generateId(), ...parsed, context: body.context || 'general', created_at: now() });
+        if (scripts.length > 20) scripts.splice(0, scripts.length - 20);
+        writeJSON('dm-scripts.json', scripts);
+        return json(res, { ok: true, ...parsed });
+      } catch (err) {
+        return json(res, { error: err.message }, 500);
+      }
+    }
+
+    // GET /api/dm-scripts — list DM scripts
+    if (pathname === '/api/dm-scripts' && method === 'GET') {
+      return json(res, readJSON('dm-scripts.json', []));
+    }
+
+    // POST /api/reply-strategy — generate a reply strategy for borrowed audience growth
+    if (pathname === '/api/reply-strategy' && method === 'POST') {
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+      const body = await parseBody(req);
+
+      const prompt = `Create a daily reply strategy for growing audience on X/Twitter and LinkedIn through strategic commenting.
+
+The reply strategy is the most underrated growth lever: replying to bigger accounts puts you in front of their audience. A reply is weighted 13.5-27x a like, and reply-to-reply is 75x.
+
+Niche: ${body.niche || 'Legal marketing, law firm growth, B2B services'}
+Platform: ${body.platform || 'both X and LinkedIn'}
+
+Return JSON (no markdown fences):
+{
+  "target_accounts": [
+    { "type": "direct competitor|adjacent industry|thought leader|potential client", "description": "who to target", "example_accounts": "types of accounts", "follower_range": "ideal follower count range" }
+  ],
+  "reply_templates": [
+    { "situation": "when to use this", "template": "reply framework (not copy-paste — structure)", "example": "specific example reply", "why_it_works": "what makes this effective" }
+  ],
+  "daily_routine": {
+    "time_commitment": "30-45 min",
+    "schedule": [
+      { "time_block": "8:00-8:15 AM", "action": "what to do" }
+    ]
+  },
+  "rules": ["do this", "never do this"],
+  "growth_milestones": { "week_1": "expected result", "month_1": "expected result", "month_3": "expected result" }
+}`;
+
+      try {
+        const text = await callClaude({ model: HAIKU, prompt, maxTokens: 3000 });
+        const parsed = parseJsonResponse(text);
+        if (!parsed) return json(res, { error: 'Failed to generate', raw_preview: (text || '').slice(0, 200) }, 500);
+
+        writeJSON('reply-strategy.json', { ...parsed, generated_at: now() });
+        return json(res, { ok: true, ...parsed });
+      } catch (err) {
+        return json(res, { error: err.message }, 500);
+      }
+    }
+
+    // GET /api/reply-strategy — get reply strategy
+    if (pathname === '/api/reply-strategy' && method === 'GET') {
+      return json(res, readJSON('reply-strategy.json', null));
+    }
+
+    // POST /api/bio-optimizer — optimize social media bios for conversion
+    if (pathname === '/api/bio-optimizer' && method === 'POST') {
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+      const body = await parseBody(req);
+
+      const prompt = `Optimize social media bios for maximum follower-to-lead conversion.
+
+Platform: ${body.platform || 'X/Twitter'}
+Current bio: ${body.current_bio || 'Mortar Metrics — Legal Marketing Agency'}
+Name: ${body.name || 'Fardeen'}
+Services: ${body.services || 'Google Ads, intake optimization, call tracking for law firms'}
+
+Bio structure that converts:
+Line 1: What you do + who you do it for
+Line 2: Proof/credibility (results, client count, revenue)
+Line 3: CTA (DM me for X / Free resource below)
+Link: Lead capture page, NOT homepage
+
+Return JSON (no markdown fences):
+{
+  "x_bio": { "text": "optimized X bio (under 160 chars)", "name_field": "name with keyword", "location": "strategic location" },
+  "linkedin_headline": "optimized headline (under 120 chars)",
+  "linkedin_tagline": "short tagline",
+  "pinned_tweet_suggestion": "what to pin on X profile",
+  "featured_content_suggestions": ["what to feature on LinkedIn"],
+  "link_suggestion": "what URL to put in bio link",
+  "tips": ["specific tip for this profile"]
+}`;
+
+      try {
+        const text = await callClaude({ model: HAIKU, prompt, maxTokens: 2000 });
+        const parsed = parseJsonResponse(text);
+        if (!parsed) return json(res, { error: 'Failed to optimize bio', raw_preview: (text || '').slice(0, 200) }, 500);
+        return json(res, { ok: true, ...parsed });
+      } catch (err) {
+        return json(res, { error: err.message }, 500);
+      }
+    }
+
+    // POST /api/content/:id/build-thread — build an optimized X thread from any content
+    const threadMatch = pathname.match(/^\/api\/content\/([a-f0-9]+)\/build-thread$/);
+    if (threadMatch && method === 'POST') {
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      const id = threadMatch[1];
+      const allContent = readJSON('content.json', []);
+      const item = allContent.find(c => c.id === id);
+      if (!item) return json(res, { error: 'Content not found' }, 404);
+
+      const { callClaude, parseJsonResponse, SONNET } = require('./lib/claude');
+      const { BRAND_SYSTEM_PROMPT } = require('./generator/content-writer');
+      const source = Object.values(item.formats || {}).map(f => typeof f?.content === 'string' ? f.content : '').sort((a, b) => b.length - a.length)[0] || '';
+
+      const prompt = `Build a viral X/Twitter thread from this content. Threads get 63% more impressions and 3x more engagement.
+
+Source: ${source.slice(0, 3000)}
+Topic: ${item.trigger_title}
+
+Thread structure:
+- Tweet 1: HOOK (write 3 versions — curiosity gap + specific numbers)
+- Tweet 2: CONTEXT/CREDIBILITY
+- Tweets 3-8: ONE insight per tweet, each standalone valuable
+- Tweet 9: LESSON/SYNTHESIS
+- Tweet 10: Soft CTA (follow for more)
+- Tweet 11: Hard CTA (DM me keyword)
+
+Rules:
+- Each tweet under 280 chars
+- No links in any tweet
+- No hashtags except maybe 1 in last tweet
+- Numbered for easy scanning
+- Write 3 hook variations for tweet 1
+
+Return JSON (no markdown fences):
+{
+  "thread_title": "internal title",
+  "hook_variations": ["hook 1", "hook 2", "hook 3"],
+  "recommended_hook": 0,
+  "tweets": ["tweet 1 (best hook)", "tweet 2", "...up to tweet 11"],
+  "reply_tweet": "tweet to post as a reply 1 hour later with additional value",
+  "quote_tweet_suggestion": "suggested quote tweet to post next day recycling the hook",
+  "best_posting_time": "when to post this thread",
+  "engagement_prediction": "expected engagement level and why"
+}`;
+
+      try {
+        const text = await callClaude({ model: SONNET, system: BRAND_SYSTEM_PROMPT, prompt, maxTokens: 4000 });
+        const parsed = parseJsonResponse(text);
+        if (!parsed) return json(res, { error: 'Failed to build thread', raw_preview: (text || '').slice(0, 300) }, 500);
+
+        // Save thread to content item
+        const idx = allContent.findIndex(c => c.id === id);
+        if (idx >= 0) {
+          if (!allContent[idx].formats) allContent[idx].formats = {};
+          allContent[idx].formats.x_thread_optimized = { content: parsed.tweets, status: 'review', generated_at: now(), hook_variations: parsed.hook_variations };
+          writeJSON('content.json', allContent);
+        }
+        return json(res, { ok: true, content_id: id, ...parsed });
+      } catch (err) {
+        return json(res, { error: err.message }, 500);
+      }
+    }
+
+    // GET /api/content-system-health — comprehensive health check of the entire content system
+    if (pathname === '/api/content-system-health' && method === 'GET') {
+      const checks = [];
+      const dataFiles = [
+        'content.json', 'trigger-queue.json', 'content-bank.json', 'series-templates.json',
+        'content-matrix.json', 'atomizations.json', 'repurpose-chains.json', 'email-sequences.json',
+        'lead-magnet-funnels.json', 'nurture-campaigns.json', 'content-pillars.json',
+        'authority-plan.json', 'content-dna.json', 'topic-clusters.json', 'youtube-pipelines.json',
+        'carousels.json', 'competitor-analyses.json', 'voice-profiles.json', 'audience-segments.json'
+      ];
+
+      for (const file of dataFiles) {
+        const data = readJSON(file, null);
+        const name = file.replace('.json', '').replace(/-/g, ' ');
+        if (data === null) {
+          checks.push({ system: name, status: 'not_set_up', message: 'Not configured yet' });
+        } else if (Array.isArray(data)) {
+          checks.push({ system: name, status: data.length > 0 ? 'active' : 'empty', count: data.length });
+        } else if (typeof data === 'object') {
+          checks.push({ system: name, status: 'configured', has_data: Object.keys(data).length > 0 });
+        }
+      }
+
+      // Check API keys
+      checks.push({ system: 'Claude API', status: process.env.ANTHROPIC_API_KEY ? 'connected' : 'missing' });
+      checks.push({ system: 'Fireflies API', status: process.env.FIREFLIES_API_KEY ? 'connected' : 'not_set' });
+
+      const active = checks.filter(c => c.status === 'active' || c.status === 'configured' || c.status === 'connected').length;
+      const total = checks.length;
+
+      return json(res, {
+        health_score: Math.round((active / total) * 100),
+        active_systems: active,
+        total_systems: total,
+        checks,
+        recommendation: active < total * 0.5 ? 'Many systems unconfigured — run setup actions from dashboard' : active < total * 0.8 ? 'Good progress — a few systems need attention' : 'System is well configured!'
+      });
+    }
+
     // --- Static file serving ---
 
     // Serve dashboard

@@ -1,0 +1,78 @@
+[
+  {
+    "id": "40e5058f13cf1977",
+    "competitor_themes": [
+      "AI's impact on legal marketing (content, search, website development)",
+      "SEO fundamentals and technical optimization (EEAT, voice search, AI Overviews)",
+      "Practice area strategy (specialty pages, divorce lawyers)",
+      "Compliance and legal templates (privacy, disclaimers, state regulations)",
+      "Agency/tool positioning and thought leadership",
+      "Soft skills and networking for lawyers"
+    ],
+    "content_gaps": [
+      "Lead quality vs. lead volume tradeoffs — nobody's addressing ROI per case or cost-per-conversion metrics",
+      "Actual case studies with numbers — they talk strategy, not results (Mortar's data obsession here)",
+      "Law firm intake process optimization and conversion funnels (Martindale touches it, but shallow)",
+      "Marketing spend audits — how to stop wasting money on channels that don't convert",
+      "Attribution modeling for multi-touch legal sales cycles",
+      "Competitive analysis frameworks specific to practice areas",
+      "Content ROI calculators or measurement benchmarks for law firms",
+      "Recession-proofing legal marketing budgets with data",
+      "Local SEO vs. national strategy decision trees",
+      "Marketing ops and automation for solo/small firm profitability"
+    ],
+    "differentiation_angles": [
+      "We obsess over metrics they treat as afterthoughts — position as 'the marketing firm that actually measures things'",
+      "Cut through AI hype with reality: 'AI Won't Save Your Intake Form' / practical ROI-focused takes",
+      "Serve the skeptical, cost-conscious solo/small firm tired of vague 'best practices'",
+      "Direct, no-jargon breakdowns of why their competitor's strategy failed (audit-style content)",
+      "Data journalism: Call out BS marketing claims in legal space with receipts",
+      "Emphasize speed to insight and decision-making, not just content volume"
+    ],
+    "counter_posts": [
+      {
+        "competitor_claim": "AI vs. Human Writers: What's Best for Law Firm SEO?",
+        "our_counter": "AI content doesn't matter if it doesn't convert. We measured it.",
+        "post_hook": "We tested AI-generated practice area pages against human-written ones across 50+ firms. Here's what actually moved the needle on intake calls."
+      },
+      {
+        "competitor_claim": "Why Your Firm Needs a Law Marketing Agency",
+        "our_counter": "You don't need an agency. You need measurement.",
+        "post_hook": "Most law marketing agencies can't prove their work generates ROI. Here's how to audit yours (and fire them if they can't answer these 5 questions)."
+      },
+      {
+        "competitor_claim": "The Meteoric Rise of Voice Search: Its Impact on Law Firm Marketing",
+        "our_counter": "Voice search hype ≠ law firm leads. Show us the data.",
+        "post_hook": "We analyzed voice search traffic to 200+ legal websites. Spoiler: it's negligible. Here's where you should actually spend your SEO budget."
+      },
+      {
+        "competitor_claim": "EEAT for Lawyers",
+        "our_counter": "EEAT is table stakes, not strategy. Here's what actually moves rankings.",
+        "post_hook": "Google's EEAT framework matters, but law firms obsess over it while ignoring the 3 factors that actually drive rankings and traffic in 2025."
+      },
+      {
+        "competitor_claim": "AI Overviews and Search Results for Law Firms",
+        "our_counter": "AI Overviews are killing your traffic. Here's the antidote.",
+        "post_hook": "We measured the impact across practice areas. Divorce law lost 34% of clicks. Here's the only strategy that actually works."
+      }
+    ],
+    "trending_in_space": [
+      "AI's disruptive impact (overviews, content generation, website tools)",
+      "Compliance and regulatory shifts (state-specific advertising rules, privacy)",
+      "SEO fundamentals as competitive moat (EEAT, technical basics)",
+      "Practice area specialization content",
+      "Intake and lead quality optimization",
+      "Personal branding for attorneys (slogans, networking, thought leadership)"
+    ],
+    "steal_worthy": [
+      "Interview/Q&A format (Ask Attorney Jennifer B.) — positions real experts, builds trust; we should do 'Ask a Metrics Expert' or firm owner interviews",
+      "Regulatory/compliance guides (SB 37 deep-dive) — evergreen, trusted, positions as authority; we could own 'The Marketer's Guide to [state] Legal Advertising Rules'",
+      "Podcast format for complex topics (AI + web dev) — lower-lift distribution, good for B2B legal marketing",
+      "Refresh/optimization guides (Stale Practice Area Pages) — 'How to' angle attracts DIY-curious firms and agencies looking for templates",
+      "Milestone/behind-the-scenes storytelling (PaperStreet Turns 25) — humanizes brand, builds loyalty; we should share Mortar's origin/philosophy",
+      "Multi-format deep-dives (privacy policy + disclaimer + CCPA guide cluster) — positions as resource hub, increases cross-linking and dwell time"
+    ],
+    "triggers_analyzed": 20,
+    "created_at": "2026-02-21T07:22:15.490Z"
+  }
+]

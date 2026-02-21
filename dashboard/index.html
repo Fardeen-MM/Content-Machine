@@ -1930,6 +1930,8 @@ const pageDataMap = {
   series: [
     ['series', '/api/series', []],
     ['seriesTemplates', '/api/series-templates', null],
+    ['leadMagnets', '/api/lead-magnets', []],
+    ['dmSequences', '/api/dm-sequences', []],
   ],
   playbooks: [
     ['playbooks', '/api/playbooks', {}],
@@ -7338,20 +7340,7 @@ function renderFormatContent(content, formatKey, fmt) {
             }
           }, 'Hook')
         : null,
-      // Engagement Predictor button (for any format with 100+ chars)
-      typeof text === 'string' && text.length >= 100
-        ? h('button', {
-            className: 'btn btn-outline btn-sm',
-            style: { color: '#059669', borderColor: '#059669' },
-            onclick: async () => {
-              toast('Predicting engagement...', 'info');
-              try {
-                const res = await api(`/api/content/${content.id}/engagement-predictor`, { method: 'POST', body: { format: formatKey } });
-                toast(`Virality: ${res.virality_score}/100 — Best time: ${res.best_posting_time || 'any'}`, res.virality_score >= 60 ? 'success' : 'error');
-              } catch (err) { toast('Prediction failed: ' + err.message, 'error'); }
-            }
-          }, 'Predict')
-        : null,
+      // (Duplicate Predict button removed — already exists above as predict-engagement)
       // Voice Check button (for any format with 100+ chars)
       typeof text === 'string' && text.length >= 100
         ? h('button', {
@@ -7379,48 +7368,7 @@ function renderFormatContent(content, formatKey, fmt) {
             }
           }, 'Legal')
         : null,
-      // Viral Score button (Batch 70)
-      typeof text === 'string' && text.length >= 100 ? h('button', {
-          className: 'btn btn-outline btn-sm',
-          style: { color: '#dc2626', borderColor: '#dc2626', fontSize: '11px' },
-          onclick: async () => {
-            toast('Scoring viral potential...', 'info');
-            try {
-              const res = await api(`/api/content/${content.id}/viral-score`, { method: 'POST' });
-              toast(`Viral score: ${res.viral_score}/100 (${res.viral_type})`, res.viral_score >= 60 ? 'success' : 'info');
-              loadData();
-            } catch (err) { toast('Viral score failed: ' + err.message, 'error'); }
-          }
-        }, 'Viral')
-        : null,
-      // Carousel button (Batch 71)
-      typeof text === 'string' && text.length >= 100 ? h('button', {
-          className: 'btn btn-outline btn-sm',
-          style: { color: '#d97706', borderColor: '#d97706', fontSize: '11px' },
-          onclick: async () => {
-            toast('Generating carousel slides...', 'info');
-            try {
-              const res = await api(`/api/content/${content.id}/carousel-generate`, { method: 'POST' });
-              toast(`Carousel: ${res.total_slides || 0} slides created`, 'success');
-              loadData();
-            } catch (err) { toast('Carousel failed: ' + err.message, 'error'); }
-          }
-        }, 'Slides')
-        : null,
-      // A/B Variants button (Batch 70)
-      typeof text === 'string' && text.length >= 50 ? h('button', {
-          className: 'btn btn-outline btn-sm',
-          style: { color: '#2563eb', borderColor: '#2563eb', fontSize: '11px' },
-          onclick: async () => {
-            toast('Generating A/B variants...', 'info');
-            try {
-              const res = await api(`/api/content/${content.id}/ab-variants`, { method: 'POST', body: { format: formatKey } });
-              toast(`Created ${(res.variants || []).length} test variants`, 'success');
-              loadData();
-            } catch (err) { toast('A/B variants failed: ' + err.message, 'error'); }
-          }
-        }, 'A/B')
-        : null,
+      // (Batch 70/71 duplicate buttons removed — Viral, Carousel, A/B already exist above)
       // Platform Adapt button (Batch 69)
       typeof text === 'string' && text.length >= 100 ? h('button', {
           className: 'btn btn-outline btn-sm',

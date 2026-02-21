@@ -1,0 +1,79 @@
+{
+  "platforms": {
+    "linkedin": {
+      "followers": 0,
+      "follower_growth": 0,
+      "total_posts": 1,
+      "impressions": 0,
+      "engagements": 0,
+      "engagement_rate": 0,
+      "conversions": 0,
+      "conversion_value": 0,
+      "scheduled": 0
+    },
+    "x": {
+      "followers": 0,
+      "follower_growth": 0,
+      "total_posts": 0,
+      "impressions": 0,
+      "engagements": 0,
+      "engagement_rate": 0,
+      "conversions": 0,
+      "conversion_value": 0,
+      "scheduled": 0
+    },
+    "instagram": {
+      "followers": 0,
+      "follower_growth": 0,
+      "total_posts": 0,
+      "impressions": 0,
+      "engagements": 0,
+      "engagement_rate": 0,
+      "conversions": 0,
+      "conversion_value": 0,
+      "scheduled": 0
+    },
+    "youtube": {
+      "followers": 0,
+      "follower_growth": 0,
+      "total_posts": 0,
+      "impressions": 0,
+      "engagements": 0,
+      "engagement_rate": 0,
+      "conversions": 0,
+      "conversion_value": 0,
+      "scheduled": 0
+    },
+    "tiktok": {
+      "followers": 0,
+      "follower_growth": 0,
+      "total_posts": 0,
+      "impressions": 0,
+      "engagements": 0,
+      "engagement_rate": 0,
+      "conversions": 0,
+      "conversion_value": 0,
+      "scheduled": 0
+    },
+    "newsletter": {
+      "followers": 0,
+      "follower_growth": 0,
+      "total_posts": 0,
+      "impressions": 0,
+      "engagements": 0,
+      "engagement_rate": 0,
+      "conversions": 0,
+      "conversion_value": 0,
+      "scheduled": 0
+    }
+  },
+  "totals": {
+    "total_followers": 0,
+    "total_impressions": 0,
+    "total_engagements": 0,
+    "total_conversions": 0,
+    "total_revenue": 0,
+    "best_platform": "linkedin"
+  },
+  "generated_at": "2026-02-21T17:16:44.152Z"
+}

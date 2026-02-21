@@ -1,0 +1,399 @@
+{
+  "total_analyzed": 151,
+  "by_format": {
+    "linkedin": {
+      "total_posts": 32,
+      "avg_word_count": 174,
+      "avg_char_count": 1071,
+      "short_posts": {
+        "count": 0,
+        "avg_engagement": 0
+      },
+      "medium_posts": {
+        "count": 29,
+        "avg_engagement": 0
+      },
+      "long_posts": {
+        "count": 3,
+        "avg_engagement": 0
+      },
+      "optimal_length": "medium",
+      "optimal_word_range": {
+        "min": 139,
+        "max": 209
+      }
+    },
+    "x_single": {
+      "total_posts": 29,
+      "avg_word_count": 32,
+      "avg_char_count": 193,
+      "short_posts": {
+        "count": 5,
+        "avg_engagement": 0.54
+      },
+      "medium_posts": {
+        "count": 22,
+        "avg_engagement": 0
+      },
+      "long_posts": {
+        "count": 2,
+        "avg_engagement": 0
+      },
+      "optimal_length": "medium",
+      "optimal_word_range": {
+        "min": 26,
+        "max": 38
+      }
+    },
+    "short_video": {
+      "total_posts": 23,
+      "avg_word_count": 123,
+      "avg_char_count": 733,
+      "short_posts": {
+        "count": 0,
+        "avg_engagement": 0
+      },
+      "medium_posts": {
+        "count": 21,
+        "avg_engagement": 0
+      },
+      "long_posts": {
+        "count": 2,
+        "avg_engagement": 0
+      },
+      "optimal_length": "medium",
+      "optimal_word_range": {
+        "min": 98,
+        "max": 148
+      }
+    },
+    "hot_take": {
+      "total_posts": 10,
+      "avg_word_count": 81,
+      "avg_char_count": 528,
+      "short_posts": {
+        "count": 9,
+        "avg_engagement": 0.3
+      },
+      "medium_posts": {
+        "count": 0,
+        "avg_engagement": 0
+      },
+      "long_posts": {
+        "count": 1,
+        "avg_engagement": 0
+      },
+      "optimal_length": "short",
+      "optimal_word_range": {
+        "min": 65,
+        "max": 97
+      }
+    },
+    "listicle": {
+      "total_posts": 3,
+      "avg_word_count": 133,
+      "avg_char_count": 794,
+      "short_posts": {
+        "count": 0,
+        "avg_engagement": 0
+      },
+      "medium_posts": {
+        "count": 3,
+        "avg_engagement": 0
+      },
+      "long_posts": {
+        "count": 0,
+        "avg_engagement": 0
+      },
+      "optimal_length": "medium",
+      "optimal_word_range": {
+        "min": 106,
+        "max": 160
+      }
+    },
+    "blog": {
+      "total_posts": 3,
+      "avg_word_count": 2151,
+      "avg_char_count": 12892,
+      "short_posts": {
+        "count": 0,
+        "avg_engagement": 0
+      },
+      "medium_posts": {
+        "count": 3,
+        "avg_engagement": 0
+      },
+      "long_posts": {
+        "count": 0,
+        "avg_engagement": 0
+      },
+      "optimal_length": "medium",
+      "optimal_word_range": {
+        "min": 1721,
+        "max": 2581
+      }
+    },
+    "youtube_script": {
+      "total_posts": 3,
+      "avg_word_count": 1903,
+      "avg_char_count": 11635,
+      "short_posts": {
+        "count": 0,
+        "avg_engagement": 0
+      },
+      "medium_posts": {
+        "count": 3,
+        "avg_engagement": 0
+      },
+      "long_posts": {
+        "count": 0,
+        "avg_engagement": 0
+      },
+      "optimal_length": "medium",
+      "optimal_word_range": {
+        "min": 1522,
+        "max": 2284
+      }
+    },
+    "lead_magnet": {
+      "total_posts": 3,
+      "avg_word_count": 2046,
+      "avg_char_count": 21743,
+      "short_posts": {
+        "count": 0,
+        "avg_engagement": 0
+      },
+      "medium_posts": {
+        "count": 2,
+        "avg_engagement": 0
+      },
+      "long_posts": {
+        "count": 1,
+        "avg_engagement": 0
+      },
+      "optimal_length": "medium",
+      "optimal_word_range": {
+        "min": 1637,
+        "max": 2455
+      }
+    },
+    "linkedin_post": {
+      "total_posts": 5,
+      "avg_word_count": 126,
+      "avg_char_count": 788,
+      "short_posts": {
+        "count": 1,
+        "avg_engagement": 2.72
+      },
+      "medium_posts": {
+        "count": 4,
+        "avg_engagement": 0
+      },
+      "long_posts": {
+        "count": 0,
+        "avg_engagement": 0
+      },
+      "optimal_length": "medium",
+      "optimal_word_range": {
+        "min": 101,
+        "max": 151
+      }
+    },
+    "short_video_script": {
+      "total_posts": 5,
+      "avg_word_count": 123,
+      "avg_char_count": 758,
+      "short_posts": {
+        "count": 0,
+        "avg_engagement": 0
+      },
+      "medium_posts": {
+        "count": 5,
+        "avg_engagement": 0.54
+      },
+      "long_posts": {
+        "count": 0,
+        "avg_engagement": 0
+      },
+      "optimal_length": "medium",
+      "optimal_word_range": {
+        "min": 98,
+        "max": 148
+      }
+    },
+    "listicle_post": {
+      "total_posts": 5,
+      "avg_word_count": 80,
+      "avg_char_count": 506,
+      "short_posts": {
+        "count": 0,
+        "avg_engagement": 0
+      },
+      "medium_posts": {
+        "count": 5,
+        "avg_engagement": 0.54
+      },
+      "long_posts": {
+        "count": 0,
+        "avg_engagement": 0
+      },
+      "optimal_length": "medium",
+      "optimal_word_range": {
+        "min": 64,
+        "max": 96
+      }
+    },
+    "image_prompt": {
+      "total_posts": 5,
+      "avg_word_count": 38,
+      "avg_char_count": 253,
+      "short_posts": {
+        "count": 0,
+        "avg_engagement": 0
+      },
+      "medium_posts": {
+        "count": 4,
+        "avg_engagement": 0.68
+      },
+      "long_posts": {
+        "count": 1,
+        "avg_engagement": 0
+      },
+      "optimal_length": "medium",
+      "optimal_word_range": {
+        "min": 30,
+        "max": 46
+      }
+    },
+    "blog_keyword": {
+      "total_posts": 5,
+      "avg_word_count": 5,
+      "avg_char_count": 35,
+      "short_posts": {
+        "count": 0,
+        "avg_engagement": 0
+      },
+      "medium_posts": {
+        "count": 5,
+        "avg_engagement": 0.54
+      },
+      "long_posts": {
+        "count": 0,
+        "avg_engagement": 0
+      },
+      "optimal_length": "medium",
+      "optimal_word_range": {
+        "min": 4,
+        "max": 6
+      }
+    },
+    "youtube_topic": {
+      "total_posts": 5,
+      "avg_word_count": 12,
+      "avg_char_count": 65,
+      "short_posts": {
+        "count": 0,
+        "avg_engagement": 0
+      },
+      "medium_posts": {
+        "count": 5,
+        "avg_engagement": 0.54
+      },
+      "long_posts": {
+        "count": 0,
+        "avg_engagement": 0
+      },
+      "optimal_length": "medium",
+      "optimal_word_range": {
+        "min": 10,
+        "max": 14
+      }
+    },
+    "lead_magnet_topic": {
+      "total_posts": 5,
+      "avg_word_count": 17,
+      "avg_char_count": 113,
+      "short_posts": {
+        "count": 1,
+        "avg_engagement": 0
+      },
+      "medium_posts": {
+        "count": 3,
+        "avg_engagement": 0.91
+      },
+      "long_posts": {
+        "count": 1,
+        "avg_engagement": 0
+      },
+      "optimal_length": "medium",
+      "optimal_word_range": {
+        "min": 14,
+        "max": 20
+      }
+    },
+    "linkedin_cta": {
+      "total_posts": 5,
+      "avg_word_count": 17,
+      "avg_char_count": 107,
+      "short_posts": {
+        "count": 1,
+        "avg_engagement": 0
+      },
+      "medium_posts": {
+        "count": 4,
+        "avg_engagement": 0.68
+      },
+      "long_posts": {
+        "count": 0,
+        "avg_engagement": 0
+      },
+      "optimal_length": "medium",
+      "optimal_word_range": {
+        "min": 14,
+        "max": 20
+      }
+    },
+    "x_cta": {
+      "total_posts": 5,
+      "avg_word_count": 15,
+      "avg_char_count": 89,
+      "short_posts": {
+        "count": 0,
+        "avg_engagement": 0
+      },
+      "medium_posts": {
+        "count": 5,
+        "avg_engagement": 0.54
+      },
+      "long_posts": {
+        "count": 0,
+        "avg_engagement": 0
+      },
+      "optimal_length": "medium",
+      "optimal_word_range": {
+        "min": 12,
+        "max": 18
+      }
+    }
+  },
+  "recommendations": [
+    "linkedin: optimal length is 139-209 words (medium)",
+    "x_single: optimal length is 26-38 words (medium)",
+    "short_video: optimal length is 98-148 words (medium)",
+    "hot_take: optimal length is 65-97 words (short)",
+    "listicle: optimal length is 106-160 words (medium)",
+    "blog: optimal length is 1721-2581 words (medium)",
+    "youtube_script: optimal length is 1522-2284 words (medium)",
+    "lead_magnet: optimal length is 1637-2455 words (medium)",
+    "linkedin_post: optimal length is 101-151 words (medium)",
+    "short_video_script: optimal length is 98-148 words (medium)",
+    "listicle_post: optimal length is 64-96 words (medium)",
+    "image_prompt: optimal length is 30-46 words (medium)",
+    "blog_keyword: optimal length is 4-6 words (medium)",
+    "youtube_topic: optimal length is 10-14 words (medium)",
+    "lead_magnet_topic: optimal length is 14-20 words (medium)",
+    "linkedin_cta: optimal length is 14-20 words (medium)",
+    "x_cta: optimal length is 12-18 words (medium)"
+  ],
+  "generated_at": "2026-02-21T17:19:48.436Z"
+}

@@ -16733,6 +16733,367 @@ Return COMPACT JSON:
       return json(res, { total_tags: sorted.length, tags: sorted });
     }
 
+    // ========== BATCH 75: Content Intelligence & Optimization ==========
+
+    // --- Content Freshness Scanner ---
+    // Scans all content for staleness and recommends updates/refreshes
+    if (method === 'POST' && pathname === '/api/content-freshness-scan') {
+      const content = readJSON('content.json');
+      const published = readJSON('published.json');
+      const now = Date.now();
+      const thirtyDays = 30 * 24 * 60 * 60 * 1000;
+      const sixtyDays = 60 * 24 * 60 * 60 * 1000;
+      const ninetyDays = 90 * 24 * 60 * 60 * 1000;
+
+      const results = [];
+      const allContent = [...content, ...(published || [])];
+
+      for (const c of allContent) {
+        const age = now - new Date(c.created_at || c.generated_at || 0).getTime();
+        let freshness = 'fresh';
+        let action = 'none';
+        if (age > ninetyDays) { freshness = 'stale'; action = 'rewrite'; }
+        else if (age > sixtyDays) { freshness = 'aging'; action = 'refresh'; }
+        else if (age > thirtyDays) { freshness = 'mature'; action = 'review'; }
+
+        const firstFormat = c.formats ? Object.keys(c.formats)[0] : null;
+        const title = c.trigger_title || c.title || (firstFormat && c.formats[firstFormat]?.content?.substring(0, 80)) || '';
+        results.push({
+          id: c.id,
+          title: title.substring(0, 80),
+          format: firstFormat || c.format || 'unknown',
+          age_days: Math.floor(age / (24 * 60 * 60 * 1000)),
+          freshness,
+          action,
+          status: c.status
+        });
+      }
+
+      const stale = results.filter(r => r.freshness === 'stale');
+      const aging = results.filter(r => r.freshness === 'aging');
+      const mature = results.filter(r => r.freshness === 'mature');
+      const fresh = results.filter(r => r.freshness === 'fresh');
+
+      const report = {
+        total_scanned: results.length,
+        fresh: fresh.length,
+        mature: mature.length,
+        aging: aging.length,
+        stale: stale.length,
+        freshness_score: results.length ? Math.round((fresh.length / results.length) * 100) : 100,
+        needs_attention: [...stale, ...aging].slice(0, 20),
+        recommendations: [],
+        generated_at: new Date().toISOString()
+      };
+      if (stale.length > 0) report.recommendations.push(`${stale.length} pieces are stale (90+ days) — consider rewriting`);
+      if (aging.length > 0) report.recommendations.push(`${aging.length} pieces are aging (60-90 days) — refresh with new data`);
+      if (report.freshness_score < 50) report.recommendations.push('Content freshness score is low — increase publishing cadence');
+
+      writeJSON('content-freshness.json', report);
+      return json(res, report);
+    }
+    if (method === 'GET' && pathname === '/api/content-freshness-scan') {
+      return json(res, readJSON('content-freshness.json') || { total_scanned: 0, fresh: 0 });
+    }
+
+    // --- Lead Magnet Performance Tracker ---
+    // Track downloads, conversions, and ROI per lead magnet
+    if (method === 'POST' && pathname === '/api/lead-magnet-performance') {
+      const body = await parseBody(req);
+      const rawLmp = readJSON('lead-magnet-performance.json');
+      const data = (rawLmp && rawLmp.magnets) ? rawLmp : { magnets: [] };
+
+      if (body.action === 'log') {
+        const existing = data.magnets.find(m => m.magnet_id === body.magnet_id);
+        if (existing) {
+          existing.downloads = (existing.downloads || 0) + (body.downloads || 0);
+          existing.conversions = (existing.conversions || 0) + (body.conversions || 0);
+          existing.revenue = (existing.revenue || 0) + (body.revenue || 0);
+          existing.last_download = new Date().toISOString();
+          existing.conversion_rate = existing.downloads > 0 ? Math.round((existing.conversions / existing.downloads) * 100) : 0;
+        } else {
+          data.magnets.push({
+            magnet_id: body.magnet_id || generateId(),
+            name: body.name || 'Unnamed',
+            type: body.type || 'unknown',
+            downloads: body.downloads || 1,
+            conversions: body.conversions || 0,
+            revenue: body.revenue || 0,
+            conversion_rate: 0,
+            created_at: new Date().toISOString(),
+            last_download: new Date().toISOString()
+          });
+        }
+      }
+
+      const totalDownloads = data.magnets.reduce((s, m) => s + (m.downloads || 0), 0);
+      const totalConversions = data.magnets.reduce((s, m) => s + (m.conversions || 0), 0);
+      const totalRevenue = data.magnets.reduce((s, m) => s + (m.revenue || 0), 0);
+
+      data.summary = {
+        total_magnets: data.magnets.length,
+        total_downloads: totalDownloads,
+        total_conversions: totalConversions,
+        total_revenue: totalRevenue,
+        avg_conversion_rate: totalDownloads > 0 ? Math.round((totalConversions / totalDownloads) * 100) : 0,
+        top_performer: data.magnets.sort((a, b) => (b.conversions || 0) - (a.conversions || 0))[0] || null
+      };
+      data.generated_at = new Date().toISOString();
+      writeJSON('lead-magnet-performance.json', data);
+      return json(res, data);
+    }
+    if (method === 'GET' && pathname === '/api/lead-magnet-performance') {
+      return json(res, readJSON('lead-magnet-performance.json') || { magnets: [], summary: {} });
+    }
+
+    // --- Content Sentiment Analyzer ---
+    // AI-powered sentiment analysis of content for tone optimization
+    if (method === 'POST' && pathname === '/api/content-sentiment') {
+      const body = await parseBody(req);
+      const content = readJSON('content.json');
+      const target = content.find(c => c.id === body.content_id);
+      if (!target) return json(res, { error: 'Content not found' }, 404);
+
+      const text = target.content || target.body || '';
+      const prompt = `Analyze the sentiment and tone of this content. Return JSON:
+{
+  "overall_sentiment": "positive|negative|neutral|mixed",
+  "sentiment_score": 0-100 (0=very negative, 100=very positive),
+  "tone": ["professional", "casual", "urgent", "empathetic", "authoritative", etc],
+  "emotional_triggers": ["fear", "hope", "curiosity", "frustration", etc],
+  "audience_reaction_prediction": "likely response description",
+  "tone_adjustments": ["suggestion 1", "suggestion 2"],
+  "power_words_used": ["word1", "word2"],
+  "readability_level": "easy|medium|advanced"
+}
+
+Content: ${text.substring(0, 3000)}`;
+
+      const result = await callClaude(prompt, { model: HAIKU, max_tokens: 1500 });
+      const analysis = parseJsonResponse(result);
+
+      const entry = { content_id: body.content_id, ...analysis, analyzed_at: new Date().toISOString() };
+      const rawSent = readJSON('content-sentiment.json');
+      const store = (rawSent && rawSent.analyses) ? rawSent : { analyses: [] };
+      store.analyses = store.analyses.filter(a => a.content_id !== body.content_id);
+      store.analyses.push(entry);
+      store.generated_at = new Date().toISOString();
+      writeJSON('content-sentiment.json', store);
+      return json(res, entry);
+    }
+    if (method === 'GET' && pathname === '/api/content-sentiment') {
+      return json(res, readJSON('content-sentiment.json') || { analyses: [] });
+    }
+
+    // --- Hashtag Strategy Generator ---
+    // AI generates optimized hashtag sets per platform and topic
+    if (method === 'POST' && pathname === '/api/hashtag-strategy') {
+      const body = await parseBody(req);
+      const topic = body.topic || 'legal marketing';
+      const platform = body.platform || 'all';
+
+      const prompt = `Generate a comprehensive hashtag strategy for the topic "${topic}" for a legal marketing agency. Platform focus: ${platform}. Return JSON:
+{
+  "topic": "${topic}",
+  "strategies": {
+    "linkedin": { "primary": ["#tag1"], "secondary": ["#tag2"], "niche": ["#tag3"], "branded": ["#MortarMetrics"] },
+    "instagram": { "primary": [], "secondary": [], "trending": [], "branded": [] },
+    "x": { "primary": [], "trending": [], "community": [] },
+    "tiktok": { "primary": [], "trending": [], "niche": [] }
+  },
+  "best_practices": ["tip1", "tip2"],
+  "avoid": ["#spam", "#reason"],
+  "optimal_count": { "linkedin": 3, "instagram": 15, "x": 3, "tiktok": 5 }
+}`;
+
+      const result = await callClaude(prompt, { model: HAIKU, max_tokens: 2000 });
+      const strategy = parseJsonResponse(result);
+
+      const rawHash = readJSON('hashtag-strategy.json');
+      const store = (rawHash && rawHash.strategies) ? rawHash : { strategies: [] };
+      strategy.generated_at = new Date().toISOString();
+      store.strategies.push(strategy);
+      if (store.strategies.length > 20) store.strategies = store.strategies.slice(-20);
+      store.latest = strategy;
+      store.generated_at = new Date().toISOString();
+      writeJSON('hashtag-strategy.json', store);
+      return json(res, strategy);
+    }
+    if (method === 'GET' && pathname === '/api/hashtag-strategy') {
+      return json(res, readJSON('hashtag-strategy.json') || { strategies: [], latest: null });
+    }
+
+    // --- Content Collaboration Board ---
+    // Team collaboration: comments, assignments, status tracking per content
+    if (method === 'POST' && pathname === '/api/collaboration-board') {
+      const body = await parseBody(req);
+      const raw = readJSON('collaboration-board.json');
+      const data = (raw && raw.threads) ? raw : { threads: [] };
+
+      if (body.action === 'comment') {
+        let thread = data.threads.find(t => t.content_id === body.content_id);
+        if (!thread) {
+          thread = { content_id: body.content_id, comments: [], assignees: [], status: 'open', created_at: new Date().toISOString() };
+          data.threads.push(thread);
+        }
+        thread.comments.push({
+          id: generateId(),
+          author: body.author || 'anonymous',
+          text: body.text || '',
+          type: body.type || 'comment',
+          created_at: new Date().toISOString()
+        });
+        thread.last_activity = new Date().toISOString();
+      } else if (body.action === 'assign') {
+        let thread = data.threads.find(t => t.content_id === body.content_id);
+        if (!thread) {
+          thread = { content_id: body.content_id, comments: [], assignees: [], status: 'open', created_at: new Date().toISOString() };
+          data.threads.push(thread);
+        }
+        if (body.assignee && !thread.assignees.includes(body.assignee)) {
+          thread.assignees.push(body.assignee);
+        }
+      } else if (body.action === 'status') {
+        const thread = data.threads.find(t => t.content_id === body.content_id);
+        if (thread) thread.status = body.status || 'open';
+      }
+
+      data.total_threads = data.threads.length;
+      data.open_threads = data.threads.filter(t => t.status === 'open').length;
+      data.total_comments = data.threads.reduce((s, t) => s + t.comments.length, 0);
+      data.generated_at = new Date().toISOString();
+      writeJSON('collaboration-board.json', data);
+      return json(res, { ok: true, total_threads: data.total_threads, open_threads: data.open_threads });
+    }
+    if (method === 'GET' && pathname === '/api/collaboration-board') {
+      const data = readJSON('collaboration-board.json') || { threads: [], total_threads: 0 };
+      return json(res, data);
+    }
+
+    // --- Platform Analytics Aggregator ---
+    // Aggregate analytics from all platforms into unified view
+    if (method === 'POST' && pathname === '/api/platform-analytics') {
+      const engagement = readJSON('engagement-tracker.json') || {};
+      const growth = readJSON('audience-growth-tracker.json') || {};
+      const conversions = readJSON('conversion-tracker.json') || {};
+      const published = readJSON('published.json') || [];
+      const scheduler = readJSON('smart-scheduler.json') || {};
+
+      const platforms = ['linkedin', 'x', 'instagram', 'youtube', 'tiktok', 'newsletter'];
+      const analytics = {};
+
+      for (const p of platforms) {
+        const platEngagement = engagement.by_platform?.[p] || {};
+        const platGrowth = growth.by_platform?.[p] || {};
+        const platConversions = (conversions.events || []).filter(e => e.platform === p);
+        const platPublished = published.filter(c => c.platform === p || c.format?.includes(p));
+
+        analytics[p] = {
+          followers: platGrowth.latest?.count || 0,
+          follower_growth: platGrowth.growth_rate || 0,
+          total_posts: platPublished.length,
+          impressions: platEngagement.total_impressions || 0,
+          engagements: platEngagement.total_engagements || 0,
+          engagement_rate: platEngagement.avg_engagement_rate || 0,
+          conversions: platConversions.length,
+          conversion_value: platConversions.reduce((s, e) => s + (e.value || 0), 0),
+          scheduled: (scheduler.scheduled || []).filter(s => s.platform === p).length
+        };
+      }
+
+      const totals = {
+        total_followers: Object.values(analytics).reduce((s, p) => s + p.followers, 0),
+        total_impressions: Object.values(analytics).reduce((s, p) => s + p.impressions, 0),
+        total_engagements: Object.values(analytics).reduce((s, p) => s + p.engagements, 0),
+        total_conversions: Object.values(analytics).reduce((s, p) => s + p.conversions, 0),
+        total_revenue: Object.values(analytics).reduce((s, p) => s + p.conversion_value, 0),
+        best_platform: Object.entries(analytics).sort((a, b) => b[1].engagement_rate - a[1].engagement_rate)[0]?.[0] || 'none'
+      };
+
+      const report = { platforms: analytics, totals, generated_at: new Date().toISOString() };
+      writeJSON('platform-analytics.json', report);
+      return json(res, report);
+    }
+    if (method === 'GET' && pathname === '/api/platform-analytics') {
+      return json(res, readJSON('platform-analytics.json') || { platforms: {}, totals: {} });
+    }
+
+    // --- Ideal Post Length Analyzer ---
+    // Analyze content performance by length to find optimal post lengths per platform
+    if (method === 'POST' && pathname === '/api/post-length-analyzer') {
+      const content = readJSON('content.json');
+      const engRaw = readJSON('engagement-tracker.json');
+      const engList = Array.isArray(engRaw) ? engRaw : [];
+
+      const platformBuckets = {};
+      let totalPieces = 0;
+
+      for (const c of content) {
+        const fmts = c.formats || {};
+        for (const [fmt, fmtData] of Object.entries(fmts)) {
+          const text = typeof fmtData === 'string' ? fmtData : (typeof fmtData?.content === 'string' ? fmtData.content : '');
+          const wordCount = text.split(/\s+/).filter(Boolean).length;
+          const charCount = text.length;
+          if (wordCount === 0) continue;
+          totalPieces++;
+
+          if (!platformBuckets[fmt]) platformBuckets[fmt] = { posts: [], total_words: 0, total_chars: 0 };
+
+          const engData = engList.find(e => e.content_id === c.id);
+          platformBuckets[fmt].posts.push({
+            id: c.id,
+            word_count: wordCount,
+            char_count: charCount,
+            engagement_rate: engData?.engagement_rate || 0,
+            impressions: engData?.impressions || 0
+          });
+          platformBuckets[fmt].total_words += wordCount;
+          platformBuckets[fmt].total_chars += charCount;
+        }
+      }
+
+      const analysis = {};
+      for (const [fmt, data] of Object.entries(platformBuckets)) {
+        const posts = data.posts;
+        const avgWords = posts.length ? Math.round(data.total_words / posts.length) : 0;
+        const avgChars = posts.length ? Math.round(data.total_chars / posts.length) : 0;
+
+        const short = posts.filter(p => p.word_count < avgWords * 0.7);
+        const medium = posts.filter(p => p.word_count >= avgWords * 0.7 && p.word_count <= avgWords * 1.3);
+        const long = posts.filter(p => p.word_count > avgWords * 1.3);
+
+        const avgRate = (arr) => arr.length ? Math.round(arr.reduce((s, p) => s + p.engagement_rate, 0) / arr.length * 100) / 100 : 0;
+
+        analysis[fmt] = {
+          total_posts: posts.length,
+          avg_word_count: avgWords,
+          avg_char_count: avgChars,
+          short_posts: { count: short.length, avg_engagement: avgRate(short) },
+          medium_posts: { count: medium.length, avg_engagement: avgRate(medium) },
+          long_posts: { count: long.length, avg_engagement: avgRate(long) },
+          optimal_length: medium.length >= short.length && medium.length >= long.length ? 'medium' : (short.length > long.length ? 'short' : 'long'),
+          optimal_word_range: { min: Math.round(avgWords * 0.8), max: Math.round(avgWords * 1.2) }
+        };
+      }
+
+      const report = {
+        total_analyzed: totalPieces,
+        by_format: analysis,
+        recommendations: [],
+        generated_at: new Date().toISOString()
+      };
+
+      for (const [fmt, data] of Object.entries(analysis)) {
+        report.recommendations.push(`${fmt}: optimal length is ${data.optimal_word_range.min}-${data.optimal_word_range.max} words (${data.optimal_length})`);
+      }
+
+      writeJSON('post-length-analyzer.json', report);
+      return json(res, report);
+    }
+    if (method === 'GET' && pathname === '/api/post-length-analyzer') {
+      return json(res, readJSON('post-length-analyzer.json') || { total_analyzed: 0, by_format: {} });
+    }
+
     // --- Static file serving ---
 
     // Serve dashboard

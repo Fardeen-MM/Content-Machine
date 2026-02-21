@@ -1,0 +1,22 @@
+{
+  "total_scanned": 42,
+  "fresh": 41,
+  "mature": 0,
+  "aging": 0,
+  "stale": 1,
+  "freshness_score": 98,
+  "needs_attention": [
+    {
+      "title": "",
+      "format": "linkedin_post",
+      "age_days": 20505,
+      "freshness": "stale",
+      "action": "rewrite",
+      "status": "ready"
+    }
+  ],
+  "recommendations": [
+    "1 pieces are stale (90+ days) — consider rewriting"
+  ],
+  "generated_at": "2026-02-21T17:18:01.669Z"
+}

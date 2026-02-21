@@ -19580,6 +19580,295 @@ Content: ${firstContent.substring(0, 2000)}`;
       return json(res, readJSON('weekly-content-scorecard.json') || { total_score: 0, grade: 'F', scores: {} });
     }
 
+    // --- Content Format Performance ---
+    // Compare engagement rates across different content formats
+    if (method === 'POST' && pathname === '/api/content-format-performance') {
+      const content = readJSON('content.json');
+      const engagement = readJSON('engagement-tracker.json');
+      const engList = Array.isArray(engagement) ? engagement : [];
+      const formatStats = {};
+      for (const c of content) {
+        for (const fmt of Object.keys(c.formats || {})) {
+          if (!formatStats[fmt]) formatStats[fmt] = { count: 0, total_eng: 0, total_imp: 0, published: 0 };
+          formatStats[fmt].count++;
+          if (c.status === 'published') formatStats[fmt].published++;
+        }
+      }
+      for (const e of engList) {
+        const fmt = e.format || e.platform;
+        if (fmt && formatStats[fmt]) {
+          formatStats[fmt].total_eng += e.engagement || e.likes || 0;
+          formatStats[fmt].total_imp += e.impressions || 0;
+        }
+      }
+      const ranked = Object.entries(formatStats).map(([fmt, s]) => ({
+        format: fmt, count: s.count, published: s.published,
+        total_engagement: s.total_eng, total_impressions: s.total_imp,
+        avg_engagement: s.count > 0 ? Math.round((s.total_eng / s.count) * 100) / 100 : 0,
+        engagement_rate: s.total_imp > 0 ? Math.round((s.total_eng / s.total_imp) * 10000) / 100 : 0
+      })).sort((a, b) => b.avg_engagement - a.avg_engagement);
+      const report = {
+        total_formats: ranked.length, formats: ranked,
+        best_format: ranked[0]?.format || 'none',
+        worst_format: ranked[ranked.length - 1]?.format || 'none',
+        generated_at: new Date().toISOString()
+      };
+      writeJSON('content-format-performance.json', report);
+      return json(res, report);
+    }
+    if (method === 'GET' && pathname === '/api/content-format-performance') {
+      return json(res, readJSON('content-format-performance.json') || { total_formats: 0, formats: [] });
+    }
+
+    // --- Topic Momentum Tracker ---
+    // Track which topics are gaining or losing momentum based on trigger frequency
+    if (method === 'POST' && pathname === '/api/topic-momentum-tracker') {
+      const triggers = readJSON('trigger-queue.json');
+      const trigList = Array.isArray(triggers) ? triggers : [];
+      const now = Date.now();
+      const weekMs = 7 * 86400000;
+      const topicCounts = {};
+      for (const t of trigList) {
+        const title = (t.title || '').toLowerCase();
+        const keywords = ['seo', 'ppc', 'google ads', 'social media', 'website', 'intake', 'marketing', 'branding', 'ai', 'automation', 'content', 'reviews', 'video', 'email', 'referrals', 'lsa'];
+        for (const kw of keywords) {
+          if (title.includes(kw)) {
+            if (!topicCounts[kw]) topicCounts[kw] = { recent: 0, older: 0, total: 0 };
+            const age = now - new Date(t.scraped_at || t.created_at || 0).getTime();
+            topicCounts[kw].total++;
+            if (age < weekMs) topicCounts[kw].recent++;
+            else topicCounts[kw].older++;
+          }
+        }
+      }
+      const topics = Object.entries(topicCounts).map(([topic, c]) => ({
+        topic, total: c.total, recent: c.recent, older: c.older,
+        momentum: c.older > 0 ? Math.round(((c.recent - c.older) / c.older) * 100) : (c.recent > 0 ? 100 : 0),
+        trend: c.recent > c.older ? 'rising' : c.recent < c.older ? 'falling' : 'stable'
+      })).sort((a, b) => b.momentum - a.momentum);
+      const report = {
+        total_topics: topics.length, rising: topics.filter(t => t.trend === 'rising').length,
+        falling: topics.filter(t => t.trend === 'falling').length,
+        topics, generated_at: new Date().toISOString()
+      };
+      writeJSON('topic-momentum-tracker.json', report);
+      return json(res, report);
+    }
+    if (method === 'GET' && pathname === '/api/topic-momentum-tracker') {
+      return json(res, readJSON('topic-momentum-tracker.json') || { total_topics: 0, topics: [] });
+    }
+
+    // --- Content Production Velocity ---
+    // Measure how fast content moves through the pipeline stages
+    if (method === 'POST' && pathname === '/api/content-production-velocity') {
+      const content = readJSON('content.json');
+      const now = Date.now();
+      const dayMs = 86400000;
+      const velocities = [];
+      for (const c of content) {
+        const created = new Date(c.created_at || c.generated_at || 0).getTime();
+        const approved = c.approved_at ? new Date(c.approved_at).getTime() : null;
+        const published = c.published_at ? new Date(c.published_at).getTime() : null;
+        velocities.push({
+          id: c.id, title: c.trigger_title || c.title || 'Untitled', status: c.status || 'draft',
+          created_to_approved_days: approved ? Math.round((approved - created) / dayMs * 10) / 10 : null,
+          approved_to_published_days: (approved && published) ? Math.round((published - approved) / dayMs * 10) / 10 : null,
+          total_days: published ? Math.round((published - created) / dayMs * 10) / 10 : Math.round((now - created) / dayMs * 10) / 10,
+          is_complete: !!published
+        });
+      }
+      const completed = velocities.filter(v => v.is_complete);
+      const report = {
+        total_content: velocities.length,
+        completed: completed.length, in_progress: velocities.length - completed.length,
+        avg_total_days: completed.length > 0 ? Math.round((completed.reduce((s, v) => s + v.total_days, 0) / completed.length) * 10) / 10 : 0,
+        avg_create_to_approve: completed.filter(v => v.created_to_approved_days != null).length > 0 ?
+          Math.round((completed.filter(v => v.created_to_approved_days != null).reduce((s, v) => s + v.created_to_approved_days, 0) / completed.filter(v => v.created_to_approved_days != null).length) * 10) / 10 : 0,
+        fastest: completed.sort((a, b) => a.total_days - b.total_days).slice(0, 5),
+        slowest: velocities.sort((a, b) => b.total_days - a.total_days).slice(0, 5),
+        generated_at: new Date().toISOString()
+      };
+      writeJSON('content-production-velocity.json', report);
+      return json(res, report);
+    }
+    if (method === 'GET' && pathname === '/api/content-production-velocity') {
+      return json(res, readJSON('content-production-velocity.json') || { total_content: 0, avg_total_days: 0 });
+    }
+
+    // --- Brand Voice Consistency ---
+    // Analyze how consistent content is with brand voice guidelines
+    if (method === 'POST' && pathname === '/api/brand-voice-consistency') {
+      const content = readJSON('content.json');
+      const voices = readJSON('voices.json');
+      const voiceList = Array.isArray(voices) ? voices : [];
+      const brandKeywords = ['mortar', 'metrics', 'law firm', 'attorney', 'legal marketing', 'roi', 'growth', 'results'];
+      const toneWords = { professional: ['strategy', 'optimize', 'data-driven', 'proven', 'systematic'], casual: ['hey', 'honestly', 'literally', 'tbh', 'lol'], aggressive: ['dominate', 'crush', 'destroy', 'kill it', 'explode'] };
+      const results = [];
+      for (const c of content) {
+        const formats = c.formats || {};
+        const firstFmt = Object.keys(formats)[0];
+        if (!firstFmt) continue;
+        const fmtData = formats[firstFmt];
+        const text = typeof fmtData === 'string' ? fmtData : (typeof fmtData?.content === 'string' ? fmtData.content : '');
+        const lower = text.toLowerCase();
+        const brandMentions = brandKeywords.filter(k => lower.includes(k)).length;
+        let detectedTone = 'neutral';
+        let maxTone = 0;
+        for (const [tone, words] of Object.entries(toneWords)) {
+          const count = words.filter(w => lower.includes(w)).length;
+          if (count > maxTone) { maxTone = count; detectedTone = tone; }
+        }
+        const consistencyScore = Math.min(100, 40 + brandMentions * 10 + (detectedTone === 'professional' ? 20 : 0));
+        results.push({
+          id: c.id, title: c.trigger_title || c.title || 'Untitled',
+          consistency_score: consistencyScore, detected_tone: detectedTone,
+          brand_mentions: brandMentions, on_brand: consistencyScore >= 60
+        });
+      }
+      results.sort((a, b) => b.consistency_score - a.consistency_score);
+      const report = {
+        total_analyzed: results.length,
+        avg_consistency: results.length > 0 ? Math.round(results.reduce((s, r) => s + r.consistency_score, 0) / results.length) : 0,
+        on_brand: results.filter(r => r.on_brand).length, off_brand: results.filter(r => !r.on_brand).length,
+        tone_breakdown: results.reduce((acc, r) => { acc[r.detected_tone] = (acc[r.detected_tone] || 0) + 1; return acc; }, {}),
+        top_consistent: results.slice(0, 10), least_consistent: results.slice(-10).reverse(),
+        generated_at: new Date().toISOString()
+      };
+      writeJSON('brand-voice-consistency.json', report);
+      return json(res, report);
+    }
+    if (method === 'GET' && pathname === '/api/brand-voice-consistency') {
+      return json(res, readJSON('brand-voice-consistency.json') || { total_analyzed: 0, avg_consistency: 0 });
+    }
+
+    // --- Audience Persona Insights ---
+    // Infer audience personas from trigger sources, topics, and engagement patterns
+    if (method === 'POST' && pathname === '/api/audience-persona-insights') {
+      const triggers = readJSON('trigger-queue.json');
+      const trigList = Array.isArray(triggers) ? triggers : [];
+      const content = readJSON('content.json');
+      const personas = {
+        'Solo Practitioner': { keywords: ['solo', 'small firm', 'one attorney', 'my practice', 'starting'], count: 0, topics: [] },
+        'Managing Partner': { keywords: ['managing partner', 'firm revenue', 'scale', 'team', 'hire'], count: 0, topics: [] },
+        'Marketing Director': { keywords: ['marketing budget', 'agency', 'campaign', 'strategy', 'roi'], count: 0, topics: [] },
+        'PI Attorney': { keywords: ['personal injury', 'pi firm', 'pi attorney', 'accident', 'settlement'], count: 0, topics: [] },
+        'Family Law': { keywords: ['family law', 'divorce', 'custody', 'family practice'], count: 0, topics: [] },
+        'Criminal Defense': { keywords: ['criminal', 'defense attorney', 'dui', 'felony'], count: 0, topics: [] }
+      };
+      for (const t of trigList) {
+        const title = (t.title || '').toLowerCase();
+        for (const [persona, data] of Object.entries(personas)) {
+          if (data.keywords.some(k => title.includes(k))) {
+            data.count++;
+            if (data.topics.length < 5) data.topics.push(t.title);
+          }
+        }
+      }
+      const personaList = Object.entries(personas).map(([name, data]) => ({
+        persona: name, trigger_count: data.count, sample_topics: data.topics,
+        engagement_level: data.count > 20 ? 'high' : data.count > 5 ? 'medium' : 'low'
+      })).sort((a, b) => b.trigger_count - a.trigger_count);
+      const report = {
+        total_triggers_analyzed: trigList.length,
+        personas: personaList,
+        dominant_persona: personaList[0]?.persona || 'Unknown',
+        unmatched: trigList.length - personaList.reduce((s, p) => s + p.trigger_count, 0),
+        generated_at: new Date().toISOString()
+      };
+      writeJSON('audience-persona-insights.json', report);
+      return json(res, report);
+    }
+    if (method === 'GET' && pathname === '/api/audience-persona-insights') {
+      return json(res, readJSON('audience-persona-insights.json') || { personas: [], dominant_persona: 'Unknown' });
+    }
+
+    // --- Content Calendar Optimizer ---
+    // Analyze calendar density and suggest optimal posting patterns
+    if (method === 'POST' && pathname === '/api/content-calendar-optimizer') {
+      const content = readJSON('content.json');
+      const published = readJSON('published.json');
+      const pubList = Array.isArray(published) ? published : [];
+      const now = Date.now();
+      const dayMs = 86400000;
+      const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      const dayDist = { Sun: 0, Mon: 0, Tue: 0, Wed: 0, Thu: 0, Fri: 0, Sat: 0 };
+      const hourDist = {};
+      for (let h = 0; h < 24; h++) hourDist[h] = 0;
+      for (const p of pubList) {
+        const d = new Date(p.published_at || p.created_at || 0);
+        dayDist[dayNames[d.getDay()]]++;
+        hourDist[d.getHours()]++;
+      }
+      const approved = content.filter(c => c.status === 'approved').length;
+      const scheduled = content.filter(c => c.status === 'scheduled').length;
+      const gaps = [];
+      for (const [day, count] of Object.entries(dayDist)) {
+        if (count === 0) gaps.push(day);
+      }
+      const report = {
+        publishing_days: dayDist, publishing_hours: hourDist,
+        total_published: pubList.length, approved_waiting: approved, scheduled: scheduled,
+        busiest_day: Object.entries(dayDist).sort((a, b) => b[1] - a[1])[0]?.[0] || 'N/A',
+        quietest_day: Object.entries(dayDist).sort((a, b) => a[1] - b[1])[0]?.[0] || 'N/A',
+        gap_days: gaps,
+        recommendations: [],
+        generated_at: new Date().toISOString()
+      };
+      if (gaps.length > 2) report.recommendations.push('Post on ' + gaps.join(', ') + ' to fill calendar gaps');
+      if (approved > 5) report.recommendations.push(approved + ' approved pieces waiting — schedule them');
+      if (pubList.length < 7) report.recommendations.push('Fewer than 7 posts this period — increase cadence');
+      writeJSON('content-calendar-optimizer.json', report);
+      return json(res, report);
+    }
+    if (method === 'GET' && pathname === '/api/content-calendar-optimizer') {
+      return json(res, readJSON('content-calendar-optimizer.json') || { publishing_days: {}, gap_days: [] });
+    }
+
+    // --- Content Impact Score ---
+    // Composite score measuring overall content impact across all dimensions
+    if (method === 'POST' && pathname === '/api/content-impact-score') {
+      const content = readJSON('content.json');
+      const engagement = readJSON('engagement-tracker.json');
+      const engList = Array.isArray(engagement) ? engagement : [];
+      const published = readJSON('published.json');
+      const pubList = Array.isArray(published) ? published : [];
+      const totalContent = content.length;
+      const totalPublished = pubList.length;
+      const totalEng = engList.reduce((s, e) => s + (e.engagement || e.likes || 0), 0);
+      const totalImp = engList.reduce((s, e) => s + (e.impressions || 0), 0);
+      const totalFormats = content.reduce((s, c) => s + Object.keys(c.formats || {}).length, 0);
+      // Score out of 100
+      const volume = Math.min(20, Math.round((totalContent / 100) * 20));
+      const publishing = Math.min(20, Math.round((totalPublished / 30) * 20));
+      const diversity = Math.min(20, totalContent > 0 ? Math.round(((totalFormats / totalContent) / 16) * 20) : 0);
+      const engScore = Math.min(20, Math.round((totalEng / 500) * 20));
+      const reach = Math.min(20, Math.round((totalImp / 10000) * 20));
+      const total = volume + publishing + diversity + engScore + reach;
+      const grade = total >= 90 ? 'A+' : total >= 80 ? 'A' : total >= 70 ? 'B' : total >= 60 ? 'C' : total >= 40 ? 'D' : 'F';
+      const report = {
+        impact_score: total, grade,
+        breakdown: {
+          volume: { score: volume, max: 20, detail: totalContent + ' pieces' },
+          publishing: { score: publishing, max: 20, detail: totalPublished + ' published' },
+          diversity: { score: diversity, max: 20, detail: (totalContent > 0 ? Math.round(totalFormats / totalContent * 10) / 10 : 0) + ' avg formats' },
+          engagement: { score: engScore, max: 20, detail: totalEng + ' engagements' },
+          reach: { score: reach, max: 20, detail: totalImp + ' impressions' }
+        },
+        strengths: [], weaknesses: [],
+        generated_at: new Date().toISOString()
+      };
+      if (volume >= 15) report.strengths.push('Strong content volume');
+      if (engScore >= 15) report.strengths.push('Great engagement levels');
+      if (publishing < 10) report.weaknesses.push('Low publishing rate');
+      if (reach < 10) report.weaknesses.push('Limited reach — promote more');
+      if (diversity < 10) report.weaknesses.push('Low format diversity');
+      writeJSON('content-impact-score.json', report);
+      return json(res, report);
+    }
+    if (method === 'GET' && pathname === '/api/content-impact-score') {
+      return json(res, readJSON('content-impact-score.json') || { impact_score: 0, grade: 'F', breakdown: {} });
+    }
+
     // --- Static file serving ---
 
     // Serve dashboard

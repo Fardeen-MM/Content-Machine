@@ -1677,6 +1677,13 @@ const state = {
   contentRepurposeTracker: null,
   socialProofAggregator: null,
   weeklyContentScorecard: null,
+  contentFormatPerf: null,
+  topicMomentum: null,
+  contentProductionVelocity: null,
+  brandVoiceConsistency: null,
+  audiencePersonaInsights: null,
+  contentCalendarOptimizer: null,
+  contentImpactScore: null,
 };
 
 // --- API Calls ---
@@ -1702,7 +1709,7 @@ async function loadData() {
   state.loading = true;
   render();
   try {
-    const [content, triggers, stats, calendar, monthCal, settings, memory, performance, perfAnalytics, meetings, meetingStats, clients, allActions, chatMessages, healthData, inspirations, pestering, pesteringStages, insights, deals, published, series, predictions, playbooks, ctaLibrary, trending, funnel, publishTracker, leadMagnets, contentHealth, scheduleOptimize, templates, dmSequences, hooks, pillarPlan, contentLeads, autopilot, scheduleQueue, engagementDashboard, contentBriefs, workflowPipeline, personas, calendarWeek, benchmarkReport, contentIdeas, socialProof, roiReport, audienceGrowth, contentThemes, distributionPlans, dmPipelines, competitorsTracked, dripCampaigns, autoResponses, expiringContent, amplifications, leadFunnels, calendarInsights, weeklyDigest, splitTests, workflowRules, youtubePipelines, carousels, contentMatrix, ctaStrategy, seriesTemplates, contentBank, engagementPlaybook, atomizations, platformRules, emailSequences, weeklyContentPlan, repurposeChains, lmFunnels, perfReport, contentPillars, compAnalyses, nurtureCampaigns, authorityPlan, flywheelData, velocityData, audienceSegments, contentDna, topicClusters, voiceProfiles, dmScriptsData, replyStrategyData, systemHealthData, contentRecyclerData, commentStrategyData, newslettersData, distributionEngineData, socialProofEngineData, advancedAnalyticsData, growthPlaybookData, genLeadMagnetsData, funnelAnalysisData, autoRepurposeData, weeklyActionPlanData, trendsAnalysisData, authorityScoreData, contentIntelData, conversionOptData, contentMatrixData, draftingStrategyData, zeroClickBankData, contentVelocityData, pillarRotatorData, savedRepliesData, audienceBuilderData, weeklyReportData, competitiveIntelData, contentScoringData, postSchedulerData, trendHijackerData, leadMagnetFunnelsData, outboundSequencesData, icpRefinedData, winLossData, contentRoiData, contentExperimentsData, socialListeningData, authorityBuilderData, quickWinsData, contentCalendarAiData, dailyBriefingData, engagementTrackerData, commentToDmData, contentSeriesPlannerData, hookBankData, engagementScorerData, conversionTrackerData, contentGapFinderData, audienceGrowthTrackerData, performanceBenchmarksData, flywheelAnalyzerData, topicAuthorityData, socialProofCollectorData, newsletterBuilderData, dmSequenceBuilderData, contentRecyclerScanData, contentDnaAnalyzerData, swipeFileData, crossPostTrackerData, smartSchedulerData, contentSystemHealthV2Data, competitorContentTrackerData, revenueAttributionData, pipelineValueTrackerData, contentCostCalculatorData, leadScorerData, retargetingBuilderData, campaignRoiData, monthlyContentReportData, approvalWorkflowData, autoPublishQueueData, contentTemplateLibraryData, engagementAlertsData, contentTagsData, contentFreshnessData, leadMagnetPerfData, collabBoardData, platformAnalyticsAggData, postLengthData, pillarHealthData, distScorecardData, contentVelocityTrackerData, competitorBenchData, contentQueueData, personaMatchData, ctaPerfData, leadNurtureData, convFunnelVizData, contentRoiDetailData, weeklyGrowthData, pipelineBoardData, contentQualityAuditData, calendarHeatmapData, contentGoalsData, abTestDashData, engagementHeatmapData, audienceOverlapData, viralDetectorData, cannibalisationCheckData, engagementPredictorData, contentMixOptimizerData, evergreenIdentifierData, contentSupplyChainData, contentDecayTrackerData, headlineAnalyzerData, contentClusterMapData, audienceSentimentPulseData, contentWorkflowAutomationsData, platformRateLimiterData, contentPerformanceTiersData, contentComplianceCheckerData, crossPlatformSchedulerData, contentLifespanEstimatorData, competitorGapFinderData, contentRecencyScoreData, campaignPerfTrackerData, contentDependencyMapData, engagementForecastData, contentReadabilityScorerData, audienceGrowthPredictorData, contentRepurposeTrackerData, socialProofAggregatorData, weeklyContentScorecardData] = await Promise.all([
+    const [content, triggers, stats, calendar, monthCal, settings, memory, performance, perfAnalytics, meetings, meetingStats, clients, allActions, chatMessages, healthData, inspirations, pestering, pesteringStages, insights, deals, published, series, predictions, playbooks, ctaLibrary, trending, funnel, publishTracker, leadMagnets, contentHealth, scheduleOptimize, templates, dmSequences, hooks, pillarPlan, contentLeads, autopilot, scheduleQueue, engagementDashboard, contentBriefs, workflowPipeline, personas, calendarWeek, benchmarkReport, contentIdeas, socialProof, roiReport, audienceGrowth, contentThemes, distributionPlans, dmPipelines, competitorsTracked, dripCampaigns, autoResponses, expiringContent, amplifications, leadFunnels, calendarInsights, weeklyDigest, splitTests, workflowRules, youtubePipelines, carousels, contentMatrix, ctaStrategy, seriesTemplates, contentBank, engagementPlaybook, atomizations, platformRules, emailSequences, weeklyContentPlan, repurposeChains, lmFunnels, perfReport, contentPillars, compAnalyses, nurtureCampaigns, authorityPlan, flywheelData, velocityData, audienceSegments, contentDna, topicClusters, voiceProfiles, dmScriptsData, replyStrategyData, systemHealthData, contentRecyclerData, commentStrategyData, newslettersData, distributionEngineData, socialProofEngineData, advancedAnalyticsData, growthPlaybookData, genLeadMagnetsData, funnelAnalysisData, autoRepurposeData, weeklyActionPlanData, trendsAnalysisData, authorityScoreData, contentIntelData, conversionOptData, contentMatrixData, draftingStrategyData, zeroClickBankData, contentVelocityData, pillarRotatorData, savedRepliesData, audienceBuilderData, weeklyReportData, competitiveIntelData, contentScoringData, postSchedulerData, trendHijackerData, leadMagnetFunnelsData, outboundSequencesData, icpRefinedData, winLossData, contentRoiData, contentExperimentsData, socialListeningData, authorityBuilderData, quickWinsData, contentCalendarAiData, dailyBriefingData, engagementTrackerData, commentToDmData, contentSeriesPlannerData, hookBankData, engagementScorerData, conversionTrackerData, contentGapFinderData, audienceGrowthTrackerData, performanceBenchmarksData, flywheelAnalyzerData, topicAuthorityData, socialProofCollectorData, newsletterBuilderData, dmSequenceBuilderData, contentRecyclerScanData, contentDnaAnalyzerData, swipeFileData, crossPostTrackerData, smartSchedulerData, contentSystemHealthV2Data, competitorContentTrackerData, revenueAttributionData, pipelineValueTrackerData, contentCostCalculatorData, leadScorerData, retargetingBuilderData, campaignRoiData, monthlyContentReportData, approvalWorkflowData, autoPublishQueueData, contentTemplateLibraryData, engagementAlertsData, contentTagsData, contentFreshnessData, leadMagnetPerfData, collabBoardData, platformAnalyticsAggData, postLengthData, pillarHealthData, distScorecardData, contentVelocityTrackerData, competitorBenchData, contentQueueData, personaMatchData, ctaPerfData, leadNurtureData, convFunnelVizData, contentRoiDetailData, weeklyGrowthData, pipelineBoardData, contentQualityAuditData, calendarHeatmapData, contentGoalsData, abTestDashData, engagementHeatmapData, audienceOverlapData, viralDetectorData, cannibalisationCheckData, engagementPredictorData, contentMixOptimizerData, evergreenIdentifierData, contentSupplyChainData, contentDecayTrackerData, headlineAnalyzerData, contentClusterMapData, audienceSentimentPulseData, contentWorkflowAutomationsData, platformRateLimiterData, contentPerformanceTiersData, contentComplianceCheckerData, crossPlatformSchedulerData, contentLifespanEstimatorData, competitorGapFinderData, contentRecencyScoreData, campaignPerfTrackerData, contentDependencyMapData, engagementForecastData, contentReadabilityScorerData, audienceGrowthPredictorData, contentRepurposeTrackerData, socialProofAggregatorData, weeklyContentScorecardData, contentFormatPerfData, topicMomentumData, contentProductionVelocityData, brandVoiceConsistencyData, audiencePersonaInsightsData, contentCalendarOptimizerData, contentImpactScoreData] = await Promise.all([
       api('/api/content'),
       api('/api/triggers'),
       api('/api/stats'),
@@ -1910,7 +1917,14 @@ async function loadData() {
       api('/api/audience-growth-predictor').catch(() => null),
       api('/api/content-repurpose-tracker').catch(() => null),
       api('/api/social-proof-aggregator').catch(() => null),
-      api('/api/weekly-content-scorecard').catch(() => null)
+      api('/api/weekly-content-scorecard').catch(() => null),
+      api('/api/content-format-performance').catch(() => null),
+      api('/api/topic-momentum-tracker').catch(() => null),
+      api('/api/content-production-velocity').catch(() => null),
+      api('/api/brand-voice-consistency').catch(() => null),
+      api('/api/audience-persona-insights').catch(() => null),
+      api('/api/content-calendar-optimizer').catch(() => null),
+      api('/api/content-impact-score').catch(() => null)
     ]);
     state.content = content;
     state.triggers = triggers;
@@ -2120,6 +2134,13 @@ async function loadData() {
     state.contentRepurposeTracker = contentRepurposeTrackerData;
     state.socialProofAggregator = socialProofAggregatorData;
     state.weeklyContentScorecard = weeklyContentScorecardData;
+    state.contentFormatPerf = contentFormatPerfData;
+    state.topicMomentum = topicMomentumData;
+    state.contentProductionVelocity = contentProductionVelocityData;
+    state.brandVoiceConsistency = brandVoiceConsistencyData;
+    state.audiencePersonaInsights = audiencePersonaInsightsData;
+    state.contentCalendarOptimizer = contentCalendarOptimizerData;
+    state.contentImpactScore = contentImpactScoreData;
   } catch (err) {
     console.error('Failed to load data:', err);
     toast('Failed to load data', 'error');
@@ -4284,6 +4305,33 @@ function renderDashboardPage() {
                 render();
               } catch (err) { toast('Forecast failed: ' + err.message, 'error'); }
             }}, 'Forecast'),
+            h('button', { className: 'btn btn-ghost btn-sm', onclick: async () => {
+              toast('Calculating impact score...', 'info');
+              try {
+                const res = await api('/api/content-impact-score', { method: 'POST' });
+                state.contentImpactScore = res;
+                toast(`Impact: ${res.grade} (${res.impact_score}/100)`, 'success');
+                render();
+              } catch (err) { toast('Impact score failed: ' + err.message, 'error'); }
+            }}, 'Impact'),
+            h('button', { className: 'btn btn-ghost btn-sm', onclick: async () => {
+              toast('Checking brand voice...', 'info');
+              try {
+                const res = await api('/api/brand-voice-consistency', { method: 'POST' });
+                state.brandVoiceConsistency = res;
+                toast(`${res.avg_consistency}% consistent`, 'success');
+                render();
+              } catch (err) { toast('Brand voice failed: ' + err.message, 'error'); }
+            }}, 'Brand Voice'),
+            h('button', { className: 'btn btn-ghost btn-sm', onclick: async () => {
+              toast('Tracking topic momentum...', 'info');
+              try {
+                const res = await api('/api/topic-momentum-tracker', { method: 'POST' });
+                state.topicMomentum = res;
+                toast(`${res.rising} rising, ${res.falling} falling topics`, 'success');
+                render();
+              } catch (err) { toast('Momentum failed: ' + err.message, 'error'); }
+            }}, 'Momentum'),
             h('button', { className: 'btn btn-ghost btn-sm', onclick: () => { state.page = 'content'; render(); } }, 'View Content')
           )
         ),
@@ -6495,6 +6543,71 @@ function renderDashboardPage() {
         h('div', null, 'Current est. followers: ' + state.audienceGrowthPredictor.current_estimated_followers),
         h('div', { style: { color: '#059669' } }, '6m: ' + state.audienceGrowthPredictor.projected_6m_followers + ' | 12m: ' + state.audienceGrowthPredictor.projected_12m_followers),
         h('div', { style: { color: 'var(--gray-500)', fontSize: '11px' } }, state.audienceGrowthPredictor.content_in_pipeline + ' in pipeline')
+      )
+    ) : null,
+
+    // Content Impact Score
+    state.contentImpactScore?.grade ? h('div', { style: { marginBottom: '20px' } },
+      h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: '8px' } },
+        h('span', { style: { fontWeight: '700' } }, 'Impact Score'),
+        h('span', { style: { fontSize: '20px', fontWeight: '700', color: state.contentImpactScore.grade.startsWith('A') ? '#059669' : state.contentImpactScore.grade === 'B' ? '#3b82f6' : '#f59e0b' } }, state.contentImpactScore.grade)
+      ),
+      h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3px', fontSize: '11px' } },
+        ...Object.entries(state.contentImpactScore.breakdown || {}).map(([k, v]) =>
+          h('div', { style: { display: 'flex', justifyContent: 'space-between' } },
+            h('span', { style: { textTransform: 'capitalize' } }, k),
+            h('span', { style: { fontWeight: '600' } }, v.score + '/' + v.max)
+          )
+        )
+      ),
+      h('div', { style: { textAlign: 'center', fontSize: '13px', fontWeight: '700', color: 'var(--blue)', marginTop: '4px' } }, state.contentImpactScore.impact_score + '/100')
+    ) : null,
+
+    // Brand Voice
+    state.brandVoiceConsistency?.avg_consistency ? h('div', { style: { marginBottom: '20px' } },
+      h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: '8px' } },
+        h('span', { style: { fontWeight: '700' } }, 'Brand Voice'),
+        h('span', { style: { fontSize: '11px', color: state.brandVoiceConsistency.avg_consistency >= 60 ? '#059669' : '#f59e0b' } }, state.brandVoiceConsistency.avg_consistency + '% consistent')
+      ),
+      h('div', { style: { fontSize: '11px' } },
+        h('span', { style: { color: '#059669' } }, state.brandVoiceConsistency.on_brand + ' on-brand'),
+        h('span', { style: { margin: '0 4px', color: 'var(--gray-400)' } }, '|'),
+        h('span', { style: { color: '#ef4444' } }, state.brandVoiceConsistency.off_brand + ' off-brand')
+      ),
+      h('div', { style: { fontSize: '10px', color: 'var(--gray-500)', marginTop: '3px' } },
+        ...Object.entries(state.brandVoiceConsistency.tone_breakdown || {}).map(([tone, count]) =>
+          h('span', { style: { marginRight: '8px', textTransform: 'capitalize' } }, tone + ': ' + count)
+        )
+      )
+    ) : null,
+
+    // Topic Momentum
+    state.topicMomentum?.topics?.length ? h('div', { style: { marginBottom: '20px' } },
+      h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: '8px' } },
+        h('span', { style: { fontWeight: '700' } }, 'Topic Momentum'),
+        h('span', { style: { fontSize: '11px' } },
+          h('span', { style: { color: '#059669' } }, state.topicMomentum.rising + ' rising'),
+          h('span', { style: { margin: '0 3px' } }, '/'),
+          h('span', { style: { color: '#ef4444' } }, state.topicMomentum.falling + ' falling')
+        )
+      ),
+      ...state.topicMomentum.topics.slice(0, 5).map(t =>
+        h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '3px' } },
+          h('span', { style: { textTransform: 'capitalize' } }, t.topic),
+          h('span', { style: { color: t.trend === 'rising' ? '#059669' : t.trend === 'falling' ? '#ef4444' : '#6b7280', fontWeight: '600' } },
+            (t.momentum > 0 ? '+' : '') + t.momentum + '%')
+        )
+      )
+    ) : null,
+
+    // Personas
+    state.audiencePersonaInsights?.personas?.length ? h('div', { style: { marginBottom: '20px' } },
+      h('div', { style: { fontWeight: '700', marginBottom: '8px' } }, 'Audience Personas'),
+      ...state.audiencePersonaInsights.personas.filter(p => p.trigger_count > 0).slice(0, 4).map(p =>
+        h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '3px' } },
+          h('span', null, p.persona),
+          h('span', { style: { color: p.engagement_level === 'high' ? '#059669' : p.engagement_level === 'medium' ? '#f59e0b' : '#9ca3af', fontWeight: '600' } }, p.trigger_count)
+        )
       )
     ) : null,
 

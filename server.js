@@ -4579,6 +4579,236 @@ Return ONLY the improved content (no JSON wrapper, no explanation). Keep the sam
       });
     }
 
+    // --- Content Pillar Planner ---
+
+    // GET /api/pillars — get current pillar plan
+    if (pathname === '/api/pillars' && method === 'GET') {
+      const pillars = readJSON('pillar-plan.json', null);
+      return json(res, pillars || { pillars: [], generated_at: null });
+    }
+
+    // POST /api/pillars/plan — AI analyzes content + triggers to create pillar plan
+    if (pathname === '/api/pillars/plan' && method === 'POST') {
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+
+      const content = readJSON('content.json');
+      const triggers = readJSON('trigger-queue.json');
+
+      // Collect topic signals
+      const titles = content.slice(0, 50).map(c => c.trigger_title).filter(Boolean);
+      const categories = {};
+      const sources = {};
+      for (const c of content) {
+        categories[c.trigger_category] = (categories[c.trigger_category] || 0) + 1;
+        sources[c.trigger_source] = (sources[c.trigger_source] || 0) + 1;
+      }
+      const pendingTriggerTitles = triggers.filter(t => t.status === 'pending').slice(0, 30).map(t => t.title);
+
+      try {
+        const { callClaude, parseJsonResponse, SONNET } = require('./lib/claude');
+
+        const prompt = `Analyze these content topics from a legal marketing agency and create a content pillar strategy.
+
+EXISTING CONTENT TITLES (${titles.length}):
+${titles.slice(0, 30).map(t => `- ${t}`).join('\n')}
+
+PENDING TRIGGER TITLES (${pendingTriggerTitles.length}):
+${pendingTriggerTitles.slice(0, 20).map(t => `- ${t}`).join('\n')}
+
+CATEGORIES: ${JSON.stringify(categories)}
+SOURCES: ${JSON.stringify(sources)}
+
+Return JSON (raw, no fences):
+{
+  "pillars": [
+    {
+      "id": "slug-name",
+      "name": "Pillar Name",
+      "description": "What this pillar covers",
+      "sub_topics": ["topic1", "topic2", "topic3"],
+      "target_frequency": "2-3 posts/week",
+      "best_formats": ["linkedin", "blog"],
+      "current_coverage": "high|medium|low",
+      "gap_areas": ["specific topic gaps"],
+      "color": "#hex"
+    }
+  ],
+  "recommendations": ["actionable recommendation 1", "recommendation 2"],
+  "coverage_summary": "Brief summary of current coverage strengths and weaknesses"
+}
+
+Create 5-7 pillars. Make them specific to legal marketing. Identify gaps where we have few/no content pieces.`;
+
+        const text = await callClaude({ model: SONNET, system: 'You are a content strategist for a legal marketing agency.', prompt, maxTokens: 2500 });
+        const parsed = parseJsonResponse(text);
+        if (!parsed?.pillars) return json(res, { error: 'Failed to generate pillar plan' }, 500);
+
+        parsed.generated_at = now();
+        parsed.content_count = content.length;
+        parsed.trigger_count = triggers.length;
+        writeJSON('pillar-plan.json', parsed);
+
+        return json(res, { ok: true, ...parsed });
+      } catch (err) {
+        return json(res, { error: err.message }, 500);
+      }
+    }
+
+    // --- Performance-Linked Auto-Regeneration ---
+
+    // POST /api/content/auto-regen — regenerate low-performing published content
+    if (pathname === '/api/content/auto-regen' && method === 'POST') {
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+
+      const content = readJSON('content.json');
+      const perfData = readJSON('performance.json');
+      const published = readJSON('published.json');
+
+      // Find published content with below-average performance
+      const avgEngagement = perfData.length > 0
+        ? perfData.reduce((sum, p) => sum + (p.engagement || 0) + (p.clicks || 0) * 3, 0) / perfData.length
+        : 0;
+
+      const candidates = [];
+      for (const perf of perfData) {
+        const engScore = (perf.engagement || 0) + (perf.clicks || 0) * 3;
+        if (engScore >= avgEngagement) continue; // Skip above-average
+
+        const pub = published.find(p => p.content_id === perf.content_id && p.format === perf.format);
+        if (!pub?.published_at) continue;
+
+        const daysSincePublish = (Date.now() - new Date(pub.published_at).getTime()) / (1000 * 60 * 60 * 24);
+        if (daysSincePublish < 14) continue; // Too recent to regen
+
+        const contentItem = content.find(c => c.id === perf.content_id);
+        if (!contentItem) continue;
+
+        candidates.push({ content_id: perf.content_id, format: perf.format, engagement: engScore, avg: avgEngagement, title: contentItem.trigger_title });
+      }
+
+      if (candidates.length === 0) return json(res, { ok: true, regenerated: 0, message: 'No low-performing content found to regenerate' });
+
+      // Take top 5 worst performers
+      const toRegen = candidates.sort((a, b) => a.engagement - b.engagement).slice(0, 5);
+
+      const batchId = generateId();
+      _batchProgress[batchId] = { total: toRegen.length, completed: 0, errors: 0, results: [], status: 'running', type: 'auto_regen' };
+
+      setImmediate(async () => {
+        const { callClaude, HAIKU } = require('./lib/claude');
+        const { buildSystemPromptWithMemory } = require('./generator/content-writer');
+        const hooks = readJSON('hooks.json', []);
+        const systemPrompt = buildSystemPromptWithMemory();
+
+        for (const candidate of toRegen) {
+          try {
+            const fresh = readJSON('content.json');
+            const idx = fresh.findIndex(c => c.id === candidate.content_id);
+            if (idx === -1) { _batchProgress[batchId].errors++; continue; }
+
+            const currentContent = fresh[idx].formats?.[candidate.format]?.content;
+            if (!currentContent) { _batchProgress[batchId].errors++; continue; }
+
+            // Pick a random hook style for variety
+            const hookCategories = ['data', 'story', 'contrarian', 'question', 'transformation'];
+            const hookStyle = hookCategories[Math.floor(Math.random() * hookCategories.length)];
+            const matchingHooks = hooks.filter(h => h.category === hookStyle);
+            const hookExample = matchingHooks.length > 0 ? matchingHooks[Math.floor(Math.random() * matchingHooks.length)].text : '';
+
+            const contentStr = typeof currentContent === 'string' ? currentContent : JSON.stringify(currentContent);
+            const prompt = `This ${candidate.format} post underperformed (engagement: ${candidate.engagement}, average: ${Math.round(candidate.avg)}). Rewrite it with a completely different angle and hook style.
+
+${hookExample ? `USE THIS HOOK STYLE: "${hookExample}"` : `Use a ${hookStyle} hook style.`}
+
+ORIGINAL POST:
+${contentStr.slice(0, 1500)}
+
+Rewrite the ENTIRE post. New hook, new angle, same core message. Make it more engaging, specific, and scroll-stopping.`;
+
+            const newContent = await callClaude({ model: HAIKU, system: systemPrompt, prompt, maxTokens: 2000 });
+            if (newContent && newContent.length > 100) {
+              fresh[idx].formats[candidate.format].content = newContent.trim();
+              fresh[idx].formats[candidate.format].regenerated_at = now();
+              fresh[idx].formats[candidate.format].regen_reason = `Low performance (${candidate.engagement} vs avg ${Math.round(candidate.avg)})`;
+              fresh[idx].formats[candidate.format].status = 'review';
+              writeJSON('content.json', fresh);
+              _batchProgress[batchId].results.push({ id: candidate.content_id, format: candidate.format, hook_style: hookStyle });
+            }
+            _batchProgress[batchId].completed++;
+          } catch (err) {
+            _batchProgress[batchId].errors++;
+            _batchProgress[batchId].completed++;
+          }
+        }
+        _batchProgress[batchId].status = 'done';
+        setTimeout(() => { delete _batchProgress[batchId]; }, 30 * 60 * 1000);
+      });
+
+      return json(res, { ok: true, batch_id: batchId, candidates: toRegen.length });
+    }
+
+    // --- Distribution Package ---
+
+    // GET /api/content/:id/distribute — get copy-ready distribution package for all platforms
+    const distributeMatch = pathname.match(/^\/api\/content\/([a-f0-9]+)\/distribute$/);
+    if (distributeMatch && method === 'GET') {
+      const content = readJSON('content.json');
+      const item = content.find(c => c.id === distributeMatch[1]);
+      if (!item) return json(res, { error: 'Not found' }, 404);
+
+      const scheduleOptimize = readJSON('playbooks.json', {});
+      const platformTimes = {
+        linkedin: { best_times: ['8:00 AM', '10:00 AM', '12:00 PM'], best_days: ['Tue', 'Wed', 'Thu'] },
+        x: { best_times: ['8:00 AM', '11:00 AM', '5:00 PM'], best_days: ['Mon-Fri'] },
+        youtube: { best_times: ['2:00 PM', '5:00 PM'], best_days: ['Tue', 'Thu', 'Sat'] },
+        blog: { best_times: ['10:00 AM'], best_days: ['Tue', 'Wed'] },
+        newsletter: { best_times: ['6:00 AM', '10:00 AM'], best_days: ['Tue', 'Thu'] }
+      };
+
+      const packages = {};
+      const fmtToPlatform = { linkedin: 'linkedin', carousel: 'linkedin', x_single: 'x', x_thread: 'x', short_video: 'video', blog: 'blog', newsletter: 'newsletter', youtube_script: 'youtube' };
+
+      for (const [fmt, data] of Object.entries(item.formats || {})) {
+        if (!data?.content) continue;
+        const platform = fmtToPlatform[fmt] || fmt;
+        const contentStr = typeof data.content === 'string' ? data.content : (Array.isArray(data.content) ? data.content.join('\n\n---\n\n') : '');
+
+        // Generate hashtags based on content
+        const baseHashtags = ['#LegalMarketing', '#LawFirmGrowth', '#LegalTech'];
+        if (contentStr.toLowerCase().includes('seo')) baseHashtags.push('#SEO');
+        if (contentStr.toLowerCase().includes('google ads') || contentStr.toLowerCase().includes('ppc')) baseHashtags.push('#PPC', '#GoogleAds');
+        if (contentStr.toLowerCase().includes('intake')) baseHashtags.push('#ClientIntake');
+        if (contentStr.toLowerCase().includes('ai')) baseHashtags.push('#AI', '#LegalAI');
+
+        packages[fmt] = {
+          platform,
+          format: fmt,
+          content: contentStr,
+          status: data.status,
+          char_count: contentStr.length,
+          hashtags: platform === 'linkedin' ? baseHashtags.slice(0, 5).join(' ') : platform === 'x' ? baseHashtags.slice(0, 3).join(' ') : '',
+          first_comment: item.comment_ctas?.first_comment || null,
+          cta: item.comment_ctas?.ctas?.[0] || null,
+          timing: platformTimes[platform] || { best_times: ['10:00 AM'], best_days: ['Weekdays'] },
+          distribution_notes: platform === 'linkedin'
+            ? 'Post as text. Add hashtags as first comment. Engage with replies for 60 min.'
+            : platform === 'x'
+              ? fmt === 'x_thread' ? 'Post as thread. Repost hook tweet. Engage replies.' : 'Post tweet. Pin if high-value.'
+              : platform === 'blog' ? 'Publish to website. Share link on LinkedIn. Create X thread from key points.' : 'Follow platform-specific publishing workflow.'
+        };
+      }
+
+      return json(res, {
+        content_id: item.id,
+        title: item.trigger_title,
+        status: item.status,
+        packages,
+        total_platforms: Object.keys(packages).length,
+        has_ctas: !!item.comment_ctas,
+        generated_at: item.generated_at
+      });
+    }
+
     // --- Content Atomizer ---
 
     // POST /api/content/:id/atomize — break a pillar piece into 10-20 micro-content atoms

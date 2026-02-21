@@ -1453,6 +1453,11 @@ const state = {
   dmSequences: [],
   // Hooks Library
   hooks: [],
+  // Pillar Plan
+  pillarPlan: null,
+  generatingPillarPlan: false,
+  // Distribution Package
+  distributionPackage: null,
 };
 
 // --- API Calls ---
@@ -1478,7 +1483,7 @@ async function loadData() {
   state.loading = true;
   render();
   try {
-    const [content, triggers, stats, calendar, monthCal, settings, memory, performance, perfAnalytics, meetings, meetingStats, clients, allActions, chatMessages, healthData, inspirations, pestering, pesteringStages, insights, deals, published, series, predictions, playbooks, ctaLibrary, trending, funnel, publishTracker, leadMagnets, contentHealth, scheduleOptimize, templates, dmSequences, hooks] = await Promise.all([
+    const [content, triggers, stats, calendar, monthCal, settings, memory, performance, perfAnalytics, meetings, meetingStats, clients, allActions, chatMessages, healthData, inspirations, pestering, pesteringStages, insights, deals, published, series, predictions, playbooks, ctaLibrary, trending, funnel, publishTracker, leadMagnets, contentHealth, scheduleOptimize, templates, dmSequences, hooks, pillarPlan] = await Promise.all([
       api('/api/content'),
       api('/api/triggers'),
       api('/api/stats'),
@@ -1512,7 +1517,8 @@ async function loadData() {
       api('/api/schedule/optimize').catch(() => null),
       api('/api/templates').catch(() => []),
       api('/api/dm-sequences').catch(() => []),
-      api('/api/hooks').catch(() => [])
+      api('/api/hooks').catch(() => []),
+      api('/api/pillars').catch(() => null)
     ]);
     state.content = content;
     state.triggers = triggers;
@@ -1548,6 +1554,7 @@ async function loadData() {
     state.templates = templates;
     state.dmSequences = dmSequences;
     state.hooks = hooks;
+    state.pillarPlan = pillarPlan;
   } catch (err) {
     console.error('Failed to load data:', err);
     toast('Failed to load data', 'error');
@@ -2634,6 +2641,34 @@ function renderDashboardPage() {
                 }
               }
             }, state._generatingWeek ? 'Generating...' : 'Generate Week'),
+            h('button', {
+              className: 'btn btn-outline btn-sm',
+              style: { color: '#7c3aed', borderColor: '#7c3aed' },
+              disabled: state.generatingPillarPlan,
+              onclick: async () => {
+                state.generatingPillarPlan = true; render();
+                toast('Analyzing content for pillar strategy...', 'info');
+                try {
+                  const res = await api('/api/pillars/plan', { method: 'POST' });
+                  state.pillarPlan = res;
+                  state.generatingPillarPlan = false;
+                  toast(`Created ${res.pillars?.length || 0} content pillars!`, 'success');
+                  render();
+                } catch (err) { state.generatingPillarPlan = false; toast('Failed: ' + err.message, 'error'); render(); }
+              }
+            }, state.generatingPillarPlan ? 'Planning...' : 'Plan Pillars'),
+            h('button', {
+              className: 'btn btn-outline btn-sm',
+              style: { color: '#d97706', borderColor: '#d97706' },
+              onclick: async () => {
+                toast('Finding low-performing content to regenerate...', 'info');
+                try {
+                  const res = await api('/api/content/auto-regen', { method: 'POST' });
+                  toast(res.candidates > 0 ? `Regenerating ${res.candidates} items. Results in ~60s.` : res.message, res.candidates > 0 ? 'success' : 'info');
+                  if (res.candidates > 0) setTimeout(() => loadData(), 30000);
+                } catch (err) { toast('Failed: ' + err.message, 'error'); }
+              }
+            }, 'Auto-Regen'),
             h('button', { className: 'btn btn-ghost btn-sm', onclick: () => { state.page = 'content'; render(); } }, 'View Content')
           )
         ),
@@ -2661,6 +2696,34 @@ function renderDashboardPage() {
         )
       );
     })(),
+    // Content Pillar Plan
+    state.pillarPlan?.pillars?.length > 0 ? h('div', { style: { marginBottom: '20px' } },
+      h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
+        h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)' } }, `CONTENT PILLARS (${state.pillarPlan.pillars.length})`),
+        h('span', { style: { fontSize: '11px', color: 'var(--gray-400)' } }, `Updated ${state.pillarPlan.generated_at?.slice(0, 10) || ''}`)
+      ),
+      h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '10px' } },
+        ...state.pillarPlan.pillars.map(p =>
+          h('div', { style: { background: 'white', borderRadius: 'var(--radius-sm)', padding: '12px', border: `2px solid ${p.color || 'var(--gray-200)'}`, borderTop: `4px solid ${p.color || 'var(--blue)'}` } },
+            h('div', { style: { fontSize: '13px', fontWeight: '700', color: p.color || 'var(--navy)', marginBottom: '4px' } }, p.name),
+            h('div', { style: { fontSize: '11px', color: 'var(--gray-500)', marginBottom: '6px' } }, p.description?.slice(0, 80)),
+            h('div', { style: { display: 'flex', gap: '3px', flexWrap: 'wrap', marginBottom: '6px' } },
+              ...(p.sub_topics || []).slice(0, 4).map(t => h('span', { style: { fontSize: '9px', padding: '1px 5px', borderRadius: '3px', background: `${p.color || '#2563eb'}15`, color: p.color || '#2563eb' } }, t))
+            ),
+            h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: '10px' } },
+              h('span', { style: { color: p.current_coverage === 'high' ? '#059669' : p.current_coverage === 'medium' ? '#d97706' : '#dc2626' } }, p.current_coverage + ' coverage'),
+              h('span', { style: { color: 'var(--gray-400)' } }, p.target_frequency)
+            ),
+            p.gap_areas?.length > 0 ? h('div', { style: { fontSize: '10px', color: '#dc2626', marginTop: '4px' } }, 'Gaps: ' + p.gap_areas.slice(0, 2).join(', ')) : null
+          )
+        )
+      ),
+      state.pillarPlan.recommendations?.length > 0 ? h('div', { style: { marginTop: '8px', padding: '8px 12px', background: '#fffbeb', borderRadius: '8px', border: '1px solid #fde68a' } },
+        ...state.pillarPlan.recommendations.map(r =>
+          h('div', { style: { fontSize: '11px', color: '#92400e', marginBottom: '4px' } }, '- ' + r)
+        )
+      ) : null
+    ) : null,
     // Trending Topics
     (state.trending?.trending_topics?.length > 0) ? h('div', { style: { marginBottom: '20px' } },
       h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
@@ -3046,6 +3109,23 @@ function renderContentCard(content) {
             } catch (err) { toast('Simulate failed: ' + err.message, 'error'); }
           }
         }, 'Simulate'),
+        // Distribute button — show copy-ready distribution package
+        Object.values(content.formats || {}).some(f => f.content && f.status === 'approved')
+          ? h('button', {
+              className: 'btn btn-outline btn-sm',
+              style: { color: '#059669', borderColor: '#059669' },
+              onclick: async (e) => {
+                e.stopPropagation();
+                const key = `dist-pkg-${content.id}`;
+                if (state._distOpen === key) { state._distOpen = null; render(); return; }
+                try {
+                  state.distributionPackage = await api(`/api/content/${content.id}/distribute`);
+                  state._distOpen = key;
+                  render();
+                } catch (err) { toast('Distribute failed: ' + err.message, 'error'); }
+              }
+            }, 'Distribute')
+          : null,
         content.trigger_url
           ? h('a', {
               href: content.trigger_url,
@@ -3098,6 +3178,53 @@ function renderContentCard(content) {
           })
         ),
         h('button', { style: { marginTop: '6px', fontSize: '10px', color: '#7c3aed', background: 'none', border: 'none', cursor: 'pointer' }, onclick: () => { state._simOpen = null; render(); } }, 'Close simulation')
+      );
+    })() : null,
+    // Distribution package panel
+    state._distOpen === `dist-pkg-${content.id}` && state.distributionPackage ? (() => {
+      const dist = state.distributionPackage;
+      const pkgs = Object.entries(dist.packages || {});
+      return h('div', { style: { padding: '12px 20px', background: 'linear-gradient(135deg, #ecfdf5, #f0fdf4)', borderBottom: '1px solid #86efac' } },
+        h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' } },
+          h('div', { style: { fontSize: '12px', fontWeight: '700', color: '#059669', textTransform: 'uppercase' } }, `Distribution Package (${pkgs.length} formats)`),
+          h('button', { style: { fontSize: '10px', color: '#059669', background: 'none', border: 'none', cursor: 'pointer' }, onclick: () => { state._distOpen = null; render(); } }, 'Close')
+        ),
+        h('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px' } },
+          ...pkgs.map(([fmt, pkg]) => {
+            const fmtLabels = { linkedin: 'LinkedIn', x_single: 'Tweet', x_thread: 'Thread', blog: 'Blog', youtube_script: 'YouTube', newsletter: 'Newsletter', lead_magnet: 'Lead Magnet', short_video: 'Video', carousel: 'Carousel' };
+            return h('div', { style: { background: 'white', borderRadius: '8px', padding: '10px 12px', border: '1px solid #bbf7d0' } },
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' } },
+                h('div', { style: { display: 'flex', alignItems: 'center', gap: '6px' } },
+                  h('span', { className: 'badge badge-blue', style: { fontSize: '10px' } }, fmtLabels[fmt] || fmt),
+                  h('span', { style: { fontSize: '10px', color: 'var(--gray-400)' } }, `${pkg.char_count} chars`),
+                  h('span', { style: { fontSize: '10px', color: pkg.status === 'approved' ? '#059669' : '#d97706' } }, pkg.status)
+                ),
+                h('div', { style: { display: 'flex', gap: '4px' } },
+                  h('button', {
+                    className: 'btn btn-sm btn-primary',
+                    style: { fontSize: '10px', padding: '2px 8px' },
+                    onclick: () => copyToClipboard(pkg.content, fmtLabels[fmt] || fmt)
+                  }, 'Copy'),
+                  pkg.hashtags ? h('button', {
+                    className: 'btn btn-sm btn-outline',
+                    style: { fontSize: '10px', padding: '2px 8px' },
+                    onclick: () => copyToClipboard(pkg.hashtags, 'Hashtags')
+                  }, '#Tags') : null
+                )
+              ),
+              h('div', { style: { fontSize: '10px', color: 'var(--gray-500)' } },
+                h('span', { style: { fontWeight: '600' } }, 'Best times: '),
+                `${pkg.timing.best_days.join(', ')} at ${pkg.timing.best_times.join(', ')}`
+              ),
+              pkg.distribution_notes ? h('div', { style: { fontSize: '10px', color: '#059669', marginTop: '4px' } }, pkg.distribution_notes) : null,
+              pkg.first_comment ? h('div', { style: { fontSize: '10px', color: '#7c3aed', marginTop: '4px' } },
+                h('span', { style: { fontWeight: '600' } }, '1st comment: '),
+                pkg.first_comment.slice(0, 100) + '...',
+                h('button', { className: 'btn btn-sm', style: { fontSize: '9px', padding: '1px 6px', marginLeft: '4px' }, onclick: () => copyToClipboard(pkg.first_comment, '1st comment') }, 'Copy')
+              ) : null
+            );
+          })
+        )
       );
     })() : null,
     // Metadata row

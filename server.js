@@ -13360,6 +13360,285 @@ Return COMPACT JSON. Keep values SHORT (under 20 words each). Exactly 5 target a
       });
     }
 
+    // ========== BATCH 64: Content Velocity, Engagement Predictor, Pillar Rotator, Saved Replies, Audience Builder, Profile Optimizer, Weekly Report ==========
+
+    // POST /api/content-velocity — Measure and optimize content production velocity
+    if (method === 'POST' && pathname === '/api/content-velocity') {
+      const content = readJSON('content.json', []);
+      const published = readJSON('published.json', []);
+      const triggers = readJSON('trigger-queue.json', []);
+
+      const now30 = Date.now() - 30 * 86400000;
+      const now7 = Date.now() - 7 * 86400000;
+      const recentContent = content.filter(c => new Date(c.created_at || c.generated_at) > now30);
+      const last7 = content.filter(c => new Date(c.created_at || c.generated_at) > now7);
+      const pubLast30 = published.filter(p => new Date(p.published_at) > now30);
+
+      const ideaToApproved = recentContent.filter(c => c.status === 'approved' || c.status === 'published');
+      const avgDaysToApprove = ideaToApproved.length > 0 ? ideaToApproved.reduce((sum, c) => {
+        const created = new Date(c.created_at || c.generated_at).getTime();
+        const approved = new Date(c.approved_at || c.created_at).getTime();
+        return sum + (approved - created) / 86400000;
+      }, 0) / ideaToApproved.length : 0;
+
+      const velocity = {
+        production: {
+          last_7_days: last7.length,
+          last_30_days: recentContent.length,
+          published_30_days: pubLast30.length,
+          daily_rate: parseFloat((recentContent.length / 30).toFixed(1)),
+          weekly_rate: parseFloat((recentContent.length / 4.3).toFixed(1))
+        },
+        pipeline: {
+          pending_triggers: triggers.filter(t => t.status === 'pending').length,
+          content_in_review: content.filter(c => c.status === 'review').length,
+          approved_unpublished: content.filter(c => c.status === 'approved').length,
+          total_published: published.length
+        },
+        speed: {
+          avg_days_to_approve: parseFloat(avgDaysToApprove.toFixed(1)),
+          bottleneck: avgDaysToApprove > 7 ? 'approval' : content.filter(c => c.status === 'approved').length > 5 ? 'publishing' : triggers.filter(t => t.status === 'pending').length > 100 ? 'triage' : 'healthy'
+        },
+        targets: {
+          weekly_production: 5,
+          weekly_published: 3,
+          on_track: last7.length >= 5 && pubLast30.length >= 12
+        },
+        generated_at: now()
+      };
+      writeJSON('content-velocity.json', velocity);
+      return json(res, { ok: true, ...velocity });
+    }
+
+    // GET /api/content-velocity
+    if (method === 'GET' && pathname === '/api/content-velocity') {
+      return json(res, readJSON('content-velocity.json', null));
+    }
+
+    // POST /api/engagement-predictor — Predict engagement before publishing using AI
+    if (method === 'POST' && pathname.match(/^\/api\/content\/([^/]+)\/engagement-predictor$/)) {
+      const contentId = pathname.match(/^\/api\/content\/([^/]+)\/engagement-predictor$/)[1];
+      const content = readJSON('content.json', []);
+      const item = content.find(c => c.id === contentId);
+      if (!item) return json(res, { error: 'Content not found' }, 404);
+
+      const body = await parseBody(req);
+      const formatKey = body.format || 'linkedin_post';
+      const text = typeof item.formats?.[formatKey] === 'string' ? item.formats[formatKey] : item.formats?.[formatKey]?.content || '';
+      if (!text) return json(res, { error: `No content in format ${formatKey}` }, 400);
+
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+      const result = await callClaude({
+        model: HAIKU,
+        system: 'You are a social media engagement prediction expert for legal marketing content on LinkedIn. Predict performance metrics based on content quality, hook strength, topic relevance, and format. Return JSON only.',
+        prompt: `Predict engagement for this ${formatKey} post targeting law firm owners.
+
+Content: "${text.slice(0, 1500)}"
+
+Return COMPACT JSON:
+{
+  "predicted_engagement": { "likes": "range", "comments": "range", "shares": "range", "saves": "range" },
+  "reach_estimate": "range",
+  "virality_score": 0-100,
+  "strengths": ["s1", "s2"],
+  "risks": ["r1", "r2"],
+  "best_posting_time": "day and time",
+  "improvement_for_2x": "one specific change to double engagement"
+}`,
+        maxTokens: 2000
+      });
+      const parsed = parseJsonResponse(result);
+      return json(res, { ok: true, content_id: contentId, format: formatKey, ...parsed });
+    }
+
+    // POST /api/pillar-rotator — Smart pillar rotation planner (prevents repeating same topics)
+    if (method === 'POST' && pathname === '/api/pillar-rotator') {
+      const contentBank = readJSON('content-bank.json', { log: [] });
+      const published = readJSON('published.json', []);
+      const matrix = readJSON('content-matrix-full.json', null);
+
+      const recentPosts = [...(contentBank.log || []), ...published].sort((a, b) => new Date(b.posted_at || b.published_at) - new Date(a.posted_at || a.published_at)).slice(0, 20);
+
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+      const result = await callClaude({
+        model: HAIKU,
+        system: 'You are a content calendar rotation expert. Plan the next 5 posts to cover all pillars evenly, avoid topic repetition, and maintain audience freshness. Return JSON only.',
+        prompt: `Plan next 5 posts for a legal marketing agency. Avoid repeating recent topics.
+
+Recent posts: ${JSON.stringify(recentPosts.map(p => ({ format: p.format, date: p.posted_at || p.published_at })).slice(0, 10))}
+Content matrix pillars: ${matrix ? JSON.stringify(matrix.pillars?.map(p => p.name)) : '["Client Acquisition", "Marketing Metrics", "Content Strategy", "Sales Process", "Competitive Advantage"]'}
+
+Return JSON:
+{
+  "next_5_posts": [
+    { "day": "Mon", "pillar": "name", "concept": "idea", "format": "teaching|contrarian|case_study|listicle", "hook": "opening line" }
+  ],
+  "pillar_balance": { "pillar_name": "post_count_last_30_days" },
+  "most_neglected": "pillar that needs more content"
+}`,
+        maxTokens: 2000
+      });
+      const parsed = parseJsonResponse(result);
+      const plan = { ...parsed, generated_at: now() };
+      writeJSON('pillar-rotator.json', plan);
+      return json(res, { ok: true, ...plan });
+    }
+
+    // GET /api/pillar-rotator
+    if (method === 'GET' && pathname === '/api/pillar-rotator') {
+      return json(res, readJSON('pillar-rotator.json', null));
+    }
+
+    // POST /api/saved-replies — Generate saved reply templates for common DM/comment scenarios
+    if (method === 'POST' && pathname === '/api/saved-replies') {
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+      const result = await callClaude({
+        model: HAIKU,
+        system: 'You are a DM and comment reply specialist for a legal marketing agency. Create saved reply templates that feel personal, not automated. Each reply should be customizable with [brackets] for personalization. Return JSON only.',
+        prompt: `Generate saved reply templates for these 8 scenarios:
+1. Someone comments agreement on your post
+2. Someone asks a question about your service
+3. Someone shares their own struggle
+4. Cold DM after someone views your profile
+5. Follow-up after lead magnet download
+6. Objection handling: "too expensive"
+7. Objection handling: "not the right time"
+8. Warm intro request to their connection
+
+Return COMPACT JSON. Keep each reply under 60 words:
+{
+  "replies": [
+    { "scenario": "short name", "template": "reply text with [Name] [Detail] placeholders", "tone": "warm|professional|urgent" }
+  ]
+}`,
+        maxTokens: 2500
+      });
+      const parsed = parseJsonResponse(result);
+      const replies = { ...(parsed || {}), generated_at: now() };
+      writeJSON('saved-replies.json', replies);
+      return json(res, { ok: true, ...replies });
+    }
+
+    // GET /api/saved-replies
+    if (method === 'GET' && pathname === '/api/saved-replies') {
+      return json(res, readJSON('saved-replies.json', null));
+    }
+
+    // POST /api/audience-builder — Build target audience segments with content recommendations per segment
+    if (method === 'POST' && pathname === '/api/audience-builder') {
+      const contentDna = readJSON('content-dna.json', null);
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+      const result = await callClaude({
+        model: HAIKU,
+        system: 'You are an audience segmentation expert for B2B legal marketing. Build distinct audience segments with content strategy for each. Return JSON only.',
+        prompt: `Build 4 audience segments for a legal marketing agency that helps law firms get more signed cases.
+
+${contentDna ? `Brand DNA: ${JSON.stringify({ formula: contentDna.formula }).slice(0, 200)}` : ''}
+
+Return JSON:
+{
+  "segments": [
+    {
+      "name": "segment name",
+      "description": "who they are",
+      "pain_points": ["p1", "p2"],
+      "content_types": ["what content resonates"],
+      "hook_style": "what hooks work for this segment",
+      "cta_preference": "what CTA converts them"
+    }
+  ],
+  "primary_segment": "name of highest-value segment"
+}`,
+        maxTokens: 2500
+      });
+      const parsed = parseJsonResponse(result);
+      const segments = { ...(parsed || {}), generated_at: now() };
+      writeJSON('audience-segments-ai.json', segments);
+      return json(res, { ok: true, ...segments });
+    }
+
+    // GET /api/audience-builder
+    if (method === 'GET' && pathname === '/api/audience-builder') {
+      return json(res, readJSON('audience-segments-ai.json', null));
+    }
+
+    // POST /api/profile-optimizer — Optimize LinkedIn/social profile for conversions
+    if (method === 'POST' && pathname === '/api/profile-optimizer') {
+      const body = await parseBody(req);
+      const platform = body.platform || 'linkedin';
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+      const result = await callClaude({
+        model: HAIKU,
+        system: `You are a ${platform} profile optimization expert. Create a high-converting profile for a legal marketing agency owner. Return JSON only.`,
+        prompt: `Optimize a ${platform} profile for the founder of Mortar Metrics (legal marketing agency helping law firms get more signed cases).
+
+Return COMPACT JSON:
+{
+  "headline": "optimized headline (under 120 chars)",
+  "tagline": "one-line value prop",
+  "bio": "optimized bio (under 200 words)",
+  "featured_content": ["what to pin/feature"],
+  "banner_text": "what the cover image should say",
+  "cta_link": "what the website/link should point to",
+  "keywords": ["SEO keywords to include"],
+  "mistakes_to_fix": ["common profile mistakes"]
+}`,
+        maxTokens: 2000
+      });
+      const parsed = parseJsonResponse(result);
+      return json(res, { ok: true, platform, ...parsed });
+    }
+
+    // POST /api/weekly-content-report — Generate a weekly performance and action report
+    if (method === 'POST' && pathname === '/api/weekly-content-report') {
+      const content = readJSON('content.json', []);
+      const published = readJSON('published.json', []);
+      const triggers = readJSON('trigger-queue.json', []);
+      const contentBank = readJSON('content-bank.json', { log: [], stats: {} });
+      const velocity = readJSON('content-velocity.json', null);
+
+      const now7 = Date.now() - 7 * 86400000;
+      const thisWeek = {
+        generated: content.filter(c => new Date(c.created_at || c.generated_at) > now7).length,
+        approved: content.filter(c => c.status === 'approved' && new Date(c.approved_at || c.created_at) > now7).length,
+        published: published.filter(p => new Date(p.published_at) > now7).length,
+        triggers_added: triggers.filter(t => new Date(t.added_at || t.scraped_at) > now7).length,
+        value_posts: contentBank.stats?.value || 0,
+        cta_posts: contentBank.stats?.cta || 0
+      };
+
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+      const result = await callClaude({
+        model: HAIKU,
+        system: 'You are a content marketing performance analyst. Write a concise weekly report with actionable next steps. Return JSON only.',
+        prompt: `Write a weekly content report based on these metrics:
+
+This week: ${JSON.stringify(thisWeek)}
+Pipeline velocity: ${velocity ? JSON.stringify(velocity.speed) : 'not measured'}
+Content bank ratio: ${contentBank.stats?.value || 0} value : ${contentBank.stats?.cta || 0} CTA (target 4:1)
+
+Return COMPACT JSON:
+{
+  "headline": "one line summary of the week",
+  "grade": "A/B/C/D/F",
+  "wins": ["w1", "w2"],
+  "misses": ["m1", "m2"],
+  "next_week_focus": ["action 1", "action 2", "action 3"],
+  "bottleneck": "biggest thing slowing you down"
+}`,
+        maxTokens: 1500
+      });
+      const parsed = parseJsonResponse(result);
+      const report = { ...thisWeek, ...(parsed || {}), generated_at: now() };
+      writeJSON('weekly-content-report.json', report);
+      return json(res, { ok: true, ...report });
+    }
+
+    // GET /api/weekly-content-report
+    if (method === 'GET' && pathname === '/api/weekly-content-report') {
+      return json(res, readJSON('weekly-content-report.json', null));
+    }
+
     // --- Static file serving ---
 
     // Serve dashboard

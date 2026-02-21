@@ -1565,6 +1565,12 @@ const state = {
   contentMatrix: null,
   draftingStrategy: null,
   zeroClickBank: null,
+  // Batch 64: Content Velocity, Engagement Predictor, Pillar Rotator, Saved Replies, Audience Builder, Profile Optimizer, Weekly Report
+  contentVelocity: null,
+  pillarRotator: null,
+  savedReplies: null,
+  audienceBuilder: null,
+  weeklyReport: null,
 };
 
 // --- API Calls ---
@@ -1590,7 +1596,7 @@ async function loadData() {
   state.loading = true;
   render();
   try {
-    const [content, triggers, stats, calendar, monthCal, settings, memory, performance, perfAnalytics, meetings, meetingStats, clients, allActions, chatMessages, healthData, inspirations, pestering, pesteringStages, insights, deals, published, series, predictions, playbooks, ctaLibrary, trending, funnel, publishTracker, leadMagnets, contentHealth, scheduleOptimize, templates, dmSequences, hooks, pillarPlan, contentLeads, autopilot, scheduleQueue, engagementDashboard, contentBriefs, workflowPipeline, personas, calendarWeek, benchmarkReport, contentIdeas, socialProof, roiReport, audienceGrowth, contentThemes, distributionPlans, dmPipelines, competitorsTracked, dripCampaigns, autoResponses, expiringContent, amplifications, leadFunnels, calendarInsights, weeklyDigest, splitTests, workflowRules, youtubePipelines, carousels, contentMatrix, ctaStrategy, seriesTemplates, contentBank, engagementPlaybook, atomizations, platformRules, emailSequences, weeklyContentPlan, repurposeChains, lmFunnels, perfReport, contentPillars, compAnalyses, nurtureCampaigns, authorityPlan, flywheelData, velocityData, audienceSegments, contentDna, topicClusters, voiceProfiles, dmScriptsData, replyStrategyData, systemHealthData, contentRecyclerData, commentStrategyData, newslettersData, distributionEngineData, socialProofEngineData, advancedAnalyticsData, growthPlaybookData, genLeadMagnetsData, funnelAnalysisData, autoRepurposeData, weeklyActionPlanData, trendsAnalysisData, authorityScoreData, contentIntelData, conversionOptData, contentMatrixData, draftingStrategyData, zeroClickBankData] = await Promise.all([
+    const [content, triggers, stats, calendar, monthCal, settings, memory, performance, perfAnalytics, meetings, meetingStats, clients, allActions, chatMessages, healthData, inspirations, pestering, pesteringStages, insights, deals, published, series, predictions, playbooks, ctaLibrary, trending, funnel, publishTracker, leadMagnets, contentHealth, scheduleOptimize, templates, dmSequences, hooks, pillarPlan, contentLeads, autopilot, scheduleQueue, engagementDashboard, contentBriefs, workflowPipeline, personas, calendarWeek, benchmarkReport, contentIdeas, socialProof, roiReport, audienceGrowth, contentThemes, distributionPlans, dmPipelines, competitorsTracked, dripCampaigns, autoResponses, expiringContent, amplifications, leadFunnels, calendarInsights, weeklyDigest, splitTests, workflowRules, youtubePipelines, carousels, contentMatrix, ctaStrategy, seriesTemplates, contentBank, engagementPlaybook, atomizations, platformRules, emailSequences, weeklyContentPlan, repurposeChains, lmFunnels, perfReport, contentPillars, compAnalyses, nurtureCampaigns, authorityPlan, flywheelData, velocityData, audienceSegments, contentDna, topicClusters, voiceProfiles, dmScriptsData, replyStrategyData, systemHealthData, contentRecyclerData, commentStrategyData, newslettersData, distributionEngineData, socialProofEngineData, advancedAnalyticsData, growthPlaybookData, genLeadMagnetsData, funnelAnalysisData, autoRepurposeData, weeklyActionPlanData, trendsAnalysisData, authorityScoreData, contentIntelData, conversionOptData, contentMatrixData, draftingStrategyData, zeroClickBankData, contentVelocityData, pillarRotatorData, savedRepliesData, audienceBuilderData, weeklyReportData] = await Promise.all([
       api('/api/content'),
       api('/api/triggers'),
       api('/api/stats'),
@@ -1696,7 +1702,12 @@ async function loadData() {
       api('/api/conversion-optimizer').catch(() => null),
       api('/api/content-matrix-full').catch(() => null),
       api('/api/drafting-strategy').catch(() => null),
-      api('/api/zero-click-bank').catch(() => null)
+      api('/api/zero-click-bank').catch(() => null),
+      api('/api/content-velocity').catch(() => null),
+      api('/api/pillar-rotator').catch(() => null),
+      api('/api/saved-replies').catch(() => null),
+      api('/api/audience-builder').catch(() => null),
+      api('/api/weekly-content-report').catch(() => null)
     ]);
     state.content = content;
     state.triggers = triggers;
@@ -1804,6 +1815,11 @@ async function loadData() {
     state.contentMatrix = contentMatrixData;
     state.draftingStrategy = draftingStrategyData;
     state.zeroClickBank = zeroClickBankData;
+    state.contentVelocity = contentVelocityData;
+    state.pillarRotator = pillarRotatorData;
+    state.savedReplies = savedRepliesData;
+    state.audienceBuilder = audienceBuilderData;
+    state.weeklyReport = weeklyReportData;
   } catch (err) {
     console.error('Failed to load data:', err);
     toast('Failed to load data', 'error');
@@ -3440,6 +3456,42 @@ function renderDashboardPage() {
                 toast(`Golden Hour: ${res.minute_by_minute?.length || 6} time blocks planned!`, 'success');
               } catch (err) { toast('Golden hour failed: ' + err.message, 'error'); }
             }}, 'Golden'),
+            h('button', { className: 'btn btn-outline btn-sm', style: { color: '#dc2626', borderColor: '#dc2626' }, onclick: async () => {
+              toast('Measuring velocity...', 'info');
+              try {
+                const res = await api('/api/content-velocity', { method: 'POST' });
+                state.contentVelocity = res;
+                toast(`Velocity: ${res.production?.daily_rate}/day — Bottleneck: ${res.speed?.bottleneck}`, 'success');
+                render();
+              } catch (err) { toast('Velocity failed: ' + err.message, 'error'); }
+            }}, 'Velocity'),
+            h('button', { className: 'btn btn-outline btn-sm', style: { color: '#7c3aed', borderColor: '#7c3aed' }, onclick: async () => {
+              toast('Planning next 5 posts...', 'info');
+              try {
+                const res = await api('/api/pillar-rotator', { method: 'POST' });
+                state.pillarRotator = res;
+                toast(`Next 5: ${res.next_5_posts?.map(p => p.pillar).join(', ')}`, 'success');
+                render();
+              } catch (err) { toast('Rotator failed: ' + err.message, 'error'); }
+            }}, 'Rotate'),
+            h('button', { className: 'btn btn-outline btn-sm', style: { color: '#0891b2', borderColor: '#0891b2' }, onclick: async () => {
+              toast('Generating weekly report...', 'info');
+              try {
+                const res = await api('/api/weekly-content-report', { method: 'POST' });
+                state.weeklyReport = res;
+                toast(`Grade: ${res.grade} — ${res.headline?.slice(0, 60)}`, 'success');
+                render();
+              } catch (err) { toast('Report failed: ' + err.message, 'error'); }
+            }}, 'Report'),
+            h('button', { className: 'btn btn-outline btn-sm', style: { color: '#ca8a04', borderColor: '#ca8a04' }, onclick: async () => {
+              toast('Building saved replies...', 'info');
+              try {
+                const res = await api('/api/saved-replies', { method: 'POST' });
+                state.savedReplies = res;
+                toast(`${res.replies?.length || 0} reply templates created!`, 'success');
+                render();
+              } catch (err) { toast('Replies failed: ' + err.message, 'error'); }
+            }}, 'Replies'),
             h('button', { className: 'btn btn-ghost btn-sm', onclick: () => { state.page = 'content'; render(); } }, 'View Content')
           )
         ),
@@ -4400,6 +4452,73 @@ function renderDashboardPage() {
             h('div', { style: { color: 'var(--gray-500)', marginTop: '1px' } }, t.approach || t.comment_approach || '')
           )
         )
+      )
+    ) : null,
+
+    // Content Velocity (Batch 64)
+    state.contentVelocity ? h('div', { style: { marginBottom: '20px' } },
+      h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
+        h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)' } }, 'VELOCITY'),
+        h('div', { style: { fontSize: '12px', fontWeight: '700', padding: '2px 8px', borderRadius: '8px', background: state.contentVelocity.speed?.bottleneck === 'healthy' ? '#dcfce7' : '#fef3c7', color: state.contentVelocity.speed?.bottleneck === 'healthy' ? '#059669' : '#d97706' } }, state.contentVelocity.speed?.bottleneck || 'unknown')
+      ),
+      h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '4px', textAlign: 'center' } },
+        h('div', { style: { padding: '6px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)' } },
+          h('div', { style: { fontSize: '16px', fontWeight: '700', color: 'var(--blue)' } }, String(state.contentVelocity.production?.daily_rate || 0)),
+          h('div', { style: { fontSize: '9px', color: 'var(--gray-500)' } }, '/day')
+        ),
+        h('div', { style: { padding: '6px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)' } },
+          h('div', { style: { fontSize: '16px', fontWeight: '700', color: 'var(--green)' } }, String(state.contentVelocity.production?.published_30_days || 0)),
+          h('div', { style: { fontSize: '9px', color: 'var(--gray-500)' } }, 'published')
+        ),
+        h('div', { style: { padding: '6px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)' } },
+          h('div', { style: { fontSize: '16px', fontWeight: '700', color: 'var(--amber)' } }, String(state.contentVelocity.pipeline?.approved_unpublished || 0)),
+          h('div', { style: { fontSize: '9px', color: 'var(--gray-500)' } }, 'queued')
+        )
+      )
+    ) : null,
+
+    // Pillar Rotator (Batch 64)
+    state.pillarRotator?.next_5_posts ? h('div', { style: { marginBottom: '20px' } },
+      h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)', marginBottom: '8px' } }, 'NEXT 5 POSTS'),
+      h('div', { style: { display: 'grid', gap: '2px' } },
+        ...(state.pillarRotator.next_5_posts || []).map(p =>
+          h('div', { style: { padding: '4px 10px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
+            h('span', { style: { fontWeight: '600', color: 'var(--navy)' } }, p.day || ''),
+            h('span', { style: { color: 'var(--gray-600)', flex: 1, margin: '0 8px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, p.concept || p.hook || ''),
+            h('span', { style: { fontSize: '9px', padding: '1px 5px', borderRadius: '4px', background: '#ede9fe', color: '#7c3aed' } }, p.format || '')
+          )
+        )
+      )
+    ) : null,
+
+    // Weekly Report (Batch 64)
+    state.weeklyReport ? h('div', { style: { marginBottom: '20px' } },
+      h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
+        h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)' } }, 'WEEKLY REPORT'),
+        h('div', { style: { fontSize: '14px', fontWeight: '700', padding: '2px 10px', borderRadius: '8px', background: state.weeklyReport.grade === 'A' ? '#dcfce7' : state.weeklyReport.grade === 'B' ? '#dbeafe' : state.weeklyReport.grade === 'C' ? '#fef3c7' : '#fee2e2', color: state.weeklyReport.grade === 'A' ? '#059669' : state.weeklyReport.grade === 'B' ? '#2563eb' : state.weeklyReport.grade === 'C' ? '#d97706' : '#dc2626' } }, state.weeklyReport.grade || '?')
+      ),
+      h('div', { style: { fontSize: '10px', color: 'var(--gray-600)', marginBottom: '4px' } }, state.weeklyReport.headline || ''),
+      state.weeklyReport.bottleneck ? h('div', { style: { fontSize: '10px', color: '#dc2626', fontWeight: '600' } }, `Bottleneck: ${state.weeklyReport.bottleneck}`) : null
+    ) : null,
+
+    // Audience Segments (Batch 64)
+    state.audienceBuilder?.segments ? h('div', { style: { marginBottom: '20px' } },
+      h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)', marginBottom: '8px' } }, 'AUDIENCE'),
+      h('div', { style: { display: 'grid', gap: '2px' } },
+        ...(state.audienceBuilder.segments || []).slice(0, 4).map(s =>
+          h('div', { style: { padding: '4px 10px', background: s.name === state.audienceBuilder.primary_segment ? '#eff6ff' : 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px' } },
+            h('div', { style: { fontWeight: '600', color: 'var(--navy)' } }, s.name + (s.name === state.audienceBuilder.primary_segment ? ' *' : '')),
+            h('div', { style: { color: 'var(--gray-500)', marginTop: '1px' } }, s.hook_style || s.description || '')
+          )
+        )
+      )
+    ) : null,
+
+    // Saved Replies (Batch 64)
+    state.savedReplies?.replies ? h('div', { style: { marginBottom: '20px' } },
+      h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
+        h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)' } }, 'SAVED REPLIES'),
+        h('div', { style: { fontSize: '12px', fontWeight: '700', padding: '2px 8px', borderRadius: '8px', background: '#dbeafe', color: '#2563eb' } }, `${state.savedReplies.replies?.length || 0} templates`)
       )
     ) : null,
 
@@ -6384,6 +6503,20 @@ function renderFormatContent(content, formatKey, fmt) {
               } catch (err) { toast('Hook scorer failed: ' + err.message, 'error'); }
             }
           }, 'Hook')
+        : null,
+      // Engagement Predictor button (for any format with 100+ chars)
+      typeof text === 'string' && text.length >= 100
+        ? h('button', {
+            className: 'btn btn-outline btn-sm',
+            style: { color: '#059669', borderColor: '#059669' },
+            onclick: async () => {
+              toast('Predicting engagement...', 'info');
+              try {
+                const res = await api(`/api/content/${content.id}/engagement-predictor`, { method: 'POST', body: { format: formatKey } });
+                toast(`Virality: ${res.virality_score}/100 — Best time: ${res.best_posting_time || 'any'}`, res.virality_score >= 60 ? 'success' : 'error');
+              } catch (err) { toast('Prediction failed: ' + err.message, 'error'); }
+            }
+          }, 'Predict')
         : null,
       // AI Improve button
       typeof text === 'string' && fmt.status === 'review' ? h('button', {

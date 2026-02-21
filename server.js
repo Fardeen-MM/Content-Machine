@@ -9141,6 +9141,255 @@ Rules:
       }
     }
 
+    // --- Batch 50: Recurring Series + Content Banking + Engagement Triggers + Video Repurposer + Comment-DM ---
+
+    // POST /api/series-templates/setup — set up branded recurring series
+    if (pathname === '/api/series-templates/setup' && method === 'POST') {
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      const { callClaude, parseJsonResponse, SONNET } = require('./lib/claude');
+      const { BRAND_SYSTEM_PROMPT } = require('./generator/content-writer');
+      const body = await parseBody(req);
+
+      const prompt = `Create a branded weekly content series system for a legal marketing agency.
+
+${body.custom_pillars ? `Use these pillars: ${JSON.stringify(body.custom_pillars)}` : ''}
+
+Design 5 recurring series (one per weekday) following these rules:
+- Each series has a catchy name, a specific day, a specific format, and a consistent structure
+- Each series ties to a lead magnet
+- The series names should be memorable and brandable (like "Metric Monday" or "Teardown Tuesday")
+
+Return JSON (no markdown fences):
+{
+  "series": [
+    {
+      "name": "Series Name",
+      "day": "monday",
+      "format": "carousel|text|case_study|hot_take|story",
+      "description": "what this series covers",
+      "template_prompt": "specific prompt prefix for AI generation",
+      "hashtag": "#SeriesHashtag",
+      "lead_magnet_type": "scorecard|checklist|audit|calculator",
+      "lead_magnet_cta": "what to offer",
+      "example_topics": ["topic1", "topic2", "topic3"],
+      "cta_tier": "conversation|keyword_comment|link_in_comments|soft_dm|resource_offer"
+    }
+  ],
+  "cadence_notes": "posting schedule advice",
+  "engagement_strategy": "daily engagement routine (30-45 min)"
+}`;
+
+      try {
+        const text = await callClaude({ model: SONNET, system: BRAND_SYSTEM_PROMPT, prompt, maxTokens: 4000 });
+        const parsed = parseJsonResponse(text);
+        if (!parsed) return json(res, { error: 'Failed to generate series templates', raw_preview: (text || '').slice(0, 300) }, 500);
+
+        writeJSON('series-templates.json', { ...parsed, created_at: now() });
+        return json(res, { ok: true, templates: parsed });
+      } catch (err) {
+        return json(res, { error: err.message }, 500);
+      }
+    }
+
+    // GET /api/series-templates — get series templates
+    if (pathname === '/api/series-templates' && method === 'GET') {
+      return json(res, readJSON('series-templates.json', null));
+    }
+
+    // POST /api/content-bank/log — log a post as value or CTA
+    if (pathname === '/api/content-bank/log' && method === 'POST') {
+      const body = await parseBody(req);
+      if (!body.content_id || !body.type) return json(res, { error: 'content_id and type (value|cta) required' }, 400);
+      const bank = readJSON('content-bank.json', { log: [], stats: { value: 0, cta: 0 } });
+      bank.log.push({ content_id: body.content_id, type: body.type, platform: body.platform || 'linkedin', posted_at: now() });
+      if (body.type === 'value') bank.stats.value++;
+      else if (body.type === 'cta') bank.stats.cta++;
+      writeJSON('content-bank.json', bank);
+      return json(res, { ok: true, stats: bank.stats });
+    }
+
+    // GET /api/content-bank — get content banking status
+    if (pathname === '/api/content-bank' && method === 'GET') {
+      const bank = readJSON('content-bank.json', { log: [], stats: { value: 0, cta: 0 } });
+      const ratio = bank.stats.cta > 0 ? (bank.stats.value / bank.stats.cta).toFixed(1) : 'Infinity';
+      const last10 = bank.log.slice(-10);
+      const recentCtas = last10.filter(l => l.type === 'cta').length;
+      const recentValue = last10.filter(l => l.type === 'value').length;
+
+      let canAsk = true;
+      let nextAction = 'value';
+      // Amanda Natividad: 4-5 value posts per CTA
+      if (recentCtas > 0 && recentValue / recentCtas < 4) {
+        canAsk = false;
+        nextAction = 'value';
+      } else if (recentValue >= 4 && recentCtas === 0) {
+        nextAction = 'cta';
+      }
+
+      return json(res, {
+        ...bank,
+        ratio: `${ratio}:1`,
+        recent_10: last10,
+        can_ask: canAsk,
+        next_action: nextAction,
+        recommendation: nextAction === 'cta'
+          ? 'You have earned the right to include a CTA. Use a keyword-comment or resource offer tier.'
+          : `Post ${4 - recentValue + recentCtas * 4} more value posts before your next CTA.`
+      });
+    }
+
+    // POST /api/engagement/trigger-check — check if any content crossed engagement thresholds
+    if (pathname === '/api/engagement/trigger-check' && method === 'POST') {
+      const body = await parseBody(req);
+      const threshold = body.threshold || 20;
+      const content = readJSON('content.json', []);
+      const published = readJSON('published.json', []);
+      const triggered = [];
+
+      for (const item of content) {
+        const engData = item.engagement || {};
+        const totalEng = (engData.likes || 0) + (engData.comments || 0) * 8 + (engData.shares || 0) * 3;
+        if (totalEng >= threshold && !item._engagement_triggered) {
+          triggered.push({
+            content_id: item.id,
+            title: item.trigger_title,
+            total_engagement: totalEng,
+            breakdown: engData,
+            recommendation: totalEng >= 100
+              ? 'Viral threshold — auto-generate all derivatives, amplify, create carousel'
+              : totalEng >= 50
+              ? 'Strong performer — generate carousel + YouTube pipeline'
+              : 'Trending — generate Shorts clips and distribution plan'
+          });
+          item._engagement_triggered = true;
+        }
+      }
+
+      if (triggered.length > 0) writeJSON('content.json', content);
+      return json(res, { triggered, count: triggered.length, threshold });
+    }
+
+    // POST /api/content/:id/video-to-social — repurpose video script/transcript into social posts
+    const v2sMatch = pathname.match(/^\/api\/content\/([a-f0-9]+)\/video-to-social$/);
+    if (v2sMatch && method === 'POST') {
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      const id = v2sMatch[1];
+      const allContent = readJSON('content.json', []);
+      const item = allContent.find(c => c.id === id);
+      if (!item) return json(res, { error: 'Content not found' }, 404);
+
+      const script = item.formats?.youtube_script?.content || '';
+      if (!script) return json(res, { error: 'No YouTube script found for this content' }, 400);
+
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+      const { BRAND_SYSTEM_PROMPT } = require('./generator/content-writer');
+
+      const prompt = `Repurpose this YouTube video script into social media posts. Extract the BEST moments.
+
+Script: ${script.slice(0, 5000)}
+
+Return JSON (no markdown fences):
+{
+  "linkedin_post": "full LinkedIn post (800-1300 chars) — pick the most compelling story/stat from the video",
+  "x_thread": ["tweet 1 (280 chars)", "tweet 2", "tweet 3", "tweet 4", "tweet 5"],
+  "x_single": "one punchy tweet (280 chars) — the single best insight",
+  "carousel_hook": "carousel cover slide text (if this were a carousel, what's the hook?)",
+  "hot_take": "contrarian take derived from the video (under 200 chars)",
+  "pull_quotes": ["quotable line 1", "quotable line 2", "quotable line 3"],
+  "key_stats": ["stat 1", "stat 2", "stat 3"]
+}`;
+
+      try {
+        const text = await callClaude({ model: HAIKU, system: BRAND_SYSTEM_PROMPT, prompt, maxTokens: 3000 });
+        const parsed = parseJsonResponse(text);
+        if (!parsed) return json(res, { error: 'Failed to repurpose', raw_preview: (text || '').slice(0, 200) }, 500);
+        return json(res, { ok: true, content_id: id, repurposed: parsed });
+      } catch (err) {
+        return json(res, { error: err.message }, 500);
+      }
+    }
+
+    // POST /api/content/:id/comment-dm-cta — generate keyword-comment CTA variants
+    const cdmMatch = pathname.match(/^\/api\/content\/([a-f0-9]+)\/comment-dm-cta$/);
+    if (cdmMatch && method === 'POST') {
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      const id = cdmMatch[1];
+      const allContent = readJSON('content.json', []);
+      const item = allContent.find(c => c.id === id);
+      if (!item) return json(res, { error: 'Content not found' }, 404);
+
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+      const { BRAND_SYSTEM_PROMPT } = require('./generator/content-writer');
+      const topic = item.trigger_title || 'Untitled';
+
+      const prompt = `Create keyword-comment CTA variants for this content. The "comment KEYWORD" tactic is the highest-converting LinkedIn CTA pattern — it creates public engagement AND opens a DM channel.
+
+Topic: ${topic}
+Content: ${(item.formats?.linkedin?.content || '').slice(0, 1000)}
+
+Return JSON (no markdown fences):
+{
+  "cta_variants": [
+    {
+      "keyword": "AUDIT",
+      "cta_line": "Comment AUDIT and I'll send you a free analysis of your [specific thing].",
+      "dm_first_message": "Hey! Here's the [resource] I mentioned. Quick question — [qualifying question]?",
+      "dm_followup": "Did you get a chance to look at [resource]? Happy to jump on a quick call if you want to walk through it.",
+      "lead_magnet_tie_in": "what free resource to deliver"
+    }
+  ],
+  "pinned_comment": "text for pinned comment version",
+  "description_cta": "text for LinkedIn description version",
+  "best_keyword": "the recommended keyword to use"
+}`;
+
+      try {
+        const text = await callClaude({ model: HAIKU, system: BRAND_SYSTEM_PROMPT, prompt, maxTokens: 2000 });
+        const parsed = parseJsonResponse(text);
+        if (!parsed) return json(res, { error: 'Failed to generate CTAs', raw_preview: (text || '').slice(0, 200) }, 500);
+        return json(res, { ok: true, content_id: id, ...parsed });
+      } catch (err) {
+        return json(res, { error: err.message }, 500);
+      }
+    }
+
+    // POST /api/content/:id/zero-click — rewrite content as zero-click (all value in feed, no link)
+    const zcMatch = pathname.match(/^\/api\/content\/([a-f0-9]+)\/zero-click$/);
+    if (zcMatch && method === 'POST') {
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      const id = zcMatch[1];
+      const allContent = readJSON('content.json', []);
+      const item = allContent.find(c => c.id === id);
+      if (!item) return json(res, { error: 'Content not found' }, 404);
+
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+      const { BRAND_SYSTEM_PROMPT } = require('./generator/content-writer');
+      const source = item.formats?.blog?.content || item.formats?.linkedin?.content || '';
+
+      const prompt = `Rewrite this content as a "zero-click" LinkedIn post. Zero-click content delivers ALL value in the feed itself — no links, no "read more at my blog", no external redirects.
+
+Why: LinkedIn suppresses reach by 60% when you include external links. Zero-click posts get 8x more reach (Amanda Natividad / SparkToro).
+
+Source content: ${source.slice(0, 3000)}
+
+Return JSON (no markdown fences):
+{
+  "zero_click_post": "the full LinkedIn post (1000-2000 chars) that delivers all value in-feed",
+  "soft_cta": "engagement CTA at the end (question, not a link)",
+  "why_no_link": "brief explanation of why this works better without a link",
+  "reach_estimate": "estimated reach multiplier vs linked version"
+}`;
+
+      try {
+        const text = await callClaude({ model: HAIKU, system: BRAND_SYSTEM_PROMPT, prompt, maxTokens: 2000 });
+        const parsed = parseJsonResponse(text);
+        if (!parsed) return json(res, { error: 'Failed to generate', raw_preview: (text || '').slice(0, 200) }, 500);
+        return json(res, { ok: true, content_id: id, ...parsed });
+      } catch (err) {
+        return json(res, { error: err.message }, 500);
+      }
+    }
+
     // --- Static file serving ---
 
     // Serve dashboard

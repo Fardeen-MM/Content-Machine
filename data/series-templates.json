@@ -1,0 +1,97 @@
+{
+  "series": [
+    {
+      "name": "Metric Monday",
+      "day": "monday",
+      "format": "carousel",
+      "description": "Hard numbers from real law firm campaigns — conversions, cost per case, ROI breakdowns. Pure data storytelling with visual slides showing the math behind what works and what doesn't.",
+      "template_prompt": "Write a Metric Monday carousel exposing a specific data pattern from law firm marketing. Start with the raw numbers (calls, spend, conversions), show the math that reveals waste or opportunity, end with 3 fixes. Use exact figures. Make slide 1 a shocking stat that stops the scroll. Topic: [TOPIC]",
+      "hashtag": "#MetricMonday",
+      "lead_magnet_type": "calculator",
+      "lead_magnet_cta": "Download the Case Cost Calculator — see exactly what you're paying per signed case",
+      "example_topics": [
+        "What 47 PI firm Google Ads accounts revealed about cost per signed case",
+        "The $4,183/month phone call problem (and how to fix it in 48 hours)",
+        "Why your $8K/month ad spend is only generating $12K in revenue (and what to change)",
+        "Speed to lead: the 60-second rule that doubled a family law firm's conversion rate",
+        "Criminal defense CPC analysis: 14 cities, 89 keywords, brutal truth about what works"
+      ],
+      "cta_tier": "keyword_comment"
+    },
+    {
+      "name": "Teardown Tuesday",
+      "day": "tuesday",
+      "format": "text",
+      "description": "Live audit of a law firm's marketing system — Google Ads, landing page, intake process, call handling. Point out what's broken, why it costs money, and exactly how to fix it. No sugarcoating.",
+      "template_prompt": "Write a Teardown Tuesday post dissecting one specific element of a law firm's marketing system. Open with the discovered problem (use realistic but anonymized details), show the financial impact with exact math, explain the root cause, give 4-5 concrete fixes. End with a gut-punch line about the cost of not fixing it. Topic: [TOPIC]",
+      "hashtag": "#TeardownTuesday",
+      "lead_magnet_type": "audit",
+      "lead_magnet_cta": "Get a free 15-minute Google Ads audit — we'll find your biggest leak",
+      "example_topics": [
+        "This PI firm's landing page has a 91% bounce rate. Here's every reason why.",
+        "A criminal defense site spending $890/day on the wrong keywords (actual audit)",
+        "Why this immigration firm's 'Contact Us' form converts at 3% (spoiler: it's 47 fields long)",
+        "The $6,200/month Google Ads account that sent 83% of traffic to a broken page",
+        "Call tracking reveals a family law firm loses 52% of leads after 5pm — the fix costs $200/month"
+      ],
+      "cta_tier": "resource_offer"
+    },
+    {
+      "name": "War Story Wednesday",
+      "day": "wednesday",
+      "format": "story",
+      "description": "Behind-the-scenes narrative of a real campaign transformation — the mess we inherited, what we tried that failed, the breakthrough, the results. Written like a war dispatch, not a case study.",
+      "template_prompt": "Write a War Story Wednesday post about a real campaign challenge and solution. Structure: The Situation (what was broken and how bad), The Failed Attempts (2-3 things we tried that didn't work), The Turn (what finally worked and why), The Numbers (exact before/after metrics). Write like you're venting to a friend over drinks, not presenting to a boardroom. Topic: [TOPIC]",
+      "hashtag": "#WarStoryWednesday",
+      "lead_magnet_type": "scorecard",
+      "lead_magnet_cta": "Take the Marketing Maturity Scorecard — see where your firm actually stands",
+      "example_topics": [
+        "How Mandall Law went from $4K/month to $92K/month (and the 8 months of failure before the breakthrough)",
+        "The PI firm that fired us, rehired us, then 3x'd their caseload in 90 days",
+        "We burned $11,000 testing call tracking systems. Here's what actually worked.",
+        "The family law firm whose intake coordinator was accidentally killing 40% of leads",
+        "When a criminal defense firm's Google Ads got suspended at 11pm on a Friday (and how we saved the month)"
+      ],
+      "cta_tier": "conversation"
+    },
+    {
+      "name": "Thesis Thursday",
+      "day": "thursday",
+      "format": "hot_take",
+      "description": "Contrarian, opinionated take on a legal marketing belief or trend. Designed to start arguments in the comments. This is where we plant flags and challenge industry BS.",
+      "template_prompt": "Write a Thesis Thursday hot take challenging a common belief in legal marketing. Open with the popular belief stated bluntly, follow with 'That's wrong. Here's why.' Present 3-4 pieces of contradicting evidence from real experience. End with what's actually true and why most people get it backwards. Be unapologetic. Topic: [TOPIC]",
+      "hashtag": "#ThesisThursday",
+      "lead_magnet_type": "checklist",
+      "lead_magnet_cta": "Download the Anti-BS Marketing Checklist — what actually matters vs what agencies sell you",
+      "example_topics": [
+        "SEO doesn't take 6 months for law firms. It takes 3 — or you're doing it wrong.",
+        "Your law firm doesn't need more traffic. You need fewer, better leads.",
+        "Stop hiring marketing agencies. Hire a marketing operator and give them a budget.",
+        "The 'nurture sequence' is killing your personal injury conversions. Delete it.",
+        "Your website redesign won't fix your conversion problem. Your intake process will."
+      ],
+      "cta_tier": "soft_dm"
+    },
+    {
+      "name": "Framework Friday",
+      "day": "friday",
+      "format": "case_study",
+      "description": "Step-by-step breakdown of a system or process that works. Actionable, detailed, tactical. The stuff someone could start implementing Monday morning. This is the 'how-to' day.",
+      "template_prompt": "Write a Framework Friday post teaching a complete system or process. Structure: The Problem (what this solves and the cost of not having it), The Framework (4-6 numbered steps with specific details, tools, and timeframes), Proof Point (one example of this working with real numbers), Monday Morning Actions (3 things to do immediately). Be specific enough that a law firm owner could hand this to their team. Topic: [TOPIC]",
+      "hashtag": "#FrameworkFriday",
+      "lead_magnet_type": "checklist",
+      "lead_magnet_cta": "Get the full [Framework Name] Implementation Guide with templates",
+      "example_topics": [
+        "The 60-Second Speed-to-Lead System (that converted 34% more consults)",
+        "How to audit your own Google Ads account in 20 minutes (no agency required)",
+        "The 3-call intake script that doubled PI case signups (with actual call recordings)",
+        "After-hours lead capture: the $200/month system that saved $4,800/month in lost cases",
+        "The 5-metric dashboard every law firm should check Monday morning (and how to build it in Looker Studio)"
+      ],
+      "cta_tier": "link_in_comments"
+    }
+  ],
+  "cadence_notes": "Post Monday-Friday at 8:00 AM ET (when attorneys check LinkedIn before court/meetings). Never post weekends — law firm owners aren't on LinkedIn Saturday/Sunday. Batch-create content on Fridays for the following week. Repurpose top-performing posts into Twitter threads (same day, 2pm), YouTube shorts (within 48 hours), and email newsletter (Sunday night). Each series should run for minimum 8 weeks before evaluating performance. Track engagement rate by series — double down on what works, kill what doesn't after 12 weeks.",
+  "engagement_strategy": "Daily 30-45 min engagement window (9:00-9:45 AM ET, right after posting): (1) Respond to every comment on your post within first hour — this signals LinkedIn's algorithm to push it further. (2) Find 5 posts from law firm owners using hashtags #lawfirmmarketing #legalmarketing #lawfirmowner and leave substantive comments (2-3 sentences, add insight, don't pitch). (3) Check notifications for mentions/tags and respond immediately. (4) Friday bonus: DM 3-5 people who engaged heavily with that week's content — start real conversations, don't sell. The goal is to be SEEN daily in the right feeds, not to spam. Quality over quantity. One great comment beats 10 generic ones.",
+  "created_at": "2026-02-21T02:44:39.246Z"
+}

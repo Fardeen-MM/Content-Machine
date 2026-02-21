@@ -1510,6 +1510,9 @@ const state = {
   contentMatrix: null,
   hookAnalysis: null,
   ctaStrategy: null,
+  // Batch 50: Series Templates + Content Bank
+  seriesTemplates: null,
+  contentBank: null,
 };
 
 // --- API Calls ---
@@ -1600,7 +1603,9 @@ async function loadData() {
       api('/api/youtube/pipelines').catch(() => []),
       api('/api/carousels').catch(() => []),
       api('/api/content-matrix').catch(() => null),
-      api('/api/cta-strategy').catch(() => null)
+      api('/api/cta-strategy').catch(() => null),
+      api('/api/series-templates').catch(() => null),
+      api('/api/content-bank').catch(() => null)
     ]);
     state.content = content;
     state.triggers = triggers;
@@ -1667,6 +1672,8 @@ async function loadData() {
     state.carousels = carousels;
     state.contentMatrix = contentMatrix;
     state.ctaStrategy = ctaStrategy;
+    state.seriesTemplates = seriesTemplates;
+    state.contentBank = contentBank;
   } catch (err) {
     console.error('Failed to load data:', err);
     toast('Failed to load data', 'error');
@@ -2904,6 +2911,19 @@ function renderDashboardPage() {
                 } catch (err) { toast('Hook analysis failed: ' + err.message, 'error'); }
               }
             }, 'Hooks'),
+            h('button', {
+              className: 'btn btn-sm',
+              style: { background: '#dc2626', color: 'white', border: 'none' },
+              onclick: async () => {
+                toast('Setting up weekly series templates...', 'info');
+                try {
+                  const res = await api('/api/series-templates/setup', { method: 'POST' });
+                  state.seriesTemplates = res.templates;
+                  toast(`${res.templates?.series?.length || 0} weekly series created!`, 'success');
+                  render();
+                } catch (err) { toast('Series setup failed: ' + err.message, 'error'); }
+              }
+            }, 'Series'),
             h('button', { className: 'btn btn-ghost btn-sm', onclick: () => { state.page = 'content'; render(); } }, 'View Content')
           )
         ),
@@ -3141,6 +3161,47 @@ function renderDashboardPage() {
           )
         )
       )
+    ) : null,
+
+    // Recurring Series Templates
+    state.seriesTemplates?.series?.length > 0 ? h('div', { style: { marginBottom: '20px' } },
+      h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)', marginBottom: '8px' } }, `WEEKLY SERIES (${state.seriesTemplates.series.length})`),
+      h('div', { style: { display: 'grid', gap: '6px' } },
+        ...state.seriesTemplates.series.map(s =>
+          h('div', { style: { padding: '10px 14px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)' } },
+            h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' } },
+              h('div', { style: { fontSize: '12px', fontWeight: '600', color: 'var(--navy)' } }, s.name),
+              h('div', { style: { display: 'flex', gap: '4px' } },
+                h('span', { style: { fontSize: '9px', padding: '2px 6px', background: '#eff6ff', color: '#2563eb', borderRadius: '8px', fontWeight: '600', textTransform: 'capitalize' } }, s.day),
+                h('span', { style: { fontSize: '9px', padding: '2px 6px', background: '#f0fdf4', color: '#059669', borderRadius: '8px', fontWeight: '600' } }, s.format),
+                h('span', { style: { fontSize: '9px', padding: '2px 6px', background: '#faf5ff', color: '#7c3aed', borderRadius: '8px', fontWeight: '600' } }, s.hashtag)
+              )
+            ),
+            h('div', { style: { fontSize: '10px', color: 'var(--gray-500)', marginBottom: '2px' } }, (s.description || '').slice(0, 100)),
+            h('div', { style: { fontSize: '9px', color: '#d97706', fontStyle: 'italic' } }, `CTA: ${s.cta_tier} | Lead magnet: ${s.lead_magnet_type}`)
+          )
+        )
+      )
+    ) : null,
+
+    // Content Banking
+    state.contentBank ? h('div', { style: { marginBottom: '20px' } },
+      h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)', marginBottom: '8px' } }, 'CONTENT BANKING'),
+      h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' } },
+        h('div', { style: { background: '#f0fdf4', borderRadius: 'var(--radius-sm)', padding: '10px', textAlign: 'center', border: '1px solid #bbf7d0' } },
+          h('div', { style: { fontSize: '18px', fontWeight: '700', color: '#059669' } }, String(state.contentBank.stats?.value || 0)),
+          h('div', { style: { fontSize: '10px', color: '#065f46' } }, 'Value Deposits')
+        ),
+        h('div', { style: { background: '#fef3c7', borderRadius: 'var(--radius-sm)', padding: '10px', textAlign: 'center', border: '1px solid #fde68a' } },
+          h('div', { style: { fontSize: '18px', fontWeight: '700', color: '#d97706' } }, String(state.contentBank.stats?.cta || 0)),
+          h('div', { style: { fontSize: '10px', color: '#92400e' } }, 'CTA Withdrawals')
+        ),
+        h('div', { style: { background: state.contentBank.can_ask ? '#f0fdf4' : '#fef2f2', borderRadius: 'var(--radius-sm)', padding: '10px', textAlign: 'center', border: `1px solid ${state.contentBank.can_ask ? '#bbf7d0' : '#fecaca'}` } },
+          h('div', { style: { fontSize: '14px', fontWeight: '700', color: state.contentBank.can_ask ? '#059669' : '#dc2626' } }, state.contentBank.can_ask ? 'CAN ASK' : 'SAVE MORE'),
+          h('div', { style: { fontSize: '10px', color: 'var(--gray-500)' } }, `Next: ${state.contentBank.next_action}`)
+        )
+      ),
+      h('div', { style: { fontSize: '10px', color: 'var(--gray-600)', padding: '6px 10px', background: '#f8fafc', borderRadius: '6px', marginTop: '6px' } }, state.contentBank.recommendation || '')
     ) : null,
 
     // YouTube Pipelines
@@ -4186,6 +4247,36 @@ function renderContentCard(content) {
                 } catch (err) { toast('Shorts failed: ' + err.message, 'error'); }
               }
             }, 'Shorts')
+          : null,
+        // Zero-Click button
+        (content.formats?.linkedin?.content || content.formats?.blog?.content)
+          ? h('button', {
+              className: 'btn btn-outline btn-sm',
+              style: { color: '#059669', borderColor: '#059669', fontSize: '11px' },
+              onclick: async (e) => {
+                e.stopPropagation();
+                toast('Creating zero-click version...', 'info');
+                try {
+                  const res = await api(`/api/content/${content.id}/zero-click`, { method: 'POST' });
+                  toast('Zero-click post created (8x more reach)', 'success');
+                } catch (err) { toast('Zero-click failed: ' + err.message, 'error'); }
+              }
+            }, '0-Click')
+          : null,
+        // Comment-DM CTA button
+        content.formats?.linkedin?.content
+          ? h('button', {
+              className: 'btn btn-outline btn-sm',
+              style: { color: '#2563eb', borderColor: '#2563eb', fontSize: '11px' },
+              onclick: async (e) => {
+                e.stopPropagation();
+                toast('Generating comment-DM CTAs...', 'info');
+                try {
+                  const res = await api(`/api/content/${content.id}/comment-dm-cta`, { method: 'POST' });
+                  toast(`${res.cta_variants?.length || 0} CTA variants + DM sequences created`, 'success');
+                } catch (err) { toast('CTA gen failed: ' + err.message, 'error'); }
+              }
+            }, 'DM CTA')
           : null,
         content.trigger_url
           ? h('a', {

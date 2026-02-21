@@ -1513,6 +1513,10 @@ const state = {
   // Batch 50: Series Templates + Content Bank
   seriesTemplates: null,
   contentBank: null,
+  // Batch 51: Engagement Playbook + Atomizations + Platform Rules
+  engagementPlaybook: null,
+  atomizations: [],
+  platformRules: null,
 };
 
 // --- API Calls ---
@@ -1605,7 +1609,10 @@ async function loadData() {
       api('/api/content-matrix').catch(() => null),
       api('/api/cta-strategy').catch(() => null),
       api('/api/series-templates').catch(() => null),
-      api('/api/content-bank').catch(() => null)
+      api('/api/content-bank').catch(() => null),
+      api('/api/engagement-playbook').catch(() => null),
+      api('/api/atomizations').catch(() => []),
+      api('/api/platform-rules').catch(() => null)
     ]);
     state.content = content;
     state.triggers = triggers;
@@ -1674,6 +1681,9 @@ async function loadData() {
     state.ctaStrategy = ctaStrategy;
     state.seriesTemplates = seriesTemplates;
     state.contentBank = contentBank;
+    state.engagementPlaybook = engagementPlaybook;
+    state.atomizations = atomizations;
+    state.platformRules = platformRules;
   } catch (err) {
     console.error('Failed to load data:', err);
     toast('Failed to load data', 'error');
@@ -3205,6 +3215,49 @@ function renderDashboardPage() {
     ) : null,
 
     // YouTube Pipelines
+    // Engagement Playbook
+    state.engagementPlaybook ? h('div', { style: { marginBottom: '20px' } },
+      h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
+        h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)' } }, 'DAILY ENGAGEMENT PLAYBOOK'),
+        h('div', { style: { fontSize: '10px', color: 'var(--gray-500)' } }, `Best time: ${state.engagementPlaybook.best_posting_time}`)
+      ),
+      state.engagementPlaybook.todays_series ? h('div', { style: { padding: '10px 14px', background: '#eff6ff', borderRadius: 'var(--radius-sm)', border: '1px solid #bfdbfe', marginBottom: '8px' } },
+        h('div', { style: { fontSize: '11px', fontWeight: '700', color: '#2563eb', marginBottom: '2px' } }, `TODAY'S SERIES: ${state.engagementPlaybook.todays_series.name} ${state.engagementPlaybook.todays_series.hashtag}`),
+        h('div', { style: { fontSize: '10px', color: '#1e40af' } }, `Format: ${state.engagementPlaybook.todays_series.format} | CTA tier: ${state.engagementPlaybook.todays_series.cta_tier}`),
+        (state.engagementPlaybook.todays_series.example_topics || []).length > 0
+          ? h('div', { style: { fontSize: '10px', color: 'var(--gray-500)', marginTop: '4px' } }, `Ideas: ${state.engagementPlaybook.todays_series.example_topics[0]}`)
+          : null
+      ) : null,
+      h('div', { style: { display: 'grid', gap: '4px' } },
+        ...Object.entries(state.engagementPlaybook.daily_routine || {}).map(([key, r]) =>
+          h('div', { style: { padding: '6px 10px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', display: 'flex', justifyContent: 'space-between' } },
+            h('div', { style: { fontSize: '10px', fontWeight: '600', color: 'var(--navy)', textTransform: 'capitalize' } }, key.replace('_', ' ')),
+            h('div', { style: { fontSize: '10px', color: 'var(--gray-500)' } }, r.time)
+          )
+        )
+      ),
+      h('div', { style: { fontSize: '10px', padding: '6px 10px', background: state.engagementPlaybook.content_bank_status?.can_ask ? '#f0fdf4' : '#fef2f2', borderRadius: '6px', marginTop: '6px', color: state.engagementPlaybook.content_bank_status?.can_ask ? '#059669' : '#dc2626' } },
+        state.engagementPlaybook.content_bank_status?.recommendation || ''
+      )
+    ) : null,
+
+    // Atomizations
+    state.atomizations?.length > 0 ? h('div', { style: { marginBottom: '20px' } },
+      h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)', marginBottom: '8px' } }, `CONTENT ATOMIZATIONS (${state.atomizations.length})`),
+      h('div', { style: { display: 'grid', gap: '6px' } },
+        ...state.atomizations.slice(0, 3).map(a =>
+          h('div', { style: { padding: '10px 14px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)' } },
+            h('div', { style: { fontSize: '12px', fontWeight: '600', color: 'var(--navy)', marginBottom: '4px' } }, (a.title || '').slice(0, 50)),
+            h('div', { style: { display: 'flex', gap: '6px' } },
+              h('span', { style: { fontSize: '9px', padding: '2px 6px', background: '#f0fdf4', color: '#059669', borderRadius: '8px', fontWeight: '600' } }, `${a.total_pieces || a.derivatives?.length || 0} pieces`),
+              h('span', { style: { fontSize: '9px', padding: '2px 6px', background: '#eff6ff', color: '#2563eb', borderRadius: '8px', fontWeight: '600' } }, `${a.coverage_weeks || '?'} weeks`),
+              h('span', { style: { fontSize: '9px', padding: '2px 6px', background: '#faf5ff', color: '#7c3aed', borderRadius: '8px', fontWeight: '600' } }, `T1: ${(a.derivatives || []).filter(d => d.tier === 1).length} | T2: ${(a.derivatives || []).filter(d => d.tier === 2).length}`)
+            )
+          )
+        )
+      )
+    ) : null,
+
     state.youtubePipelines?.length > 0 ? h('div', { style: { marginBottom: '20px' } },
       h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)', marginBottom: '8px' } }, `YOUTUBE PIPELINES (${state.youtubePipelines.length})`),
       h('div', { style: { display: 'grid', gap: '6px' } },
@@ -4277,6 +4330,22 @@ function renderContentCard(content) {
                 } catch (err) { toast('CTA gen failed: ' + err.message, 'error'); }
               }
             }, 'DM CTA')
+          : null,
+        // Atomize-20 button
+        (content.formats?.blog?.content || content.formats?.linkedin?.content)
+          ? h('button', {
+              className: 'btn btn-outline btn-sm',
+              style: { color: '#d97706', borderColor: '#d97706', fontSize: '11px' },
+              onclick: async (e) => {
+                e.stopPropagation();
+                toast('Atomizing into 15-20 derivatives...', 'info');
+                try {
+                  const res = await api(`/api/content/${content.id}/atomize-20`, { method: 'POST' });
+                  toast(`${res.atomization?.total_pieces || res.atomization?.derivatives?.length || 0} derivatives created over ${res.atomization?.coverage_weeks || '?'} weeks!`, 'success');
+                  loadData();
+                } catch (err) { toast('Atomize failed: ' + err.message, 'error'); }
+              }
+            }, 'Atomize')
           : null,
         content.trigger_url
           ? h('a', {

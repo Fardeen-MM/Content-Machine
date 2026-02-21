@@ -9390,6 +9390,298 @@ Return JSON (no markdown fences):
       }
     }
 
+    // --- Batch 51: Post Structure Wizard + Engagement Playbook + 1-to-20 Repurposer + Platform Optimizer ---
+
+    // POST /api/content/:id/structure-wizard — generate post using proven structure
+    const swMatch = pathname.match(/^\/api\/content\/([a-f0-9]+)\/structure-wizard$/);
+    if (swMatch && method === 'POST') {
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      const id = swMatch[1];
+      const body = await parseBody(req);
+      const structure = body.structure || 'lessons_learned'; // lessons_learned, contrarian, before_after, build_in_public, myth_buster
+
+      const allContent = readJSON('content.json', []);
+      const item = allContent.find(c => c.id === id);
+      if (!item) return json(res, { error: 'Content not found' }, 404);
+
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+      const { BRAND_SYSTEM_PROMPT } = require('./generator/content-writer');
+      const source = item.formats?.linkedin?.content || item.formats?.blog?.content || '';
+
+      const structures = {
+        lessons_learned: `Write using the LESSONS LEARNED LIST structure:
+[Number] things I learned from [specific experience]:
+1. [Lesson] — [Brief explanation]
+2. [Lesson] — [Brief explanation]
+...
+The biggest surprise? [Unexpected insight].
+End with: Comment "SEND" and I'll DM you [resource].`,
+        contrarian: `Write using the CONTRARIAN TAKE structure:
+Unpopular opinion: [Contrarian statement]
+Most [audience] believe [conventional wisdom].
+But here's what the data shows:
+-> [Evidence 1] -> [Evidence 2] -> [Evidence 3]
+End with: Agree or disagree? Drop your take below.`,
+        before_after: `Write using the BEFORE/AFTER CASE STUDY structure:
+[Time ago], [client/situation] was [painful situation].
+Today, [impressive result].
+The shift: [Key change 1] [Key change 2] [Key change 3]
+We did this without [common expensive approach].
+End with: If this sounds like your firm, link in comments.`,
+        build_in_public: `Write using the BUILD-IN-PUBLIC structure:
+Here's exactly what happened with [project] last month:
+[Metric] went from X to Y. [Another metric] changed.
+[Honest admission about what didn't work].
+What we're changing: -> [Action 1] -> [Action 2]
+End with: DM me "audit" for a free video review.`,
+        myth_buster: `Write using the MYTH BUSTER structure:
+[Number] [industry] myths I wish I'd stopped believing:
+Myth 1: "[Common belief]" — Reality: [What actually works]
+Myth 2: "[Common belief]" — Reality: [What actually works]
+Myth 3: "[Common belief]" — Reality: [What actually works]
+End with: Which surprised you?`
+      };
+
+      const prompt = `Rewrite this content using a proven LinkedIn post structure.
+
+Source: ${source.slice(0, 2000)}
+Topic: ${item.trigger_title}
+
+${structures[structure] || structures.lessons_learned}
+
+Return JSON (no markdown fences):
+{
+  "post": "the full LinkedIn post (800-1500 chars)",
+  "structure_used": "${structure}",
+  "hook": "the opening line",
+  "cta_type": "conversation|keyword_comment|soft_dm",
+  "estimated_engagement": "low|medium|high|viral"
+}`;
+
+      try {
+        const text = await callClaude({ model: HAIKU, system: BRAND_SYSTEM_PROMPT, prompt, maxTokens: 2000 });
+        const parsed = parseJsonResponse(text);
+        if (!parsed) return json(res, { error: 'Failed to generate structured post', raw_preview: (text || '').slice(0, 200) }, 500);
+        return json(res, { ok: true, content_id: id, ...parsed });
+      } catch (err) {
+        return json(res, { error: err.message }, 500);
+      }
+    }
+
+    // GET /api/engagement-playbook — get daily engagement routine + strategy
+    if (pathname === '/api/engagement-playbook' && method === 'GET') {
+      const content = readJSON('content.json', []);
+      const published = readJSON('published.json', []);
+      const bank = readJSON('content-bank.json', { log: [], stats: { value: 0, cta: 0 } });
+
+      const today = new Date();
+      const dayOfWeek = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][today.getDay()];
+      const seriesTemplates = readJSON('series-templates.json', { series: [] });
+      const todaySeries = (seriesTemplates.series || []).find(s => s.day === dayOfWeek);
+
+      return json(res, {
+        daily_routine: {
+          pre_post: {
+            time: '15 min before posting',
+            actions: [
+              'Comment thoughtfully on 5-10 posts from your ICP',
+              'This "warms up" the algorithm before your post appears',
+              'Focus on posts from larger accounts (50K+ followers)'
+            ]
+          },
+          golden_hour: {
+            time: 'First 90 minutes after posting',
+            actions: [
+              'Respond to every comment immediately',
+              'Ask follow-up questions (turn comments into threads)',
+              'Comments are weighted 8x more than likes by the algorithm'
+            ]
+          },
+          drafting: {
+            time: 'Daily (15-20 min)',
+            actions: [
+              'Find 3-5 posts from larger accounts in your space',
+              'Leave a substantive comment adding value (data point, counter-perspective)',
+              'This puts you in front of their audience'
+            ]
+          }
+        },
+        todays_series: todaySeries ? {
+          name: todaySeries.name,
+          format: todaySeries.format,
+          hashtag: todaySeries.hashtag,
+          cta_tier: todaySeries.cta_tier,
+          example_topics: todaySeries.example_topics?.slice(0, 3)
+        } : null,
+        posting_rules: [
+          'Never include external links in post body (60% reach penalty)',
+          'Put links in comments or profile instead',
+          'Optimal length: 1300-2000 characters for text posts',
+          'Minimum 12-hour gap between posts',
+          'Do not edit posts within first hour (resets algorithm)',
+          '3-5 hashtags maximum',
+          'Write at 4th grade reading level — short sentences, simple words',
+          'Carousels get 6.60% engagement (highest format)',
+          'Comments are weighted 15x more than likes'
+        ],
+        content_bank_status: {
+          value_posts: bank.stats.value,
+          cta_posts: bank.stats.cta,
+          can_ask: bank.stats.cta === 0 || (bank.stats.value / bank.stats.cta) >= 4,
+          recommendation: bank.stats.cta === 0 || (bank.stats.value / bank.stats.cta) >= 4
+            ? 'You can include a CTA today'
+            : 'Post value content today — save your CTA for later'
+        },
+        day_of_week: dayOfWeek,
+        best_posting_time: ['tuesday', 'wednesday', 'thursday'].includes(dayOfWeek)
+          ? '8:00-10:00 AM' : '12:00-2:00 PM'
+      });
+    }
+
+    // POST /api/content/:id/atomize-20 — 1-to-20 derivative formula from pillar content
+    const a20Match = pathname.match(/^\/api\/content\/([a-f0-9]+)\/atomize-20$/);
+    if (a20Match && method === 'POST') {
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      const id = a20Match[1];
+      const allContent = readJSON('content.json', []);
+      const item = allContent.find(c => c.id === id);
+      if (!item) return json(res, { error: 'Content not found' }, 404);
+
+      const { callClaude, parseJsonResponse, SONNET } = require('./lib/claude');
+      const { BRAND_SYSTEM_PROMPT } = require('./generator/content-writer');
+      const source = item.formats?.blog?.content || item.formats?.linkedin?.content || item.formats?.youtube_script?.content || '';
+      if (!source) return json(res, { error: 'No content to atomize' }, 400);
+
+      const prompt = `Extract 15-20 derivative content pieces from this pillar content using the 1-to-20 formula.
+
+Source: ${source.slice(0, 4000)}
+Topic: ${item.trigger_title}
+
+Extract across 4 tiers:
+
+TIER 1 (Direct Extractions — no AI rewrite needed):
+- Pull 3-5 standalone statistics as quote graphics
+- Extract any numbered list as a carousel outline
+- Pull the opening hook as a standalone X post
+
+TIER 2 (AI-Reformatted):
+- LinkedIn narrative post (story angle)
+- LinkedIn hot take (controversial angle)
+- X thread (5-7 tweets)
+- X single tweet (punchiest stat)
+- Short video script (30-60 sec)
+- Poll post
+- Before/after post
+
+TIER 3 (Platform-Expanded):
+- Newsletter edition outline
+- YouTube script outline (5-8 min)
+- Email nurture sequence (3 emails)
+
+TIER 4 (Future Recycled):
+- Contrarian response post
+- "One year ago" repost angle
+- Reader Q&A reframe
+
+Return JSON (no markdown fences):
+{
+  "derivatives": [
+    {
+      "tier": 1,
+      "type": "quote_graphic",
+      "content": "the actual content",
+      "platform": "linkedin|x|youtube|email|instagram",
+      "schedule_day": "today|tomorrow|day3|week2|week4"
+    }
+  ],
+  "total_pieces": N,
+  "coverage_weeks": N,
+  "original_topic": "..."
+}`;
+
+      try {
+        const text = await callClaude({ model: SONNET, system: BRAND_SYSTEM_PROMPT, prompt, maxTokens: 6000 });
+        const parsed = parseJsonResponse(text);
+        if (!parsed) return json(res, { error: 'Failed to atomize', raw_preview: (text || '').slice(0, 300) }, 500);
+
+        // Save atomization
+        const atomizations = readJSON('atomizations.json', []);
+        const entry = { id: generateId(), content_id: id, title: item.trigger_title, ...parsed, created_at: now() };
+        atomizations.push(entry);
+        writeJSON('atomizations.json', atomizations);
+        return json(res, { ok: true, atomization: entry });
+      } catch (err) {
+        return json(res, { error: err.message }, 500);
+      }
+    }
+
+    // GET /api/atomizations — list all atomizations
+    if (pathname === '/api/atomizations' && method === 'GET') {
+      return json(res, readJSON('atomizations.json', []));
+    }
+
+    // GET /api/platform-rules — get per-platform optimization rules
+    if (pathname === '/api/platform-rules' && method === 'GET') {
+      return json(res, {
+        linkedin: {
+          algorithm: '2025-2026',
+          key_rules: [
+            'Depth Score is the primary metric — dwell time, comment depth, carousel swipes',
+            'External links suppress reach by 60% — use link-in-comments instead',
+            'Comments are weighted 8-15x more than likes',
+            'Carousels get highest engagement rate (6.60%)',
+            'Personal profiles get 561% more reach than company pages',
+            'Do not edit posts within first hour',
+            'Optimal length: 1300-2000 characters',
+            '3-5 hashtags max',
+            'Write at 4th grade reading level',
+            'Brand-building before selling: 2.3x better campaigns'
+          ],
+          best_times: { peak: 'Tue/Wed/Thu 8-10 AM', secondary: 'Mon/Fri 12-2 PM', avoid: 'Weekends (50% lower engagement)' },
+          format_ranking: { carousel: '6.60%', document: '6.10%', multi_image: '6.60%', polls: '200% above avg reach', text: '2-3%', video: 'dropped 200% vs 2024' },
+          cadence: { minimum: '3/week', optimal: '5/week (Mon-Fri)', max: 'daily', gap: '12+ hours between posts' }
+        },
+        x_twitter: {
+          algorithm: '2025-2026',
+          key_rules: [
+            'Threads outperform single tweets for engagement',
+            'Images increase engagement by 150%',
+            'Threads should have 5-7 tweets for optimal performance',
+            'First tweet is the hook — must be compelling standalone',
+            'Use hashtags sparingly (1-2 max)',
+            'Quote tweets with your own take outperform plain retweets'
+          ],
+          best_times: { peak: 'Mon-Fri 12-3 PM', secondary: 'Wed 9 AM', avoid: 'Late night' },
+          cadence: { minimum: '3-5 tweets/day', optimal: '5-10 including retweets', max: 'no hard limit' }
+        },
+        youtube: {
+          algorithm: '2025-2026',
+          key_rules: [
+            'YouTube AI now understands content from audio/visual — not just metadata',
+            'Only 6% of top-ranking videos use exact keyword matches in titles',
+            'Thumbnails with expressive faces get 20-30% higher CTR',
+            'Mid-roll CTAs get more clicks than end-roll',
+            'Chapters/timestamps help YouTube serve clips in search',
+            'Upload accurate transcripts — AI reads them for content understanding',
+            'Shorts attract, long-form converts'
+          ],
+          thumbnail_rules: { resolution: '1280x720', text: '3-5 words max', emotion: 'surprise/shock/concern/excitement', contrast: 'complementary colors' },
+          best_format: { tutorial: '8-12 min', case_study: '10-15 min', breakdown: '12-20 min', shorts: '15-60 sec' },
+          cadence: { long_form: '1-2/week', shorts: '3-5/week from long-form clips' }
+        },
+        email: {
+          key_rules: [
+            'Subject lines under 50 characters get highest open rates',
+            'Personalized subject lines increase open rate by 26%',
+            'Best send times: Tue/Wed/Thu 10 AM local',
+            'Mobile-optimized is mandatory (60%+ opens on mobile)',
+            'One clear CTA per email'
+          ],
+          cadence: { newsletter: '1/week', drip: 'daily for 5-7 days', nurture: '2-3/week' }
+        }
+      });
+    }
+
     // --- Static file serving ---
 
     // Serve dashboard

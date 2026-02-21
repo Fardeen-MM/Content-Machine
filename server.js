@@ -5611,6 +5611,403 @@ Return JSON (raw, no fences):
       return json(res, { ok: true, results });
     }
 
+    // --- Smart Scheduling API ---
+
+    // GET /api/schedule-queue — list all scheduled posts
+    if (pathname === '/api/schedule-queue' && method === 'GET') {
+      const queue = readJSON('schedule-queue.json', []);
+      return json(res, queue.sort((a, b) => new Date(a.scheduled_at) - new Date(b.scheduled_at)));
+    }
+
+    // POST /api/content/:id/schedule-post — schedule a content piece for a specific platform/time
+    if (pathname.match(/^\/api\/content\/[^/]+\/schedule-post$/) && method === 'POST') {
+      const id = pathname.split('/')[3];
+      const body = await parseBody(req);
+      if (!body.platform || !body.date) return json(res, { error: 'platform and date required' }, 400);
+
+      const content = readJSON('content.json');
+      const item = content.find(c => c.id === id);
+      if (!item) return json(res, { error: 'content not found' }, 404);
+
+      // Platform-specific optimal times
+      const optimalTimes = {
+        linkedin: { best: ['08:00', '09:30', '12:00'], days: ['Tue', 'Wed', 'Thu'] },
+        x_single: { best: ['12:00', '17:00', '08:00'], days: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'] },
+        x_thread: { best: ['08:30', '12:30'], days: ['Tue', 'Wed', 'Thu'] },
+        carousel: { best: ['09:00', '11:00'], days: ['Tue', 'Wed'] },
+        short_video: { best: ['09:00', '12:00', '17:00'], days: ['Mon', 'Wed', 'Fri'] },
+        blog: { best: ['10:00'], days: ['Tue', 'Thu'] },
+        newsletter: { best: ['06:00', '10:00'], days: ['Tue'] }
+      };
+
+      const time = body.time || optimalTimes[body.platform]?.best?.[0] || '09:00';
+      const scheduledAt = `${body.date}T${time}:00.000Z`;
+
+      const queue = readJSON('schedule-queue.json', []);
+      const entry = {
+        id: generateId(),
+        content_id: id,
+        trigger_title: item.trigger_title,
+        platform: body.platform,
+        format: body.platform,
+        scheduled_at: scheduledAt,
+        status: 'scheduled', // scheduled, published, failed, cancelled
+        notes: body.notes || '',
+        optimal_times: optimalTimes[body.platform] || null,
+        created_at: now()
+      };
+      queue.push(entry);
+      writeJSON('schedule-queue.json', queue);
+      return json(res, { ok: true, entry, optimal_times: optimalTimes[body.platform] });
+    }
+
+    // DELETE /api/schedule-queue/:id — remove a scheduled post
+    if (pathname.match(/^\/api\/schedule-queue\/[^/]+$/) && method === 'DELETE') {
+      const id = pathname.split('/')[3];
+      const queue = readJSON('schedule-queue.json', []);
+      const idx = queue.findIndex(q => q.id === id);
+      if (idx === -1) return json(res, { error: 'not found' }, 404);
+      queue.splice(idx, 1);
+      writeJSON('schedule-queue.json', queue);
+      return json(res, { ok: true });
+    }
+
+    // POST /api/schedule-queue/:id/publish — mark scheduled post as published
+    if (pathname.match(/^\/api\/schedule-queue\/[^/]+\/publish$/) && method === 'POST') {
+      const id = pathname.split('/')[3];
+      const queue = readJSON('schedule-queue.json', []);
+      const idx = queue.findIndex(q => q.id === id);
+      if (idx === -1) return json(res, { error: 'not found' }, 404);
+      queue[idx].status = 'published';
+      queue[idx].published_at = now();
+      writeJSON('schedule-queue.json', queue);
+
+      // Also mark content as published
+      const content = readJSON('content.json');
+      const cIdx = content.findIndex(c => c.id === queue[idx].content_id);
+      if (cIdx !== -1) {
+        content[cIdx].status = 'published';
+        content[cIdx].published_at = now();
+        content[cIdx].published_platform = queue[idx].platform;
+        writeJSON('content.json', content);
+      }
+      return json(res, { ok: true, entry: queue[idx] });
+    }
+
+    // POST /api/content/:id/auto-schedule — AI picks optimal date/time for all formats
+    if (pathname.match(/^\/api\/content\/[^/]+\/auto-schedule$/) && method === 'POST') {
+      const id = pathname.split('/')[3];
+      const content = readJSON('content.json');
+      const item = content.find(c => c.id === id);
+      if (!item) return json(res, { error: 'content not found' }, 404);
+
+      const queue = readJSON('schedule-queue.json', []);
+      const existingDates = queue.filter(q => q.status === 'scheduled').map(q => q.scheduled_at?.slice(0, 10));
+
+      const optimalTimes = {
+        linkedin: { best: '09:00', days: [2, 3, 4] },
+        x_single: { best: '12:00', days: [1, 2, 3, 4, 5] },
+        x_thread: { best: '08:30', days: [2, 3, 4] },
+        carousel: { best: '09:00', days: [2, 3] },
+        short_video: { best: '09:00', days: [1, 3, 5] }
+      };
+
+      const scheduled = [];
+      const today = new Date();
+      const formats = Object.keys(item.formats || {}).filter(f => optimalTimes[f]);
+
+      for (const fmt of formats) {
+        const data = item.formats[fmt];
+        if (!data?.content) continue;
+
+        // Find next optimal day that isn't already booked
+        const opt = optimalTimes[fmt];
+        let candidate = new Date(today);
+        candidate.setDate(candidate.getDate() + 1); // start tomorrow
+        let found = false;
+        for (let d = 0; d < 14 && !found; d++) {
+          candidate.setDate(candidate.getDate() + 1);
+          const dayOfWeek = candidate.getDay();
+          const dateStr = candidate.toISOString().slice(0, 10);
+          if (opt.days.includes(dayOfWeek) && !existingDates.includes(dateStr)) {
+            const entry = {
+              id: generateId(),
+              content_id: id,
+              trigger_title: item.trigger_title,
+              platform: fmt,
+              format: fmt,
+              scheduled_at: `${dateStr}T${opt.best}:00.000Z`,
+              status: 'scheduled',
+              notes: 'Auto-scheduled',
+              created_at: now()
+            };
+            queue.push(entry);
+            existingDates.push(dateStr);
+            scheduled.push(entry);
+            found = true;
+          }
+        }
+      }
+
+      writeJSON('schedule-queue.json', queue);
+      return json(res, { ok: true, scheduled, count: scheduled.length });
+    }
+
+    // --- Hashtag Engine + Platform Optimization ---
+
+    // POST /api/content/:id/generate-hashtags — AI generates platform-specific hashtags
+    if (pathname.match(/^\/api\/content\/[^/]+\/generate-hashtags$/) && method === 'POST') {
+      const id = pathname.split('/')[3];
+      const body = await parseBody(req);
+      const platform = body.platform || 'linkedin';
+
+      const content = readJSON('content.json');
+      const item = content.find(c => c.id === id);
+      if (!item) return json(res, { error: 'content not found' }, 404);
+
+      const contentText = typeof item.formats?.[platform]?.content === 'string'
+        ? item.formats[platform].content
+        : item.trigger_title;
+
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+      const prompt = `Generate hashtags for this ${platform} post about legal marketing.
+
+Content: "${contentText.slice(0, 500)}"
+Topic: ${item.trigger_title}
+
+Rules by platform:
+- linkedin: 3-5 niche professional hashtags (mix of broad + specific), NO #marketing or #business
+- x_single/x_thread: 1-2 trending/relevant hashtags only
+- carousel: 3-5 discovery hashtags
+- short_video: 5-8 hashtags mixing niche + broad
+
+Return JSON: {
+  "hashtags": ["#tag1", "#tag2"],
+  "reasoning": "why these were chosen",
+  "niche_score": 0-100
+}`;
+
+      const text = await callClaude({ model: HAIKU, system: 'Legal marketing hashtag strategist. Pick hashtags that reach decision-makers at law firms.', prompt, maxTokens: 300 });
+      const parsed = parseJsonResponse(text);
+
+      if (parsed) {
+        const allContent = readJSON('content.json');
+        const idx = allContent.findIndex(c => c.id === id);
+        if (idx !== -1) {
+          if (!allContent[idx].hashtags) allContent[idx].hashtags = {};
+          allContent[idx].hashtags[platform] = { tags: parsed.hashtags, reasoning: parsed.reasoning, niche_score: parsed.niche_score, generated_at: now() };
+          writeJSON('content.json', allContent);
+        }
+      }
+      return json(res, { ok: true, ...parsed });
+    }
+
+    // POST /api/content/:id/optimize-platform — AI adjusts content for platform constraints
+    if (pathname.match(/^\/api\/content\/[^/]+\/optimize-platform$/) && method === 'POST') {
+      const id = pathname.split('/')[3];
+      const body = await parseBody(req);
+      const platform = body.platform;
+      if (!platform) return json(res, { error: 'platform required' }, 400);
+
+      const content = readJSON('content.json');
+      const item = content.find(c => c.id === id);
+      if (!item) return json(res, { error: 'content not found' }, 404);
+
+      const sourceContent = typeof item.formats?.[platform]?.content === 'string'
+        ? item.formats[platform].content : '';
+      if (!sourceContent) return json(res, { error: 'no content for this platform' }, 400);
+
+      const platformRules = {
+        linkedin: { maxChars: 3000, rules: 'Use line breaks for readability. Start with hook line. Use emoji sparingly (max 2). End with CTA or question. No walls of text.' },
+        x_single: { maxChars: 280, rules: 'Must be under 280 chars. Punchy and direct. One idea only. Optional hashtag at end.' },
+        x_thread: { maxChars: 280, rules: 'Each tweet under 280 chars. Number them 1/, 2/ etc. First tweet is the hook. Last tweet is the CTA. 4-8 tweets ideal.' },
+        carousel: { maxChars: 200, rules: 'Each slide under 200 chars. 6-10 slides. Slide 1 is hook. Last slide is CTA. Each slide = one idea.' },
+        short_video: { maxChars: 150, rules: 'Script format. Under 60 seconds. Hook in first 3 seconds. Each line is one sentence. End with CTA.' }
+      };
+
+      const rules = platformRules[platform] || platformRules.linkedin;
+      const { callClaude, HAIKU } = require('./lib/claude');
+      const prompt = `Optimize this content for ${platform}:
+
+CONTENT:
+${sourceContent.slice(0, 2000)}
+
+PLATFORM RULES:
+- Max ${rules.maxChars} chars per unit
+- ${rules.rules}
+
+Rewrite the content following these rules exactly. Keep the core message and hook. Return ONLY the optimized content text, nothing else.`;
+
+      const optimized = await callClaude({ model: HAIKU, system: 'Content optimizer for social media platforms. Follow character limits exactly.', prompt, maxTokens: 1500 });
+
+      if (optimized) {
+        const allContent = readJSON('content.json');
+        const idx = allContent.findIndex(c => c.id === id);
+        if (idx !== -1) {
+          if (!allContent[idx].formats[platform]) allContent[idx].formats[platform] = {};
+          allContent[idx].formats[platform].optimized = optimized.trim();
+          allContent[idx].formats[platform].optimized_at = now();
+          writeJSON('content.json', allContent);
+        }
+      }
+      return json(res, { ok: true, platform, optimized: optimized?.trim(), char_count: optimized?.trim()?.length, limit: rules.maxChars });
+    }
+
+    // POST /api/content/bulk-hashtags — generate hashtags for all approved content
+    if (pathname === '/api/content/bulk-hashtags' && method === 'POST') {
+      const content = readJSON('content.json');
+      const approved = content.filter(c => c.status === 'approved' && !c.hashtags?.linkedin);
+      let generated = 0;
+
+      for (const item of approved.slice(0, 10)) {
+        try {
+          const contentText = typeof item.formats?.linkedin?.content === 'string'
+            ? item.formats.linkedin.content : item.trigger_title;
+
+          const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+          const prompt = `Generate 3-5 LinkedIn hashtags for this legal marketing post: "${contentText.slice(0, 300)}"\n\nReturn JSON: { "hashtags": ["#tag1", "#tag2"], "niche_score": 0-100 }`;
+          const text = await callClaude({ model: HAIKU, system: 'Hashtag strategist.', prompt, maxTokens: 200 });
+          const parsed = parseJsonResponse(text);
+
+          if (parsed) {
+            const allContent = readJSON('content.json');
+            const idx = allContent.findIndex(c => c.id === item.id);
+            if (idx !== -1) {
+              if (!allContent[idx].hashtags) allContent[idx].hashtags = {};
+              allContent[idx].hashtags.linkedin = { tags: parsed.hashtags, niche_score: parsed.niche_score, generated_at: now() };
+              writeJSON('content.json', allContent);
+              generated++;
+            }
+          }
+        } catch (e) { /* skip */ }
+      }
+      return json(res, { ok: true, generated, total_approved: approved.length });
+    }
+
+    // --- A/B Variant Testing ---
+
+    // POST /api/content/:id/create-variants — AI generates 2-3 alternative versions
+    if (pathname.match(/^\/api\/content\/[^/]+\/create-variants$/) && method === 'POST') {
+      const id = pathname.split('/')[3];
+      const body = await parseBody(req);
+      const platform = body.platform || 'linkedin';
+
+      const content = readJSON('content.json');
+      const item = content.find(c => c.id === id);
+      if (!item) return json(res, { error: 'content not found' }, 404);
+
+      const sourceContent = typeof item.formats?.[platform]?.content === 'string'
+        ? item.formats[platform].content : '';
+      if (!sourceContent) return json(res, { error: 'no content for this platform' }, 400);
+
+      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+      const prompt = `Create 2 alternative versions of this ${platform} post. Each should have a different hook/angle but convey the same core message.
+
+ORIGINAL:
+${sourceContent.slice(0, 1500)}
+
+Rules:
+- Variant A: Different hook style (e.g., question, story, data-led, contrarian)
+- Variant B: Different structure (e.g., list vs narrative, short vs detailed)
+- Both must match ${platform} best practices
+
+Return JSON:
+{
+  "variants": [
+    { "label": "A", "hook_style": "...", "content": "...", "reasoning": "why this might outperform" },
+    { "label": "B", "hook_style": "...", "content": "...", "reasoning": "why this might outperform" }
+  ]
+}`;
+
+      const text = await callClaude({ model: HAIKU, system: 'A/B testing expert for social media content. Create meaningfully different variants that test distinct hypotheses.', prompt, maxTokens: 2000 });
+      const parsed = parseJsonResponse(text);
+
+      if (parsed?.variants) {
+        const allContent = readJSON('content.json');
+        const idx = allContent.findIndex(c => c.id === id);
+        if (idx !== -1) {
+          if (!allContent[idx].ab_variants) allContent[idx].ab_variants = {};
+          allContent[idx].ab_variants[platform] = {
+            original: sourceContent,
+            variants: parsed.variants.map(v => ({
+              ...v, id: generateId(), status: 'draft', performance: { impressions: 0, engagement: 0, clicks: 0 }
+            })),
+            created_at: now(),
+            winner: null
+          };
+          writeJSON('content.json', allContent);
+        }
+      }
+      return json(res, { ok: true, variants: parsed?.variants || [] });
+    }
+
+    // POST /api/content/:id/pick-winner — select winning variant and promote it
+    if (pathname.match(/^\/api\/content\/[^/]+\/pick-winner$/) && method === 'POST') {
+      const id = pathname.split('/')[3];
+      const body = await parseBody(req);
+      if (!body.platform || !body.variant_id) return json(res, { error: 'platform and variant_id required' }, 400);
+
+      const content = readJSON('content.json');
+      const idx = content.findIndex(c => c.id === id);
+      if (idx === -1) return json(res, { error: 'content not found' }, 404);
+
+      const ab = content[idx].ab_variants?.[body.platform];
+      if (!ab) return json(res, { error: 'no variants for this platform' }, 400);
+
+      const variant = ab.variants.find(v => v.id === body.variant_id);
+      if (!variant) return json(res, { error: 'variant not found' }, 404);
+
+      // Promote winner
+      ab.winner = body.variant_id;
+      content[idx].formats[body.platform].content = variant.content;
+      content[idx].formats[body.platform].promoted_from_variant = body.variant_id;
+      content[idx].formats[body.platform].promoted_at = now();
+      writeJSON('content.json', content);
+
+      return json(res, { ok: true, winner: variant.label, promoted: true });
+    }
+
+    // POST /api/content/:id/record-variant-performance — record performance data for a variant
+    if (pathname.match(/^\/api\/content\/[^/]+\/record-variant-performance$/) && method === 'POST') {
+      const id = pathname.split('/')[3];
+      const body = await parseBody(req);
+      if (!body.platform || !body.variant_id) return json(res, { error: 'platform and variant_id required' }, 400);
+
+      const content = readJSON('content.json');
+      const idx = content.findIndex(c => c.id === id);
+      if (idx === -1) return json(res, { error: 'content not found' }, 404);
+
+      const ab = content[idx].ab_variants?.[body.platform];
+      if (!ab) return json(res, { error: 'no variants' }, 400);
+
+      const vIdx = ab.variants.findIndex(v => v.id === body.variant_id);
+      if (vIdx === -1) return json(res, { error: 'variant not found' }, 404);
+
+      ab.variants[vIdx].performance = {
+        impressions: body.impressions || 0,
+        engagement: body.engagement || 0,
+        clicks: body.clicks || 0,
+        leads: body.leads || 0
+      };
+
+      // Auto-pick winner if both variants have data and one clearly wins
+      const allHaveData = ab.variants.every(v => v.performance.impressions > 0);
+      if (allHaveData && !ab.winner) {
+        const sorted = [...ab.variants].sort((a, b) => {
+          const scoreA = (a.performance.engagement || 0) + (a.performance.clicks || 0) * 2;
+          const scoreB = (b.performance.engagement || 0) + (b.performance.clicks || 0) * 2;
+          return scoreB - scoreA;
+        });
+        if (sorted[0]) {
+          ab.winner = sorted[0].id;
+          ab.auto_picked = true;
+        }
+      }
+
+      writeJSON('content.json', content);
+      return json(res, { ok: true, variant: ab.variants[vIdx], winner: ab.winner });
+    }
+
     // --- Content Series API ---
 
     // GET /api/series — list all content series

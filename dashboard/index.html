@@ -1465,6 +1465,8 @@ const state = {
   contentLeads: [],
   // Auto-pilot
   autopilot: { enabled: false, settings: {}, today: {}, recent_log: [] },
+  // Schedule Queue
+  scheduleQueue: [],
 };
 
 // --- API Calls ---
@@ -1490,7 +1492,7 @@ async function loadData() {
   state.loading = true;
   render();
   try {
-    const [content, triggers, stats, calendar, monthCal, settings, memory, performance, perfAnalytics, meetings, meetingStats, clients, allActions, chatMessages, healthData, inspirations, pestering, pesteringStages, insights, deals, published, series, predictions, playbooks, ctaLibrary, trending, funnel, publishTracker, leadMagnets, contentHealth, scheduleOptimize, templates, dmSequences, hooks, pillarPlan, contentLeads, autopilot] = await Promise.all([
+    const [content, triggers, stats, calendar, monthCal, settings, memory, performance, perfAnalytics, meetings, meetingStats, clients, allActions, chatMessages, healthData, inspirations, pestering, pesteringStages, insights, deals, published, series, predictions, playbooks, ctaLibrary, trending, funnel, publishTracker, leadMagnets, contentHealth, scheduleOptimize, templates, dmSequences, hooks, pillarPlan, contentLeads, autopilot, scheduleQueue] = await Promise.all([
       api('/api/content'),
       api('/api/triggers'),
       api('/api/stats'),
@@ -1527,7 +1529,8 @@ async function loadData() {
       api('/api/hooks').catch(() => []),
       api('/api/pillars').catch(() => null),
       api('/api/leads').catch(() => []),
-      api('/api/autopilot/status').catch(() => ({ enabled: false, settings: {}, today: {}, recent_log: [] }))
+      api('/api/autopilot/status').catch(() => ({ enabled: false, settings: {}, today: {}, recent_log: [] })),
+      api('/api/schedule-queue').catch(() => [])
     ]);
     state.content = content;
     state.triggers = triggers;
@@ -1566,6 +1569,7 @@ async function loadData() {
     state.pillarPlan = pillarPlan;
     state.contentLeads = contentLeads;
     state.autopilot = autopilot;
+    state.scheduleQueue = scheduleQueue;
   } catch (err) {
     console.error('Failed to load data:', err);
     toast('Failed to load data', 'error');
@@ -2916,6 +2920,54 @@ function renderDashboardPage() {
         )
       )
     ) : null,
+    // Schedule Queue
+    state.scheduleQueue?.filter(q => q.status === 'scheduled').length > 0 ? h('div', { style: { marginBottom: '20px' } },
+      h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
+        h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)' } }, `SCHEDULED POSTS (${state.scheduleQueue.filter(q => q.status === 'scheduled').length})`),
+        h('div', { style: { fontSize: '11px', color: 'var(--gray-500)' } },
+          `${state.scheduleQueue.filter(q => q.status === 'published').length} published`
+        )
+      ),
+      h('div', { style: { display: 'grid', gap: '6px' } },
+        ...state.scheduleQueue.filter(q => q.status === 'scheduled').slice(0, 8).map(entry => {
+          const dt = new Date(entry.scheduled_at);
+          const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+          const platformColors = { linkedin: '#0a66c2', x_single: '#1da1f2', x_thread: '#1da1f2', carousel: '#e4405f', short_video: '#ff0050' };
+          return h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 12px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)' } },
+            h('div', { style: { textAlign: 'center', minWidth: '44px' } },
+              h('div', { style: { fontSize: '10px', color: 'var(--gray-500)', textTransform: 'uppercase' } }, dayNames[dt.getDay()]),
+              h('div', { style: { fontSize: '16px', fontWeight: '700', color: 'var(--navy)' } }, String(dt.getDate())),
+              h('div', { style: { fontSize: '10px', color: 'var(--gray-400)' } }, entry.scheduled_at?.slice(11, 16))
+            ),
+            h('div', { style: { width: '3px', height: '32px', borderRadius: '2px', background: platformColors[entry.platform] || '#64748b' } }),
+            h('div', { style: { flex: '1' } },
+              h('div', { style: { fontSize: '12px', fontWeight: '600', color: 'var(--navy)' } }, (entry.trigger_title || '').slice(0, 50)),
+              h('div', { style: { fontSize: '10px', color: 'var(--gray-500)' } }, entry.platform?.replace('_', ' '))
+            ),
+            h('button', {
+              style: { fontSize: '10px', padding: '2px 8px', background: '#059669', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' },
+              onclick: async () => {
+                try {
+                  await api(`/api/schedule-queue/${entry.id}/publish`, { method: 'POST' });
+                  toast('Marked as published!', 'success');
+                  loadData();
+                } catch (err) { toast('Failed: ' + err.message, 'error'); }
+              }
+            }, 'Publish'),
+            h('button', {
+              style: { fontSize: '10px', padding: '2px 6px', background: 'transparent', color: '#dc2626', border: '1px solid #dc2626', borderRadius: '4px', cursor: 'pointer' },
+              onclick: async () => {
+                try {
+                  await api(`/api/schedule-queue/${entry.id}`, { method: 'DELETE' });
+                  toast('Removed from schedule', 'info');
+                  loadData();
+                } catch (err) { toast('Failed: ' + err.message, 'error'); }
+              }
+            }, 'X')
+          );
+        })
+      )
+    ) : null,
     // Trending Topics
     (state.trending?.trending_topics?.length > 0) ? h('div', { style: { marginBottom: '20px' } },
       h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
@@ -3938,6 +3990,101 @@ function renderFormatContent(content, formatKey, fmt) {
           } catch (err) { toast('Save failed: ' + err.message, 'error'); }
         }
       }, 'Swipe') : null,
+      // Schedule post button (for social formats with content)
+      typeof text === 'string' && ['linkedin', 'x_single', 'x_thread', 'carousel', 'short_video'].includes(formatKey) ? h('button', {
+        className: 'btn btn-outline btn-sm',
+        style: { fontSize: '10px', padding: '2px 6px', color: '#0ea5e9', borderColor: '#0ea5e9' },
+        onclick: async () => {
+          const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1);
+          const dateStr = tomorrow.toISOString().slice(0, 10);
+          try {
+            const res = await api(`/api/content/${content.id}/schedule-post`, { method: 'POST', body: { platform: formatKey, date: dateStr } });
+            toast(`Scheduled for ${res.entry.scheduled_at.slice(0, 16).replace('T', ' ')}`, 'success');
+            loadData();
+          } catch (err) { toast('Schedule failed: ' + err.message, 'error'); }
+        }
+      }, 'Schedule') : null,
+      // Hashtag button (for social formats)
+      typeof text === 'string' && ['linkedin', 'x_single', 'x_thread'].includes(formatKey) ? h('button', {
+        className: 'btn btn-outline btn-sm',
+        style: { fontSize: '10px', padding: '2px 6px', color: '#d97706', borderColor: '#d97706' },
+        onclick: async () => {
+          toast('Generating hashtags...', 'info');
+          try {
+            const res = await api(`/api/content/${content.id}/generate-hashtags`, { method: 'POST', body: { platform: formatKey } });
+            toast(`Generated ${res.hashtags?.length || 0} hashtags (niche: ${res.niche_score}/100)`, 'success');
+            loadData();
+          } catch (err) { toast('Hashtag gen failed: ' + err.message, 'error'); }
+        }
+      }, '#Tags') : null,
+      // Optimize for platform button
+      typeof text === 'string' && ['x_single', 'x_thread', 'carousel', 'short_video'].includes(formatKey) ? h('button', {
+        className: 'btn btn-outline btn-sm',
+        style: { fontSize: '10px', padding: '2px 6px', color: '#6366f1', borderColor: '#6366f1' },
+        onclick: async () => {
+          toast('Optimizing for ' + formatKey + '...', 'info');
+          try {
+            const res = await api(`/api/content/${content.id}/optimize-platform`, { method: 'POST', body: { platform: formatKey } });
+            toast(`Optimized! ${res.char_count} chars (limit: ${res.limit})`, 'success');
+            loadData();
+          } catch (err) { toast('Optimize failed: ' + err.message, 'error'); }
+        }
+      }, 'Optimize') : null,
+      // Create A/B Variants button
+      typeof text === 'string' && ['linkedin', 'x_single', 'x_thread'].includes(formatKey) && !content.ab_variants?.[formatKey] ? h('button', {
+        className: 'btn btn-outline btn-sm',
+        style: { fontSize: '10px', padding: '2px 6px', color: '#ec4899', borderColor: '#ec4899' },
+        onclick: async () => {
+          toast('Creating variants...', 'info');
+          try {
+            const res = await api(`/api/content/${content.id}/create-variants`, { method: 'POST', body: { platform: formatKey } });
+            toast(`Created ${res.variants?.length || 0} variants`, 'success');
+            loadData();
+          } catch (err) { toast('Variant creation failed: ' + err.message, 'error'); }
+        }
+      }, 'Variants') : null,
+      // Show hashtags if generated
+      content.hashtags?.[formatKey]?.tags?.length > 0 ? h('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap', marginTop: '4px' } },
+        ...content.hashtags[formatKey].tags.map(tag => h('span', {
+          style: { fontSize: '10px', padding: '1px 5px', borderRadius: '3px', background: '#fffbeb', color: '#d97706', cursor: 'pointer' },
+          onclick: () => { navigator.clipboard.writeText(tag); toast('Copied ' + tag, 'info'); }
+        }, tag)),
+        h('span', { style: { fontSize: '9px', color: 'var(--gray-400)' } }, `niche: ${content.hashtags[formatKey].niche_score}/100`)
+      ) : null,
+      // Show optimized version if exists
+      content.formats?.[formatKey]?.optimized ? h('div', { style: { marginTop: '6px', padding: '6px 10px', background: '#eef2ff', borderRadius: '6px', border: '1px solid #c7d2fe' } },
+        h('div', { style: { fontSize: '10px', fontWeight: '700', color: '#6366f1', marginBottom: '2px' } }, 'OPTIMIZED VERSION'),
+        h('pre', { style: { fontSize: '11px', color: 'var(--gray-600)', whiteSpace: 'pre-wrap', margin: '0' } }, content.formats[formatKey].optimized.slice(0, 400)),
+        h('button', {
+          style: { fontSize: '10px', padding: '1px 6px', marginTop: '4px', background: '#6366f1', color: 'white', border: 'none', borderRadius: '3px', cursor: 'pointer' },
+          onclick: () => { navigator.clipboard.writeText(content.formats[formatKey].optimized); toast('Copied optimized version', 'success'); }
+        }, 'Copy')
+      ) : null,
+      // Show A/B variants if they exist (new system)
+      content.ab_variants?.[formatKey] ? h('div', { style: { marginTop: '6px', padding: '8px', background: '#fdf2f8', borderRadius: '6px', border: '1px solid #fbcfe8' } },
+        h('div', { style: { fontSize: '10px', fontWeight: '700', color: '#ec4899', marginBottom: '6px' } },
+          content.ab_variants[formatKey].winner ? 'A/B TEST — WINNER SELECTED' : 'A/B TEST VARIANTS'
+        ),
+        ...content.ab_variants[formatKey].variants.map(v =>
+          h('div', { style: { marginBottom: '6px', padding: '6px', background: 'white', borderRadius: '4px', border: v.id === content.ab_variants[formatKey].winner ? '2px solid #059669' : '1px solid #e5e7eb' } },
+            h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3px' } },
+              h('span', { style: { fontSize: '10px', fontWeight: '700', color: 'var(--navy)' } }, `Variant ${v.label}: ${v.hook_style}`),
+              !content.ab_variants[formatKey].winner ? h('button', {
+                style: { fontSize: '9px', padding: '1px 6px', background: '#059669', color: 'white', border: 'none', borderRadius: '3px', cursor: 'pointer' },
+                onclick: async () => {
+                  try {
+                    await api(`/api/content/${content.id}/pick-winner`, { method: 'POST', body: { platform: formatKey, variant_id: v.id } });
+                    toast(`Variant ${v.label} promoted!`, 'success');
+                    loadData();
+                  } catch (err) { toast('Failed: ' + err.message, 'error'); }
+                }
+              }, 'Pick Winner') : (v.id === content.ab_variants[formatKey].winner ? h('span', { style: { fontSize: '9px', padding: '1px 5px', background: '#dcfce7', color: '#059669', borderRadius: '3px', fontWeight: '700' } }, 'WINNER') : null)
+            ),
+            h('pre', { style: { fontSize: '10px', color: 'var(--gray-600)', whiteSpace: 'pre-wrap', margin: '0', maxHeight: '80px', overflow: 'hidden' } }, v.content?.slice(0, 300)),
+            h('div', { style: { fontSize: '9px', color: 'var(--gray-400)', marginTop: '2px' } }, v.reasoning?.slice(0, 100))
+          )
+        )
+      ) : null,
       // Apply template dropdown (for linkedin and x_thread formats)
       typeof text === 'string' && ['linkedin', 'x_thread'].includes(formatKey) && state.templates.length > 0
         ? h('select', {
@@ -4332,6 +4479,18 @@ function renderContentPage() {
               } catch (err) { toast('Bulk CTA failed: ' + err.message, 'error'); }
             }
           }, 'Gen CTAs'),
+          h('button', {
+            className: 'btn btn-sm',
+            style: { background: '#d97706', color: 'white', border: 'none' },
+            onclick: async () => {
+              toast('Generating hashtags for approved content...', 'info');
+              try {
+                const res = await api('/api/content/bulk-hashtags', { method: 'POST' });
+                toast(`Generated hashtags for ${res.generated} items`, 'success');
+                loadData();
+              } catch (err) { toast('Bulk hashtag failed: ' + err.message, 'error'); }
+            }
+          }, 'Bulk #Tags'),
           h('button', {
             className: 'btn btn-sm',
             onclick: () => { state.selectedContent = new Set(); render(); }

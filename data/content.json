@@ -44,7 +44,20 @@
     "youtube_topic": "Why Your Google Ads Cost Per Case Is Too High (And How to Fix It)",
     "blog_post": null,
     "youtube_script": null,
-    "notes": ""
+    "notes": "",
+    "hashtags": {
+      "linkedin": {
+        "tags": [
+          "#PersonalInjuryMarketing",
+          "#LegalTech",
+          "#GoogleAds",
+          "#LawFirmGrowth",
+          "#LeadQuality"
+        ],
+        "niche_score": 92,
+        "generated_at": "2026-02-21T01:25:34.166Z"
+      }
+    }
   },
   {
     "id": "c4c23c4858e12fc8",
@@ -231,7 +244,20 @@
     "youtube_topic": null,
     "blog_post": null,
     "youtube_script": null,
-    "notes": ""
+    "notes": "",
+    "hashtags": {
+      "linkedin": {
+        "tags": [
+          "#LegalMarketing",
+          "#WorkersCompensation",
+          "#GoogleAds",
+          "#LawFirmMarketing",
+          "#AdTargeting"
+        ],
+        "niche_score": 92,
+        "generated_at": "2026-02-21T01:25:36.422Z"
+      }
+    }
   },
   {
     "id": "4d214093372dfe2a",
@@ -531,7 +557,9 @@
       "x_single": {
         "content": "$57K across 3 agencies. 12 cases total. $4,750 per case. None tracked signed cases as their metric. Before hiring any agency: ask for cost per signed case, demand ad account access, and define what a \"lead\" is. Accountability > promises.",
         "status": "approved",
-        "edited": false
+        "edited": false,
+        "optimized": "$57K across 3 agencies. 12 cases total. $4,750 per case. None tracked signed cases.\n\nBefore hiring: ask cost per signed case, demand ad account access, define \"lead.\"\n\nAccountability > promises. #MarketingTruth",
+        "optimized_at": "2026-02-21T01:25:12.960Z"
       },
       "x_thread": {
         "content": [
@@ -562,7 +590,56 @@
     "scheduled_date": null,
     "scheduled_platforms": [
       "linkedin"
-    ]
+    ],
+    "hashtags": {
+      "linkedin": {
+        "tags": [
+          "#LegalMarketing",
+          "#LawFirmGrowth",
+          "#LawyerLeadGeneration",
+          "#LegalTech",
+          "#LawFirmOwners"
+        ],
+        "reasoning": "These hashtags target decision-makers at law firms (owners, partners, practice managers) who directly feel the pain of failed agency partnerships. #LegalMarketing and #LawyerLeadGeneration reach practitioners actively seeking better solutions. #LawFirmGrowth and #LawFirmOwners attract the exact audience experiencing this problem. #LegalTech positions this as a solutions-focused conversation. All five are niche enough to avoid noise while broad enough for discovery among legal professionals evaluating marketing ROI.",
+        "niche_score": 92,
+        "generated_at": "2026-02-21T01:25:08.849Z"
+      }
+    },
+    "ab_variants": {
+      "linkedin": {
+        "original": "A law firm owner spent $57K on three agencies.\n\nTotal signed cases: 12.\n\nThat's $4,750 per case.\n\nHere's why they all failed.\n\nAgency 1: Promised 20 leads/month. Delivered 3. No call tracking. No reporting.\n\nAgency 2: Beautiful reports. Clicks up, CTR up, cases down. Optimizing vanity metrics.\n\nAgency 3: Ran ads to the wrong zip code for 4 months. Billed $2K/month the whole time.\n\nThe real problem: none measured what matters.\n\nSigned cases. That's it.\n\nBefore you hire anyone, ask three things:\n\n1. \"How do you define a lead?\" (If they say clicks, run.)\n2. \"What's my cost per signed case?\" (If they don't know, run.)\n3. \"Can I access all accounts?\" (If no, run.)\n\nGood agencies welcome accountability.\n\nBad ones hide behind impressions.",
+        "variants": [
+          {
+            "label": "A",
+            "hook_style": "Question-based (curiosity gap)",
+            "content": "Would you know if your legal marketing agency is actually generating cases?\n\nI asked a law firm owner this last week. She'd spent $57K across three agencies.\n\nShe couldn't answer.\n\nAfter digging in, here's what I found:\n\n**Agency 1** had promised 20 leads/month. Delivered 3. No call tracking. No reporting.\n\n**Agency 2** had beautiful dashboards showing clicks up 40%, CTR improved. Cases? Down 15%.\n\n**Agency 3** ran $2K/month in ads to the wrong zip code for four straight months before anyone noticed.\n\nTotal signed cases across all three: 12.\n\n$4,750 per case.\n\nThe common thread? None of them were measuring outcomes. They were measuring activity.\n\nHere's your accountability checklist:\n\n✓ Ask: \"How do you define a lead?\" (If the answer is clicks, that's your sign to leave.)\n\n✓ Ask: \"What's my cost per signed case?\" (They should know this cold.)\n\n✓ Ask: \"Can I access all accounts in real time?\" (Transparency isn't negotiable.)\n\nGood agencies want you looking over their shoulder. Bad ones prefer the fog.",
+            "reasoning": "Questions drive engagement (15-25% higher engagement on LinkedIn per research). Creates immediate curiosity about the answer. Positions reader as the subject, increasing personal relevance. The reversal (she couldn't answer) creates emotional tension that powers through the feed.",
+            "id": "e8be87c955ff3aa4",
+            "status": "draft",
+            "performance": {
+              "impressions": 0,
+              "engagement": 0,
+              "clicks": 0
+            }
+          },
+          {
+            "label": "B",
+            "hook_style": "Contrarian/provocative statement",
+            "content": "Your legal marketing agency isn't lying to you.\n\nThey're just measuring the wrong things.\n\nA law firm owner I worked with had paid $57K to three different agencies. She'd received thousands of clicks, beautiful reports, consistent monthly deliverables.\n\nShe'd also signed exactly 12 cases.\n\n$4,750 per case.\n\nLet me break down what each agency optimized for:\n\n**Agency 1:** Lead volume. Promised 20/month, hit 3. Built a reporting infrastructure around vanity metrics so the gap stayed invisible.\n\n**Agency 2:** Performance metrics. Clicks +40%, CTR improved, cost-per-click dropped. Meanwhile, actual cases declined 15%. They were genuinely optimizing—just for the wrong outcome.\n\n**Agency 3:** Compliance. Ran consistent campaigns across the wrong zip codes for four months. Billed $2K/month without ever checking if the targeting matched the service area.\n\nNone of them failed. They succeeded at what they were measured on.\n\nThat's the problem.\n\nBefore signing an agreement, force this conversation:\n\n1. Cost per signed case—this is the only metric that matters\n2. Real-time account access—transparency by default, not exception\n3. Lead definition—if it's not a qualified prospect in your practice area, it's noise\n\nAn agency that can't articulate your unit economics isn't managing your account.\n\nThey're managing their ability to keep you as a client.",
+            "reasoning": "Contrarian hooks stop the scroll (up to 30% better for LinkedIn senior audience). Narrative structure (setup → three examples → reversal → action) works better for retention. Longer format performs better among decision-makers with higher time investment. The final sentence reframes the entire problem, creating memorable insight that gets shared.",
+            "id": "e5b12557588a7877",
+            "status": "draft",
+            "performance": {
+              "impressions": 0,
+              "engagement": 0,
+              "clicks": 0
+            }
+          }
+        ],
+        "created_at": "2026-02-21T01:25:24.530Z",
+        "winner": null
+      }
+    }
   },
   {
     "id": "a318e2a656b57",
@@ -927,7 +1004,20 @@
     "youtube_topic": "TikTok for Law Firms: How Attorneys Are Getting 8-12 Consults/Month from 60-Second Videos",
     "blog_post": null,
     "youtube_script": null,
-    "notes": ""
+    "notes": "",
+    "hashtags": {
+      "linkedin": {
+        "tags": [
+          "#LegalMarketing",
+          "#EstatePlanning",
+          "#LawyerLife",
+          "#TikTokForBusiness",
+          "#LegalContent"
+        ],
+        "niche_score": 87,
+        "generated_at": "2026-02-21T01:25:38.566Z"
+      }
+    }
   },
   {
     "id": "91939c91ddfbb997",

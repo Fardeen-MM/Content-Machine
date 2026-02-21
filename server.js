@@ -17094,6 +17094,349 @@ Content: ${text.substring(0, 3000)}`;
       return json(res, readJSON('post-length-analyzer.json') || { total_analyzed: 0, by_format: {} });
     }
 
+    // ========== BATCH 76: Content Repurposing & Distribution Intelligence ==========
+
+    // --- Content Pillar Health Check ---
+    // Analyze distribution of content across content pillars
+    if (method === 'POST' && pathname === '/api/pillar-health-check') {
+      const content = readJSON('content.json');
+      const pillars = ['SEO', 'PPC', 'Social Media', 'Web Design', 'Branding', 'Content Marketing', 'Email Marketing', 'Reputation Management'];
+      const pillarMap = {};
+      for (const p of pillars) pillarMap[p] = { count: 0, recent: 0, approved: 0, published: 0 };
+
+      const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+      for (const c of content) {
+        const cat = c.trigger_category || 'Content Marketing';
+        const pillar = pillars.find(p => cat.toLowerCase().includes(p.toLowerCase())) || 'Content Marketing';
+        if (!pillarMap[pillar]) pillarMap[pillar] = { count: 0, recent: 0, approved: 0, published: 0 };
+        pillarMap[pillar].count++;
+        if (new Date(c.generated_at).getTime() > sevenDaysAgo) pillarMap[pillar].recent++;
+        if (c.status === 'approved') pillarMap[pillar].approved++;
+        if (c.status === 'published') pillarMap[pillar].published++;
+      }
+
+      const total = content.length || 1;
+      const pillarResults = Object.entries(pillarMap).map(([name, data]) => ({
+        pillar: name,
+        ...data,
+        coverage: Math.round((data.count / total) * 100),
+        health: data.count >= 5 ? 'strong' : data.count >= 2 ? 'moderate' : data.count > 0 ? 'weak' : 'missing'
+      })).sort((a, b) => b.count - a.count);
+
+      const strongCount = pillarResults.filter(p => p.health === 'strong').length;
+      const missingCount = pillarResults.filter(p => p.health === 'missing').length;
+
+      const report = {
+        total_content: content.length,
+        pillars: pillarResults,
+        health_score: Math.round((strongCount / pillars.length) * 100),
+        strong: strongCount,
+        missing: missingCount,
+        recommendations: [],
+        generated_at: new Date().toISOString()
+      };
+      if (missingCount > 0) report.recommendations.push(`${missingCount} pillars have no content — create content for: ${pillarResults.filter(p => p.health === 'missing').map(p => p.pillar).join(', ')}`);
+      if (strongCount < 3) report.recommendations.push('Less than 3 strong pillars — diversify content topics');
+
+      writeJSON('pillar-health-check.json', report);
+      return json(res, report);
+    }
+    if (method === 'GET' && pathname === '/api/pillar-health-check') {
+      return json(res, readJSON('pillar-health-check.json') || { pillars: [], health_score: 0 });
+    }
+
+    // --- Repurpose Suggestion Engine ---
+    // AI suggests repurpose opportunities for existing content
+    if (method === 'POST' && pathname === '/api/repurpose-suggestions') {
+      const body = await parseBody(req);
+      const content = readJSON('content.json');
+      const target = content.find(c => c.id === body.content_id);
+      if (!target) return json(res, { error: 'Content not found' }, 404);
+
+      const fmts = target.formats || {};
+      const existingFormats = Object.keys(fmts);
+      const firstContent = typeof Object.values(fmts)[0] === 'string' ? Object.values(fmts)[0] : '';
+
+      const prompt = `This content exists in these formats: ${existingFormats.join(', ')}. Suggest repurpose opportunities. Return JSON:
+{
+  "original_formats": ${JSON.stringify(existingFormats)},
+  "suggestions": [
+    { "target_format": "podcast_talking_points", "effort": "low", "description": "...", "key_changes": ["..."] },
+    { "target_format": "infographic", "effort": "medium", "description": "...", "key_changes": ["..."] }
+  ],
+  "content_atoms": ["standalone insight 1", "standalone insight 2"],
+  "cross_platform_plan": { "linkedin": "...", "x": "...", "instagram": "...", "youtube": "..." }
+}
+
+Content: ${firstContent.substring(0, 2000)}`;
+
+      const result = await callClaude(prompt, { model: HAIKU, max_tokens: 2000 });
+      const suggestions = parseJsonResponse(result);
+
+      const entry = { content_id: body.content_id, ...suggestions, generated_at: new Date().toISOString() };
+      const store = readJSON('repurpose-suggestions.json');
+      const data = Array.isArray(store) ? { suggestions: store } : (store || { suggestions: [] });
+      if (!data.suggestions) data.suggestions = [];
+      data.suggestions = data.suggestions.filter(s => s.content_id !== body.content_id);
+      data.suggestions.push(entry);
+      data.generated_at = new Date().toISOString();
+      writeJSON('repurpose-suggestions.json', data);
+      return json(res, entry);
+    }
+    if (method === 'GET' && pathname === '/api/repurpose-suggestions') {
+      return json(res, readJSON('repurpose-suggestions.json') || { suggestions: [] });
+    }
+
+    // --- Distribution Score Card ---
+    // Score how well content is being distributed across channels
+    if (method === 'POST' && pathname === '/api/distribution-scorecard') {
+      const content = readJSON('content.json');
+      const published = readJSON('published.json') || [];
+      const crossPost = readJSON('cross-post-tracker.json');
+      const crossPosts = Array.isArray(crossPost) ? crossPost : (crossPost?.posts || []);
+      const scheduler = readJSON('smart-scheduler.json');
+      const scheduled = scheduler?.scheduled || [];
+
+      const platforms = ['linkedin', 'x', 'instagram', 'youtube', 'tiktok', 'newsletter'];
+      const scores = {};
+      let totalScore = 0;
+
+      for (const p of platforms) {
+        const pubCount = published.filter(c => (c.platform || '').toLowerCase() === p).length;
+        const crossCount = crossPosts.filter(c => c.platform === p).length;
+        const schedCount = scheduled.filter(s => s.platform === p).length;
+        const platformTotal = pubCount + crossCount + schedCount;
+        const score = Math.min(100, platformTotal * 10);
+        scores[p] = { published: pubCount, cross_posted: crossCount, scheduled: schedCount, total: platformTotal, score };
+        totalScore += score;
+      }
+
+      const report = {
+        overall_score: Math.round(totalScore / platforms.length),
+        grade: totalScore / platforms.length >= 80 ? 'A' : totalScore / platforms.length >= 60 ? 'B' : totalScore / platforms.length >= 40 ? 'C' : totalScore / platforms.length >= 20 ? 'D' : 'F',
+        platforms: scores,
+        total_distributed: Object.values(scores).reduce((s, p) => s + p.total, 0),
+        best_platform: Object.entries(scores).sort((a, b) => b[1].score - a[1].score)[0]?.[0] || 'none',
+        worst_platform: Object.entries(scores).sort((a, b) => a[1].score - b[1].score)[0]?.[0] || 'none',
+        recommendations: [],
+        generated_at: new Date().toISOString()
+      };
+
+      const weakPlatforms = Object.entries(scores).filter(([, v]) => v.score < 30).map(([k]) => k);
+      if (weakPlatforms.length) report.recommendations.push(`Weak distribution on: ${weakPlatforms.join(', ')} — increase publishing frequency`);
+      if (report.overall_score < 50) report.recommendations.push('Overall distribution score is low — implement cross-posting strategy');
+
+      writeJSON('distribution-scorecard.json', report);
+      return json(res, report);
+    }
+    if (method === 'GET' && pathname === '/api/distribution-scorecard') {
+      return json(res, readJSON('distribution-scorecard.json') || { overall_score: 0, platforms: {} });
+    }
+
+    // --- Content Velocity Tracker ---
+    // Track content production speed and publishing cadence
+    if (method === 'POST' && pathname === '/api/content-velocity-tracker') {
+      const content = readJSON('content.json');
+      const published = readJSON('published.json') || [];
+      const now = Date.now();
+      const sevenDays = 7 * 24 * 60 * 60 * 1000;
+      const thirtyDays = 30 * 24 * 60 * 60 * 1000;
+
+      const last7 = content.filter(c => now - new Date(c.generated_at || 0).getTime() < sevenDays);
+      const last30 = content.filter(c => now - new Date(c.generated_at || 0).getTime() < thirtyDays);
+      const pub7 = published.filter(c => now - new Date(c.published_at || c.generated_at || 0).getTime() < sevenDays);
+      const pub30 = published.filter(c => now - new Date(c.published_at || c.generated_at || 0).getTime() < thirtyDays);
+
+      const dailyRate7 = last7.length / 7;
+      const dailyRate30 = last30.length / 30;
+      const pubRate7 = pub7.length / 7;
+      const pubRate30 = pub30.length / 30;
+
+      const report = {
+        generation: {
+          last_7_days: last7.length,
+          last_30_days: last30.length,
+          daily_rate_7d: Math.round(dailyRate7 * 10) / 10,
+          daily_rate_30d: Math.round(dailyRate30 * 10) / 10,
+          weekly_rate: Math.round(dailyRate7 * 7)
+        },
+        publishing: {
+          last_7_days: pub7.length,
+          last_30_days: pub30.length,
+          daily_rate_7d: Math.round(pubRate7 * 10) / 10,
+          daily_rate_30d: Math.round(pubRate30 * 10) / 10
+        },
+        pipeline: {
+          total: content.length,
+          pending: content.filter(c => c.status === 'pending' || c.status === 'review').length,
+          approved: content.filter(c => c.status === 'approved').length,
+          published: published.length,
+          queue_depth_days: dailyRate7 > 0 ? Math.round(content.filter(c => c.status === 'approved').length / dailyRate7) : 0
+        },
+        velocity_score: Math.min(100, Math.round((dailyRate7 * 15) + (pubRate7 * 25))),
+        trend: dailyRate7 > dailyRate30 ? 'accelerating' : dailyRate7 < dailyRate30 ? 'decelerating' : 'steady',
+        generated_at: new Date().toISOString()
+      };
+
+      writeJSON('content-velocity-tracker.json', report);
+      return json(res, report);
+    }
+    if (method === 'GET' && pathname === '/api/content-velocity-tracker') {
+      return json(res, readJSON('content-velocity-tracker.json') || { generation: {}, publishing: {}, pipeline: {} });
+    }
+
+    // --- Competitor Benchmark Comparison ---
+    // Compare our content metrics against competitor benchmarks
+    if (method === 'POST' && pathname === '/api/competitor-benchmark') {
+      const content = readJSON('content.json');
+      const published = readJSON('published.json') || [];
+      const engagement = readJSON('engagement-tracker.json') || [];
+      const engList = Array.isArray(engagement) ? engagement : [];
+
+      const industryBenchmarks = {
+        legal_marketing: {
+          linkedin_engagement_rate: 3.5,
+          x_engagement_rate: 1.5,
+          instagram_engagement_rate: 4.0,
+          content_per_week: 10,
+          publish_rate: 0.6,
+          avg_impressions: 500,
+          conversion_rate: 2.0
+        }
+      };
+
+      const bench = industryBenchmarks.legal_marketing;
+      const weeklyContent = content.filter(c => Date.now() - new Date(c.generated_at || 0).getTime() < 7 * 24 * 60 * 60 * 1000).length;
+      const totalEng = engList.reduce((s, e) => s + (e.engagement_rate || 0), 0);
+      const avgEng = engList.length ? totalEng / engList.length : 0;
+      const publishRate = content.length > 0 ? (published.length / content.length) * 100 : 0;
+
+      const metrics = {
+        weekly_content: { ours: weeklyContent, benchmark: bench.content_per_week, delta: weeklyContent - bench.content_per_week },
+        engagement_rate: { ours: Math.round(avgEng * 100) / 100, benchmark: bench.linkedin_engagement_rate, delta: Math.round((avgEng - bench.linkedin_engagement_rate) * 100) / 100 },
+        publish_rate: { ours: Math.round(publishRate), benchmark: bench.publish_rate * 100, delta: Math.round(publishRate - bench.publish_rate * 100) },
+        total_content: { ours: content.length, benchmark: 50, delta: content.length - 50 }
+      };
+
+      const aboveBenchmark = Object.values(metrics).filter(m => m.delta >= 0).length;
+      const report = {
+        metrics,
+        overall_grade: aboveBenchmark >= 3 ? 'Above Average' : aboveBenchmark >= 2 ? 'Average' : 'Below Average',
+        above_benchmark: aboveBenchmark,
+        total_metrics: Object.keys(metrics).length,
+        recommendations: [],
+        generated_at: new Date().toISOString()
+      };
+
+      for (const [key, m] of Object.entries(metrics)) {
+        if (m.delta < 0) report.recommendations.push(`${key.replace(/_/g, ' ')}: ${Math.abs(m.delta)} below benchmark — increase to ${m.benchmark}`);
+      }
+
+      writeJSON('competitor-benchmark.json', report);
+      return json(res, report);
+    }
+    if (method === 'GET' && pathname === '/api/competitor-benchmark') {
+      return json(res, readJSON('competitor-benchmark.json') || { metrics: {}, overall_grade: 'Unknown' });
+    }
+
+    // --- Content Queue Manager ---
+    // Smart content queue with priority scoring and scheduling
+    if (method === 'POST' && pathname === '/api/content-queue-manager') {
+      const content = readJSON('content.json');
+      const approved = content.filter(c => c.status === 'approved');
+
+      const queue = approved.map(c => {
+        const fmts = c.formats || {};
+        const formatCount = Object.keys(fmts).length;
+        const hasLinkedin = 'linkedin' in fmts || 'linkedin_post' in fmts;
+        const age = Date.now() - new Date(c.generated_at || 0).getTime();
+        const ageDays = Math.floor(age / (24 * 60 * 60 * 1000));
+
+        let priority = 50;
+        if (hasLinkedin) priority += 15;
+        if (formatCount >= 5) priority += 10;
+        if (ageDays < 3) priority += 10;
+        if (ageDays > 14) priority -= 10;
+        priority = Math.max(0, Math.min(100, priority));
+
+        return {
+          id: c.id,
+          title: c.trigger_title || 'Untitled',
+          format_count: formatCount,
+          age_days: ageDays,
+          priority,
+          has_linkedin: hasLinkedin,
+          status: 'queued'
+        };
+      }).sort((a, b) => b.priority - a.priority);
+
+      const report = {
+        total_queued: queue.length,
+        high_priority: queue.filter(q => q.priority >= 75).length,
+        medium_priority: queue.filter(q => q.priority >= 50 && q.priority < 75).length,
+        low_priority: queue.filter(q => q.priority < 50).length,
+        queue: queue.slice(0, 30),
+        next_to_publish: queue[0] || null,
+        generated_at: new Date().toISOString()
+      };
+
+      writeJSON('content-queue-manager.json', report);
+      return json(res, report);
+    }
+    if (method === 'GET' && pathname === '/api/content-queue-manager') {
+      return json(res, readJSON('content-queue-manager.json') || { queue: [], total_queued: 0 });
+    }
+
+    // --- Audience Persona Matcher ---
+    // Match content to target audience personas
+    if (method === 'POST' && pathname === '/api/persona-content-match') {
+      const content = readJSON('content.json');
+      const personas = [
+        { name: 'Small Firm Owner', practice_areas: ['PI', 'Family', 'Criminal'], firm_size: '1-5', concerns: ['cost', 'time', 'clients'] },
+        { name: 'Mid-Size Managing Partner', practice_areas: ['Commercial', 'Real Estate', 'Employment'], firm_size: '6-25', concerns: ['growth', 'efficiency', 'reputation'] },
+        { name: 'Large Firm Marketing Director', practice_areas: ['Corporate', 'Litigation', 'IP'], firm_size: '25+', concerns: ['brand', 'ROI', 'analytics'] }
+      ];
+
+      const matches = content.slice(0, 50).map(c => {
+        const title = (c.trigger_title || '').toLowerCase();
+        const personaScores = personas.map(p => {
+          let score = 0;
+          for (const concern of p.concerns) {
+            if (title.includes(concern)) score += 20;
+          }
+          if (title.includes('small') || title.includes('solo')) { if (p.firm_size === '1-5') score += 15; }
+          if (title.includes('large') || title.includes('enterprise')) { if (p.firm_size === '25+') score += 15; }
+          if (title.includes('marketing') || title.includes('ads')) score += 10;
+          return { persona: p.name, score: Math.min(100, score) };
+        });
+        const bestMatch = personaScores.sort((a, b) => b.score - a.score)[0];
+        return { content_id: c.id, title: c.trigger_title, best_persona: bestMatch.persona, match_score: bestMatch.score, all_scores: personaScores };
+      });
+
+      const byPersona = {};
+      for (const m of matches) {
+        if (!byPersona[m.best_persona]) byPersona[m.best_persona] = 0;
+        byPersona[m.best_persona]++;
+      }
+
+      const report = {
+        total_matched: matches.length,
+        by_persona: byPersona,
+        top_matches: matches.filter(m => m.match_score >= 20).slice(0, 15),
+        unmatched: matches.filter(m => m.match_score === 0).length,
+        recommendations: [],
+        generated_at: new Date().toISOString()
+      };
+      const underserved = personas.filter(p => (byPersona[p.name] || 0) < 3);
+      if (underserved.length) report.recommendations.push(`Underserved personas: ${underserved.map(p => p.name).join(', ')} — create targeted content`);
+
+      writeJSON('persona-content-match.json', report);
+      return json(res, report);
+    }
+    if (method === 'GET' && pathname === '/api/persona-content-match') {
+      return json(res, readJSON('persona-content-match.json') || { total_matched: 0, by_persona: {} });
+    }
+
     // --- Static file serving ---
 
     // Serve dashboard

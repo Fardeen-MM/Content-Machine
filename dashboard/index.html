@@ -1633,6 +1633,12 @@ const state = {
   collaborationBoard: null,
   platformAnalyticsAgg: null,
   postLengthAnalyzer: null,
+  pillarHealthCheck: null,
+  distributionScorecard: null,
+  contentVelocityTracker: null,
+  competitorBenchmark: null,
+  contentQueueManager: null,
+  personaContentMatch: null,
 };
 
 // --- API Calls ---
@@ -1658,7 +1664,7 @@ async function loadData() {
   state.loading = true;
   render();
   try {
-    const [content, triggers, stats, calendar, monthCal, settings, memory, performance, perfAnalytics, meetings, meetingStats, clients, allActions, chatMessages, healthData, inspirations, pestering, pesteringStages, insights, deals, published, series, predictions, playbooks, ctaLibrary, trending, funnel, publishTracker, leadMagnets, contentHealth, scheduleOptimize, templates, dmSequences, hooks, pillarPlan, contentLeads, autopilot, scheduleQueue, engagementDashboard, contentBriefs, workflowPipeline, personas, calendarWeek, benchmarkReport, contentIdeas, socialProof, roiReport, audienceGrowth, contentThemes, distributionPlans, dmPipelines, competitorsTracked, dripCampaigns, autoResponses, expiringContent, amplifications, leadFunnels, calendarInsights, weeklyDigest, splitTests, workflowRules, youtubePipelines, carousels, contentMatrix, ctaStrategy, seriesTemplates, contentBank, engagementPlaybook, atomizations, platformRules, emailSequences, weeklyContentPlan, repurposeChains, lmFunnels, perfReport, contentPillars, compAnalyses, nurtureCampaigns, authorityPlan, flywheelData, velocityData, audienceSegments, contentDna, topicClusters, voiceProfiles, dmScriptsData, replyStrategyData, systemHealthData, contentRecyclerData, commentStrategyData, newslettersData, distributionEngineData, socialProofEngineData, advancedAnalyticsData, growthPlaybookData, genLeadMagnetsData, funnelAnalysisData, autoRepurposeData, weeklyActionPlanData, trendsAnalysisData, authorityScoreData, contentIntelData, conversionOptData, contentMatrixData, draftingStrategyData, zeroClickBankData, contentVelocityData, pillarRotatorData, savedRepliesData, audienceBuilderData, weeklyReportData, competitiveIntelData, contentScoringData, postSchedulerData, trendHijackerData, leadMagnetFunnelsData, outboundSequencesData, icpRefinedData, winLossData, contentRoiData, contentExperimentsData, socialListeningData, authorityBuilderData, quickWinsData, contentCalendarAiData, dailyBriefingData, engagementTrackerData, commentToDmData, contentSeriesPlannerData, hookBankData, engagementScorerData, conversionTrackerData, contentGapFinderData, audienceGrowthTrackerData, performanceBenchmarksData, flywheelAnalyzerData, topicAuthorityData, socialProofCollectorData, newsletterBuilderData, dmSequenceBuilderData, contentRecyclerScanData, contentDnaAnalyzerData, swipeFileData, crossPostTrackerData, smartSchedulerData, contentSystemHealthV2Data, competitorContentTrackerData, revenueAttributionData, pipelineValueTrackerData, contentCostCalculatorData, leadScorerData, retargetingBuilderData, campaignRoiData, monthlyContentReportData, approvalWorkflowData, autoPublishQueueData, contentTemplateLibraryData, engagementAlertsData, contentTagsData, contentFreshnessData, leadMagnetPerfData, collabBoardData, platformAnalyticsAggData, postLengthData] = await Promise.all([
+    const [content, triggers, stats, calendar, monthCal, settings, memory, performance, perfAnalytics, meetings, meetingStats, clients, allActions, chatMessages, healthData, inspirations, pestering, pesteringStages, insights, deals, published, series, predictions, playbooks, ctaLibrary, trending, funnel, publishTracker, leadMagnets, contentHealth, scheduleOptimize, templates, dmSequences, hooks, pillarPlan, contentLeads, autopilot, scheduleQueue, engagementDashboard, contentBriefs, workflowPipeline, personas, calendarWeek, benchmarkReport, contentIdeas, socialProof, roiReport, audienceGrowth, contentThemes, distributionPlans, dmPipelines, competitorsTracked, dripCampaigns, autoResponses, expiringContent, amplifications, leadFunnels, calendarInsights, weeklyDigest, splitTests, workflowRules, youtubePipelines, carousels, contentMatrix, ctaStrategy, seriesTemplates, contentBank, engagementPlaybook, atomizations, platformRules, emailSequences, weeklyContentPlan, repurposeChains, lmFunnels, perfReport, contentPillars, compAnalyses, nurtureCampaigns, authorityPlan, flywheelData, velocityData, audienceSegments, contentDna, topicClusters, voiceProfiles, dmScriptsData, replyStrategyData, systemHealthData, contentRecyclerData, commentStrategyData, newslettersData, distributionEngineData, socialProofEngineData, advancedAnalyticsData, growthPlaybookData, genLeadMagnetsData, funnelAnalysisData, autoRepurposeData, weeklyActionPlanData, trendsAnalysisData, authorityScoreData, contentIntelData, conversionOptData, contentMatrixData, draftingStrategyData, zeroClickBankData, contentVelocityData, pillarRotatorData, savedRepliesData, audienceBuilderData, weeklyReportData, competitiveIntelData, contentScoringData, postSchedulerData, trendHijackerData, leadMagnetFunnelsData, outboundSequencesData, icpRefinedData, winLossData, contentRoiData, contentExperimentsData, socialListeningData, authorityBuilderData, quickWinsData, contentCalendarAiData, dailyBriefingData, engagementTrackerData, commentToDmData, contentSeriesPlannerData, hookBankData, engagementScorerData, conversionTrackerData, contentGapFinderData, audienceGrowthTrackerData, performanceBenchmarksData, flywheelAnalyzerData, topicAuthorityData, socialProofCollectorData, newsletterBuilderData, dmSequenceBuilderData, contentRecyclerScanData, contentDnaAnalyzerData, swipeFileData, crossPostTrackerData, smartSchedulerData, contentSystemHealthV2Data, competitorContentTrackerData, revenueAttributionData, pipelineValueTrackerData, contentCostCalculatorData, leadScorerData, retargetingBuilderData, campaignRoiData, monthlyContentReportData, approvalWorkflowData, autoPublishQueueData, contentTemplateLibraryData, engagementAlertsData, contentTagsData, contentFreshnessData, leadMagnetPerfData, collabBoardData, platformAnalyticsAggData, postLengthData, pillarHealthData, distScorecardData, contentVelocityTrackerData, competitorBenchData, contentQueueData, personaMatchData] = await Promise.all([
       api('/api/content'),
       api('/api/triggers'),
       api('/api/stats'),
@@ -1822,7 +1828,13 @@ async function loadData() {
       api('/api/lead-magnet-performance').catch(() => null),
       api('/api/collaboration-board').catch(() => null),
       api('/api/platform-analytics').catch(() => null),
-      api('/api/post-length-analyzer').catch(() => null)
+      api('/api/post-length-analyzer').catch(() => null),
+      api('/api/pillar-health-check').catch(() => null),
+      api('/api/distribution-scorecard').catch(() => null),
+      api('/api/content-velocity-tracker').catch(() => null),
+      api('/api/competitor-benchmark').catch(() => null),
+      api('/api/content-queue-manager').catch(() => null),
+      api('/api/persona-content-match').catch(() => null)
     ]);
     state.content = content;
     state.triggers = triggers;
@@ -1988,6 +2000,12 @@ async function loadData() {
     state.collaborationBoard = collabBoardData;
     state.platformAnalyticsAgg = platformAnalyticsAggData;
     state.postLengthAnalyzer = postLengthData;
+    state.pillarHealthCheck = pillarHealthData;
+    state.distributionScorecard = distScorecardData;
+    state.contentVelocityTracker = contentVelocityTrackerData;
+    state.competitorBenchmark = competitorBenchData;
+    state.contentQueueManager = contentQueueData;
+    state.personaContentMatch = personaMatchData;
   } catch (err) {
     console.error('Failed to load data:', err);
     toast('Failed to load data', 'error');
@@ -3963,6 +3981,33 @@ function renderDashboardPage() {
                 render();
               } catch (err) { toast('Length analysis failed: ' + err.message, 'error'); }
             }}, 'Lengths'),
+            h('button', { className: 'btn btn-outline btn-sm', style: { color: '#059669', borderColor: '#059669' }, onclick: async () => {
+              toast('Checking content velocity...', 'info');
+              try {
+                const res = await api('/api/content-velocity-tracker', { method: 'POST' });
+                state.contentVelocityTracker = res;
+                toast(`Velocity: ${res.velocity_score}/100 (${res.trend})`, 'success');
+                render();
+              } catch (err) { toast('Velocity check failed: ' + err.message, 'error'); }
+            }}, 'Velocity'),
+            h('button', { className: 'btn btn-outline btn-sm', onclick: async () => {
+              toast('Building queue...', 'info');
+              try {
+                const res = await api('/api/content-queue-manager', { method: 'POST' });
+                state.contentQueueManager = res;
+                toast(`${res.total_queued} queued (${res.high_priority} high priority)`, 'success');
+                render();
+              } catch (err) { toast('Queue build failed: ' + err.message, 'error'); }
+            }}, 'Queue'),
+            h('button', { className: 'btn btn-outline btn-sm', style: { color: '#7c3aed', borderColor: '#7c3aed' }, onclick: async () => {
+              toast('Scoring distribution...', 'info');
+              try {
+                const res = await api('/api/distribution-scorecard', { method: 'POST' });
+                state.distributionScorecard = res;
+                toast(`Distribution: ${res.grade} (${res.overall_score}/100)`, res.grade === 'A' || res.grade === 'B' ? 'success' : 'error');
+                render();
+              } catch (err) { toast('Distribution score failed: ' + err.message, 'error'); }
+            }}, 'Distrib'),
             h('button', { className: 'btn btn-ghost btn-sm', onclick: () => { state.page = 'content'; render(); } }, 'View Content')
           )
         ),
@@ -5751,6 +5796,49 @@ function renderDashboardPage() {
           h('div', { style: { color: 'var(--gray-500)', fontSize: '11px' } }, 'Revenue')
         )
       )
+    ) : null,
+
+    // Content Velocity
+    state.contentVelocityTracker?.generation ? h('div', { style: { marginBottom: '20px' } },
+      h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
+        h('span', { style: { fontWeight: '700' } }, 'Content Velocity'),
+        h('span', { style: { color: state.contentVelocityTracker.trend === 'accelerating' ? '#059669' : state.contentVelocityTracker.trend === 'decelerating' ? '#dc2626' : '#f59e0b', fontSize: '12px', fontWeight: '600' } }, state.contentVelocityTracker.trend)
+      ),
+      h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' } },
+        h('div', { style: { background: 'var(--gray-50)', borderRadius: '8px', padding: '10px', textAlign: 'center' } },
+          h('div', { style: { fontWeight: '700', color: '#6366f1' } }, String(state.contentVelocityTracker.generation.last_7_days)),
+          h('div', { style: { color: 'var(--gray-500)', fontSize: '11px' } }, '7-Day Gen')
+        ),
+        h('div', { style: { background: 'var(--gray-50)', borderRadius: '8px', padding: '10px', textAlign: 'center' } },
+          h('div', { style: { fontWeight: '700', color: '#059669' } }, String(state.contentVelocityTracker.velocity_score)),
+          h('div', { style: { color: 'var(--gray-500)', fontSize: '11px' } }, 'Velocity')
+        ),
+        h('div', { style: { background: 'var(--gray-50)', borderRadius: '8px', padding: '10px', textAlign: 'center' } },
+          h('div', { style: { fontWeight: '700' } }, String(state.contentVelocityTracker.pipeline?.approved || 0)),
+          h('div', { style: { color: 'var(--gray-500)', fontSize: '11px' } }, 'Ready')
+        )
+      )
+    ) : null,
+
+    // Distribution Scorecard
+    state.distributionScorecard?.overall_score !== undefined ? h('div', { style: { marginBottom: '20px' } },
+      h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
+        h('span', { style: { fontWeight: '700' } }, 'Distribution Score'),
+        h('span', { style: { color: state.distributionScorecard.grade === 'A' || state.distributionScorecard.grade === 'B' ? '#059669' : '#dc2626', fontWeight: '700', fontSize: '14px' } }, `${state.distributionScorecard.grade} (${state.distributionScorecard.overall_score}/100)`)
+      ),
+      h('div', { style: { fontSize: '12px', color: 'var(--gray-500)' } }, `${state.distributionScorecard.total_distributed} total distributed, best: ${state.distributionScorecard.best_platform}`)
+    ) : null,
+
+    // Content Queue
+    state.contentQueueManager?.total_queued ? h('div', { style: { marginBottom: '20px' } },
+      h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
+        h('span', { style: { fontWeight: '700' } }, 'Publish Queue'),
+        h('span', { style: { color: 'var(--gray-500)', fontSize: '12px' } }, `${state.contentQueueManager.total_queued} queued (${state.contentQueueManager.high_priority} high priority)`)
+      ),
+      state.contentQueueManager.next_to_publish ? h('div', { style: { padding: '8px 10px', background: '#ecfdf5', borderRadius: '6px', fontSize: '13px' } },
+        h('span', { style: { fontWeight: '600', color: '#059669' } }, 'Next: '),
+        state.contentQueueManager.next_to_publish.title?.substring(0, 50) || 'Untitled'
+      ) : null
     ) : null,
 
     // Autopilot Status

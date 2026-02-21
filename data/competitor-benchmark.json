@@ -1,0 +1,33 @@
+{
+  "metrics": {
+    "weekly_content": {
+      "ours": 34,
+      "benchmark": 10,
+      "delta": 24
+    },
+    "engagement_rate": {
+      "ours": 2.72,
+      "benchmark": 3.5,
+      "delta": -0.78
+    },
+    "publish_rate": {
+      "ours": 2,
+      "benchmark": 60,
+      "delta": -58
+    },
+    "total_content": {
+      "ours": 41,
+      "benchmark": 50,
+      "delta": -9
+    }
+  },
+  "overall_grade": "Below Average",
+  "above_benchmark": 1,
+  "total_metrics": 4,
+  "recommendations": [
+    "engagement rate: 0.78 below benchmark — increase to 3.5",
+    "publish rate: 58 below benchmark — increase to 60",
+    "total content: 9 below benchmark — increase to 50"
+  ],
+  "generated_at": "2026-02-21T17:21:56.575Z"
+}

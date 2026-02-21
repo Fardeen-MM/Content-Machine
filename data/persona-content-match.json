@@ -1,0 +1,93 @@
+{
+  "total_matched": 41,
+  "by_persona": {
+    "Small Firm Owner": 41
+  },
+  "top_matches": [
+    {
+      "content_id": "13497fe9d9ea6a2c",
+      "title": "National Law Review: AI is transforming how law firms acquire clients",
+      "best_persona": "Small Firm Owner",
+      "match_score": 20,
+      "all_scores": [
+        {
+          "persona": "Small Firm Owner",
+          "score": 20
+        },
+        {
+          "persona": "Mid-Size Managing Partner",
+          "score": 0
+        },
+        {
+          "persona": "Large Firm Marketing Director",
+          "score": 0
+        }
+      ]
+    },
+    {
+      "content_id": "858d056a779d6",
+      "title": "We switched from Avvo to Google LSAs — 4x more cases at half the cost",
+      "best_persona": "Small Firm Owner",
+      "match_score": 20,
+      "all_scores": [
+        {
+          "persona": "Small Firm Owner",
+          "score": 20
+        },
+        {
+          "persona": "Mid-Size Managing Partner",
+          "score": 0
+        },
+        {
+          "persona": "Large Firm Marketing Director",
+          "score": 0
+        }
+      ]
+    },
+    {
+      "content_id": "593790db4b81f234",
+      "title": "Custom Legal Marketing Celebrates 21 Years as AI Redefines How Clients Find Lawyers - IndyStar",
+      "best_persona": "Small Firm Owner",
+      "match_score": 30,
+      "all_scores": [
+        {
+          "persona": "Small Firm Owner",
+          "score": 30
+        },
+        {
+          "persona": "Mid-Size Managing Partner",
+          "score": 10
+        },
+        {
+          "persona": "Large Firm Marketing Director",
+          "score": 10
+        }
+      ]
+    },
+    {
+      "content_id": "34f0159edc64e457",
+      "title": "Why Law Firm Marketing Costs Skyrocketed in 2025 (And What Comes Next)",
+      "best_persona": "Small Firm Owner",
+      "match_score": 30,
+      "all_scores": [
+        {
+          "persona": "Small Firm Owner",
+          "score": 30
+        },
+        {
+          "persona": "Mid-Size Managing Partner",
+          "score": 10
+        },
+        {
+          "persona": "Large Firm Marketing Director",
+          "score": 10
+        }
+      ]
+    }
+  ],
+  "unmatched": 22,
+  "recommendations": [
+    "Underserved personas: Mid-Size Managing Partner, Large Firm Marketing Director — create targeted content"
+  ],
+  "generated_at": "2026-02-21T17:22:06.336Z"
+}

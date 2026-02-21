@@ -1,0 +1,56 @@
+{
+  "overall_score": 3,
+  "grade": "F",
+  "platforms": {
+    "linkedin": {
+      "published": 1,
+      "cross_posted": 1,
+      "scheduled": 0,
+      "total": 2,
+      "score": 20
+    },
+    "x": {
+      "published": 0,
+      "cross_posted": 0,
+      "scheduled": 0,
+      "total": 0,
+      "score": 0
+    },
+    "instagram": {
+      "published": 0,
+      "cross_posted": 0,
+      "scheduled": 0,
+      "total": 0,
+      "score": 0
+    },
+    "youtube": {
+      "published": 0,
+      "cross_posted": 0,
+      "scheduled": 0,
+      "total": 0,
+      "score": 0
+    },
+    "tiktok": {
+      "published": 0,
+      "cross_posted": 0,
+      "scheduled": 0,
+      "total": 0,
+      "score": 0
+    },
+    "newsletter": {
+      "published": 0,
+      "cross_posted": 0,
+      "scheduled": 0,
+      "total": 0,
+      "score": 0
+    }
+  },
+  "total_distributed": 2,
+  "best_platform": "linkedin",
+  "worst_platform": "x",
+  "recommendations": [
+    "Weak distribution on: linkedin, x, instagram, youtube, tiktok, newsletter — increase publishing frequency",
+    "Overall distribution score is low — implement cross-posting strategy"
+  ],
+  "generated_at": "2026-02-21T17:21:47.795Z"
+}

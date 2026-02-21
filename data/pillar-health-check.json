@@ -1,0 +1,85 @@
+{
+  "total_content": 41,
+  "pillars": [
+    {
+      "pillar": "Content Marketing",
+      "count": 41,
+      "recent": 34,
+      "approved": 5,
+      "published": 1,
+      "coverage": 100,
+      "health": "strong"
+    },
+    {
+      "pillar": "SEO",
+      "count": 0,
+      "recent": 0,
+      "approved": 0,
+      "published": 0,
+      "coverage": 0,
+      "health": "missing"
+    },
+    {
+      "pillar": "PPC",
+      "count": 0,
+      "recent": 0,
+      "approved": 0,
+      "published": 0,
+      "coverage": 0,
+      "health": "missing"
+    },
+    {
+      "pillar": "Social Media",
+      "count": 0,
+      "recent": 0,
+      "approved": 0,
+      "published": 0,
+      "coverage": 0,
+      "health": "missing"
+    },
+    {
+      "pillar": "Web Design",
+      "count": 0,
+      "recent": 0,
+      "approved": 0,
+      "published": 0,
+      "coverage": 0,
+      "health": "missing"
+    },
+    {
+      "pillar": "Branding",
+      "count": 0,
+      "recent": 0,
+      "approved": 0,
+      "published": 0,
+      "coverage": 0,
+      "health": "missing"
+    },
+    {
+      "pillar": "Email Marketing",
+      "count": 0,
+      "recent": 0,
+      "approved": 0,
+      "published": 0,
+      "coverage": 0,
+      "health": "missing"
+    },
+    {
+      "pillar": "Reputation Management",
+      "count": 0,
+      "recent": 0,
+      "approved": 0,
+      "published": 0,
+      "coverage": 0,
+      "health": "missing"
+    }
+  ],
+  "health_score": 13,
+  "strong": 1,
+  "missing": 7,
+  "recommendations": [
+    "7 pillars have no content — create content for: SEO, PPC, Social Media, Web Design, Branding, Email Marketing, Reputation Management",
+    "Less than 3 strong pillars — diversify content topics"
+  ],
+  "generated_at": "2026-02-21T17:21:43.307Z"
+}

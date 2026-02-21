@@ -1,0 +1,58 @@
+[
+  {
+    "target": "Managing Partners at mid-size law firms (50-500 attorneys)",
+    "channel": "multi",
+    "sequence": [
+      {
+        "touch": 1,
+        "day": 0,
+        "channel": "linkedin",
+        "subject": "Connection request",
+        "message": "Hi [First Name], I noticed [Firm Name] has been expanding [practice area]. Thought it might be worth connecting—I work with firms like yours on [specific pain point]. Looking forward to it.",
+        "goal": "Establish connection and credibility"
+      },
+      {
+        "touch": 2,
+        "day": 3,
+        "channel": "email",
+        "subject": "[Firm Name]'s growth in [practice area]—quick thought",
+        "message": "Hi [First Name],\n\nSaw your firm just added [X attorneys/opened Y office]. That's impressive growth.\n\nMany partners tell us their biggest bottleneck post-expansion is [specific problem]. We've helped firms like [similar firm] reduce this by 30% in 90 days.\n\nWorth 15 min?",
+        "goal": "Introduce specific value proposition"
+      },
+      {
+        "touch": 3,
+        "day": 7,
+        "channel": "linkedin",
+        "subject": "Message",
+        "message": "[First Name]—quick resource that might help your team. [Link to relevant case study/article about their challenge]. Would love your take on it.",
+        "goal": "Provide value without ask; stay top-of-mind"
+      },
+      {
+        "touch": 4,
+        "day": 12,
+        "channel": "email",
+        "subject": "One more thing—your [specific metric] challenge",
+        "message": "Hi [First Name],\n\nI know you're busy, but wanted to share one more angle: firms managing [specific challenge] often don't realize [counterintuitive insight].\n\nThis might apply to [Firm Name]. Happy to send the brief one-pager if helpful.",
+        "goal": "Deliver final value-add; lower barrier to response"
+      },
+      {
+        "touch": 5,
+        "day": 18,
+        "channel": "email",
+        "subject": "Last check-in",
+        "message": "[First Name],\n\nThis is my last note. If managing [pain point] isn't a priority, no worries—no further emails.\n\nIf it is, I'm here. Either way, I'm happy to help your network if anything comes up.\n\nBest,\n[Your Name]",
+        "goal": "Close gracefully; earn permission or disqualify"
+      }
+    ],
+    "personalization_fields": [
+      "First Name",
+      "Firm Name",
+      "Practice Area",
+      "Recent Growth Signal (attorneys hired/office opened)",
+      "Specific Pain Point",
+      "Similar Firm (social proof)"
+    ],
+    "expected_reply_rate": "8-14%",
+    "generated_at": "2026-02-21T13:54:04.127Z"
+  }
+]

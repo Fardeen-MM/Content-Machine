@@ -1,0 +1,55 @@
+{
+  "weekly_schedule": [
+    {
+      "day": "Monday",
+      "time": "8:30 AM ET",
+      "platform": "LinkedIn",
+      "type": "teaching",
+      "reason": "Professionals plan week; legal insights drive engagement"
+    },
+    {
+      "day": "Tuesday",
+      "time": "10:00 AM ET",
+      "platform": "LinkedIn",
+      "type": "case_study",
+      "reason": "Mid-week momentum; case studies build credibility"
+    },
+    {
+      "day": "Wednesday",
+      "time": "2:00 PM ET",
+      "platform": "LinkedIn",
+      "type": "industry_news",
+      "reason": "Afternoon engagement spike; timely legal updates"
+    },
+    {
+      "day": "Thursday",
+      "time": "9:00 AM ET",
+      "platform": "Email",
+      "type": "newsletter",
+      "reason": "Pre-weekend reading; nurture leads before decision-making"
+    },
+    {
+      "day": "Friday",
+      "time": "11:00 AM ET",
+      "platform": "LinkedIn",
+      "type": "thought_leadership",
+      "reason": "Week wrap-up; professionals consume longer content"
+    }
+  ],
+  "posting_frequency": {
+    "linkedin": 4,
+    "x": 0,
+    "email": 1
+  },
+  "best_times": {
+    "linkedin": "8:30 AM - 10:00 AM ET, 2:00 PM ET",
+    "email": "9:00 AM - 10:00 AM ET Thursday"
+  },
+  "avoid_times": [
+    "6:00 PM - 8:00 AM ET (low B2B engagement)",
+    "Weekends",
+    "Holidays"
+  ],
+  "cadence_rule": "Post 4x LinkedIn + 1x Email weekly; alternate teaching/case studies/news/thought leadership for content variety and audience retention",
+  "generated_at": "2026-02-21T13:53:20.740Z"
+}

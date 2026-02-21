@@ -1,0 +1,42 @@
+{
+  "experiments": [
+    {
+      "name": "Hook Format Impact on LinkedIn Engagement",
+      "hypothesis": "if we lead with curiosity-based hooks instead of direct value statements, then click-through and engagement rates will increase by 25%+",
+      "control": "linkedin_post with direct benefit opening (e.g., 'Here are 3 ways to...')",
+      "variant": "linkedin_hooks format with pattern interrupts (e.g., 'Most lawyers get this wrong...')",
+      "metric": "engagement rate, click-through rate, profile visits",
+      "duration": "4 weeks",
+      "sample_size": "8-10 posts per variant"
+    },
+    {
+      "name": "Short-Form Video vs Static Content Conversion",
+      "hypothesis": "if we convert top-performing listicles and blog_keyword topics into short_video format, then lead magnet downloads will increase by 40%",
+      "control": "linkedin_carousel and listicle_post formats promoting lead magnets",
+      "variant": "short_video_script converted to video format with same promotional CTA",
+      "metric": "lead magnet conversions, view completion rate, cost per lead",
+      "duration": "6 weeks",
+      "sample_size": "6 content pieces per format"
+    },
+    {
+      "name": "X Thread Depth vs Single Tweet Engagement",
+      "hypothesis": "if we publish x_thread_optimized versions instead of x_single posts on same topics, then impressions and bookmarks will grow 35% due to algorithmic favor of threaded conversations",
+      "control": "x_single posts with x_hooks and x_cta",
+      "variant": "x_thread_optimized threads exploring same legal topic across 5-7 tweets",
+      "metric": "impressions, retweets, bookmarks, replies, engagement rate",
+      "duration": "5 weeks",
+      "sample_size": "10 posts per variant"
+    },
+    {
+      "name": "Before/After Case Studies vs Hot Takes for Authority",
+      "hypothesis": "if we use before_after case study format instead of hot_take opinion pieces, then lead quality (qualified prospects) will increase by 30% and cost-per-consultation will decrease",
+      "control": "hot_take content with stat_graphic and quote_cards supporting opinion",
+      "variant": "before_after format showcasing actual client transformation with measurable outcomes",
+      "metric": "lead quality score, consultation booking rate, cost per qualified lead",
+      "duration": "6 weeks",
+      "sample_size": "5-6 pieces per variant"
+    }
+  ],
+  "priority_experiment": "Hook Format Impact on LinkedIn Engagement - Run first because: (1) requires minimal resource investment (format change only), (2) fastest iteration cycle (weekly results visible), (3) with 40 unpublished pieces, you can immediately test 20 with control/variant hooks, and (4) hooks directly impact the funnel top, informing all downstream content performance. Success here amplifies ROI on remaining 40 pieces.",
+  "generated_at": "2026-02-21T14:01:42.259Z"
+}

@@ -16476,6 +16476,263 @@ Return COMPACT JSON:
       return json(res, readJSON('monthly-content-report.json', null));
     }
 
+    // ============================================================
+    // Batch 74: Approval Workflow, Auto-Publish Queue, Templates,
+    //           Engagement Alerts, Calendar Export, Bulk Ops, Tagging
+    // ============================================================
+
+    // POST /api/approval-workflow — Assign reviewer and set approval steps
+    if (method === 'POST' && pathname === '/api/approval-workflow') {
+      const body = await parseBody(req);
+      const { content_id, reviewer, notes, action } = body || {};
+      if (!content_id) return json(res, { error: 'content_id required' }, 400);
+
+      const content = readJSON('content.json', []);
+      const idx = content.findIndex(c => c.id === content_id);
+      if (idx < 0) return json(res, { error: 'Content not found' }, 404);
+
+      if (!content[idx].workflow) content[idx].workflow = { steps: [], current_step: 0, status: 'pending' };
+
+      if (action === 'approve') {
+        content[idx].workflow.status = 'approved';
+        content[idx].workflow.steps.push({ action: 'approved', reviewer: reviewer || 'system', notes: notes || '', at: now() });
+        content[idx].status = 'approved';
+      } else if (action === 'reject') {
+        content[idx].workflow.status = 'rejected';
+        content[idx].workflow.steps.push({ action: 'rejected', reviewer: reviewer || 'system', notes: notes || '', at: now() });
+        content[idx].status = 'rejected';
+      } else if (action === 'request_changes') {
+        content[idx].workflow.status = 'changes_requested';
+        content[idx].workflow.steps.push({ action: 'changes_requested', reviewer: reviewer || 'system', notes: notes || '', at: now() });
+      } else {
+        // Assign reviewer
+        content[idx].workflow.reviewer = reviewer || null;
+        content[idx].workflow.steps.push({ action: 'assigned', reviewer: reviewer || 'system', notes: notes || '', at: now() });
+      }
+
+      writeJSON('content.json', content);
+      return json(res, { ok: true, content_id, workflow: content[idx].workflow });
+    }
+
+    // GET /api/approval-workflow — Get workflow status for all content
+    if (method === 'GET' && pathname === '/api/approval-workflow') {
+      const content = readJSON('content.json', []);
+      const withWorkflow = content.filter(c => c.workflow).map(c => ({
+        content_id: c.id, title: c.trigger_title, status: c.workflow.status, reviewer: c.workflow.reviewer, steps: c.workflow.steps?.length || 0, last_action: c.workflow.steps?.slice(-1)[0] || null
+      }));
+      const pending = withWorkflow.filter(w => w.status === 'pending' || w.status === 'changes_requested');
+      return json(res, { total: withWorkflow.length, pending: pending.length, items: withWorkflow });
+    }
+
+    // POST /api/auto-publish-queue — Add content to auto-publish queue
+    if (method === 'POST' && pathname === '/api/auto-publish-queue') {
+      const body = await parseBody(req);
+      const { content_id, platform, scheduled_time, format } = body || {};
+      if (!content_id || !platform) return json(res, { error: 'content_id and platform required' }, 400);
+
+      const queue = readJSON('auto-publish-queue.json', []);
+      const entry = {
+        id: generateId(),
+        content_id,
+        platform,
+        format: format || 'linkedin_post',
+        scheduled_time: scheduled_time || null,
+        status: 'queued', // 'queued', 'publishing', 'published', 'failed'
+        created_at: now()
+      };
+      queue.push(entry);
+      writeJSON('auto-publish-queue.json', queue);
+      return json(res, { ok: true, entry });
+    }
+
+    // GET /api/auto-publish-queue
+    if (method === 'GET' && pathname === '/api/auto-publish-queue') {
+      const queue = readJSON('auto-publish-queue.json', []);
+      const content = readJSON('content.json', []);
+      const enriched = queue.map(q => {
+        const item = content.find(c => c.id === q.content_id);
+        return { ...q, title: item?.trigger_title || 'Unknown' };
+      });
+      const byStatus = {};
+      for (const q of queue) { byStatus[q.status] = (byStatus[q.status] || 0) + 1; }
+      return json(res, { total: queue.length, by_status: byStatus, queue: enriched.slice(-30).reverse() });
+    }
+
+    // POST /api/content-template-library — Save a content template
+    if (method === 'POST' && pathname === '/api/content-template-library') {
+      const body = await parseBody(req);
+      const { name, format, template, description, tags } = body || {};
+      if (!name || !template) return json(res, { error: 'name and template required' }, 400);
+
+      const templates = readJSON('content-template-library.json', []);
+      const entry = {
+        id: generateId(),
+        name,
+        format: format || 'linkedin_post',
+        template, // Template with {{VARIABLE}} placeholders
+        description: description || '',
+        tags: Array.isArray(tags) ? tags : [],
+        use_count: 0,
+        created_at: now()
+      };
+      templates.push(entry);
+      writeJSON('content-template-library.json', templates);
+      return json(res, { ok: true, entry });
+    }
+
+    // GET /api/content-template-library
+    if (method === 'GET' && pathname === '/api/content-template-library') {
+      const templates = readJSON('content-template-library.json', []);
+      const byFormat = {};
+      for (const t of templates) { byFormat[t.format] = (byFormat[t.format] || 0) + 1; }
+      return json(res, { total: templates.length, by_format: byFormat, templates });
+    }
+
+    // POST /api/engagement-alerts — Set engagement alert thresholds
+    if (method === 'POST' && pathname === '/api/engagement-alerts') {
+      const body = await parseBody(req);
+      const { platform, metric, threshold, direction, name } = body || {};
+      if (!metric || !threshold) return json(res, { error: 'metric and threshold required' }, 400);
+
+      const alerts = readJSON('engagement-alerts.json', { rules: [], triggered: [] });
+      const rule = {
+        id: generateId(),
+        name: name || `${metric} ${direction || 'above'} ${threshold}`,
+        platform: platform || 'all',
+        metric, // 'engagement_rate', 'likes', 'comments', 'shares', 'impressions'
+        threshold: Number(threshold),
+        direction: direction || 'above', // 'above' or 'below'
+        active: true,
+        created_at: now()
+      };
+      alerts.rules.push(rule);
+      writeJSON('engagement-alerts.json', alerts);
+      return json(res, { ok: true, rule });
+    }
+
+    // GET /api/engagement-alerts — Get alerts and check for triggered ones
+    if (method === 'GET' && pathname === '/api/engagement-alerts') {
+      const alerts = readJSON('engagement-alerts.json', { rules: [], triggered: [] });
+      const tracker = readJSON('engagement-tracker.json', []);
+
+      // Check recent entries against rules
+      const newTriggered = [];
+      for (const entry of tracker.slice(-20)) {
+        for (const rule of alerts.rules.filter(r => r.active)) {
+          if (rule.platform !== 'all' && rule.platform !== entry.platform) continue;
+          const value = entry[rule.metric] || 0;
+          const triggered = rule.direction === 'above' ? value >= rule.threshold : value <= rule.threshold;
+          if (triggered) {
+            newTriggered.push({
+              rule_id: rule.id, rule_name: rule.name, content_id: entry.content_id, platform: entry.platform,
+              actual_value: value, threshold: rule.threshold, triggered_at: entry.date
+            });
+          }
+        }
+      }
+
+      return json(res, { rules: alerts.rules, triggered: newTriggered.slice(-20), total_rules: alerts.rules.length });
+    }
+
+    // GET /api/calendar-export — Export content calendar as CSV
+    if (method === 'GET' && pathname === '/api/calendar-export') {
+      const scheduler = readJSON('smart-scheduler.json', null);
+      const content = readJSON('content.json', []);
+
+      if (!scheduler?.schedule?.length) return json(res, { error: 'No schedule to export. Run smart-scheduler first.' }, 400);
+
+      const rows = ['Date,Day,Time,Platform,Title,Status'];
+      for (const s of scheduler.schedule) {
+        const title = (s.title || '').replace(/"/g, '""');
+        rows.push(`${s.date},${s.day},${s.time},${s.platform},"${title}",${s.status}`);
+      }
+
+      res.writeHead(200, {
+        'Content-Type': 'text/csv',
+        'Content-Disposition': 'attachment; filename="content-calendar.csv"',
+        'Access-Control-Allow-Origin': '*'
+      });
+      return res.end(rows.join('\n'));
+    }
+
+    // POST /api/bulk-content-ops — Bulk operations on content
+    if (method === 'POST' && pathname === '/api/bulk-content-ops') {
+      const body = await parseBody(req);
+      const { content_ids, operation, value } = body || {};
+      if (!Array.isArray(content_ids) || !operation) return json(res, { error: 'content_ids array and operation required' }, 400);
+
+      const content = readJSON('content.json', []);
+      let affected = 0;
+
+      for (const id of content_ids) {
+        const idx = content.findIndex(c => c.id === id);
+        if (idx < 0) continue;
+
+        switch (operation) {
+          case 'approve':
+            content[idx].status = 'approved';
+            affected++;
+            break;
+          case 'reject':
+            content[idx].status = 'rejected';
+            affected++;
+            break;
+          case 'archive':
+            content[idx].status = 'archived';
+            affected++;
+            break;
+          case 'tag':
+            if (!content[idx].tags) content[idx].tags = [];
+            if (value && !content[idx].tags.includes(value)) {
+              content[idx].tags.push(value);
+              affected++;
+            }
+            break;
+          case 'untag':
+            if (content[idx].tags && value) {
+              content[idx].tags = content[idx].tags.filter(t => t !== value);
+              affected++;
+            }
+            break;
+          case 'set_priority':
+            content[idx].priority = value || 'normal'; // 'high', 'normal', 'low'
+            affected++;
+            break;
+        }
+      }
+
+      writeJSON('content.json', content);
+      return json(res, { ok: true, operation, requested: content_ids.length, affected });
+    }
+
+    // POST /api/content-tags — Add/manage tags
+    if (method === 'POST' && pathname === '/api/content-tags') {
+      const body = await parseBody(req);
+      const { content_id, tags } = body || {};
+      if (!content_id || !Array.isArray(tags)) return json(res, { error: 'content_id and tags array required' }, 400);
+
+      const content = readJSON('content.json', []);
+      const idx = content.findIndex(c => c.id === content_id);
+      if (idx < 0) return json(res, { error: 'Content not found' }, 404);
+
+      content[idx].tags = tags;
+      writeJSON('content.json', content);
+      return json(res, { ok: true, content_id, tags: content[idx].tags });
+    }
+
+    // GET /api/content-tags — Get all used tags with counts
+    if (method === 'GET' && pathname === '/api/content-tags') {
+      const content = readJSON('content.json', []);
+      const tagCounts = {};
+      for (const c of content) {
+        for (const t of (c.tags || [])) {
+          tagCounts[t] = (tagCounts[t] || 0) + 1;
+        }
+      }
+      const sorted = Object.entries(tagCounts).sort((a, b) => b[1] - a[1]).map(([tag, count]) => ({ tag, count }));
+      return json(res, { total_tags: sorted.length, tags: sorted });
+    }
+
     // --- Static file serving ---
 
     // Serve dashboard

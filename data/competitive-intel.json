@@ -1,0 +1,96 @@
+{
+  "competitors_analyzed": 2,
+  "competitor_names": [
+    "Gladiator Law Marketing",
+    "PaperStreet"
+  ],
+  "their_focus": [
+    "AI and automation in legal marketing",
+    "SEO for specific practice areas (divorce, etc.)",
+    "Search algorithm changes (voice search, AI overviews, EEAT)",
+    "Website compliance and technical templates",
+    "Law firm branding and messaging strategy",
+    "Networking and industry events"
+  ],
+  "gaps_we_can_fill": [
+    "Conversion optimization tactics (they focus on traffic, not conversions)",
+    "Client retention and lifecycle marketing strategies",
+    "Competitive local market analysis for specific jurisdictions",
+    "PPC and paid advertising strategy (heavy SEO bias)",
+    "Law firm reputation management and review generation systems",
+    "Budget allocation frameworks (ROI measurement per channel)",
+    "Alternative practice areas beyond divorce (family law subspecialties, niche practices)",
+    "Content performance benchmarking data and case studies",
+    "Sales funnel optimization specific to legal services"
+  ],
+  "counter_positions": [
+    {
+      "their_claim": "AI vs. human writers - balanced comparison",
+      "our_angle": "Hybrid approach: AI for research/drafting speed + human expertise for legal accuracy and client voice that builds trust"
+    },
+    {
+      "their_claim": "You need a full-service marketing agency",
+      "our_angle": "Modular services model - choose what you need; data shows most firms only need 2-3 core services to win"
+    },
+    {
+      "their_claim": "Voice search and AI overviews are critical",
+      "our_angle": "These features drive awareness, not clients - focus on conversion-ready content for actual decision-makers instead"
+    },
+    {
+      "their_claim": "EEAT signals matter for legal authority",
+      "our_angle": "EEAT matters less than case results and client testimonials; we optimize for both search AND conversion signals"
+    }
+  ],
+  "content_to_create": [
+    {
+      "title": "Law Firm Marketing ROI Calculator: How Much Should You Actually Spend?",
+      "angle": "Data-backed budget models by practice area and firm size; shows exact $ per case acquisition",
+      "urgency": "high"
+    },
+    {
+      "title": "The Conversion Myth: Why Most Law Firms Get High Traffic But Few Clients",
+      "angle": "Post-click optimization audit; SEO alone doesn't convert - here's what does",
+      "urgency": "high"
+    },
+    {
+      "title": "Best Niche Practice Areas for Law Firm Marketing in 2025",
+      "angle": "Underserved specialties with high search volume and less competition (e.g., legal malpractice, IP licensing)",
+      "urgency": "high"
+    },
+    {
+      "title": "Paid Ads vs. SEO for Law Firms: What Really Wins New Clients",
+      "angle": "Direct comparison with case studies; when to use each; PPC performance benchmarks by practice area",
+      "urgency": "high"
+    },
+    {
+      "title": "Law Firm Client Retention: The Revenue Stream Everyone Forgets",
+      "angle": "Referral systems, case lifecycle upsells, and repeat business strategies competitors don't cover",
+      "urgency": "medium"
+    },
+    {
+      "title": "Reputation Management for Lawyers: Beyond Google Reviews",
+      "angle": "Proactive review generation, addressing negative feedback, peer recognition strategies",
+      "urgency": "medium"
+    },
+    {
+      "title": "Local Market Legal SEO Audit: How to Beat Competitors in Your City",
+      "angle": "Competitor analysis framework; citation gaps; local link building tactics",
+      "urgency": "medium"
+    },
+    {
+      "title": "Website Conversion Rate Benchmarks for Law Firms (by practice area)",
+      "angle": "Research-backed data on what 'good' performance looks like; diagnostic framework",
+      "urgency": "low"
+    }
+  ],
+  "threat_level": "medium",
+  "threat_rationale": "Gladiator dominates SEO/content strategy narrative; PaperStreet controls website platform and compliance. Both have strong SEO positioning. However, neither deeply addresses ROI, conversions, or paid channels. Opportunity to position as results-focused alternative to their 'traffic-first' approach.",
+  "recommendations": [
+    "Create 'ROI vs. vanity metrics' positioning to counter their traffic-obsessed narrative",
+    "Build conversion benchmarking research proprietary to your firm",
+    "Target underserved practice areas they ignore (IP, appeals, legal malpractice)",
+    "Emphasize paid channel expertise as complement to organic (they ignore PPC entirely)",
+    "Document client case studies with specific revenue/lead generation data"
+  ],
+  "generated_at": "2026-02-21T13:53:13.506Z"
+}

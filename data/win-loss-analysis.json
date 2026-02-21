@@ -1,0 +1,20 @@
+{
+  "total_wins": 6,
+  "total_losses": 0,
+  "published": 1,
+  "win_patterns": [
+    "Insufficient data - all 6 wins have empty objects"
+  ],
+  "loss_patterns": [
+    "No rejection data available"
+  ],
+  "best_source": "Unknown - empty win objects lack source attribution",
+  "worst_source": "No data",
+  "recommendations": [
+    "Populate win/loss objects with actual content attributes (topic, format, length, source, keywords, etc.)",
+    "Add metadata to track rejection reasons and triggers",
+    "Establish baseline metrics: publish date, approval time, engagement rates"
+  ],
+  "win_rate": "100% (6/6 approved, but insufficient sample quality for pattern analysis)",
+  "generated_at": "2026-02-21T13:57:57.601Z"
+}

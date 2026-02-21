@@ -1,0 +1,26 @@
+{
+  "generated": 38,
+  "approved": 1,
+  "published": 1,
+  "triggers_added": 0,
+  "value_posts": 2,
+  "cta_posts": 0,
+  "headline": "Severe approval bottleneck: 38 generated, only 1 published—triage queue blocking pipeline",
+  "grade": "D",
+  "wins": [
+    "High content generation volume (38 pieces)"
+  ],
+  "misses": [
+    "97% rejection/pending rate (37 of 38 unapproved)",
+    "Zero CTA content created (missing conversion strategy)",
+    "No triggers added to any content",
+    "Content bank ratio severely below target (2:0 vs 4:1 goal)"
+  ],
+  "next_week_focus": [
+    "Clear triage bottleneck: audit approval criteria and add reviewer capacity immediately",
+    "Shift generation focus to CTA posts (target 1 CTA per 3-4 value posts)",
+    "Add UTM/trigger parameters to all approved content before publishing"
+  ],
+  "bottleneck": "Triage/approval process—investigate why 37 pieces are pending and fix decision-making speed or clarity",
+  "generated_at": "2026-02-21T13:49:00.434Z"
+}

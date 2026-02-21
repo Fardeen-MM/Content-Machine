@@ -1,0 +1,13 @@
+{
+  "trends": [],
+  "best_opportunity": "No actionable trends detected",
+  "speed_required": "Awaiting signal data",
+  "note": "Empty signal array provided. To generate hijackable trends, please supply recent signals from: Twitter/X, Reddit, TikTok, news aggregators, Google Trends, or industry alerts.",
+  "next_steps": [
+    "Feed real-time trending data",
+    "Specify geographic market",
+    "Define target client verticals (B2B legal, consumer, corporate)",
+    "Set content format preferences (threads, shorts, blog, graphics)"
+  ],
+  "generated_at": "2026-02-21T13:53:28.125Z"
+}

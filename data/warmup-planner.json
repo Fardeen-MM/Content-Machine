@@ -1,0 +1,160 @@
+{
+  "platform": "linkedin",
+  "days": [
+    {
+      "day": 1,
+      "actions": [
+        "Optimize LinkedIn profile: add professional headshot, compelling headline with 'Legal Marketing' keywords",
+        "Write 3 thoughtful comments on posts from legal industry thought leaders",
+        "Like 10-15 posts from target audience (in-house counsel, law firm partners)"
+      ],
+      "goal": "Establish credibility and initiate visibility"
+    },
+    {
+      "day": 2,
+      "actions": [
+        "Send 5 personalized connection requests to legal prospects (1st degree focus)",
+        "Engage with 2 legal industry news articles with substantive comments",
+        "Share one industry insight as a post"
+      ],
+      "goal": "Grow network quality, position as industry participant"
+    },
+    {
+      "day": 3,
+      "actions": [
+        "Send 5 more targeted connection requests",
+        "Comment on 3 posts from connected peers",
+        "Like and comment on competitor content"
+      ],
+      "goal": "Expand network thoughtfully"
+    },
+    {
+      "day": 4,
+      "actions": [
+        "Publish first agency-focused article (500 words on legal marketing trends)",
+        "Engage with 4-5 posts from new connections",
+        "Send 3 personalized connection requests"
+      ],
+      "goal": "Establish thought leadership"
+    },
+    {
+      "day": 5,
+      "actions": [
+        "Share case study or client success story (without naming)",
+        "Comment on 3 legal tech/marketing posts",
+        "Send 5 connection requests with custom messages"
+      ],
+      "goal": "Demonstrate expertise, increase impressions"
+    },
+    {
+      "day": 6,
+      "actions": [
+        "Engage with 6-8 posts across legal, marketing, and business categories",
+        "Respond to all comments on day 4-5 posts",
+        "Send 4 personalized messages to recent connections"
+      ],
+      "goal": "Build momentum, strengthen new relationships"
+    },
+    {
+      "day": 7,
+      "actions": [
+        "Publish weekly insights post (industry news commentary)",
+        "Engage with 5-7 posts from target accounts",
+        "Join and participate in 2 LinkedIn legal/business groups",
+        "Review and update company page"
+      ],
+      "goal": "Establish posting rhythm, expand reach channels"
+    },
+    {
+      "day": 8,
+      "actions": [
+        "Send 6-8 connection requests (mix of prospects and strategic partners)",
+        "Comment thoughtfully on 4 posts",
+        "Engage group discussions with 2 substantive comments"
+      ],
+      "goal": "Accelerate network building"
+    },
+    {
+      "day": 9,
+      "actions": [
+        "Share educational content: '5 Legal Marketing Mistakes' or similar",
+        "Engage with 5-6 posts",
+        "Send personalized DMs to 3-4 high-value connections offering value"
+      ],
+      "goal": "Provide value, initiate meaningful conversations"
+    },
+    {
+      "day": 10,
+      "actions": [
+        "Publish article on legal industry challenge/solution",
+        "Engage with 6-8 posts across network",
+        "Send 5 connection requests",
+        "Respond to all DM inquiries immediately"
+      ],
+      "goal": "Reinforce authority, nurture conversations"
+    },
+    {
+      "day": 11,
+      "actions": [
+        "Host or announce a webinar/resource offering",
+        "Engage with 5-7 posts",
+        "Send personalized messages to engaged commenters on your posts",
+        "Update 'About' section with CTA"
+      ],
+      "goal": "Capture leads, increase CTAs"
+    },
+    {
+      "day": 12,
+      "actions": [
+        "Share client testimonial or case result post",
+        "Engage with 7-8 posts from target audience",
+        "Send 6 personalized connection requests to warm leads",
+        "Create LinkedIn carousel post (3-5 slides on legal marketing insights)"
+      ],
+      "goal": "Build social proof, test engagement formats"
+    },
+    {
+      "day": 13,
+      "actions": [
+        "Publish weekly roundup or market insights post",
+        "Engage with 6-7 posts",
+        "Schedule 3-4 future posts to maintain consistency",
+        "Send follow-up messages to non-responders (gentle)"
+      ],
+      "goal": "Plan for sustainability, increase post quality"
+    },
+    {
+      "day": 14,
+      "actions": [
+        "Analyze engagement metrics and adjust strategy",
+        "Engage with 8-10 posts to end week strong",
+        "Send 5 personalized requests to highest-value prospects",
+        "Publish reflection/win post showing growth",
+        "Document warmup results and plan next phase"
+      ],
+      "goal": "Measure success, plan scaling"
+    }
+  ],
+  "rules": [
+    "No generic comments—be specific and add perspective",
+    "Wait 2-3 days before sending multiple requests to same contact",
+    "Respond to all comments within 24 hours",
+    "Avoid sales pitch in first 7 days; focus on value/relationship",
+    "Post minimum 3x per week; quality over frequency",
+    "Personalize all connection requests (never use default)",
+    "Engage daily for 20-30 minutes minimum",
+    "Target only prospects with 500+ connections or legal industry titles",
+    "No follow-up connection requests if ignored after 7 days",
+    "Maintain 80/20 rule: 80% value/engagement, 20% promotional"
+  ],
+  "expected_by_day_14": {
+    "new_connections": "40-60 quality connections",
+    "profile_views": "80-120 views",
+    "post_impressions": "500-800 per post",
+    "engagement_rate": "3-5% on posts",
+    "warm_leads": "5-8 qualified prospects engaging",
+    "DM_conversations": "3-5 active meaningful discussions",
+    "profile_visits_increase": "200-300% increase from baseline"
+  },
+  "generated_at": "2026-02-21T14:03:04.361Z"
+}

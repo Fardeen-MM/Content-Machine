@@ -1,0 +1,45 @@
+{
+  "replies": [
+    {
+      "scenario": "Agreement Comment",
+      "template": "Thanks [Name]! Totally agree—[specific_point] is something we see impact clients constantly. Would love to connect and share more thoughts on this.",
+      "tone": "warm"
+    },
+    {
+      "scenario": "Service Question",
+      "template": "Great question, [Name]! [Service] typically works best for [ideal_client_type]. Happy to walk you through how it'd apply to [their_situation]. Free 15-min call this week?",
+      "tone": "professional"
+    },
+    {
+      "scenario": "Shared Struggle",
+      "template": "[Name], I really appreciate you sharing that. [Service] exists because we solved this exact problem for [similar_client]. Would discussing our approach help?",
+      "tone": "warm"
+    },
+    {
+      "scenario": "Cold DM Profile View",
+      "template": "Hey [Name]—noticed you checking out our profile. [Specific_industry] is where we specialize. Curious if [their_pain_point] is on your radar right now?",
+      "tone": "professional"
+    },
+    {
+      "scenario": "Lead Magnet Follow-up",
+      "template": "[Name], thanks for grabbing the [resource_name]! Which section resonated most? Would love to discuss how [service] takes those ideas further for [their_goal].",
+      "tone": "warm"
+    },
+    {
+      "scenario": "Price Objection",
+      "template": "Totally fair, [Name]. Most clients see ROI within [timeframe] because [specific_benefit]. Could we explore if [scaled_option] fits better for right now?",
+      "tone": "professional"
+    },
+    {
+      "scenario": "Timing Objection",
+      "template": "I get it, [Name]—[their_reason] makes sense. No pressure at all. When [realistic_timeframe] rolls around, I'd love to reconnect and see if we can help then.",
+      "tone": "warm"
+    },
+    {
+      "scenario": "Warm Intro Request",
+      "template": "[Name], [connection_name] just told me about [specific_topic]. Would you be open to an intro? I think there's real synergy here around [mutual_interest].",
+      "tone": "professional"
+    }
+  ],
+  "generated_at": "2026-02-21T13:47:42.519Z"
+}

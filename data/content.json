@@ -2652,7 +2652,25 @@
       }
     },
     "conversions": 2,
-    "total_conversion_value": 3000
+    "total_conversion_value": 3000,
+    "workflow": {
+      "steps": [
+        {
+          "action": "assigned",
+          "reviewer": "john@mortarmetrics.com",
+          "notes": "",
+          "at": "2026-02-21T17:05:41.631Z"
+        }
+      ],
+      "current_step": 0,
+      "status": "pending",
+      "reviewer": "john@mortarmetrics.com"
+    },
+    "tags": [
+      "legal-marketing",
+      "seo",
+      "high-priority"
+    ]
   },
   {
     "id": "0290f613483e7695",

@@ -1,0 +1,31 @@
+{
+  "quick_wins": [
+    {
+      "action": "Publish 5 approved pieces immediately",
+      "impact": "high",
+      "time": "5",
+      "why": "Zero friction—content already approved, ready to drive traffic and engagement today"
+    },
+    {
+      "action": "Audit 464 pending triggers for false positives",
+      "impact": "high",
+      "time": "30",
+      "why": "Massive queue suggests workflow jam; removing invalid triggers unblocks pipeline"
+    },
+    {
+      "action": "Set publishing schedule for approved pieces",
+      "impact": "medium",
+      "time": "10",
+      "why": "Stagger releases to maximize reach and sustain momentum beyond launch day"
+    },
+    {
+      "action": "Create content calendar from 41 total pieces",
+      "impact": "medium",
+      "time": "15",
+      "why": "Only 1 published = visibility problem; mapping content reveals gaps and distribution strategy"
+    }
+  ],
+  "biggest_bottleneck": "464 pending triggers with 0 high-score items—trigger system isn't filtering effectively, creating decision paralysis and blocking content progress",
+  "one_thing_today": "Publish the 5 approved pieces now (5 min), then spend 30 min cleaning up the trigger backlog to unblock future releases",
+  "generated_at": "2026-02-21T14:01:45.678Z"
+}

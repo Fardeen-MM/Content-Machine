@@ -1,0 +1,61 @@
+{
+  "primary_icp": {
+    "title": "Managing Partner / Practice Leader",
+    "firm_size": "10-50 attorneys",
+    "revenue": "$2M-$10M",
+    "practice_areas": [
+      "Personal Injury",
+      "Employment Law",
+      "Real Estate",
+      "Family Law"
+    ],
+    "pain_points": [
+      "Poor ROI on digital marketing spend ($5K+/month with minimal case intake)",
+      "Slow lead response time causing caller abandonment (>30 sec response)",
+      "Inconsistent case quality and source tracking",
+      "Gap between marketing spend and actual billable cases",
+      "Inability to measure attribution across marketing channels"
+    ],
+    "goals": [
+      "Reduce cost per case acquisition by 40%+",
+      "Improve lead response speed to <15 seconds",
+      "Establish predictable, trackable marketing ROI",
+      "Scale practice without proportional marketing spend increase",
+      "Align marketing metrics with actual case outcomes"
+    ],
+    "objections": [
+      "Skeptical of marketing agencies after prior poor experiences",
+      "Concern that legal marketing is commoditized/ineffective",
+      "Fear of losing control of client relationships",
+      "Budget constraints after failed ad spend",
+      "Don't understand marketing metrics/attribution"
+    ],
+    "where_they_hang_out": [
+      "Reddit (r/Lawyers, r/legal, practice-specific subreddits)",
+      "LinkedIn (legal industry groups, practice management posts)",
+      "Legal practice management forums (LawFirm.com, Above the Law)",
+      "Local bar association meetings and CLEs",
+      "Legal tech webinars and podcasts"
+    ],
+    "buying_triggers": [
+      "Just fired previous marketing provider",
+      "Current Google Ads campaign underperforming for >3 months",
+      "Hired new business development person (seeking better tools/strategy)",
+      "Experienced seasonal intake cliff",
+      "Opened new practice area or office location"
+    ]
+  },
+  "secondary_icp": {
+    "title": "Solo/Small Firm Attorney (Digital-Native)",
+    "difference": "1-5 person firm, <$500K revenue, more hands-on with marketing, higher tech comfort, needs affordable/DIY-hybrid solutions, faster decision-making but tighter budgets"
+  },
+  "disqualifiers": [
+    "Large AmLaw firms (200+ attorneys) - different buying process/budget structures",
+    "Practice areas with minimal digital marketing viability (e.g., government relations, M&A only)",
+    "Firms without existing online presence/website",
+    "Attorneys unwilling to change current marketing approach",
+    "Firms with <6 months runway before closure risk",
+    "Practice leaders without P&L responsibility"
+  ],
+  "generated_at": "2026-02-21T13:57:42.299Z"
+}

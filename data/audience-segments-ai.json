@@ -1,0 +1,86 @@
+{
+  "segments": [
+    {
+      "name": "Growth-Stage Managing Partners",
+      "description": "Partners at 10-50 attorney firms looking to scale revenue without proportional cost increases. They have some marketing budget but limited internal resources.",
+      "pain_points": [
+        "Inconsistent case intake month-to-month",
+        "Losing prospects to larger competitors with better marketing",
+        "High cost per acquired case",
+        "Marketing feels like a distraction from client work",
+        "Difficulty measuring ROI on marketing spend"
+      ],
+      "content_types": [
+        "Case study ROI reports with specific metrics",
+        "Comparative benchmarking data vs peer firms",
+        "Implementation roadmaps with 90-day timelines",
+        "White papers on law firm growth models",
+        "Webinars with guest partners sharing their growth stories"
+      ],
+      "hook_style": "Data-driven success stories with specific revenue gains. Lead with the number (e.g., '3 partners increased case intake 47% in 6 months'). Show the math behind growth.",
+      "cta_preference": "Schedule 15-min growth audit with your firm's metrics vs industry benchmarks"
+    },
+    {
+      "name": "Specialized Practice Leaders",
+      "description": "Partners or practice heads in niche areas (personal injury, medical malpractice, construction defect, etc.) with established reputation but inconsistent referral pipelines.",
+      "pain_points": [
+        "Over-reliant on personal referrals that dry up",
+        "Difficulty competing with national firms in their niche",
+        "Low website visibility within their specialty",
+        "Don't understand how to market their expertise authentically",
+        "Concerned about brand positioning and thought leadership"
+      ],
+      "content_types": [
+        "Niche-specific marketing playbooks by practice area",
+        "Positioning frameworks for specialist practices",
+        "Expert authority content templates and distribution guides",
+        "Case studies from similar specialized practices",
+        "Podcast appearances and speaking opportunity guides"
+      ],
+      "hook_style": "Speak to their expertise pride. Position marketing as amplifying their existing authority, not replacing it. Use industry-specific language and examples.",
+      "cta_preference": "Get a free positioning audit that identifies your unique market advantage"
+    },
+    {
+      "name": "Digital-Native Solo/Small Practitioners",
+      "description": "Solo attorneys and 2-5 person firm owners comfortable with technology, active on LinkedIn, interested in scaling through digital channels.",
+      "pain_points": [
+        "Limited budget for agency services",
+        "Want DIY options but lack strategic direction",
+        "Overwhelmed by too many marketing tools and platforms",
+        "Struggle with content creation consistency",
+        "Fear of looking unprofessional or spammy online"
+      ],
+      "content_types": [
+        "Step-by-step how-to guides and video tutorials",
+        "Content templates they can customize and use immediately",
+        "LinkedIn strategy and copywriting tips",
+        "Affordable tool stacks and SOP documentation",
+        "Weekly action items and quick wins they can implement alone"
+      ],
+      "hook_style": "Practical, no-BS advice with immediate applications. Show them they can do this without hiring an agency (but subtly show where they'll want help). Lead with quick wins.",
+      "cta_preference": "Download free case intake optimization checklist"
+    },
+    {
+      "name": "Underperforming Marketing-Aware Firms",
+      "description": "Firms with existing marketing efforts, hire marketing people or agencies, but aren't seeing the case intake results they expected. They're frustrated and skeptical.",
+      "pain_points": [
+        "Previous marketing investments didn't deliver results",
+        "In-house marketing person lacking legal expertise",
+        "Unclear attribution between marketing activities and signed cases",
+        "Working with generic agencies unfamiliar with legal nuances",
+        "Wasted budget on vanity metrics (web traffic, leads) vs actual cases"
+      ],
+      "content_types": [
+        "Audit/diagnostic frameworks to identify what's broken",
+        "Legal-specific marketing accountability standards",
+        "Before/after case studies with detailed metrics",
+        "Reports on common marketing mistakes law firms make",
+        "Competitor analysis within their market/practice area"
+      ],
+      "hook_style": "Validate their frustration. Show common mistakes other firms made. Position your agency as fixing the broken approach, not starting from scratch. Lead with diagnosis.",
+      "cta_preference": "Schedule a free marketing performance audit (show exactly where dollars are leaking)"
+    }
+  ],
+  "primary_segment": "Growth-Stage Managing Partners",
+  "generated_at": "2026-02-21T13:47:58.391Z"
+}

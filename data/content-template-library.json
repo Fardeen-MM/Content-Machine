@@ -1,0 +1,15 @@
+[
+  {
+    "id": "d79fe58184882798",
+    "name": "LinkedIn Authority Post",
+    "format": "linkedin",
+    "template": "{{HOOK}}\n\nHere is the truth about {{TOPIC}}:\n\n{{BODY}}\n\n{{CTA}}",
+    "description": "",
+    "tags": [
+      "linkedin",
+      "authority"
+    ],
+    "use_count": 0,
+    "created_at": "2026-02-21T17:05:44.369Z"
+  }
+]

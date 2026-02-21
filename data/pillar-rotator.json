@@ -1,0 +1,48 @@
+{
+  "next_5_posts": [
+    {
+      "day": "Mon",
+      "pillar": "Competitive Advantage",
+      "concept": "How legal agencies differentiate through niche specialization",
+      "format": "contrarian",
+      "hook": "Stop trying to be everything to every law firm—your competitive edge lives in ruthless specialization"
+    },
+    {
+      "day": "Wed",
+      "pillar": "Client Acquisition",
+      "concept": "Building referral networks: turning satisfied clients into your sales team",
+      "format": "case_study",
+      "hook": "One legal marketing agency generated 40% of new clients through structured referral programs—here's their system"
+    },
+    {
+      "day": "Fri",
+      "pillar": "Sales Process",
+      "concept": "Qualifying legal prospects: red flags and green lights in discovery calls",
+      "format": "teaching",
+      "hook": "Master these 3 qualification questions to avoid low-value legal firm contracts"
+    },
+    {
+      "day": "Mon",
+      "pillar": "Content Strategy",
+      "concept": "Thought leadership for law firms: from blog posts to authority positioning",
+      "format": "listicle",
+      "hook": "5 content formats that actually position legal partners as industry authorities (not just blog spam)"
+    },
+    {
+      "day": "Wed",
+      "pillar": "Marketing Metrics",
+      "concept": "CAC vs. LTV for legal services: what metrics actually matter",
+      "format": "teaching",
+      "hook": "Your legal marketing ROI is broken if you're not tracking these 4 metrics"
+    }
+  ],
+  "pillar_balance": {
+    "Client Acquisition": 1,
+    "Marketing Metrics": 0,
+    "Content Strategy": 0,
+    "Sales Process": 0,
+    "Competitive Advantage": 0
+  },
+  "most_neglected": "Marketing Metrics",
+  "generated_at": "2026-02-21T13:47:36.588Z"
+}

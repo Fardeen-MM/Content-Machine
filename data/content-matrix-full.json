@@ -1,0 +1,108 @@
+{
+  "mantra": "Law firms grow by converting prospects into signed cases through strategic marketing.",
+  "pillars": [
+    {
+      "name": "Client Acquisition",
+      "description": "Strategies to attract qualified leads and convert them into paying clients.",
+      "concepts": [
+        {
+          "thesis": "Most law firms waste money on unfocused advertising.",
+          "teaching": "How to Build a Lead Generation System That Works",
+          "contrarian": "Stop Chasing Every Lead—Target Your Ideal Client Only",
+          "case_study": "How This Firm Doubled Cases Using Niche Marketing",
+          "listicle": "5 Lead Sources Every Law Firm Should Test"
+        },
+        {
+          "thesis": "Website conversion beats traffic volume for case growth.",
+          "teaching": "Converting Visitors Into Case Inquiries on Your Site",
+          "contrarian": "More Website Traffic Won't Get You More Cases",
+          "case_study": "Firm Increased Case Intake 40% Without More Visitors",
+          "listicle": "7 Website Elements That Kill Law Firm Conversions"
+        }
+      ]
+    },
+    {
+      "name": "Marketing Metrics",
+      "description": "Measuring and tracking what drives actual case growth.",
+      "concepts": [
+        {
+          "thesis": "Law firms ignore metrics and wonder why they fail.",
+          "teaching": "The 5 Metrics Every Law Firm Must Track",
+          "contrarian": "Vanity Metrics Are Destroying Your Law Firm Growth",
+          "case_study": "How Tracking CAC Cut This Firm's Marketing Spend",
+          "listicle": "10 KPIs That Actually Predict Case Growth"
+        },
+        {
+          "thesis": "Cost per signed case matters more than lead cost.",
+          "teaching": "Calculating Your True Customer Acquisition Cost",
+          "contrarian": "Cheap Leads Don't Mean Cheap Cases—Here's Why",
+          "case_study": "Premium Leads Generated 3X More Cases at Lower Cost",
+          "listicle": "4 Metrics That Reveal Your Real Profitability"
+        }
+      ]
+    },
+    {
+      "name": "Content Strategy",
+      "description": "Creating authority and trust through valuable legal content.",
+      "concepts": [
+        {
+          "thesis": "Generic legal content loses to specific problem-solving content.",
+          "teaching": "Building Authority Through Problem-Focused Content",
+          "contrarian": "Your Blog Posts Aren't Getting You Cases",
+          "case_study": "Firm Got 12 Cases Monthly With Focused Content",
+          "listicle": "6 Content Types That Convert Prospects to Cases"
+        },
+        {
+          "thesis": "Consistency beats perfection in legal content marketing.",
+          "teaching": "Sustainable Content Systems for Busy Law Firms",
+          "contrarian": "Stop Waiting for Perfect—Publish Imperfect Content Weekly",
+          "case_study": "Firm Built Credibility Through 52 Weekly Posts",
+          "listicle": "5 Content Formats Law Firms Can Publish Weekly"
+        }
+      ]
+    },
+    {
+      "name": "Sales Process",
+      "description": "Converting inquiries to consultations to signed retainers.",
+      "concepts": [
+        {
+          "thesis": "Poor follow-up loses more cases than bad marketing.",
+          "teaching": "The Science of Law Firm Lead Follow-Up",
+          "contrarian": "Your Slow Response Time Is Costing You Cases",
+          "case_study": "Faster Follow-Up Increased Case Conversion 45%",
+          "listicle": "7 Follow-Up Mistakes Killing Your Case Closures"
+        },
+        {
+          "thesis": "Qualification process determines case profitability before consultation.",
+          "teaching": "Qualifying Leads Before Your Consultation Call",
+          "contrarian": "Meeting Every Prospect Destroys Your Firm's Profitability",
+          "case_study": "Qualification Filter Improved Case Quality and Revenue",
+          "listicle": "8 Questions That Identify Your Best Case Fits"
+        }
+      ]
+    },
+    {
+      "name": "Competitive Advantage",
+      "description": "Differentiation strategies that make law firms stand out.",
+      "concepts": [
+        {
+          "thesis": "Commoditized law firms compete on price and lose.",
+          "teaching": "Building Unique Value Proposition for Law Firms",
+          "contrarian": "Your Specialization Isn't Specific Enough—Go Deeper",
+          "case_study": "Niche Focus Eliminated Price Competition for Firm",
+          "listicle": "5 Ways Law Firms Build Defensible Advantages"
+        },
+        {
+          "thesis": "Brand reputation converts better than aggressive advertising.",
+          "teaching": "Reputation Systems That Attract Premium Clients",
+          "contrarian": "Stop Hard-Selling—Let Your Reputation Do It",
+          "case_study": "Referral System Generated 60% of Cases Organically",
+          "listicle": "6 Reputation Builders That Drive Case Referrals"
+        }
+      ]
+    }
+  ],
+  "execution": "Rotate weekly series across pillars: Metric Monday (Marketing Metrics), Teardown Tuesday (Competitive Advantage), War Story Wednesday (Sales Process), Thesis Thursday (Client Acquisition), Framework Friday (Content Strategy). Cycle through formats—teaching/contrarian/case study/listicle—ensuring each pillar receives multiple formats monthly. Track engagement metrics to identify top-performing concepts for deeper exploration and case studies.",
+  "total_post_ideas": 40,
+  "generated_at": "2026-02-21T13:39:55.948Z"
+}

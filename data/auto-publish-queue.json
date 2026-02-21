@@ -1,0 +1,11 @@
+[
+  {
+    "id": "5b4861361db66b48",
+    "content_id": "test-123",
+    "platform": "linkedin",
+    "format": "linkedin_post",
+    "scheduled_time": "2026-02-22T09:00:00Z",
+    "status": "queued",
+    "created_at": "2026-02-21T17:05:30.558Z"
+  }
+]

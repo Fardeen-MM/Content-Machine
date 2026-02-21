@@ -1,0 +1,52 @@
+{
+  "target_accounts": [
+    {
+      "name": "Legal Tech Founders",
+      "why": "Reach law firm owners actively seeking solutions",
+      "approach": "Comment on efficiency/automation posts with case studies"
+    },
+    {
+      "name": "Law Firm Growth Coaches",
+      "why": "Their audience = your exact target market",
+      "approach": "Add specific ROI metrics to their business strategy posts"
+    },
+    {
+      "name": "BigLaw Managing Partners",
+      "why": "Influence decision-makers at scale",
+      "approach": "Engage on leadership/profitability content with insights"
+    },
+    {
+      "name": "Legal Industry Analysts",
+      "why": "Credible voices law firms already follow",
+      "approach": "Dispute/expand on market trends with data"
+    },
+    {
+      "name": "Solo Practitioner Advocates",
+      "why": "Direct access to underserved law firm owners",
+      "approach": "Share practical scaling tactics in comments"
+    }
+  ],
+  "daily_steps": [
+    "Check 10-15 accounts for posts (6am-9am window)",
+    "Comment within 15min with specific value/data/question",
+    "Engage 3x weekly on each account's content",
+    "Track profile views & inbound DMs daily"
+  ],
+  "rules": [
+    "Never generic praise—always add data, case study, or counterpoint",
+    "Comment length: 2-3 sentences max with clear value",
+    "Respond to replies within 2 hours to boost algorithm",
+    "Only comment on posts relevant to law firm growth/marketing"
+  ],
+  "mistakes": [
+    "Commenting 2+ hours late = algorithm already moved on",
+    "Pitching in comments—wait for DMs, add value first",
+    "Inconsistent commenting—giants need 2-3x weekly engagement"
+  ],
+  "results": {
+    "week_1": "300-500 profile impressions, 5-10 profile visits",
+    "month_1": "2,000-3,000 impressions, 15-25 qualified inbound DMs",
+    "month_3": "8,000+ impressions, 40-60 consultations scheduled"
+  },
+  "generated_at": "2026-02-21T13:43:12.655Z"
+}

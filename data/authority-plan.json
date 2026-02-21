@@ -1,0 +1,117 @@
+{
+  "positioning_statement": "The operator who shows law firms exactly how much money they're wasting on marketing — and how to fix it with systems, not hope.",
+  "core_narrative": "Most legal marketing agencies are glorified content creators. They write blogs, post on social media, maybe run some ads. They talk about 'brand awareness' and 'long-term strategy' because they can't show you the math.\n\nMortar Metrics exists because I got tired of watching law firms burn $10K-$50K/month on marketing that 'might work eventually.' We're operators. We've been inside the Google Ads account at 11pm fixing a hemorrhaging campaign. We've listened to the call recordings where a $300 lead went to voicemail because the receptionist was at lunch. We've seen the Clio data showing a firm signed 4 cases from 47 consultations — and nobody knew which 43 they lost or why.\n\nThis isn't about 'thought leadership.' It's about showing law firms the brutal math of what's broken, then building the systems that fix it. Every post, every piece of content, every case study comes back to one thing: more signed cases, more revenue, less guesswork. Not someday. This month.",
+  "month_1": {
+    "theme": "The Brutal Math (Establishing Authority Through Specific Failures)",
+    "goal": "Position as the person who sees what others miss — the hidden waste in law firm marketing",
+    "content_focus": [
+      "Specific dollar amounts wasted (unanswered calls, slow intake, broken tracking)",
+      "Behind-the-scenes failures from real audits (anonymized patterns, not fake names)",
+      "The math everyone ignores (cost per call × answer rate = actual lead cost)",
+      "Contrarian takes that challenge the legal marketing status quo"
+    ],
+    "key_actions": [
+      "Publish 5 posts/week (Mon-Fri): 3 value posts (failures/data), 1 framework post (how to fix), 1 contrarian opinion",
+      "Comment on 10 law firm/legal marketing posts per day (add value, not 'great post!')",
+      "DM 5 law firm owners per week who posted about marketing struggles (offer free 15min audit, no pitch)",
+      "Repurpose top 2 performing LinkedIn posts into Twitter threads + carousel versions",
+      "Launch 'Monday Math' series: every Monday, show one specific waste calculation with exact numbers"
+    ],
+    "milestone": "3 posts with 50+ reactions, 5 inbound DMs asking questions, 200+ new followers from target audience (law firm owners/managing partners)"
+  },
+  "month_2": {
+    "theme": "The System (Moving From 'What's Broken' to 'Here's How We Fix It')",
+    "goal": "Transition from diagnostician to solution architect — show the frameworks that work",
+    "content_focus": [
+      "Step-by-step breakdowns of systems (speed-to-lead, call tracking, intake scripts)",
+      "Before/after case studies (Mandall Law featured heavily, general patterns for others)",
+      "Tool stack recommendations (CallRail, Clio, Lawmatics, Google Ads scripts)",
+      "Common objections demolished with data ('SEO takes 6 months' vs reality for law firms)"
+    ],
+    "key_actions": [
+      "Publish 5 posts/week: 2 system breakdowns (how-to with exact steps), 2 proof posts (case studies/results), 1 myth-buster",
+      "Comment on 15 posts/day (expand reach into adjacent audiences: legal tech, small business marketing)",
+      "DM 10 engaged commenters per week (people who asked smart questions on your posts or others' posts)",
+      "Create first 'signature carousel': 'The 7 Systems Every Law Firm Needs' (reusable, evergreen, reshare quarterly)",
+      "Launch 'Friday Frameworks' series: every Friday, break down one complete system with tool recommendations and cost"
+    ],
+    "milestone": "2 posts with 100+ reactions, 10+ inbound discovery calls booked, 400+ new followers, first client mention/tag in a post"
+  },
+  "month_3": {
+    "theme": "The Authority (Shift to Invitation-Only Expert Status)",
+    "goal": "Become the person other legal marketers reference and law firms pursue — not the other way around",
+    "content_focus": [
+      "Industry-level commentary (trends across 50+ audits, what's working in Q4 2024/Q1 2025)",
+      "Controversial predictions ('Google Ads for PI firms will hit $400/click by 2026 — here's what that means')",
+      "Guest expert content (invite law firm owners to share their systems, position as curator of best practices)",
+      "Differentiation content (why we don't do SEO, why we turn away firms, the clients we fire)"
+    ],
+    "key_actions": [
+      "Publish 5 posts/week: 2 trend/prediction posts, 2 guest/client spotlight posts, 1 'things we don't do' post",
+      "Comment on 20 posts/day (including competitive agencies, legal publications, major law firm accounts)",
+      "Host first 'Office Hours' via LinkedIn Live or Zoom: 30min open Q&A on law firm marketing (record, clip into 5-7 short posts)",
+      "Launch 'Client Spotlight' series: interview 1 client per month (Mandall first), share their wins/systems, tag them heavily",
+      "Publish first long-form LinkedIn article (1500 words): 'The 2025 Law Firm Marketing Audit Checklist' (position as lead magnet)"
+    ],
+    "milestone": "1 post with 200+ reactions and 30+ comments, 15+ qualified discovery calls booked, 700+ followers, referenced/tagged by another agency or law firm owner as 'the person to follow'"
+  },
+  "signature_content": [
+    {
+      "type": "recurring series",
+      "name": "Monday Math",
+      "description": "Every Monday, calculate one specific waste in a law firm's marketing. Format: 'A [practice area] firm has [situation]. The math: [exact calculation]. The fix: [3 specific actions].' Build reputation as the person who shows you the money you're losing.",
+      "frequency": "Weekly (Mondays)"
+    },
+    {
+      "type": "recurring series",
+      "name": "Friday Frameworks",
+      "description": "Every Friday, break down one complete system: speed-to-lead, call tracking setup, intake script templates, Google Ads audit checklist. Include tool names, costs, setup time. Make it immediately actionable.",
+      "frequency": "Weekly (Fridays)"
+    },
+    {
+      "type": "signature post",
+      "name": "The Mortar Metrics Audit",
+      "description": "Monthly deep-dive post analyzing patterns across all audits that month. Format: 'We audited 12 law firm Google Ads accounts in [month]. Here's what we found...' Share anonymized data, common mistakes, surprising wins. Positions as the agency that sees hundreds of accounts.",
+      "frequency": "Monthly (first Monday of month)"
+    },
+    {
+      "type": "pillar content",
+      "name": "The 7 Systems Carousel",
+      "description": "Evergreen carousel breaking down the 7 systems every law firm needs: (1) Speed-to-lead, (2) Call tracking, (3) Intake scripts, (4) CRM automation, (5) Ad platform tracking, (6) Weekly reporting, (7) Quarterly audits. Reshare quarterly, update with new data.",
+      "frequency": "Quarterly (Jan, Apr, Jul, Oct)"
+    },
+    {
+      "type": "pillar content",
+      "name": "Client Spotlight Interview",
+      "description": "Long-form interview with a client (Mandall Law first, then rotate). Format: 'Before Mortar Metrics: [situation]. After: [results]. The system: [what we built]. Their take: [direct quotes].' Heavy on specific numbers and client voice. Tag client, ask them to share.",
+      "frequency": "Monthly (15th of each month)"
+    },
+    {
+      "type": "signature post",
+      "name": "Things We Don't Do",
+      "description": "Contrarian post listing services Mortar Metrics deliberately doesn't offer and why. 'We don't do SEO. We don't manage social media. We don't write blog posts. Here's why...' Differentiates from full-service agencies, shows focus.",
+      "frequency": "Quarterly (Mar, Jun, Sep, Dec)"
+    }
+  ],
+  "engagement_targets": {
+    "month_1": {
+      "posts_per_week": 5,
+      "comments_per_day": 10,
+      "dms_per_week": 5,
+      "target_followers": "200+ (focus on law firm owners, managing partners, legal marketers)"
+    },
+    "month_2": {
+      "posts_per_week": 5,
+      "comments_per_day": 15,
+      "dms_per_week": 10,
+      "target_followers": "400+ (expand into legal tech founders, adjacent B2B service providers)"
+    },
+    "month_3": {
+      "posts_per_week": 5,
+      "comments_per_day": 20,
+      "dms_per_week": 15,
+      "target_followers": "700+ (add competitive agency owners, legal publications, industry analysts)"
+    }
+  },
+  "generated_at": "2026-02-21T14:02:40.639Z"
+}

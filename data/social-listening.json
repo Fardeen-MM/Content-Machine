@@ -1,0 +1,88 @@
+{
+  "total_signals": 473,
+  "by_source": {
+    "reddit": 121,
+    "google-news": 1,
+    "rss": 189,
+    "youtube": 75,
+    "hackernews": 41,
+    "competitor": 45,
+    "content-ideas": 1
+  },
+  "top_keywords": [
+    {
+      "word": "legal",
+      "count": 75
+    },
+    {
+      "word": "marketing",
+      "count": 65
+    },
+    {
+      "word": "smokeball",
+      "count": 25
+    },
+    {
+      "word": "firms",
+      "count": 24
+    },
+    {
+      "word": "content",
+      "count": 20
+    },
+    {
+      "word": "automation",
+      "count": 18
+    },
+    {
+      "word": "tools",
+      "count": 17
+    },
+    {
+      "word": "actually",
+      "count": 16
+    },
+    {
+      "word": "lawyers",
+      "count": 14
+    },
+    {
+      "word": "business",
+      "count": 14
+    },
+    {
+      "word": "startup",
+      "count": 14
+    },
+    {
+      "word": "google",
+      "count": 13
+    },
+    {
+      "word": "email",
+      "count": 11
+    },
+    {
+      "word": "website",
+      "count": 11
+    },
+    {
+      "word": "guide",
+      "count": 11
+    }
+  ],
+  "sentiment": {
+    "positive": 46,
+    "negative": 14,
+    "neutral": 413
+  },
+  "dominant_sentiment": "positive",
+  "trending_up": [
+    "legal",
+    "marketing",
+    "smokeball",
+    "firms",
+    "content"
+  ],
+  "generated_at": "2026-02-21T14:01:42.297Z"
+}

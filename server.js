@@ -13453,8 +13453,9 @@ Return COMPACT JSON. Keep values SHORT (under 20 words each). Exactly 5 target a
     }
 
     // POST /api/engagement-predictor — Predict engagement before publishing using AI
-    if (method === 'POST' && pathname.match(/^\/api\/content\/([^/]+)\/engagement-predictor$/)) {
-      const contentId = pathname.match(/^\/api\/content\/([^/]+)\/engagement-predictor$/)[1];
+    const engPredMatch2 = pathname.match(/^\/api\/content\/([^/]+)\/engagement-predictor$/);
+    if (method === 'POST' && engPredMatch2) {
+      const contentId = engPredMatch2[1];
       const content = readJSON('content.json', []);
       const item = content.find(c => c.id === contentId);
       if (!item) return json(res, { error: 'Content not found' }, 404);
@@ -14032,8 +14033,9 @@ Return COMPACT JSON:
     }
 
     // POST /api/brand-voice-check — Check if content matches brand voice guidelines
-    if (method === 'POST' && pathname.match(/^\/api\/content\/([^/]+)\/voice-check$/)) {
-      const contentId = pathname.match(/^\/api\/content\/([^/]+)\/voice-check$/)[1];
+    const voiceCheckMatch = pathname.match(/^\/api\/content\/([^/]+)\/voice-check$/);
+    if (method === 'POST' && voiceCheckMatch) {
+      const contentId = voiceCheckMatch[1];
       const content = readJSON('content.json', []);
       const item = content.find(c => c.id === contentId);
       if (!item) return json(res, { error: 'Content not found' }, 404);
@@ -14156,8 +14158,9 @@ Return COMPACT JSON:
     }
 
     // POST /api/content-compliance — Check content for legal/ethical compliance issues
-    if (method === 'POST' && pathname.match(/^\/api\/content\/([^/]+)\/compliance-check$/)) {
-      const contentId = pathname.match(/^\/api\/content\/([^/]+)\/compliance-check$/)[1];
+    const complianceMatch = pathname.match(/^\/api\/content\/([^/]+)\/compliance-check$/);
+    if (method === 'POST' && complianceMatch) {
+      const contentId = complianceMatch[1];
       const content = readJSON('content.json', []);
       const item = content.find(c => c.id === contentId);
       if (!item) return json(res, { error: 'Content not found' }, 404);
@@ -14336,8 +14339,9 @@ Return COMPACT JSON:
     }
 
     // POST /api/email-subjects — Generate email subject line variations for any content
-    if (method === 'POST' && pathname.match(/^\/api\/content\/([^/]+)\/email-subjects$/)) {
-      const contentId = pathname.match(/^\/api\/content\/([^/]+)\/email-subjects$/)[1];
+    const emailSubjMatch = pathname.match(/^\/api\/content\/([^/]+)\/email-subjects$/);
+    if (method === 'POST' && emailSubjMatch) {
+      const contentId = emailSubjMatch[1];
       const content = readJSON('content.json', []);
       const item = content.find(c => c.id === contentId);
       if (!item) return json(res, { error: 'Content not found' }, 404);
@@ -14393,8 +14397,9 @@ Return COMPACT JSON:
     }
 
     // POST /api/collab-notes — Create collaboration/brief notes for content
-    if (method === 'POST' && pathname.match(/^\/api\/content\/([^/]+)\/collab-notes$/)) {
-      const contentId = pathname.match(/^\/api\/content\/([^/]+)\/collab-notes$/)[1];
+    const collabMatch = pathname.match(/^\/api\/content\/([^/]+)\/collab-notes$/);
+    if (method === 'POST' && collabMatch) {
+      const contentId = collabMatch[1];
       const content = readJSON('content.json', []);
       const item = content.find(c => c.id === contentId);
       if (!item) return json(res, { error: 'Content not found' }, 404);

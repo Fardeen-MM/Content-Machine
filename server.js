@@ -17710,7 +17710,8 @@ Content: ${firstContent.substring(0, 2000)}`;
       }
 
       const sorted = Object.values(heatmap).sort((a, b) => a.date.localeCompare(b.date));
-      const maxActivity = Math.max(...sorted.map(d => d.created + d.published), 1);
+      const activityVals = sorted.map(d => d.created + d.published);
+      const maxActivity = activityVals.length > 0 ? Math.max(...activityVals, 1) : 1;
 
       const byDay = {};
       for (const d of sorted) {

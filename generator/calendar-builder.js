@@ -359,12 +359,12 @@ function buildWeeklyCalendar(contentItems) {
     days: Object.values(calendar),
     stats: {
       filled_slots: Object.values(calendar).reduce((sum, day) => {
-        return sum + Object.values(day.slots).filter(Boolean).length;
+        return sum + Object.values(day.slots || {}).filter(Boolean).length;
       }, 0),
       total_slots: 7 * 5,
       coverage: Math.round(
         (Object.values(calendar).reduce((sum, day) => {
-          return sum + Object.values(day.slots).filter(Boolean).length;
+          return sum + Object.values(day.slots || {}).filter(Boolean).length;
         }, 0) / 35) * 100
       )
     }

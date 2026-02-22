@@ -60,12 +60,12 @@ async function runAll() {
   }
 
   const allNew = [
-    ...results.reddit,
-    ...results.rss,
-    ...results.youtube,
-    ...results['google-news'],
-    ...results.hackernews,
-    ...results.competitors
+    ...(results.reddit || []),
+    ...(results.rss || []),
+    ...(results.youtube || []),
+    ...(results['google-news'] || []),
+    ...(results.hackernews || []),
+    ...(results.competitors || [])
   ];
 
   // Cross-scraper deduplication — remove triggers with same URL or similar titles

@@ -75,7 +75,7 @@ async function searchHN(query, existingIds) {
   const triggers = [];
 
   try {
-    const res = await fetch(url);
+    const res = await fetch(url, { signal: AbortSignal.timeout(15000) });
 
     if (!res.ok) {
       console.error(`[hackernews] Query "${query}" returned ${res.status}`);

@@ -24,7 +24,8 @@ async function scrapeSubreddit(subreddit, existingIds) {
 
   try {
     const res = await fetch(url, {
-      headers: { 'User-Agent': USER_AGENT }
+      headers: { 'User-Agent': USER_AGENT },
+      signal: AbortSignal.timeout(15000)
     });
 
     if (!res.ok) {

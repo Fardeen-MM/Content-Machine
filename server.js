@@ -2570,7 +2570,7 @@ async function handleRequest(req, res) {
       // Process in background, return immediately
       json(res, { ok: true, queued: meetings.length, message: 'Reprocessing started in background' });
 
-      setImmediate(async () => {
+      setImmediate(async () => { try {
         let processed = 0;
         for (const meeting of meetings) {
           try {
@@ -2582,7 +2582,7 @@ async function handleRequest(req, res) {
           }
         }
         console.log(`[reprocess] Complete: ${processed}/${meetings.length} processed`);
-      });
+      } catch (err) { console.error('[reprocess] Background task failed:', err.message); } });
       return;
     }
 
@@ -3853,7 +3853,7 @@ Return ONLY the rewritten content. No explanation, no JSON wrapper.`;
       const batchId = generateId();
       _batchProgress[batchId] = { total: ids.length, completed: 0, errors: 0, results: [], status: 'running', type: 'bulk_improve' };
 
-      setImmediate(async () => {
+      setImmediate(async () => { try {
         const { callClaude, HAIKU } = require('./lib/claude');
         const { buildSystemPromptWithMemory } = require('./generator/content-writer');
         const { scoreHook, scoreSpecificity, scoreEmotionalValence } = require('./generator/score-triggers');
@@ -3894,7 +3894,7 @@ Return ONLY the rewritten content. No explanation, no JSON wrapper.`;
         }
         _batchProgress[batchId].status = 'done';
         setTimeout(() => { delete _batchProgress[batchId]; }, 30 * 60 * 1000);
-      });
+      } catch (err) { console.error('[bulk-improve] Background task failed:', err.message); try { _batchProgress[batchId].status = 'error'; _batchProgress[batchId].error = err.message; } catch {} } });
 
       return json(res, { ok: true, batch_id: batchId });
     }
@@ -3909,7 +3909,7 @@ Return ONLY the rewritten content. No explanation, no JSON wrapper.`;
       const batchId = generateId();
       _batchProgress[batchId] = { total: ids.length, completed: 0, errors: 0, results: [], status: 'running', type: 'bulk_ctas' };
 
-      setImmediate(async () => {
+      setImmediate(async () => { try {
         const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
         const { buildSystemPromptWithMemory } = require('./generator/content-writer');
         const systemPrompt = buildSystemPromptWithMemory();
@@ -3943,7 +3943,7 @@ Return JSON: { "trigger_keyword": "AUDIT", "cta_text": "Comment AUDIT for the fr
         }
         _batchProgress[batchId].status = 'done';
         setTimeout(() => { delete _batchProgress[batchId]; }, 30 * 60 * 1000);
-      });
+      } catch (err) { console.error('[bulk-ctas] Background task failed:', err.message); try { _batchProgress[batchId].status = 'error'; _batchProgress[batchId].error = err.message; } catch {} } });
 
       return json(res, { ok: true, batch_id: batchId });
     }
@@ -4261,7 +4261,7 @@ Return ONLY the full rewritten post with the new hook. Keep the body and CTA unc
       const batchId = generateId();
       _batchProgress[batchId] = { total: missing.length, completed: 0, errors: 0, results: [], status: 'running', type: 'repurpose_all' };
 
-      setImmediate(async () => {
+      setImmediate(async () => { try {
         const { repurposeContent } = require('./lib/claude');
         const { buildSystemPromptWithMemory } = require('./generator/content-writer');
         const systemPrompt = buildSystemPromptWithMemory();
@@ -4304,7 +4304,7 @@ Return ONLY the full rewritten post with the new hook. Keep the body and CTA unc
         }
         _batchProgress[batchId].status = 'done';
         setTimeout(() => { delete _batchProgress[batchId]; }, 30 * 60 * 1000);
-      });
+      } catch (err) { console.error('[repurpose-all] Background task failed:', err.message); try { _batchProgress[batchId].status = 'error'; _batchProgress[batchId].error = err.message; } catch {} } });
 
       return json(res, { ok: true, batch_id: batchId, source: bestSource, generating: missing, total: missing.length });
     }
@@ -4758,7 +4758,7 @@ Create 5-7 pillars. Make them specific to legal marketing. Identify gaps where w
       const batchId = generateId();
       _batchProgress[batchId] = { total: toRegen.length, completed: 0, errors: 0, results: [], status: 'running', type: 'auto_regen' };
 
-      setImmediate(async () => {
+      setImmediate(async () => { try {
         const { callClaude, HAIKU } = require('./lib/claude');
         const { buildSystemPromptWithMemory } = require('./generator/content-writer');
         const hooks = readJSON('hooks.json', []);
@@ -4806,7 +4806,7 @@ Rewrite the ENTIRE post. New hook, new angle, same core message. Make it more en
         }
         _batchProgress[batchId].status = 'done';
         setTimeout(() => { delete _batchProgress[batchId]; }, 30 * 60 * 1000);
-      });
+      } catch (err) { console.error('[auto-regen] Background task failed:', err.message); try { _batchProgress[batchId].status = 'error'; _batchProgress[batchId].error = err.message; } catch {} } });
 
       return json(res, { ok: true, batch_id: batchId, candidates: toRegen.length });
     }

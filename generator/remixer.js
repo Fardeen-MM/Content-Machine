@@ -22,7 +22,7 @@ Return raw JSON (no markdown fences) with this exact structure:
 }`;
 
 async function remixContent(originalText, sourceUrl, system) {
-  const atoms = await atomizeContent(originalText, sourceUrl);
+  const atoms = await atomizeContent(originalText, sourceUrl).catch(() => []) || [];
 
   const prompt = `COMPETITOR CONTENT (source: ${sourceUrl}):
 ---
@@ -43,7 +43,9 @@ Blog post must be 1500-2500 words in markdown. Carousel must be exactly 7 slides
   });
 
   const parsed = parseJsonResponse(raw);
-  if (!parsed) return { _error: 'Failed to parse response', _sourceUrl: sourceUrl };
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+    return { _error: 'Failed to parse response', _sourceUrl: sourceUrl };
+  }
 
   return { ...parsed, atoms, _sourceUrl: sourceUrl };
 }

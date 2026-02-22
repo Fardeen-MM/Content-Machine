@@ -110,6 +110,9 @@ function apiError(res, err) {
   if (msg.includes('Invalid JSON') || msg.includes('Body too large')) {
     return json(res, { error: msg }, 400);
   }
+  if (msg.includes('not found')) {
+    return json(res, { error: msg }, 404);
+  }
   return json(res, { error: msg || 'Internal server error' }, 500);
 }
 
@@ -463,8 +466,8 @@ async function handleRequest(req, res) {
       const category = url.searchParams.get('category');
       const status = url.searchParams.get('status');
       const search = url.searchParams.get('q');
-      const limit = parseInt(url.searchParams.get('limit')) || 0;
-      const offset = parseInt(url.searchParams.get('offset')) || 0;
+      const limit = Math.max(0, parseInt(url.searchParams.get('limit')) || 0);
+      const offset = Math.max(0, parseInt(url.searchParams.get('offset')) || 0);
 
       if (source) triggers = triggers.filter(t => t.source === source);
       if (category) triggers = triggers.filter(t => t.category === category);
@@ -494,8 +497,8 @@ async function handleRequest(req, res) {
       const format = url.searchParams.get('format');
       const search = url.searchParams.get('q');
       const includeArchived = url.searchParams.get('archived') === 'true';
-      const limit = parseInt(url.searchParams.get('limit')) || 0;
-      const offset = parseInt(url.searchParams.get('offset')) || 0;
+      const limit = Math.max(0, parseInt(url.searchParams.get('limit')) || 0);
+      const offset = Math.max(0, parseInt(url.searchParams.get('offset')) || 0);
 
       // Exclude archived by default unless explicitly requested
       if (!includeArchived && status !== 'archived') {
@@ -2281,7 +2284,7 @@ async function handleRequest(req, res) {
     // POST /api/content/:id/remix — rewrite a format with a directive OR create new content piece with a mode
     const remixFmtMatch = pathname.match(/^\/api\/content\/([a-f0-9]+)\/remix$/);
     if (remixFmtMatch && method === 'POST') {
-      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not configured' }, 503);
       const content = readJSON('content.json');
       const idx = content.findIndex(c => c.id === remixFmtMatch[1]);
       if (idx === -1) return json(res, { error: 'Not found' }, 404);
@@ -2459,8 +2462,8 @@ async function handleRequest(req, res) {
       const client = url.searchParams.get('client') || undefined;
       const from = url.searchParams.get('from') || undefined;
       const to = url.searchParams.get('to') || undefined;
-      const limit = parseInt(url.searchParams.get('limit')) || 50;
-      const offset = parseInt(url.searchParams.get('offset')) || 0;
+      const limit = Math.max(1, parseInt(url.searchParams.get('limit')) || 50);
+      const offset = Math.max(0, parseInt(url.searchParams.get('offset')) || 0);
       const meetings = db.getMeetings({ limit, offset, type, client, from, to });
       return json(res, meetings);
     }
@@ -2564,7 +2567,7 @@ async function handleRequest(req, res) {
     // POST /api/meetings/reprocess — clear derived data and re-process all meetings
     if (pathname === '/api/meetings/reprocess' && method === 'POST') {
       if (!process.env.ANTHROPIC_API_KEY) {
-        return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+        return json(res, { error: 'ANTHROPIC_API_KEY not configured' }, 503);
       }
 
       // Clear corrupted derived data
@@ -2747,7 +2750,7 @@ async function handleRequest(req, res) {
     // POST /api/style-guides/learn — analyze feedback and generate style guides
     if (pathname === '/api/style-guides/learn' && method === 'POST') {
       if (!process.env.ANTHROPIC_API_KEY) {
-        return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+        return json(res, { error: 'ANTHROPIC_API_KEY not configured' }, 503);
       }
       try {
         const { callClaude, HAIKU } = require('./lib/claude');
@@ -2796,7 +2799,7 @@ Write 3-5 bullet points of dos and don'ts for this output type. Be specific and 
     // POST /api/chat — send message to the brain
     if (pathname === '/api/chat' && method === 'POST') {
       if (!process.env.ANTHROPIC_API_KEY) {
-        return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+        return json(res, { error: 'ANTHROPIC_API_KEY not configured' }, 503);
       }
 
       const body = await parseBody(req);
@@ -2884,7 +2887,7 @@ ${context}`;
     const proposalGenMatch = pathname.match(/^\/api\/proposals\/generate\/(\d+)$/);
     if (proposalGenMatch && method === 'POST') {
       if (!process.env.ANTHROPIC_API_KEY) {
-        return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+        return json(res, { error: 'ANTHROPIC_API_KEY not configured' }, 503);
       }
       try {
         const { generateProposal } = require('./lib/proposal-generator');
@@ -2978,12 +2981,15 @@ ${context}`;
     // POST /api/briefs/generate/:clientId
     const briefGenMatch = pathname.match(/^\/api\/briefs\/generate\/(\d+)$/);
     if (briefGenMatch && method === 'POST') {
+      const clientId = parseInt(briefGenMatch[1]);
+      const client = db.getClient(clientId);
+      if (!client) return json(res, { error: `Client #${clientId} not found` }, 404);
       if (!process.env.ANTHROPIC_API_KEY) {
-        return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+        return json(res, { error: 'ANTHROPIC_API_KEY not configured' }, 503);
       }
       try {
         const { generateBrief } = require('./lib/brief-generator');
-        const brief = await generateBrief(parseInt(briefGenMatch[1]));
+        const brief = await generateBrief(clientId);
         return json(res, { ok: true, brief });
       } catch (err) {
         return apiError(res, err);
@@ -3078,7 +3084,7 @@ ${context}`;
     // GET /api/patterns — get cross-meeting patterns
     if (pathname === '/api/patterns' && method === 'GET') {
       const type = url.searchParams.get('type') || undefined;
-      const limit = parseInt(url.searchParams.get('limit')) || 100;
+      const limit = Math.max(1, parseInt(url.searchParams.get('limit')) || 100);
       return json(res, db.getPatterns({ type, limit }));
     }
 
@@ -3647,7 +3653,7 @@ Return JSON array (no fences):
     // GET /api/errors — recent error log
     if (pathname === '/api/errors' && method === 'GET') {
       const source = url.searchParams.get('source');
-      const limit = parseInt(url.searchParams.get('limit')) || 50;
+      const limit = Math.max(1, parseInt(url.searchParams.get('limit')) || 50);
       const errors = db.getErrors({ limit, source });
       const counts = db.getErrorCounts();
       return json(res, { errors, counts });
@@ -3713,7 +3719,7 @@ Return JSON array (no fences):
     // POST /api/content/:id/generate-cta — generate comment-trigger CTAs for a content piece
     const ctaGenMatch = pathname.match(/^\/api\/content\/([a-f0-9]+)\/generate-cta$/);
     if (ctaGenMatch && method === 'POST') {
-      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not configured' }, 503);
 
       const content = readJSON('content.json');
       const idx = content.findIndex(c => c.id === ctaGenMatch[1]);
@@ -3811,7 +3817,7 @@ Make the CTAs natural and non-salesy. Use the "comment [keyword]" pattern. The D
     // POST /api/content/:id/apply-template — apply a template to content
     const applyTemplateMatch = pathname.match(/^\/api\/content\/([a-f0-9]+)\/apply-template$/);
     if (applyTemplateMatch && method === 'POST') {
-      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not configured' }, 503);
       const body = await parseBody(req);
       const { template_id, format } = body;
       if (!template_id || !format) return json(res, { error: 'template_id and format required' }, 400);
@@ -3866,7 +3872,7 @@ Return ONLY the rewritten content. No explanation, no JSON wrapper.`;
 
     // POST /api/content/bulk-improve — improve multiple content pieces
     if (pathname === '/api/content/bulk-improve' && method === 'POST') {
-      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not configured' }, 503);
       const body = await parseBody(req);
       const ids = body.ids || [];
       const format = body.format || 'linkedin';
@@ -3923,7 +3929,7 @@ Return ONLY the rewritten content. No explanation, no JSON wrapper.`;
 
     // POST /api/content/bulk-generate-ctas — generate CTAs for multiple pieces
     if (pathname === '/api/content/bulk-generate-ctas' && method === 'POST') {
-      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not configured' }, 503);
       const body = await parseBody(req);
       const ids = body.ids || [];
       if (!ids.length) return json(res, { error: 'ids required' }, 400);
@@ -4099,7 +4105,7 @@ Return JSON: { "trigger_keyword": "AUDIT", "cta_text": "Comment AUDIT for the fr
 
     // POST /api/dm-sequences/auto-generate — AI generates DM sequences for content with CTAs
     if (pathname === '/api/dm-sequences/auto-generate' && method === 'POST') {
-      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not configured' }, 503);
 
       const content = readJSON('content.json');
       const sequences = readJSON('dm-sequences.json', []);
@@ -4200,7 +4206,7 @@ Use {name} as placeholder for lead's name. Keep messages conversational, value-f
     // POST /api/content/:id/apply-hook — rewrite content's first line using a hook pattern
     const applyHookMatch = pathname.match(/^\/api\/content\/([a-f0-9]+)\/apply-hook$/);
     if (applyHookMatch && method === 'POST') {
-      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not configured' }, 503);
 
       const body = await parseBody(req);
       const format = body.format || 'linkedin';
@@ -4254,7 +4260,7 @@ Return ONLY the full rewritten post with the new hook. Keep the body and CTA unc
     // POST /api/content/:id/repurpose-all — generate all missing formats from the best available source
     const repurposeAllMatch = pathname.match(/^\/api\/content\/([a-f0-9]+)\/repurpose-all$/);
     if (repurposeAllMatch && method === 'POST') {
-      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not configured' }, 503);
 
       const content = readJSON('content.json');
       const idx = content.findIndex(c => c.id === repurposeAllMatch[1]);
@@ -4414,7 +4420,7 @@ Return ONLY the full rewritten post with the new hook. Keep the body and CTA unc
     // POST /api/content/:id/ab-test — create A/B test variant
     const abTestMatch = pathname.match(/^\/api\/content\/([a-f0-9]+)\/ab-test$/);
     if (abTestMatch && method === 'POST') {
-      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not configured' }, 503);
       const body = await parseBody(req);
       const format = body.format;
       if (!format) return json(res, { error: 'format required' }, 400);
@@ -4512,7 +4518,7 @@ Return JSON (raw, no fences):
     // POST /api/content/:id/improve — AI-powered content quality improvement
     const improveMatch = pathname.match(/^\/api\/content\/([a-f0-9]+)\/improve$/);
     if (improveMatch && method === 'POST') {
-      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not configured' }, 503);
       const body = await parseBody(req);
       const format = body.format;
       if (!format) return json(res, { error: 'format required' }, 400);
@@ -4675,7 +4681,7 @@ Return ONLY the improved content (no JSON wrapper, no explanation). Keep the sam
 
     // POST /api/pillars/plan — AI analyzes content + triggers to create pillar plan
     if (pathname === '/api/pillars/plan' && method === 'POST') {
-      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not configured' }, 503);
 
       const content = readJSON('content.json');
       const triggers = readJSON('trigger-queue.json');
@@ -4744,7 +4750,7 @@ Create 5-7 pillars. Make them specific to legal marketing. Identify gaps where w
 
     // POST /api/content/auto-regen — regenerate low-performing published content
     if (pathname === '/api/content/auto-regen' && method === 'POST') {
-      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not configured' }, 503);
 
       const content = readJSON('content.json');
       const perfData = readJSON('performance.json');
@@ -4900,7 +4906,7 @@ Rewrite the ENTIRE post. New hook, new angle, same core message. Make it more en
     // POST /api/content/:id/atomize — break a pillar piece into 10-20 micro-content atoms
     const atomizeMatch = pathname.match(/^\/api\/content\/([a-f0-9]+)\/atomize$/);
     if (atomizeMatch && method === 'POST') {
-      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not configured' }, 503);
       const content = readJSON('content.json');
       const item = content.find(c => c.id === atomizeMatch[1]);
       if (!item) return json(res, { error: 'Not found' }, 404);
@@ -4992,7 +4998,7 @@ Extract 8-15 atoms. Each must be self-contained and usable as standalone content
     // POST /api/content/:id/atoms/generate — generate content from a specific atom
     const atomGenMatch = pathname.match(/^\/api\/content\/([a-f0-9]+)\/atoms\/generate$/);
     if (atomGenMatch && method === 'POST') {
-      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not configured' }, 503);
       const body = await parseBody(req);
       const atomIdx = body.atom_index;
       const targetFormat = body.format;
@@ -5081,7 +5087,7 @@ Extract 8-15 atoms. Each must be self-contained and usable as standalone content
     // POST /api/content/:id/recycle — create a fresh version of old content
     const recycleMatch = pathname.match(/^\/api\/content\/([a-f0-9]+)\/recycle$/);
     if (recycleMatch && method === 'POST') {
-      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not configured' }, 503);
       const body = await parseBody(req);
       const mode = body.mode || 'new-angle';
 
@@ -5217,7 +5223,7 @@ Extract 8-15 atoms. Each must be self-contained and usable as standalone content
 
     // POST /api/competitors/analyze — analyze competitor content strategy
     if (pathname === '/api/competitors/analyze' && method === 'POST') {
-      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not configured' }, 503);
 
       const triggers = readJSON('trigger-queue.json');
       const competitorTriggers = triggers.filter(t => t.source === 'competitor');
@@ -5286,7 +5292,7 @@ Return JSON (raw, no fences):
 
     // POST /api/social-proof/generate — create social proof content from performance data
     if (pathname === '/api/social-proof/generate' && method === 'POST') {
-      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not configured' }, 503);
 
       const content = readJSON('content.json');
       const perfData = readJSON('performance.json');
@@ -5574,7 +5580,7 @@ Return JSON (raw, no fences):
     if (pathname === '/api/autopilot/run' && method === 'POST') {
       const config = readJSON('autopilot-config.json', { enabled: false, settings: {} });
       if (!config.enabled) return json(res, { error: 'Auto-pilot is not enabled. POST /api/autopilot/enable first.' }, 400);
-      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not configured' }, 503);
 
       const log = readJSON('autopilot-log.json', []);
       const results = { scrape: null, generate: null, ctas: 0, swipes: 0 };
@@ -8434,7 +8440,7 @@ Return JSON: {
     // POST /api/series/:id/generate — generate next episode for a series
     const seriesGenMatch = pathname.match(/^\/api\/series\/([\w-]+)\/generate$/);
     if (seriesGenMatch && method === 'POST') {
-      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not configured' }, 503);
       const body = await parseBody(req);
       const series = readJSON('series.json', []);
       const idx = series.findIndex(s => s.id === seriesGenMatch[1]);
@@ -8557,7 +8563,7 @@ Add the series hashtag ${s.hashtag || ''} naturally at the end of social posts.`
 
     // POST /api/lead-magnets/generate — auto-generate lead magnets from top triggers
     if (pathname === '/api/lead-magnets/generate' && method === 'POST') {
-      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not configured' }, 503);
       const body = await parseBody(req);
       const count = Math.min(body.count || 3, 5);
 
@@ -8732,7 +8738,7 @@ Add the series hashtag ${s.hashtag || ''} naturally at the end of social posts.`
     // POST /api/youtube/pipeline — full YouTube video pipeline (script + thumbnail + SEO + Shorts)
     const ytPipelineMatch = pathname.match(/^\/api\/content\/([a-f0-9]+)\/youtube-pipeline$/);
     if (ytPipelineMatch && method === 'POST') {
-      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not configured' }, 503);
       const id = ytPipelineMatch[1];
       const allContent = readJSON('content.json', []);
       const item = allContent.find(c => c.id === id);
@@ -8822,7 +8828,7 @@ Return a JSON object with this structure:
     // POST /api/content/:id/carousel-slides — generate structured carousel slides
     const carouselMatch = pathname.match(/^\/api\/content\/([a-f0-9]+)\/carousel-slides$/);
     if (carouselMatch && method === 'POST') {
-      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not configured' }, 503);
       const id = carouselMatch[1];
       const allContent = readJSON('content.json', []);
       const item = allContent.find(c => c.id === id);
@@ -8914,7 +8920,7 @@ Rules:
 
     // POST /api/content-matrix/build — Justin Welsh's content matrix system
     if (pathname === '/api/content-matrix/build' && method === 'POST') {
-      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not configured' }, 503);
       const { callClaude, parseJsonResponse, SONNET } = require('./lib/claude');
       const { BRAND_SYSTEM_PROMPT } = require('./generator/content-writer');
 
@@ -8958,7 +8964,7 @@ Return JSON (no markdown fences):
 
     // POST /api/content-matrix/generate-post — generate a full post from a matrix cell
     if (pathname === '/api/content-matrix/generate-post' && method === 'POST') {
-      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not configured' }, 503);
       const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
       const { BRAND_SYSTEM_PROMPT } = require('./generator/content-writer');
       const body = await parseBody(req);
@@ -9129,7 +9135,7 @@ Return JSON: { "content": "the full post", "hashtags": ["tag1", "tag2", "tag3"],
     // POST /api/content/:id/generate-shorts — generate YouTube Shorts scripts from long-form content
     const shortsMatch = pathname.match(/^\/api\/content\/([a-f0-9]+)\/generate-shorts$/);
     if (shortsMatch && method === 'POST') {
-      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not configured' }, 503);
       const id = shortsMatch[1];
       const allContent = readJSON('content.json', []);
       const item = allContent.find(c => c.id === id);
@@ -9179,7 +9185,7 @@ Rules:
 
     // POST /api/series-templates/setup — set up branded recurring series
     if (pathname === '/api/series-templates/setup' && method === 'POST') {
-      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not configured' }, 503);
       const { callClaude, parseJsonResponse, SONNET } = require('./lib/claude');
       const { BRAND_SYSTEM_PROMPT } = require('./generator/content-writer');
       const body = await parseBody(req);
@@ -9306,7 +9312,7 @@ Return JSON (no markdown fences):
     // POST /api/content/:id/video-to-social — repurpose video script/transcript into social posts
     const v2sMatch = pathname.match(/^\/api\/content\/([a-f0-9]+)\/video-to-social$/);
     if (v2sMatch && method === 'POST') {
-      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not configured' }, 503);
       const id = v2sMatch[1];
       const allContent = readJSON('content.json', []);
       const item = allContent.find(c => c.id === id);
@@ -9346,7 +9352,7 @@ Return JSON (no markdown fences):
     // POST /api/content/:id/comment-dm-cta — generate keyword-comment CTA variants
     const cdmMatch = pathname.match(/^\/api\/content\/([a-f0-9]+)\/comment-dm-cta$/);
     if (cdmMatch && method === 'POST') {
-      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not configured' }, 503);
       const id = cdmMatch[1];
       const allContent = readJSON('content.json', []);
       const item = allContent.find(c => c.id === id);
@@ -9390,7 +9396,7 @@ Return JSON (no markdown fences):
     // POST /api/content/:id/zero-click — rewrite content as zero-click (all value in feed, no link)
     const zcMatch = pathname.match(/^\/api\/content\/([a-f0-9]+)\/zero-click$/);
     if (zcMatch && method === 'POST') {
-      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not configured' }, 503);
       const id = zcMatch[1];
       const allContent = readJSON('content.json', []);
       const item = allContent.find(c => c.id === id);
@@ -9429,7 +9435,7 @@ Return JSON (no markdown fences):
     // POST /api/content/:id/structure-wizard — generate post using proven structure
     const swMatch = pathname.match(/^\/api\/content\/([a-f0-9]+)\/structure-wizard$/);
     if (swMatch && method === 'POST') {
-      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not configured' }, 503);
       const id = swMatch[1];
       const body = await parseBody(req);
       const structure = body.structure || 'lessons_learned'; // lessons_learned, contrarian, before_after, build_in_public, myth_buster
@@ -9575,7 +9581,7 @@ Return JSON (no markdown fences):
     // POST /api/content/:id/atomize-20 — 1-to-20 derivative formula from pillar content
     const a20Match = pathname.match(/^\/api\/content\/([a-f0-9]+)\/atomize-20$/);
     if (a20Match && method === 'POST') {
-      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not configured' }, 503);
       const id = a20Match[1];
       const allContent = readJSON('content.json', []);
       const item = allContent.find(c => c.id === id);
@@ -9720,7 +9726,7 @@ Return JSON (no markdown fences):
 
     // POST /api/calendar/auto-build — auto-generate a full week using series + matrix + atomizations
     if (pathname === '/api/calendar/auto-build' && method === 'POST') {
-      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not configured' }, 503);
       const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
       const { BRAND_SYSTEM_PROMPT } = require('./generator/content-writer');
 
@@ -9771,7 +9777,7 @@ Return JSON (no markdown fences):
     // POST /api/content/:id/email-sequence — generate email nurture sequence from content
     const emailSeqMatch = pathname.match(/^\/api\/content\/([a-f0-9]+)\/email-sequence$/);
     if (emailSeqMatch && method === 'POST') {
-      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not configured' }, 503);
       const id = emailSeqMatch[1];
       const allContent = readJSON('content.json', []);
       const item = allContent.find(c => c.id === id);
@@ -9831,7 +9837,7 @@ Return JSON (no markdown fences):
 
     // POST /api/profile-optimizer — analyze LinkedIn profile and suggest improvements
     if (pathname === '/api/profile-optimizer' && method === 'POST') {
-      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not configured' }, 503);
       const { callClaude, parseJsonResponse, SONNET } = require('./lib/claude');
       const { BRAND_SYSTEM_PROMPT } = require('./generator/content-writer');
       const body = await parseBody(req);
@@ -9886,7 +9892,7 @@ Return JSON (no markdown fences):
     // POST /api/content/:id/social-proof-post — generate testimonial-style post from case study data
     const spPostMatch = pathname.match(/^\/api\/content\/([a-f0-9]+)\/social-proof-post$/);
     if (spPostMatch && method === 'POST') {
-      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not configured' }, 503);
       const id = spPostMatch[1];
       const allContent = readJSON('content.json', []);
       const item = allContent.find(c => c.id === id);
@@ -9966,7 +9972,7 @@ Return JSON (no markdown fences):
     // POST /api/content/:id/repurpose-chain — full repurposing chain from one pillar piece
     const repChainMatch = pathname.match(/^\/api\/content\/([a-f0-9]+)\/repurpose-chain$/);
     if (repChainMatch && method === 'POST') {
-      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not configured' }, 503);
       const id = repChainMatch[1];
       const allContent = readJSON('content.json', []);
       const item = allContent.find(c => c.id === id);
@@ -10025,7 +10031,7 @@ Create ALL of the following in one response. Return JSON (no markdown fences):
 
     // POST /api/lead-magnet-funnel — create a lead magnet funnel tracker
     if (pathname === '/api/lead-magnet-funnel' && method === 'POST') {
-      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not configured' }, 503);
       const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
       const { BRAND_SYSTEM_PROMPT } = require('./generator/content-writer');
       const body = await parseBody(req);
@@ -10174,7 +10180,7 @@ Return JSON (no markdown fences):
     // POST /api/content/:id/thread-to-carousel — convert X thread to LinkedIn carousel
     const t2cMatch = pathname.match(/^\/api\/content\/([a-f0-9]+)\/thread-to-carousel$/);
     if (t2cMatch && method === 'POST') {
-      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not configured' }, 503);
       const id = t2cMatch[1];
       const allContent = readJSON('content.json', []);
       const item = allContent.find(c => c.id === id);
@@ -10219,7 +10225,7 @@ Return JSON (no markdown fences):
     // POST /api/content/:id/headline-variants — generate 10 headline/hook variants for testing
     const headlineMatch = pathname.match(/^\/api\/content\/([a-f0-9]+)\/headline-variants$/);
     if (headlineMatch && method === 'POST') {
-      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not configured' }, 503);
       const id = headlineMatch[1];
       const allContent = readJSON('content.json', []);
       const item = allContent.find(c => c.id === id);
@@ -10331,7 +10337,7 @@ Return JSON (no markdown fences):
 
     // POST /api/content-pillars/generate — generate strategic content pillars based on business goals
     if (pathname === '/api/content-pillars/generate' && method === 'POST') {
-      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not configured' }, 503);
       const { callClaude, parseJsonResponse, SONNET } = require('./lib/claude');
       const { BRAND_SYSTEM_PROMPT } = require('./generator/content-writer');
       const body = await parseBody(req);
@@ -10381,7 +10387,7 @@ Return JSON (no markdown fences):
 
     // POST /api/competitor-analysis — analyze competitor content strategy
     if (pathname === '/api/competitor-analysis' && method === 'POST') {
-      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not configured' }, 503);
       const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
       const body = await parseBody(req);
 
@@ -10432,7 +10438,7 @@ Return JSON (no markdown fences):
     // POST /api/content/:id/nurture-touchpoints — generate multi-touch nurture campaign from content
     const nurtureMatch = pathname.match(/^\/api\/content\/([a-f0-9]+)\/nurture-touchpoints$/);
     if (nurtureMatch && method === 'POST') {
-      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not configured' }, 503);
       const id = nurtureMatch[1];
       const allContent = readJSON('content.json', []);
       const item = allContent.find(c => c.id === id);
@@ -10487,7 +10493,7 @@ Return JSON (no markdown fences):
 
     // POST /api/trending-angles — find trending angles to create content about right now
     if (pathname === '/api/trending-angles' && method === 'POST') {
-      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not configured' }, 503);
       const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
 
       // Pull recent triggers for context
@@ -10532,7 +10538,7 @@ Return JSON (no markdown fences):
 
     // POST /api/authority-builder — generate thought leadership positioning plan
     if (pathname === '/api/authority-builder' && method === 'POST') {
-      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not configured' }, 503);
       const { callClaude, parseJsonResponse, SONNET } = require('./lib/claude');
       const { BRAND_SYSTEM_PROMPT } = require('./generator/content-writer');
       const body = await parseBody(req);
@@ -10594,7 +10600,7 @@ Return JSON (no markdown fences):
     // POST /api/content/:id/micro-content — extract micro-content pieces (quotes, stats, insights)
     const microMatch = pathname.match(/^\/api\/content\/([a-f0-9]+)\/micro-content$/);
     if (microMatch && method === 'POST') {
-      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not configured' }, 503);
       const id = microMatch[1];
       const allContent = readJSON('content.json', []);
       const item = allContent.find(c => c.id === id);
@@ -10750,7 +10756,7 @@ Return JSON (no markdown fences):
 
     // POST /api/audience-segments — define audience segments for targeted content
     if (pathname === '/api/audience-segments' && method === 'POST') {
-      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not configured' }, 503);
       const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
       const { BRAND_SYSTEM_PROMPT } = require('./generator/content-writer');
       const body = await parseBody(req);
@@ -10796,7 +10802,7 @@ Return JSON (no markdown fences):
     // POST /api/content/:id/grade — comprehensive AI-powered content grading
     const gradeMatch = pathname.match(/^\/api\/content\/([a-f0-9]+)\/grade$/);
     if (gradeMatch && method === 'POST') {
-      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not configured' }, 503);
       const id = gradeMatch[1];
       const allContent = readJSON('content.json', []);
       const item = allContent.find(c => c.id === id);
@@ -10854,7 +10860,7 @@ Return JSON (no markdown fences):
 
     // POST /api/batch-generate — generate content for multiple triggers at once
     if (pathname === '/api/batch-generate' && method === 'POST') {
-      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not configured' }, 503);
       const body = await parseBody(req);
       const count = Math.min(body.count || 5, 10);
       const format = body.format || 'linkedin';
@@ -10953,7 +10959,7 @@ Write the post directly. No JSON wrapper needed.`;
 
     // POST /api/content-dna — analyze your best performing content to find patterns
     if (pathname === '/api/content-dna' && method === 'POST') {
-      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not configured' }, 503);
       const { callClaude, parseJsonResponse, SONNET } = require('./lib/claude');
       const content = readJSON('content.json', []);
 
@@ -11016,7 +11022,7 @@ Return JSON (no markdown fences):
 
     // POST /api/topic-clusters — generate SEO-optimized topic clusters
     if (pathname === '/api/topic-clusters' && method === 'POST') {
-      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not configured' }, 503);
       const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
       const { BRAND_SYSTEM_PROMPT } = require('./generator/content-writer');
       const body = await parseBody(req);
@@ -11060,7 +11066,7 @@ Return JSON (no markdown fences):
     // POST /api/content/:id/post-mortem — analyze why a piece performed well or poorly
     const postMortemMatch = pathname.match(/^\/api\/content\/([a-f0-9]+)\/post-mortem$/);
     if (postMortemMatch && method === 'POST') {
-      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not configured' }, 503);
       const id = postMortemMatch[1];
       const allContent = readJSON('content.json', []);
       const item = allContent.find(c => c.id === id);
@@ -11106,7 +11112,7 @@ Return JSON (no markdown fences):
 
     // POST /api/voice-clone — analyze writing samples to create a voice profile
     if (pathname === '/api/voice-clone' && method === 'POST') {
-      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not configured' }, 503);
       const { callClaude, parseJsonResponse, SONNET } = require('./lib/claude');
       const body = await parseBody(req);
 
@@ -11162,7 +11168,7 @@ Return JSON (no markdown fences):
     // POST /api/content/:id/cross-platform — adapt content for multiple platforms simultaneously
     const crossPlatMatch = pathname.match(/^\/api\/content\/([a-f0-9]+)\/cross-platform$/);
     if (crossPlatMatch && method === 'POST') {
-      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not configured' }, 503);
       const id = crossPlatMatch[1];
       const allContent = readJSON('content.json', []);
       const item = allContent.find(c => c.id === id);
@@ -11202,7 +11208,7 @@ Return JSON (no markdown fences):
     // POST /api/content/:id/x-optimize — optimize content specifically for X/Twitter algorithm
     const xOptMatch = pathname.match(/^\/api\/content\/([a-f0-9]+)\/x-optimize$/);
     if (xOptMatch && method === 'POST') {
-      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not configured' }, 503);
       const id = xOptMatch[1];
       const allContent = readJSON('content.json', []);
       const item = allContent.find(c => c.id === id);
@@ -11245,7 +11251,7 @@ Return JSON (no markdown fences):
 
     // POST /api/dm-scripts — generate DM conversation scripts for converting engagers to calls
     if (pathname === '/api/dm-scripts' && method === 'POST') {
-      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not configured' }, 503);
       const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
       const { BRAND_SYSTEM_PROMPT } = require('./generator/content-writer');
       const body = await parseBody(req);
@@ -11298,7 +11304,7 @@ Return JSON (no markdown fences):
 
     // POST /api/reply-strategy — generate a reply strategy for borrowed audience growth
     if (pathname === '/api/reply-strategy' && method === 'POST') {
-      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not configured' }, 503);
       const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
       const body = await parseBody(req);
 
@@ -11346,7 +11352,7 @@ Return JSON (no markdown fences):
 
     // POST /api/bio-optimizer — optimize social media bios for conversion
     if (pathname === '/api/bio-optimizer' && method === 'POST') {
-      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not configured' }, 503);
       const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
       const body = await parseBody(req);
 
@@ -11387,7 +11393,7 @@ Return JSON (no markdown fences):
     // POST /api/content/:id/build-thread — build an optimized X thread from any content
     const threadMatch = pathname.match(/^\/api\/content\/([a-f0-9]+)\/build-thread$/);
     if (threadMatch && method === 'POST') {
-      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not set' }, 500);
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not configured' }, 503);
       const id = threadMatch[1];
       const allContent = readJSON('content.json', []);
       const item = allContent.find(c => c.id === id);

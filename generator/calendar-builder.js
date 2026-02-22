@@ -173,8 +173,10 @@ function autoFillWeek(contentItems, weekStartDate, calendarData) {
     .sort((a, b) => {
       // Approved first, then by quality score, then by date
       if (a.status !== b.status) return a.status === 'approved' ? -1 : 1;
-      const aScore = a.quality_scores ? Math.max(...Object.values(a.quality_scores).map(q => q.score || 0)) : 0;
-      const bScore = b.quality_scores ? Math.max(...Object.values(b.quality_scores).map(q => q.score || 0)) : 0;
+      const aVals = a.quality_scores ? Object.values(a.quality_scores).map(q => q?.score || 0) : [];
+      const aScore = aVals.length > 0 ? Math.max(...aVals) : 0;
+      const bVals = b.quality_scores ? Object.values(b.quality_scores).map(q => q?.score || 0) : [];
+      const bScore = bVals.length > 0 ? Math.max(...bVals) : 0;
       if (aScore !== bScore) return bScore - aScore;
       return new Date(b.generated_at) - new Date(a.generated_at);
     });

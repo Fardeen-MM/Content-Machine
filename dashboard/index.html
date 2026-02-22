@@ -5446,14 +5446,14 @@ function renderDashboardPage() {
         h('div', { style: { background: 'var(--card-bg)', borderRadius: 'var(--radius-sm)', padding: '10px', textAlign: 'center', border: '1px solid var(--gray-200)' } },
           h('div', { style: { fontSize: '18px', fontWeight: '700', color: '#7c3aed' } },
             Object.values(state.engagementDashboard.by_platform || {}).length > 0
-              ? (Object.values(state.engagementDashboard.by_platform).reduce((s, p) => s + parseFloat(p.engagement_rate || 0), 0) / Object.values(state.engagementDashboard.by_platform).length).toFixed(1) + '%'
+              ? (Object.values(state.engagementDashboard.by_platform || {}).reduce((s, p) => s + parseFloat(p.engagement_rate || 0), 0) / Object.values(state.engagementDashboard.by_platform || {}).length).toFixed(1) + '%'
               : '0%'
           ),
           h('div', { style: { fontSize: '10px', color: 'var(--gray-500)' } }, 'Avg Eng Rate')
         )
       ),
       Object.keys(state.engagementDashboard.by_platform || {}).length > 0 ? h('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap' } },
-        ...Object.entries(state.engagementDashboard.by_platform).map(([platform, data]) => {
+        ...Object.entries(state.engagementDashboard.by_platform || {}).map(([platform, data]) => {
           const colors = { linkedin: '#0a66c2', x_single: '#1da1f2', x_thread: '#1da1f2', carousel: '#e4405f', short_video: '#ff0050' };
           return h('div', { style: { padding: '6px 10px', borderRadius: 'var(--radius-sm)', background: `${colors[platform] || '#64748b'}10`, border: `1px solid ${colors[platform] || '#64748b'}30` } },
             h('div', { style: { fontSize: '11px', fontWeight: '700', color: colors[platform] || '#64748b' } }, platform.replace('_', ' ')),

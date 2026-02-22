@@ -225,7 +225,7 @@ function buildSystemPromptWithMemory() {
       const recent = rejections.slice(-3);
       prompt += '\nREJECTED CONTENT — DO NOT write like these:\n';
       for (const r of recent) {
-        prompt += `- [${r.format}] "${r.content_preview.slice(0, 120)}..."${r.rejection_note ? ` (${r.rejection_note})` : ''}\n`;
+        prompt += `- [${r.format}] "${(r.content_preview || '').slice(0, 120)}..."${r.rejection_note ? ` (${r.rejection_note})` : ''}\n`;
       }
     }
   } catch (err) {
@@ -284,36 +284,36 @@ function buildSystemPromptWithMemory() {
       prompt += '\n\nPLATFORM PLAYBOOKS (research-backed best practices for each platform):\n';
       if (playbooks.linkedin) {
         const li = playbooks.linkedin;
-        prompt += `\nLINKEDIN — Goal: ${li.goal}\n`;
-        prompt += `- Best formats: ${li.algorithm.best_formats.slice(0, 3).join(', ')}\n`;
-        prompt += `- Posting: ${li.algorithm.posting_times.slice(0, 2).join(', ')}\n`;
-        prompt += `- Hook rules: ${li.content_rules.post_structure.slice(0, 3).join('; ')}\n`;
-        prompt += `- Meeting conversion: ${li.content_rules.meeting_conversion.slice(0, 2).join('; ')}\n`;
+        prompt += `\nLINKEDIN — Goal: ${li.goal || 'engagement'}\n`;
+        prompt += `- Best formats: ${(li.algorithm?.best_formats || []).slice(0, 3).join(', ')}\n`;
+        prompt += `- Posting: ${(li.algorithm?.posting_times || []).slice(0, 2).join(', ')}\n`;
+        prompt += `- Hook rules: ${(li.content_rules?.post_structure || []).slice(0, 3).join('; ')}\n`;
+        prompt += `- Meeting conversion: ${(li.content_rules?.meeting_conversion || []).slice(0, 2).join('; ')}\n`;
       }
       if (playbooks.x_single) {
         const x = playbooks.x_single;
-        prompt += `\nX/TWITTER — Goal: ${x.goal}\n`;
-        prompt += `- Algorithm: ${x.algorithm.key_signals.slice(0, 2).join('; ')}\n`;
-        prompt += `- Meeting conversion: ${x.content_rules.meeting_conversion.slice(0, 2).join('; ')}\n`;
+        prompt += `\nX/TWITTER — Goal: ${x.goal || 'engagement'}\n`;
+        prompt += `- Algorithm: ${(x.algorithm?.key_signals || []).slice(0, 2).join('; ')}\n`;
+        prompt += `- Meeting conversion: ${(x.content_rules?.meeting_conversion || []).slice(0, 2).join('; ')}\n`;
       }
       if (playbooks.youtube) {
         const yt = playbooks.youtube;
-        prompt += `\nYOUTUBE — Goal: ${yt.goal}\n`;
-        prompt += `- Script structure: ${yt.content_rules.script_structure.slice(0, 3).join(' → ')}\n`;
-        prompt += `- Title formulas: ${(yt.content_rules.title_formulas || []).slice(0, 3).join('; ')}\n`;
-        prompt += `- Meeting conversion: ${yt.content_rules.meeting_conversion.slice(0, 2).join('; ')}\n`;
+        prompt += `\nYOUTUBE — Goal: ${yt.goal || 'subscribers'}\n`;
+        prompt += `- Script structure: ${(yt.content_rules?.script_structure || []).slice(0, 3).join(' → ')}\n`;
+        prompt += `- Title formulas: ${(yt.content_rules?.title_formulas || []).slice(0, 3).join('; ')}\n`;
+        prompt += `- Meeting conversion: ${(yt.content_rules?.meeting_conversion || []).slice(0, 2).join('; ')}\n`;
       }
       if (playbooks.short_video) {
         const sv = playbooks.short_video;
-        prompt += `\nSHORT VIDEO — Goal: ${sv.goal}\n`;
-        prompt += `- 30s structure: ${sv.content_rules.script_30s}\n`;
-        prompt += `- Hook rule: ${sv.content_rules.hook_formula[0]}\n`;
+        prompt += `\nSHORT VIDEO — Goal: ${sv.goal || 'views'}\n`;
+        prompt += `- 30s structure: ${sv.content_rules?.script_30s || ''}\n`;
+        prompt += `- Hook rule: ${(sv.content_rules?.hook_formula || [])[0] || ''}\n`;
       }
       if (playbooks.scorecard_funnel) {
         const sc = playbooks.scorecard_funnel;
-        prompt += `\nSCORECARD FUNNEL — ${sc.conversion_rate}\n`;
-        prompt += `- Pillars: ${sc.framework.pillars_for_legal.slice(0, 4).join(', ')}\n`;
-        prompt += `- ${sc.framework.priestley_7_11_4}\n`;
+        prompt += `\nSCORECARD FUNNEL — ${sc.conversion_rate || ''}\n`;
+        prompt += `- Pillars: ${(sc.framework?.pillars_for_legal || []).slice(0, 4).join(', ')}\n`;
+        prompt += `- ${sc.framework?.priestley_7_11_4 || ''}\n`;
       }
     }
   } catch (err) {
@@ -626,6 +626,7 @@ async function generatePillarWithSpokes(trigger, pillarType = 'blog') {
     if (pillarMeta.newsletter_meta) content.newsletter_meta = pillarMeta.newsletter_meta;
   }
 
+  content.quality_score = scoreContentQuality(content);
   return content;
 }
 

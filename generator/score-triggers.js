@@ -372,8 +372,10 @@ function scoreTrigger(trigger, allTriggers) {
 
   // Recency bonus
   const age = daysAgo(trigger.captured_at);
-  if (age <= 1) score += 2;
-  else if (age <= 3) score += 1;
+  if (age !== Infinity) {
+    if (age <= 1) score += 2;
+    else if (age <= 3) score += 1;
+  }
 
   // Content length bonus (more raw material = better)
   if ((trigger.raw_content || '').length > 500) score += 1;
@@ -384,8 +386,8 @@ function scoreTrigger(trigger, allTriggers) {
     score += 2;
   }
 
-  // Freshness decay — old triggers lose relevance
-  if (age > 3) {
+  // Freshness decay — old triggers lose relevance (skip for missing dates)
+  if (age > 3 && age !== Infinity) {
     score = Math.round(score * Math.pow(0.95, age - 3));
   }
 

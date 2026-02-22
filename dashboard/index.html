@@ -2170,6 +2170,24 @@ async function regenerateFormat(contentId, format) {
   }
 }
 
+async function generateSmartLeadMagnet(contentId, sourceFormat) {
+  toast('Generating AI lead magnet... This takes 30-60 seconds.', 'info');
+  state.leadMagnetGenerating = true;
+  render();
+  try {
+    const res = await api(`/api/content/${contentId}/smart-lead-magnet`, { method: 'POST', body: { format: sourceFormat } });
+    toast(`Lead magnet created: "${res.title}" (Style: ${res.style})`, 'success');
+    state.leadMagnetGenerating = false;
+    // Reload content to get updated formats
+    try { state.content = await api('/api/content'); } catch (_) {}
+    render();
+  } catch (err) {
+    state.leadMagnetGenerating = false;
+    toast('Lead magnet generation failed: ' + err.message, 'error');
+    render();
+  }
+}
+
 async function generateForTrigger(triggerId) {
   state.generating = true;
   render();
@@ -6051,11 +6069,12 @@ function renderContentCard(content) {
         const actKey = `act-${content.id}`;
         if (!state._cardMenus) state._cardMenus = {};
 
-        function cardBtn(label, color, onclickFn) {
+        function cardBtn(label, color, onclickFn, disabled) {
           return h('button', {
             className: 'btn btn-outline btn-sm',
-            style: { color, borderColor: color, fontSize: '11px' },
-            onclick: (e) => { e.stopPropagation(); onclickFn(); }
+            style: { color, borderColor: color, fontSize: '11px', opacity: disabled ? '0.5' : '1' },
+            disabled: !!disabled,
+            onclick: (e) => { e.stopPropagation(); if (!disabled) onclickFn(); }
           }, label);
         }
 
@@ -6111,7 +6130,7 @@ function renderContentCard(content) {
           state._cardMenus[genKey] ? h('div', { style: { width: '100%', display: 'flex', gap: '4px', flexWrap: 'wrap', paddingTop: '4px', borderTop: '1px solid var(--gray-200)' } },
             content.blog_keyword && !content.formats?.blog?.content ? cardBtn('+ Blog', '#2563eb', () => regenerateFormat(content.id, 'blog')) : null,
             content.youtube_topic && !content.formats?.youtube_script?.content ? cardBtn('+ YouTube', '#dc2626', () => regenerateFormat(content.id, 'youtube_script')) : null,
-            !content.formats?.lead_magnet?.content ? cardBtn('+ Lead Magnet', '#059669', () => regenerateFormat(content.id, 'lead_magnet')) : null,
+            !content.formats?.lead_magnet?.content ? cardBtn(state.leadMagnetGenerating ? 'Generating...' : '+ AI Lead Magnet', '#059669', () => generateSmartLeadMagnet(content.id), state.leadMagnetGenerating) : null,
             !content.formats?.newsletter?.content ? cardBtn('+ Newsletter', '#0891b2', () => regenerateFormat(content.id, 'newsletter')) : null,
             !content.formats?.case_study?.content ? cardBtn('+ Case Study', '#d97706', () => regenerateFormat(content.id, 'case_study')) : null,
             existing > 0 && missing > 0 ? cardBtn(`+ All (${missing})`, '#7c3aed', async () => {
@@ -6354,7 +6373,8 @@ function renderFormatContent(content, formatKey, fmt) {
     // Lead magnet meta + preview
     isLeadMagnet && content.lead_magnet_meta
       ? h('div', { style: { padding: '12px 20px', background: 'var(--gray-50)', borderBottom: '1px solid var(--gray-100)', display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' } },
-          h('span', { className: `lm-type-pill lm-type-${content.lead_magnet_meta.type || ''}` }, content.lead_magnet_meta.type?.replace(/_/g, ' ') || 'resource'),
+          h('span', { className: `lm-type-pill lm-type-${content.lead_magnet_meta.type || ''}`, style: { padding: '2px 10px', borderRadius: '100px', fontSize: '11px', fontWeight: '600', background: 'linear-gradient(135deg, #4f46e5, #6366f1)', color: 'white' } }, content.lead_magnet_meta.type?.replace(/_/g, ' ') || 'resource'),
+          content.lead_magnet_meta.style_number ? h('span', { style: { fontSize: '10px', padding: '2px 8px', borderRadius: '100px', background: '#ede9fe', color: '#7c3aed', fontWeight: '600' } }, `Style #${content.lead_magnet_meta.style_number}`) : null,
           h('strong', { style: { fontSize: '14px' } }, content.lead_magnet_meta.title || ''),
           content.lead_magnet_meta.subtitle ? h('span', { style: { fontSize: '12px', color: 'var(--gray-500)' } }, content.lead_magnet_meta.subtitle) : null,
           h('button', {

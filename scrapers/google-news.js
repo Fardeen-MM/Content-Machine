@@ -1,5 +1,14 @@
 const { matchesKeywords, stripHtml, truncate, parseXml, extractCdata, now } = require('../lib/utils');
 
+function safeDate(dateStr) {
+  if (!dateStr) return null;
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return null;
+    return d.toISOString();
+  } catch { return null; }
+}
+
 const FEEDS = [
   {
     name: 'Law Firm Marketing',
@@ -107,7 +116,7 @@ async function scrapeFeed(feed, existingIds) {
         raw_content: truncate(item.description, 3000),
         url: item.link,
         category,
-        captured_at: item.pubDate ? new Date(item.pubDate).toISOString() : now(),
+        captured_at: safeDate(item.pubDate) || now(),
         status: 'pending',
         score: 0
       });

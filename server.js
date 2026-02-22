@@ -8571,6 +8571,64 @@ Add the series hashtag ${s.hashtag || ''} naturally at the end of social posts.`
 
     // --- Lead Magnet Auto-Generation ---
 
+    // POST /api/content/:id/smart-lead-magnet — AI generates interactive lead magnet from content
+    const smartLmMatch = pathname.match(/^\/api\/content\/([a-f0-9]+)\/smart-lead-magnet$/);
+    if (smartLmMatch && method === 'POST') {
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not configured' }, 503);
+      const content = readJSON('content.json');
+      const idx = content.findIndex(c => c.id === smartLmMatch[1]);
+      if (idx === -1) return json(res, { error: 'Content not found' }, 404);
+
+      const body = await parseBody(req);
+      const item = content[idx];
+      const format = body.format || Object.keys(item.formats || {}).find(f => item.formats[f]?.content) || 'linkedin';
+      const fmt = item.formats?.[format];
+      if (!fmt?.content) return json(res, { error: `No content in format "${format}"` }, 400);
+
+      const contentText = typeof fmt.content === 'string' ? fmt.content : JSON.stringify(fmt.content);
+      const triggerTitle = item.trigger_title || 'Untitled';
+
+      try {
+        const { generateSmartLeadMagnet } = require('./lib/claude');
+        const { renderAILeadMagnet } = require('./generator/lead-magnet-renderer');
+        const { buildSystemPromptWithMemory } = require('./generator/content-writer');
+        const system = buildSystemPromptWithMemory();
+
+        const aiResult = await generateSmartLeadMagnet(contentText, format, triggerTitle, system);
+        const html = renderAILeadMagnet(aiResult);
+
+        // Save to content item
+        if (!content[idx].formats) content[idx].formats = {};
+        content[idx].formats.lead_magnet = {
+          content: html,
+          status: 'review',
+          edited: false,
+          generated_at: now(),
+          ai_style: aiResult.style_name || 'unknown',
+          ai_style_number: aiResult.style_number || 0
+        };
+        content[idx].lead_magnet_meta = {
+          title: aiResult.title,
+          subtitle: aiResult.subtitle,
+          type: aiResult.style_name,
+          style_number: aiResult.style_number,
+          source_format: format
+        };
+        writeJSON('content.json', content);
+
+        return json(res, {
+          ok: true,
+          content_id: item.id,
+          style: aiResult.style_name,
+          style_number: aiResult.style_number,
+          title: aiResult.title,
+          preview_url: `/api/preview/${item.id}/lead_magnet`
+        });
+      } catch (err) {
+        return apiError(res, err, 'generate smart lead magnet');
+      }
+    }
+
     // POST /api/lead-magnets/generate — auto-generate lead magnets from top triggers
     if (pathname === '/api/lead-magnets/generate' && method === 'POST') {
       if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not configured' }, 503);

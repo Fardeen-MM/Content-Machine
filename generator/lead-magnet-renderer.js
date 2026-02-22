@@ -777,4 +777,14 @@ function renderLeadMagnetHTML(data) {
   );
 }
 
-module.exports = { renderLeadMagnetHTML };
+// --- AI-generated lead magnet wrapper ---
+function renderAILeadMagnet(aiResult) {
+  const title = aiResult.title || 'Interactive Resource';
+  const subtitle = aiResult.subtitle || '';
+  const badge = aiResult.badge_text || aiResult.style_name || 'Free Tool';
+  const body = aiResult.html_body || '';
+  const script = aiResult.script || '';
+  return wrapHTML(title, subtitle, badge, body, script);
+}
+
+module.exports = { renderLeadMagnetHTML, renderAILeadMagnet };

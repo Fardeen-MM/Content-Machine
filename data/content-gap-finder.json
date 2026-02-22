@@ -2,7 +2,7 @@
   "topic_coverage": {
     "google ads": 9,
     "web design": 1,
-    "ai": 11,
+    "ai": 13,
     "intake": 5,
     "conversion": 2,
     "seo": 2,
@@ -11,7 +11,7 @@
     "reviews": 1,
     "content": 1,
     "video": 1,
-    "lead gen": 1,
+    "lead gen": 2,
     "email": 1
   },
   "topic_gaps": [
@@ -28,17 +28,17 @@
     "automation"
   ],
   "format_coverage": {
-    "linkedin": 65,
-    "x_single": 58,
-    "x_thread": 57,
-    "short_video": 56,
-    "carousel": 32,
-    "hot_take": 38,
-    "poll": 32,
-    "quote_cards": 36,
-    "stat_graphic": 31,
-    "before_after": 31,
-    "listicle": 36,
+    "linkedin": 72,
+    "x_single": 65,
+    "x_thread": 64,
+    "short_video": 63,
+    "carousel": 39,
+    "hot_take": 45,
+    "poll": 39,
+    "quote_cards": 43,
+    "stat_graphic": 38,
+    "before_after": 38,
+    "listicle": 43,
     "blog": 3,
     "youtube_script": 3,
     "lead_magnet": 3,
@@ -59,15 +59,16 @@
     "competitor": 45,
     "content-ideas": 1,
     "manual": 1,
-    "deal_insight": 2
+    "deal_insight": 3,
+    "url": 1
   },
-  "total_content": 66,
+  "total_content": 73,
   "total_published": 1,
   "coverage_score": 57,
   "recommendations": [
     "Cover branding, social media, analytics — these topics have zero content",
     "Good format diversity",
-    "Pipeline is flowing"
+    "Publish approved content — you have items waiting"
   ],
-  "generated_at": "2026-02-21T23:33:14.037Z"
+  "generated_at": "2026-02-22T01:05:05.131Z"
 }

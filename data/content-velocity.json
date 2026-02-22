@@ -1,25 +1,25 @@
 {
   "production": {
-    "last_7_days": 61,
-    "last_30_days": 66,
+    "last_7_days": 68,
+    "last_30_days": 73,
     "published_30_days": 1,
-    "daily_rate": 2.2,
-    "weekly_rate": 15.3
+    "daily_rate": 2.4,
+    "weekly_rate": 17
   },
   "pipeline": {
-    "pending_triggers": 510,
-    "content_in_review": 60,
-    "approved_unpublished": 5,
+    "pending_triggers": 505,
+    "content_in_review": 66,
+    "approved_unpublished": 6,
     "total_published": 1
   },
   "speed": {
     "avg_days_to_approve": null,
-    "bottleneck": "triage"
+    "bottleneck": "publishing"
   },
   "targets": {
     "weekly_production": 5,
     "weekly_published": 3,
     "on_track": false
   },
-  "generated_at": "2026-02-21T23:33:06.622Z"
+  "generated_at": "2026-02-22T01:04:56.012Z"
 }

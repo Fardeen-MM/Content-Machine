@@ -1,6 +1,6 @@
 {
-  "total_analyzed": 66,
-  "avg_score": 70,
+  "total_analyzed": 73,
+  "avg_score": 69,
   "top_headlines": [
     {
       "id": "be51be586030c8",
@@ -143,10 +143,42 @@
   ],
   "weak_headlines": [
     {
+      "id": "0b89abd55ed23189",
+      "headline": "what is one pain around your lead gen workflow if solved you'd pay to get rid of?",
+      "score": 48,
+      "word_count": 17,
+      "has_number": false,
+      "has_question": true,
+      "has_power_word": false,
+      "has_emotion": false,
+      "tips": [
+        "Add a power word",
+        "Add a number for specificity",
+        "Headline is too long",
+        "Add emotional triggers"
+      ]
+    },
+    {
       "id": "5e6555b1ae727932",
       "headline": "Google ads",
       "score": 40,
       "word_count": 2,
+      "has_number": false,
+      "has_question": false,
+      "has_power_word": false,
+      "has_emotion": false,
+      "tips": [
+        "Add a power word",
+        "Add a number for specificity",
+        "Headline is too short",
+        "Add emotional triggers"
+      ]
+    },
+    {
+      "id": "7167ed1d20db5c69",
+      "headline": "https://example.com/test",
+      "score": 40,
+      "word_count": 1,
       "has_number": false,
       "has_question": false,
       "has_power_word": false,
@@ -162,24 +194,24 @@
   "common_tips": [
     {
       "tip": "Add a power word",
-      "count": 65
+      "count": 72
     },
     {
       "tip": "Add emotional triggers",
-      "count": 61
+      "count": 68
     },
     {
       "tip": "Add a number for specificity",
-      "count": 23
+      "count": 28
     },
     {
       "tip": "Headline is too long",
-      "count": 9
+      "count": 11
     },
     {
       "tip": "Headline is too short",
-      "count": 2
+      "count": 3
     }
   ],
-  "generated_at": "2026-02-21T23:33:07.049Z"
+  "generated_at": "2026-02-22T01:04:59.240Z"
 }

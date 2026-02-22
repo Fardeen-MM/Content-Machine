@@ -5,7 +5,7 @@
       "items": []
     },
     "review": {
-      "count": 60,
+      "count": 66,
       "items": [
         {
           "id": "c4c23c4858e12fc8",
@@ -70,7 +70,7 @@
       ]
     },
     "approved": {
-      "count": 5,
+      "count": 6,
       "items": [
         {
           "id": "dd33fd2be463cf5f",
@@ -97,10 +97,16 @@
           "age_days": 6
         },
         {
+          "id": "8ba52566277d9674",
+          "title": "1 month, 178k followers, 213M views, $500,000 Revenue",
+          "format_count": 7,
+          "age_days": 0
+        },
+        {
           "id": "17613aa38257031a",
           "title": "Show HN: Stripe Specialist Team Scam – 50%+ deals",
           "format_count": 2,
-          "age_days": 20505
+          "age_days": 20506
         }
       ]
     },
@@ -124,11 +130,11 @@
     }
   },
   "summary": {
-    "total_in_pipeline": 66,
+    "total_in_pipeline": 73,
     "total_published": 1,
-    "avg_age_days": 1245,
-    "throughput_rate": 2,
+    "avg_age_days": 1126,
+    "throughput_rate": 1,
     "bottleneck": "review"
   },
-  "generated_at": "2026-02-21T23:33:14.359Z"
+  "generated_at": "2026-02-22T01:05:07.680Z"
 }

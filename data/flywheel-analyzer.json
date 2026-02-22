@@ -2,13 +2,13 @@
   "flywheel_velocity": 54,
   "stages": {
     "creation": {
-      "total": 66,
+      "total": 73,
       "rate": 0,
-      "approved": 5
+      "approved": 6
     },
     "distribution": {
       "published": 1,
-      "publish_rate": 2
+      "publish_rate": 1
     },
     "engagement": {
       "total_entries": 1,
@@ -28,9 +28,9 @@
   },
   "bottleneck": {
     "stage": "distribution",
-    "score_pct": 2,
+    "score_pct": 1,
     "fix": "Publish more approved content"
   },
   "momentum": "building",
-  "generated_at": "2026-02-21T23:33:06.589Z"
+  "generated_at": "2026-02-22T01:04:55.125Z"
 }

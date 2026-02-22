@@ -2829,10 +2829,10 @@ function renderStats() {
 
   return h('div', {},
     h('div', { className: 'stats-grid' },
-      statCard('Triggers in Queue', s.triggers.pending, 'pending', 'accent'),
-      statCard('Content Pieces', s.content.total, `${s.content.review} awaiting review`, 'purple'),
-      statCard('Approved', s.formats.approved, 'formats ready to post', 'green'),
-      statCard('Published', s.published, 'posted to platforms', 'amber')
+      statCard('Triggers in Queue', s.triggers?.pending || 0, 'pending', 'accent'),
+      statCard('Content Pieces', s.content?.total || 0, `${s.content?.review || 0} awaiting review`, 'purple'),
+      statCard('Approved', s.formats?.approved || 0, 'formats ready to post', 'green'),
+      statCard('Published', s.published || 0, 'posted to platforms', 'amber')
     ),
     h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '24px' } },
       renderSourceBreakdown(s),
@@ -2850,8 +2850,8 @@ function statCard(label, value, sub, colorClass) {
 }
 
 function renderSourceBreakdown(s) {
-  const sources = s.triggers.by_source || {};
-  const total = s.triggers.total || 1;
+  const sources = s.triggers?.by_source || {};
+  const total = s.triggers?.total || 1;
   const colors = { reddit: '#ff4500', rss: '#2563eb', youtube: '#cc0000', url: '#7c3aed', competitor: '#0891b2', question: '#ea580c', 'google-news': '#4285f4', hackernews: '#ff6600', manual: '#7c3aed' };
 
   return h('div', { className: 'card', style: { padding: '20px' } },
@@ -2877,7 +2877,7 @@ function renderSourceBreakdown(s) {
 }
 
 function renderCategoryBreakdown(s) {
-  const cats = s.triggers.by_category || {};
+  const cats = s.triggers?.by_category || {};
   const colors = {
     PAIN_POINT: '#dc2626', QUESTION: '#2563eb', DATA_POINT: '#059669',
     NEWS: '#d97706', CONTENT_PIECE: '#7c3aed', CLIENT_WIN: '#0891b2'
@@ -6224,7 +6224,7 @@ function renderContentCard(content) {
               ),
               h('div', { style: { fontSize: '10px', color: 'var(--gray-500)' } },
                 h('span', { style: { fontWeight: '600' } }, 'Best times: '),
-                `${pkg.timing.best_days.join(', ')} at ${pkg.timing.best_times.join(', ')}`
+                `${(pkg.timing?.best_days || []).join(', ')} at ${(pkg.timing?.best_times || []).join(', ')}`
               ),
               pkg.distribution_notes ? h('div', { style: { fontSize: '10px', color: '#059669', marginTop: '4px' } }, pkg.distribution_notes) : null,
               pkg.first_comment ? h('div', { style: { fontSize: '10px', color: '#7c3aed', marginTop: '4px' } },
@@ -8009,7 +8009,7 @@ function renderAnalyticsPage() {
       statCard('Approval Rate', approvalRate + '%', `${approvedFormats} of ${totalFormats} formats`, 'green'),
       statCard('Pipeline Health', content.filter(c => c.status === 'review').length, 'pieces in review', 'amber'),
       statCard('Avg Score', triggers.length ? Math.round(triggers.reduce((s,t) => s + (t.score||0), 0) / triggers.length) : 0, 'trigger quality score', 'accent'),
-      statCard('Content Sources', Object.keys(s.triggers.by_source || {}).length, 'active sources feeding pipeline', 'purple')
+      statCard('Content Sources', Object.keys(s.triggers?.by_source || {}).length, 'active sources feeding pipeline', 'purple')
     ),
     // Charts row
     h('div', { className: 'analytics-grid' },
@@ -8833,7 +8833,7 @@ function renderCalendarPage() {
   };
 
   // Pad start of month to align with day-of-week columns
-  const firstDayOfWeek = cal.days[0]?.dayOfWeek || 0;
+  const firstDayOfWeek = (cal.days || [])[0]?.dayOfWeek || 0;
   const emptyBefore = [];
   for (let i = 0; i < firstDayOfWeek; i++) {
     emptyBefore.push(h('div', { className: 'cal-cell empty' }));
@@ -9257,8 +9257,8 @@ function renderPerformancePage() {
           h('div', { style: { background: 'var(--white)', borderRadius: 'var(--radius)', border: '1px solid var(--gray-200)', padding: '20px' } },
             h('h4', { style: { fontSize: '14px', fontFamily: "'Fraunces', serif", marginBottom: '12px' } }, 'Performance by Format'),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px' } },
-              ...Object.entries(analytics.by_format)
-                .sort((a, b) => b[1].engagement - a[1].engagement)
+              ...Object.entries(analytics.by_format || {})
+                .sort((a, b) => (b[1]?.engagement || 0) - (a[1]?.engagement || 0))
                 .map(([format, data]) => {
                   const maxEng = Math.max(...Object.values(analytics.by_format).map(d => d.engagement), 1);
                   return h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } },

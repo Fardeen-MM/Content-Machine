@@ -1105,7 +1105,7 @@ async function handleRequest(req, res) {
       const predictions = content
         .filter(c => c.status === 'review' || c.status === 'approved')
         .map(c => {
-          const formats = Object.keys(c.formats || {}).filter(f => c.formats[f].content);
+          const formats = Object.keys(c.formats || {}).filter(f => c.formats[f]?.content);
           const src = c.trigger_source || 'unknown';
           const cat = c.trigger_category || 'unknown';
 
@@ -1117,9 +1117,8 @@ async function handleRequest(req, res) {
 
           const sourceScore = sourceAvg[src]?.avg || globalAvg;
           const catScore = categoryAvg[cat]?.avg || globalAvg;
-          const qualityScore = c.quality_scores
-            ? Math.max(...Object.values(c.quality_scores).map(q => q.score || 0))
-            : 50;
+          const qsVals = c.quality_scores ? Object.values(c.quality_scores).map(q => q.score || 0) : [];
+          const qualityScore = qsVals.length > 0 ? Math.max(...qsVals) : 50;
 
           const predicted = Math.round(
             (bestFormat.score * 0.4) + (sourceScore * 0.3) + (catScore * 0.2) + (qualityScore * 0.1)
@@ -5233,7 +5232,8 @@ Extract 8-15 atoms. Each must be self-contained and usable as standalone content
       // Group by competitor
       const byCompetitor = {};
       for (const t of competitorTriggers) {
-        const src = t.url ? new URL(t.url).hostname : 'unknown';
+        let src = 'unknown';
+        if (t.url) { try { src = new URL(t.url).hostname; } catch { src = t.url; } }
         if (!byCompetitor[src]) byCompetitor[src] = [];
         byCompetitor[src].push(t);
       }
@@ -5437,7 +5437,7 @@ DATA:
 - Sources: ${JSON.stringify(sources)}
 - Categories: ${JSON.stringify(categories)}
 - Formats: ${JSON.stringify(formats)}
-${pillarPlan ? `- Content pillars: ${pillarPlan.pillars?.map(p => p.name).join(', ')}` : ''}
+${pillarPlan ? `- Content pillars: ${(pillarPlan.pillars || []).map(p => p.name).join(', ')}` : ''}
 - Performance data: ${perfData.length} tracked (${perfData.reduce((s, p) => s + (p.leads || 0), 0)} total leads)
 
 Return JSON (raw, no fences):
@@ -5587,8 +5587,8 @@ Return JSON (raw, no fences):
 
       // Step 1: Scrape
       try {
-        const { runAllScrapers } = require('./scrapers/run-all');
-        const scrapeResult = await runAllScrapers();
+        const { runAll } = require('./scrapers/run-all');
+        const scrapeResult = await runAll();
         results.scrape = scrapeResult;
         log.push({ action: 'scrape', result: scrapeResult, timestamp: now() });
       } catch (err) {
@@ -5610,11 +5610,7 @@ Return JSON (raw, no fences):
           for (const trigger of top.slice(0, 5)) {
             try {
               const systemPrompt = buildSystemPromptWithMemory();
-              const formats = await generateSocialContent({
-                title: trigger.title,
-                rawContent: trigger.raw_content || '',
-                systemPrompt
-              });
+              const formats = await generateSocialContent(trigger, systemPrompt);
               if (formats) {
                 content.push({
                   id: generateId(),
@@ -6046,6 +6042,7 @@ Return JSON:
 
       // Promote winner
       ab.winner = body.variant_id;
+      if (!content[idx].formats[body.platform]) content[idx].formats[body.platform] = {};
       content[idx].formats[body.platform].content = variant.content;
       content[idx].formats[body.platform].promoted_from_variant = body.variant_id;
       content[idx].formats[body.platform].promoted_at = now();
@@ -6892,6 +6889,7 @@ Keep same core message. Adjust language, examples, pain points for this persona.
       const categories = {};
       for (const t of triggers.slice(-50)) { categories[t.category || 'unknown'] = (categories[t.category || 'unknown'] || 0) + 1; }
 
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not configured' }, 503);
       const { callClaude, parseJsonResponse, SONNET } = require('./lib/claude');
       const prompt = `Generate 10 content ideas for a legal marketing agency (Mortar Metrics) that targets law firm owners.
 
@@ -13505,7 +13503,7 @@ Return COMPACT JSON:
         prompt: `Plan next 5 posts for a legal marketing agency. Avoid repeating recent topics.
 
 Recent posts: ${JSON.stringify(recentPosts.map(p => ({ format: p.format, date: p.posted_at || p.published_at })).slice(0, 10))}
-Content matrix pillars: ${matrix ? JSON.stringify(matrix.pillars?.map(p => p.name)) : '["Client Acquisition", "Marketing Metrics", "Content Strategy", "Sales Process", "Competitive Advantage"]'}
+Content matrix pillars: ${matrix ? JSON.stringify((matrix.pillars || []).map(p => p.name)) : '["Client Acquisition", "Marketing Metrics", "Content Strategy", "Sales Process", "Competitive Advantage"]'}
 
 Return JSON:
 {
@@ -14278,7 +14276,7 @@ Return COMPACT JSON:
         system: 'You are a content calendar strategist. Create a detailed 2-week calendar with specific post topics, times, and platforms. Balance pillars, formats, and funnel stages. Return JSON only.',
         prompt: `Create a 2-week content calendar for a legal marketing agency.
 
-${matrix ? `Pillars: ${JSON.stringify(matrix.pillars?.map(p => p.name))}` : ''}
+${matrix ? `Pillars: ${JSON.stringify((matrix.pillars || []).map(p => p.name))}` : ''}
 ${schedule ? `Best times: ${JSON.stringify(schedule.best_times)}` : ''}
 Published so far: ${published.length}
 
@@ -18860,7 +18858,8 @@ Content: ${firstContent.substring(0, 2000)}`;
       for (const c of content) {
         const title = (c.trigger_title || c.title || '').toLowerCase();
         const formats = Object.keys(c.formats || {});
-        const maxLifespan = Math.max(...formats.map(f => formatLifespan[f] || 7));
+        const lifespanVals = formats.map(f => formatLifespan[f] || 7);
+        const maxLifespan = lifespanVals.length > 0 ? Math.max(...lifespanVals) : 7;
 
         let modifier = 1.0;
         if (timeSensitiveKeywords.some(k => title.includes(k))) modifier *= 0.5;

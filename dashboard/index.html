@@ -3902,13 +3902,13 @@ function renderDashboardPage() {
       state.contentIntelligence.executive_summary ? h('div', { style: { padding: '8px 12px', background: '#eff6ff', borderRadius: 'var(--radius-sm)', fontSize: '11px', color: '#1e40af', marginBottom: '6px', fontStyle: 'italic' } }, state.contentIntelligence.executive_summary) : null,
       state.contentIntelligence.biggest_opportunity ? h('div', { style: { padding: '6px 10px', background: '#f0fdf4', borderRadius: 'var(--radius-sm)', border: '1px solid #bbf7d0', marginBottom: '4px' } },
         h('div', { style: { fontSize: '10px', fontWeight: '700', color: '#059669' } }, 'OPPORTUNITY'),
-        h('div', { style: { fontSize: '10px', color: '#065f46' } }, state.contentIntelligence.biggest_opportunity.what),
-        h('div', { style: { fontSize: '9px', color: '#059669', marginTop: '2px' } }, state.contentIntelligence.biggest_opportunity.how)
+        h('div', { style: { fontSize: '10px', color: '#065f46' } }, state.contentIntelligence.biggest_opportunity.what || ''),
+        h('div', { style: { fontSize: '9px', color: '#059669', marginTop: '2px' } }, state.contentIntelligence.biggest_opportunity.how || '')
       ) : null,
       state.contentIntelligence.biggest_risk ? h('div', { style: { padding: '6px 10px', background: '#fef2f2', borderRadius: 'var(--radius-sm)', border: '1px solid #fecaca' } },
         h('div', { style: { fontSize: '10px', fontWeight: '700', color: '#dc2626' } }, 'RISK'),
-        h('div', { style: { fontSize: '10px', color: '#991b1b' } }, state.contentIntelligence.biggest_risk.what),
-        h('div', { style: { fontSize: '9px', color: '#dc2626', marginTop: '2px' } }, state.contentIntelligence.biggest_risk.mitigation)
+        h('div', { style: { fontSize: '10px', color: '#991b1b' } }, state.contentIntelligence.biggest_risk.what || ''),
+        h('div', { style: { fontSize: '9px', color: '#dc2626', marginTop: '2px' } }, state.contentIntelligence.biggest_risk.mitigation || '')
       ) : null
     ) : null,
 

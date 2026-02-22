@@ -90,6 +90,26 @@ function json(res, data, status = 200) {
   res.end(JSON.stringify(data));
 }
 
+function apiError(res, err) {
+  const msg = err.message || '';
+  if (msg.includes('Claude API 529') || msg.includes('overloaded')) {
+    return json(res, { error: 'Claude API is temporarily overloaded. Please try again in a moment.' }, 503);
+  }
+  if (msg.includes('Claude API 429') || msg.includes('rate limit')) {
+    return json(res, { error: 'Claude API rate limit reached. Please wait a minute and try again.' }, 429);
+  }
+  if (msg.includes('Claude API 401') || msg.includes('invalid x-api-key')) {
+    return json(res, { error: 'Claude API key is invalid. Check ANTHROPIC_API_KEY in settings.' }, 503);
+  }
+  if (msg.includes('Claude API 400') && msg.includes('credit')) {
+    return json(res, { error: 'Claude API credits exhausted. Add credits at console.anthropic.com.' }, 503);
+  }
+  if (msg.includes('ANTHROPIC_API_KEY not set')) {
+    return json(res, { error: 'Claude API key not configured. Set ANTHROPIC_API_KEY environment variable.' }, 503);
+  }
+  return json(res, { error: msg || 'Internal server error' }, 500);
+}
+
 function parseBody(req) {
   return new Promise((resolve, reject) => {
     let body = '';
@@ -941,7 +961,7 @@ async function handleRequest(req, res) {
         return json(res, { ok: true, content_id: content.id, trigger_title: trigger.title });
       } catch (err) {
         try { db.logError('generation', 'calendar_generate', err.message); } catch {}
-        return json(res, { error: err.message }, 500);
+        return apiError(res, err);
       }
     }
 
@@ -1375,7 +1395,7 @@ async function handleRequest(req, res) {
         return json(res, { ok: true, content: result, scheduled });
       } catch (err) {
         try { db.logError('generation', 'generate_for_trigger', err.message, { triggerId }); } catch {}
-        return json(res, { error: err.message }, 500);
+        return apiError(res, err);
       }
     }
 
@@ -1398,7 +1418,7 @@ async function handleRequest(req, res) {
         return json(res, { ok: true, content: result, scheduled });
       } catch (err) {
         try { db.logError('generation', 'generate_daily', err.message); } catch {}
-        return json(res, { error: err.message }, 500);
+        return apiError(res, err);
       }
     }
 
@@ -1535,7 +1555,7 @@ async function handleRequest(req, res) {
         await sendTelegram(brief);
         return json(res, { ok: true, brief });
       } catch (err) {
-        return json(res, { error: err.message }, 500);
+        return apiError(res, err);
       }
     }
 
@@ -1685,7 +1705,7 @@ async function handleRequest(req, res) {
         writeJSON('content.json', content);
         return json(res, { ok: true, ...content[idx] });
       } catch (err) {
-        return json(res, { error: err.message }, 500);
+        return apiError(res, err);
       }
     }
 
@@ -2085,7 +2105,7 @@ async function handleRequest(req, res) {
         return json(res, { ok: true, new_triggers: newTriggers, total: afterCount, scraped_at: now() });
       } catch (err) {
         try { db.logError('scraper', 'scrape_now', err.message); } catch {}
-        return json(res, { error: err.message }, 500);
+        return apiError(res, err);
       }
     }
 
@@ -2167,7 +2187,7 @@ async function handleRequest(req, res) {
 
         return json(res, { ok: true, content });
       } catch (err) {
-        return json(res, { error: err.message }, 500);
+        return apiError(res, err);
       }
     }
 
@@ -2251,7 +2271,7 @@ async function handleRequest(req, res) {
 
         return json(res, { ok: true, content, atoms: remixed.atoms });
       } catch (err) {
-        return json(res, { error: err.message }, 500);
+        return apiError(res, err);
       }
     }
 
@@ -2304,7 +2324,7 @@ async function handleRequest(req, res) {
           return json(res, { ok: true, content: newContent });
         } catch (err) {
           try { db.logError('generation', 'remix_content', err.message, { contentId: content[idx].id, mode: body.mode }); } catch {}
-          return json(res, { error: err.message }, 500);
+          return apiError(res, err);
         }
       }
 
@@ -2534,7 +2554,7 @@ async function handleRequest(req, res) {
 
         return json(res, { ok: true, synced, processed, total: allTranscripts.length });
       } catch (err) {
-        return json(res, { error: err.message }, 500);
+        return apiError(res, err);
       }
     }
 
@@ -2759,7 +2779,7 @@ Write 3-5 bullet points of dos and don'ts for this output type. Be specific and 
 
         return json(res, { ok: true, guides });
       } catch (err) {
-        return json(res, { error: err.message }, 500);
+        return apiError(res, err);
       }
     }
 
@@ -2833,7 +2853,7 @@ ${context}`;
         return json(res, { ok: true, response, context_length: context.length });
       } catch (err) {
         console.error('[chat] Error:', err.message);
-        return json(res, { error: err.message }, 500);
+        return apiError(res, err);
       }
     }
 
@@ -2868,7 +2888,7 @@ ${context}`;
         const proposal = await generateProposal(parseInt(proposalGenMatch[1]));
         return json(res, { ok: true, proposal });
       } catch (err) {
-        return json(res, { error: err.message }, 500);
+        return apiError(res, err);
       }
     }
 
@@ -2963,7 +2983,7 @@ ${context}`;
         const brief = await generateBrief(parseInt(briefGenMatch[1]));
         return json(res, { ok: true, brief });
       } catch (err) {
-        return json(res, { error: err.message }, 500);
+        return apiError(res, err);
       }
     }
 
@@ -3180,7 +3200,7 @@ Return JSON array (no fences):
 
         return json(res, { ok: true, playbook, total_objections: allObjections.length });
       } catch (err) {
-        return json(res, { error: err.message }, 500);
+        return apiError(res, err);
       }
     }
 
@@ -3750,7 +3770,7 @@ Make the CTAs natural and non-salesy. Use the "comment [keyword]" pattern. The D
 
         return json(res, { ok: true, ctas: parsed });
       } catch (err) {
-        return json(res, { error: err.message }, 500);
+        return apiError(res, err);
       }
     }
 
@@ -3835,7 +3855,7 @@ Return ONLY the rewritten content. No explanation, no JSON wrapper.`;
 
         return json(res, { ok: true, template: template.name });
       } catch (err) {
-        return json(res, { error: err.message }, 500);
+        return apiError(res, err);
       }
     }
 
@@ -4141,7 +4161,7 @@ Use {name} as placeholder for lead's name. Keep messages conversational, value-f
         writeJSON('dm-sequences.json', sequences);
         return json(res, { ok: true, generated, total: sequences.length });
       } catch (err) {
-        return json(res, { error: err.message }, 500);
+        return apiError(res, err);
       }
     }
 
@@ -4222,7 +4242,7 @@ Return ONLY the full rewritten post with the new hook. Keep the body and CTA unc
         }
         return json(res, { error: 'AI returned insufficient content' }, 500);
       } catch (err) {
-        return json(res, { error: err.message }, 500);
+        return apiError(res, err);
       }
     }
 
@@ -4450,7 +4470,7 @@ Return JSON (raw, no fences):
 
         return json(res, { ok: true, test: content[idx].ab_tests[format] });
       } catch (err) {
-        return json(res, { error: err.message }, 500);
+        return apiError(res, err);
       }
     }
 
@@ -4552,7 +4572,7 @@ Return ONLY the improved content (no JSON wrapper, no explanation). Keep the sam
 
         return json(res, { ok: true, improved: true, weaknesses, format });
       } catch (err) {
-        return json(res, { error: err.message }, 500);
+        return apiError(res, err);
       }
     }
 
@@ -4713,7 +4733,7 @@ Create 5-7 pillars. Make them specific to legal marketing. Identify gaps where w
 
         return json(res, { ok: true, ...parsed });
       } catch (err) {
-        return json(res, { error: err.message }, 500);
+        return apiError(res, err);
       }
     }
 
@@ -4962,7 +4982,7 @@ Extract 8-15 atoms. Each must be self-contained and usable as standalone content
 
         return json(res, { ok: true, atoms: parsed.atoms, source_format: pillarFormat });
       } catch (err) {
-        return json(res, { error: err.message }, 500);
+        return apiError(res, err);
       }
     }
 
@@ -5006,7 +5026,7 @@ Extract 8-15 atoms. Each must be self-contained and usable as standalone content
 
         return json(res, { ok: true, content_id: newId });
       } catch (err) {
-        return json(res, { error: err.message }, 500);
+        return apiError(res, err);
       }
     }
 
@@ -5105,7 +5125,7 @@ Extract 8-15 atoms. Each must be self-contained and usable as standalone content
 
         return json(res, { ok: true, content_id: newId, angle: remixed.remix_angle });
       } catch (err) {
-        return json(res, { error: err.message }, 500);
+        return apiError(res, err);
       }
     }
 
@@ -5249,7 +5269,7 @@ Return JSON (raw, no fences):
 
         return json(res, { ok: true, ...parsed });
       } catch (err) {
-        return json(res, { error: err.message }, 500);
+        return apiError(res, err);
       }
     }
 
@@ -5350,7 +5370,7 @@ Make posts specific, data-driven, and not braggy. Show results naturally. Each 8
 
         return json(res, { ok: true, posts: parsed.posts, stats_used: stats });
       } catch (err) {
-        return json(res, { error: err.message }, 500);
+        return apiError(res, err);
       }
     }
 
@@ -8525,7 +8545,7 @@ Add the series hashtag ${s.hashtag || ''} naturally at the end of social posts.`
 
         return json(res, { ok: true, content_id: contentId, episode: episodeNum, title: parsed.episode_title });
       } catch (err) {
-        return json(res, { error: err.message }, 500);
+        return apiError(res, err);
       }
     }
 
@@ -8786,7 +8806,7 @@ Return a JSON object with this structure:
         writeJSON('youtube-pipelines.json', pipelines);
         return json(res, { ok: true, pipeline });
       } catch (err) {
-        return json(res, { error: err.message }, 500);
+        return apiError(res, err);
       }
     }
 
@@ -8879,7 +8899,7 @@ Rules:
         writeJSON('carousels.json', carousels);
         return json(res, { ok: true, carousel });
       } catch (err) {
-        return json(res, { error: err.message }, 500);
+        return apiError(res, err);
       }
     }
 
@@ -8923,7 +8943,7 @@ Return JSON (no markdown fences):
         writeJSON('content-matrix.json', { ...parsed, built_at: now() });
         return json(res, { ok: true, matrix: parsed });
       } catch (err) {
-        return json(res, { error: err.message }, 500);
+        return apiError(res, err);
       }
     }
 
@@ -8957,7 +8977,7 @@ Return JSON: { "content": "the full post", "hashtags": ["tag1", "tag2", "tag3"],
         if (!parsed) return json(res, { error: 'Failed to generate post', raw_preview: (text || '').slice(0, 200) }, 500);
         return json(res, { ok: true, post: parsed });
       } catch (err) {
-        return json(res, { error: err.message }, 500);
+        return apiError(res, err);
       }
     }
 
@@ -9147,7 +9167,7 @@ Rules:
         if (!parsed) return json(res, { error: 'Failed to generate shorts', raw_preview: (text || '').slice(0, 200) }, 500);
         return json(res, { ok: true, content_id: id, ...parsed });
       } catch (err) {
-        return json(res, { error: err.message }, 500);
+        return apiError(res, err);
       }
     }
 
@@ -9197,7 +9217,7 @@ Return JSON (no markdown fences):
         writeJSON('series-templates.json', { ...parsed, created_at: now() });
         return json(res, { ok: true, templates: parsed });
       } catch (err) {
-        return json(res, { error: err.message }, 500);
+        return apiError(res, err);
       }
     }
 
@@ -9315,7 +9335,7 @@ Return JSON (no markdown fences):
         if (!parsed) return json(res, { error: 'Failed to repurpose', raw_preview: (text || '').slice(0, 200) }, 500);
         return json(res, { ok: true, content_id: id, repurposed: parsed });
       } catch (err) {
-        return json(res, { error: err.message }, 500);
+        return apiError(res, err);
       }
     }
 
@@ -9359,7 +9379,7 @@ Return JSON (no markdown fences):
         if (!parsed) return json(res, { error: 'Failed to generate CTAs', raw_preview: (text || '').slice(0, 200) }, 500);
         return json(res, { ok: true, content_id: id, ...parsed });
       } catch (err) {
-        return json(res, { error: err.message }, 500);
+        return apiError(res, err);
       }
     }
 
@@ -9396,7 +9416,7 @@ Return JSON (no markdown fences):
         if (!parsed) return json(res, { error: 'Failed to generate', raw_preview: (text || '').slice(0, 200) }, 500);
         return json(res, { ok: true, content_id: id, ...parsed });
       } catch (err) {
-        return json(res, { error: err.message }, 500);
+        return apiError(res, err);
       }
     }
 
@@ -9474,7 +9494,7 @@ Return JSON (no markdown fences):
         if (!parsed) return json(res, { error: 'Failed to generate structured post', raw_preview: (text || '').slice(0, 200) }, 500);
         return json(res, { ok: true, content_id: id, ...parsed });
       } catch (err) {
-        return json(res, { error: err.message }, 500);
+        return apiError(res, err);
       }
     }
 
@@ -9621,7 +9641,7 @@ Return JSON (no markdown fences):
         writeJSON('atomizations.json', atomizations);
         return json(res, { ok: true, atomization: entry });
       } catch (err) {
-        return json(res, { error: err.message }, 500);
+        return apiError(res, err);
       }
     }
 
@@ -9796,7 +9816,7 @@ Return JSON (no markdown fences):
         writeJSON('email-sequences.json', sequences);
         return json(res, { ok: true, sequence: seq });
       } catch (err) {
-        return json(res, { error: err.message }, 500);
+        return apiError(res, err);
       }
     }
 
@@ -9855,7 +9875,7 @@ Return JSON (no markdown fences):
         if (!parsed) return json(res, { error: 'Failed to optimize profile', raw_preview: (text || '').slice(0, 300) }, 500);
         return json(res, { ok: true, profile: parsed });
       } catch (err) {
-        return json(res, { error: err.message }, 500);
+        return apiError(res, err);
       }
     }
 
@@ -9898,7 +9918,7 @@ Return JSON (no markdown fences):
         if (!parsed) return json(res, { error: 'Failed to generate', raw_preview: (text || '').slice(0, 200) }, 500);
         return json(res, { ok: true, content_id: id, ...parsed });
       } catch (err) {
-        return json(res, { error: err.message }, 500);
+        return apiError(res, err);
       }
     }
 
@@ -9990,7 +10010,7 @@ Create ALL of the following in one response. Return JSON (no markdown fences):
         writeJSON('repurpose-chains.json', chains);
         return json(res, { ok: true, chain });
       } catch (err) {
-        return json(res, { error: err.message }, 500);
+        return apiError(res, err);
       }
     }
 
@@ -10051,7 +10071,7 @@ Return JSON (no markdown fences):
         writeJSON('lead-magnet-funnels.json', funnels);
         return json(res, { ok: true, funnel });
       } catch (err) {
-        return json(res, { error: err.message }, 500);
+        return apiError(res, err);
       }
     }
 
@@ -10188,7 +10208,7 @@ Return JSON (no markdown fences):
         writeJSON('carousels.json', carousels);
         return json(res, { ok: true, carousel });
       } catch (err) {
-        return json(res, { error: err.message }, 500);
+        return apiError(res, err);
       }
     }
 
@@ -10239,7 +10259,7 @@ Return JSON (no markdown fences):
         if (!parsed) return json(res, { error: 'Failed to generate variants', raw_preview: (text2 || '').slice(0, 200) }, 500);
         return json(res, { ok: true, content_id: id, format: formatKey, current_hook: currentHook, ...parsed });
       } catch (err) {
-        return json(res, { error: err.message }, 500);
+        return apiError(res, err);
       }
     }
 
@@ -10346,7 +10366,7 @@ Return JSON (no markdown fences):
         writeJSON('content-pillars.json', { ...parsed, generated_at: now() });
         return json(res, { ok: true, ...parsed });
       } catch (err) {
-        return json(res, { error: err.message }, 500);
+        return apiError(res, err);
       }
     }
 
@@ -10396,7 +10416,7 @@ Return JSON (no markdown fences):
         writeJSON('competitor-analyses.json', analyses);
         return json(res, { ok: true, ...parsed });
       } catch (err) {
-        return json(res, { error: err.message }, 500);
+        return apiError(res, err);
       }
     }
 
@@ -10452,7 +10472,7 @@ Return JSON (no markdown fences):
         writeJSON('nurture-campaigns.json', nurtures);
         return json(res, { ok: true, campaign: nurtures[nurtures.length - 1] });
       } catch (err) {
-        return json(res, { error: err.message }, 500);
+        return apiError(res, err);
       }
     }
 
@@ -10502,7 +10522,7 @@ Return JSON (no markdown fences):
         if (!parsed) return json(res, { error: 'Failed to find trends', raw_preview: (text || '').slice(0, 200) }, 500);
         return json(res, { ok: true, ...parsed, triggers_analyzed: recent.length });
       } catch (err) {
-        return json(res, { error: err.message }, 500);
+        return apiError(res, err);
       }
     }
 
@@ -10558,7 +10578,7 @@ Return JSON (no markdown fences):
         writeJSON('authority-plan.json', { ...parsed, generated_at: now() });
         return json(res, { ok: true, ...parsed });
       } catch (err) {
-        return json(res, { error: err.message }, 500);
+        return apiError(res, err);
       }
     }
 
@@ -10603,7 +10623,7 @@ Return JSON (no markdown fences):
         parsed.total_pieces = (parsed.quotes?.length || 0) + (parsed.stats?.length || 0) + (parsed.one_liners?.length || 0) + (parsed.graphic_text?.length || 0) + (parsed.story_hooks?.length || 0) + (parsed.controversial_takes?.length || 0);
         return json(res, { ok: true, content_id: id, ...parsed });
       } catch (err) {
-        return json(res, { error: err.message }, 500);
+        return apiError(res, err);
       }
     }
 
@@ -10760,7 +10780,7 @@ Return JSON (no markdown fences):
         writeJSON('audience-segments.json', { ...parsed, generated_at: now() });
         return json(res, { ok: true, ...parsed });
       } catch (err) {
-        return json(res, { error: err.message }, 500);
+        return apiError(res, err);
       }
     }
 
@@ -10824,7 +10844,7 @@ Return JSON (no markdown fences):
         }
         return json(res, { ok: true, content_id: id, format: formatKey, ...parsed });
       } catch (err) {
-        return json(res, { error: err.message }, 500);
+        return apiError(res, err);
       }
     }
 
@@ -10981,7 +11001,7 @@ Return JSON (no markdown fences):
         writeJSON('content-dna.json', { ...parsed, pieces_analyzed: best.length, generated_at: now() });
         return json(res, { ok: true, ...parsed });
       } catch (err) {
-        return json(res, { error: err.message }, 500);
+        return apiError(res, err);
       }
     }
 
@@ -11024,7 +11044,7 @@ Return JSON (no markdown fences):
         writeJSON('topic-clusters.json', { ...parsed, generated_at: now() });
         return json(res, { ok: true, ...parsed });
       } catch (err) {
-        return json(res, { error: err.message }, 500);
+        return apiError(res, err);
       }
     }
 
@@ -11076,7 +11096,7 @@ Return JSON (no markdown fences):
         if (!parsed) return json(res, { error: 'Failed to analyze', raw_preview: (text2 || '').slice(0, 200) }, 500);
         return json(res, { ok: true, content_id: id, format: formatKey, ...parsed });
       } catch (err) {
-        return json(res, { error: err.message }, 500);
+        return apiError(res, err);
       }
     }
 
@@ -11126,7 +11146,7 @@ Return JSON (no markdown fences):
         writeJSON('voice-profiles.json', voices);
         return json(res, { ok: true, profile });
       } catch (err) {
-        return json(res, { error: err.message }, 500);
+        return apiError(res, err);
       }
     }
 
@@ -11169,7 +11189,7 @@ Return JSON (no markdown fences):
         if (!parsed) return json(res, { error: 'Failed to adapt', raw_preview: (text || '').slice(0, 200) }, 500);
         return json(res, { ok: true, content_id: id, platforms: parsed });
       } catch (err) {
-        return json(res, { error: err.message }, 500);
+        return apiError(res, err);
       }
     }
 
@@ -11215,7 +11235,7 @@ Return JSON (no markdown fences):
         if (!parsed) return json(res, { error: 'Failed to optimize', raw_preview: (text || '').slice(0, 200) }, 500);
         return json(res, { ok: true, content_id: id, ...parsed });
       } catch (err) {
-        return json(res, { error: err.message }, 500);
+        return apiError(res, err);
       }
     }
 
@@ -11263,7 +11283,7 @@ Return JSON (no markdown fences):
         writeJSON('dm-scripts.json', scripts);
         return json(res, { ok: true, ...parsed });
       } catch (err) {
-        return json(res, { error: err.message }, 500);
+        return apiError(res, err);
       }
     }
 
@@ -11311,7 +11331,7 @@ Return JSON (no markdown fences):
         writeJSON('reply-strategy.json', { ...parsed, generated_at: now() });
         return json(res, { ok: true, ...parsed });
       } catch (err) {
-        return json(res, { error: err.message }, 500);
+        return apiError(res, err);
       }
     }
 
@@ -11356,7 +11376,7 @@ Return JSON (no markdown fences):
         if (!parsed) return json(res, { error: 'Failed to optimize bio', raw_preview: (text || '').slice(0, 200) }, 500);
         return json(res, { ok: true, ...parsed });
       } catch (err) {
-        return json(res, { error: err.message }, 500);
+        return apiError(res, err);
       }
     }
 
@@ -11419,7 +11439,7 @@ Return JSON (no markdown fences):
         }
         return json(res, { ok: true, content_id: id, ...parsed });
       } catch (err) {
-        return json(res, { error: err.message }, 500);
+        return apiError(res, err);
       }
     }
 
@@ -19744,24 +19764,7 @@ Content: ${firstContent.substring(0, 2000)}`;
 
   } catch (err) {
     console.error('Server error:', err);
-    // Give specific error messages for Claude API failures
-    const msg = err.message || '';
-    if (msg.includes('Claude API 529') || msg.includes('overloaded')) {
-      return json(res, { error: 'Claude API is temporarily overloaded. Please try again in a moment.' }, 503);
-    }
-    if (msg.includes('Claude API 429') || msg.includes('rate limit')) {
-      return json(res, { error: 'Claude API rate limit reached. Please wait a minute and try again.' }, 429);
-    }
-    if (msg.includes('Claude API 401') || msg.includes('invalid x-api-key')) {
-      return json(res, { error: 'Claude API key is invalid. Check ANTHROPIC_API_KEY in settings.' }, 503);
-    }
-    if (msg.includes('Claude API 400') && msg.includes('credit')) {
-      return json(res, { error: 'Claude API credits exhausted. Add credits at console.anthropic.com.' }, 503);
-    }
-    if (msg.includes('ANTHROPIC_API_KEY not set')) {
-      return json(res, { error: 'Claude API key not configured. Set ANTHROPIC_API_KEY environment variable.' }, 503);
-    }
-    return json(res, { error: 'Internal server error' }, 500);
+    return apiError(res, err);
   }
 }
 

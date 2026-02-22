@@ -2378,11 +2378,30 @@ if (state.darkMode) {
 function toast(msg, type = 'success') {
   const id = Date.now() + Math.random();
   state.toasts.push({ msg, type, id });
-  render();
+  // Keep max 3 toasts visible
+  if (state.toasts.length > 3) state.toasts = state.toasts.slice(-3);
+  renderToastsOnly();
   setTimeout(() => {
     state.toasts = state.toasts.filter(t => t.id !== id);
-    render();
+    renderToastsOnly();
   }, 3000);
+}
+function dismissToast(id) {
+  state.toasts = state.toasts.filter(t => t.id !== id);
+  renderToastsOnly();
+}
+// Lightweight toast render — updates only the toast container, not the full DOM
+function renderToastsOnly() {
+  let container = document.querySelector('.toast-container');
+  if (!container) { render(); return; }
+  container.innerHTML = '';
+  state.toasts.forEach(t => {
+    const el = document.createElement('div');
+    el.className = `toast toast-${t.type}`;
+    el.style.cssText = 'display:flex;align-items:center;gap:8px;justify-content:space-between;';
+    el.innerHTML = `<span>${t.msg}</span><button onclick="dismissToast(${t.id})" style="background:none;border:none;color:inherit;cursor:pointer;font-size:16px;padding:0 4px;opacity:0.7;">&times;</button>`;
+    container.appendChild(el);
+  });
 }
 
 // --- Helpers ---
@@ -6841,13 +6860,13 @@ function renderFormatContent(content, formatKey, fmt) {
           }, 'Restore')
         : null,
       h('button', {
-        className: 'btn btn-outline btn-sm',
+        className: 'btn btn-primary btn-sm',
         onclick: () => {
           const copyText = isThread ? fmt.content.join('\n\n') : (typeof text === 'string' ? text : JSON.stringify(text));
           copyToClipboard(copyText, formatKey);
         },
         title: 'Copy to clipboard'
-      }, 'Copy'),
+      }, h('span', { innerHTML: icons.copy, style: { width: '14px', height: '14px' } }), ' Copy'),
       h('button', {
         className: 'btn btn-outline btn-sm',
         onclick: () => {
@@ -6861,11 +6880,6 @@ function renderFormatContent(content, formatKey, fmt) {
         },
         title: 'Edit'
       }, h('span', { innerHTML: icons.edit, style: { width: '14px', height: '14px' } }), ' Edit'),
-      h('button', {
-        className: 'btn btn-primary btn-sm',
-        onclick: () => copyToClipboard(typeof text === 'string' ? text : JSON.stringify(text, null, 2)),
-        title: 'Copy to clipboard'
-      }, h('span', { innerHTML: icons.copy, style: { width: '14px', height: '14px' } }), ' Copy'),
       h('button', {
         className: 'btn btn-outline btn-sm',
         onclick: () => regenerateFormat(content.id, formatKey),
@@ -6963,6 +6977,19 @@ function renderFormatContent(content, formatKey, fmt) {
             )
           : null
       ) : null,
+      // --- "More" toggle for AI-powered secondary actions ---
+      typeof text === 'string' ? h('button', {
+        className: 'btn btn-outline btn-sm',
+        style: { fontSize: '10px', padding: '4px 8px', color: 'var(--gray-500)', borderColor: 'var(--gray-200)' },
+        onclick: () => {
+          const key = content.id + ':' + formatKey;
+          if (!state._moreActions) state._moreActions = {};
+          state._moreActions[key] = !state._moreActions[key];
+          render();
+        }
+      }, (state._moreActions || {})[content.id + ':' + formatKey] ? 'Less' : 'More...') : null,
+      // --- Secondary actions (hidden by default, toggled by "More") ---
+      ...((state._moreActions || {})[content.id + ':' + formatKey] ? [
       // Atomize button (for pillar formats: blog, newsletter, case_study, youtube_script)
       ['blog', 'newsletter', 'case_study', 'youtube_script'].includes(formatKey) && typeof text === 'string' && text.length > 500
         ? h('button', {
@@ -7490,6 +7517,7 @@ function renderFormatContent(content, formatKey, fmt) {
           } catch (err) { toast('Variant creation failed: ' + err.message, 'error'); }
         }
       }, 'Variants') : null,
+      ] : []),
       // Show hashtags if generated
       content.hashtags?.[formatKey]?.tags?.length > 0 ? h('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap', marginTop: '4px' } },
         ...content.hashtags[formatKey].tags.map(tag => h('span', {
@@ -12236,8 +12264,38 @@ function render() {
     renderToasts()
   );
 
+  // Save focus state before DOM swap
+  const activeEl = document.activeElement;
+  let focusSelector = null;
+  let selStart = null;
+  let selEnd = null;
+  if (activeEl && activeEl !== document.body && activeEl.tagName) {
+    if (activeEl.id) {
+      focusSelector = '#' + activeEl.id;
+    } else if (activeEl.className && typeof activeEl.className === 'string') {
+      // Build a selector from tag + first meaningful class
+      const cls = activeEl.className.split(' ').find(c => c && !c.startsWith('_'));
+      if (cls) focusSelector = activeEl.tagName.toLowerCase() + '.' + cls;
+    }
+    if (activeEl.selectionStart !== undefined) {
+      selStart = activeEl.selectionStart;
+      selEnd = activeEl.selectionEnd;
+    }
+  }
+
   app.innerHTML = '';
   app.appendChild(newApp);
+
+  // Restore focus after DOM swap
+  if (focusSelector) {
+    const el = document.querySelector(focusSelector);
+    if (el && typeof el.focus === 'function') {
+      el.focus();
+      if (selStart !== null && el.setSelectionRange) {
+        try { el.setSelectionRange(selStart, selEnd); } catch {}
+      }
+    }
+  }
 
   // Restore textarea content after render if editing
   if (state.editingFormat) {

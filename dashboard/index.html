@@ -8131,6 +8131,64 @@ function renderAnalyticsPage() {
       statCard('Avg Score', triggers.length ? Math.round(triggers.reduce((s,t) => s + (t.score||0), 0) / triggers.length) : 0, 'trigger quality score', 'accent'),
       statCard('Content Sources', Object.keys(s.triggers?.by_source || {}).length, 'active sources feeding pipeline', 'purple')
     ),
+    // AI Intelligence toolbar
+    h('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '12px' } },
+      h('button', {
+        className: 'btn btn-sm',
+        style: { background: '#8B5CF6', color: 'white', border: 'none' },
+        onclick: async () => {
+          toast('Mining meeting insights for content triggers...', 'info');
+          try {
+            const res = await api('/api/analytics/mine-insights', { method: 'POST' });
+            toast(`Created ${res.triggers_created} triggers from meeting insights!`, res.triggers_created > 0 ? 'success' : 'info');
+            if (res.triggers_created > 0) loadData();
+          } catch (err) { toast('Mine insights failed: ' + err.message, 'error'); }
+        }
+      }, 'Mine Meeting Insights'),
+      h('button', {
+        className: 'btn btn-sm',
+        style: { background: '#059669', color: 'white', border: 'none' },
+        onclick: async () => {
+          toast('Analyzing content gaps...', 'info');
+          try {
+            const res = await api('/api/analytics/content-gaps');
+            const gaps = res.practice_area_gaps?.length || 0;
+            const pains = res.pain_point_gaps?.length || 0;
+            const unmined = res.unmined_insights_count || 0;
+            let msg = `Found ${gaps} practice area gaps, ${pains} pain point gaps`;
+            if (unmined > 0) msg += `, ${unmined} unmined insights`;
+            toast(msg, gaps + pains > 0 ? 'warning' : 'success');
+            state._contentGaps = res;
+            render();
+          } catch (err) { toast('Gap analysis failed: ' + err.message, 'error'); }
+        }
+      }, 'Detect Content Gaps')
+    ),
+    // Content gaps display (if loaded)
+    state._contentGaps ? h('div', { className: 'chart-card', style: { marginBottom: '12px' } },
+      h('h4', { style: { display: 'flex', alignItems: 'center', gap: '8px' } },
+        'Content Gaps',
+        h('span', { style: { fontSize: '11px', padding: '2px 8px', background: '#dc2626', color: 'white', borderRadius: '10px' } },
+          String((state._contentGaps.practice_area_gaps?.length || 0) + (state._contentGaps.pain_point_gaps?.length || 0)))
+      ),
+      h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px', marginTop: '8px' } },
+        ...(state._contentGaps.practice_area_gaps || []).map(g =>
+          h('div', { style: { padding: '8px 12px', background: g.gap_severity === 'high' ? '#fef2f2' : '#fffbeb', borderLeft: `3px solid ${g.gap_severity === 'high' ? '#dc2626' : '#d97706'}`, borderRadius: '0 8px 8px 0', fontSize: '13px' } },
+            h('strong', {}, g.practice_area), ` — mentioned ${g.meeting_mentions}x in meetings, only ${g.content_mentions} in content`
+          )
+        ),
+        ...(state._contentGaps.pain_point_gaps || []).slice(0, 5).map(g =>
+          h('div', { style: { padding: '8px 12px', background: '#f0f9ff', borderLeft: '3px solid #0284c7', borderRadius: '0 8px 8px 0', fontSize: '13px' } },
+            h('strong', {}, 'Pain: '), g.pain_point.slice(0, 80), ` (${g.meeting_mentions}x, coverage: ${g.content_coverage})`
+          )
+        ),
+        state._contentGaps.unmined_insights_count > 0
+          ? h('div', { style: { padding: '8px 12px', background: '#f5f3ff', borderLeft: '3px solid #7c3aed', borderRadius: '0 8px 8px 0', fontSize: '13px' } },
+              h('strong', {}, `${state._contentGaps.unmined_insights_count} unmined insights`), ' from sales calls ready to become triggers. Click "Mine Meeting Insights" above.'
+            )
+          : null
+      )
+    ) : null,
     // Charts row
     h('div', { className: 'analytics-grid' },
       // Donut chart — format status
@@ -9026,6 +9084,19 @@ function renderCalendarPage() {
             } catch (err) { toast('Auto-fill failed: ' + err.message, 'error'); }
           }
         }, 'Fill Week'),
+        h('button', {
+          className: 'btn btn-sm',
+          style: { background: '#8B5CF6', color: 'white', border: 'none' },
+          onclick: async () => {
+            try {
+              const weekStart = getCurrentWeekStart();
+              toast('Smart filling with AI optimization...', 'info');
+              const res = await api('/api/calendar/smart-fill', { method: 'POST', body: { week_start: weekStart } });
+              toast(`Smart assigned ${res.assigned} pieces (performance-optimized)!`, 'success');
+              await loadCalendarMonth();
+            } catch (err) { toast('Smart fill failed: ' + err.message, 'error'); }
+          }
+        }, 'Smart Fill'),
         h('button', {
           className: 'btn btn-outline btn-sm',
           onclick: () => {

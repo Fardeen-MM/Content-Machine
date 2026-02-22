@@ -907,6 +907,27 @@ async function handleRequest(req, res) {
       return json(res, { ok: true, assigned, assignments });
     }
 
+    // POST /api/calendar/smart-fill — AI-powered auto-fill using performance data
+    if (pathname === '/api/calendar/smart-fill' && method === 'POST') {
+      const body = await parseBody(req);
+      const weekStart = body.week_start;
+      if (!weekStart) return json(res, { error: 'week_start required (YYYY-MM-DD)' }, 400);
+
+      const content = readJSON('content.json');
+      const calendarData = readJSON('calendar.json', {});
+      const perfData = readJSON('performance.json', []);
+      const { smartAutoFillWeek } = require('./generator/calendar-builder');
+      const { assignments, assigned } = smartAutoFillWeek(content, weekStart, calendarData, perfData);
+
+      for (const [dateKey, slots] of Object.entries(assignments)) {
+        if (!calendarData[dateKey]) calendarData[dateKey] = {};
+        Object.assign(calendarData[dateKey], slots);
+      }
+
+      writeJSON('calendar.json', calendarData);
+      return json(res, { ok: true, assigned, method: 'smart', assignments });
+    }
+
     // POST /api/calendar/generate — generate content for a calendar slot
     if (pathname === '/api/calendar/generate' && method === 'POST') {
       if (!process.env.ANTHROPIC_API_KEY) {
@@ -1370,6 +1391,156 @@ async function handleRequest(req, res) {
           content_in_review: content.filter(c => c.status === 'review').length
         }
       });
+    }
+
+    // POST /api/analytics/mine-insights — convert learned_insights from meetings into content triggers
+    if (pathname === '/api/analytics/mine-insights' && method === 'POST') {
+      try {
+        db.initDb();
+        const insights = db.getInsights({ status: 'active', limit: 50 });
+        const triggers = readJSON('trigger-queue.json');
+        const existingTitles = new Set(triggers.map(t => (t.title || '').toLowerCase()));
+
+        const created = [];
+        for (const insight of insights) {
+          if (insight.frequency < 2 || insight.confidence < 0.4) continue;
+
+          const categoryMap = {
+            objection: 'PAIN_POINT',
+            pricing_insight: 'DATA_POINT',
+            technique: 'HOW_TO',
+            competitive: 'TREND',
+            success_factor: 'DATA_POINT'
+          };
+
+          const titleMap = {
+            objection: `Why law firms say "${insight.insight.slice(0, 60)}" — and how to address it`,
+            pricing_insight: `Law firm marketing pricing: ${insight.insight.slice(0, 80)}`,
+            technique: `Marketing technique: ${insight.insight.slice(0, 80)}`,
+            competitive: `Competitive insight: ${insight.insight.slice(0, 80)}`,
+            success_factor: `What winning firms do: ${insight.insight.slice(0, 80)}`
+          };
+
+          const title = titleMap[insight.category] || `Sales insight: ${insight.insight.slice(0, 80)}`;
+          if (existingTitles.has(title.toLowerCase())) continue;
+
+          const trigger = {
+            id: generateId(),
+            title,
+            raw_content: `[From ${insight.frequency}x sales calls] ${insight.insight}\n\nCategory: ${insight.category}\nConfidence: ${Math.round(insight.confidence * 100)}%\nFirst seen: ${insight.first_seen}\nLast seen: ${insight.last_seen}`,
+            source: 'meeting_insight',
+            category: categoryMap[insight.category] || 'INSIGHT',
+            url: null,
+            captured_at: now(),
+            status: 'pending',
+            insight_id: insight.id,
+            insight_frequency: insight.frequency
+          };
+          triggers.push(trigger);
+          existingTitles.add(title.toLowerCase());
+          created.push({ id: trigger.id, title: trigger.title, category: trigger.category, frequency: insight.frequency });
+        }
+
+        if (created.length > 0) writeJSON('trigger-queue.json', triggers);
+        return json(res, { ok: true, triggers_created: created.length, triggers: created });
+      } catch (err) {
+        return json(res, { error: err.message }, 500);
+      }
+    }
+
+    // GET /api/analytics/content-gaps — detect practice area and topic gaps
+    if (pathname === '/api/analytics/content-gaps' && method === 'GET') {
+      try {
+        db.initDb();
+        const content = readJSON('content.json');
+        const published = readJSON('published.json', []);
+        const triggers = readJSON('trigger-queue.json');
+
+        // Get practice areas from meetings
+        const meetings = db.getAllMeetings ? db.getAllMeetings() : [];
+        const practiceAreaMentions = {};
+        const painPointMentions = {};
+
+        for (const m of meetings) {
+          try {
+            const extracted = typeof m.extracted_data === 'string' ? JSON.parse(m.extracted_data) : (m.extracted_data || {});
+            const areas = extracted.practice_areas || extracted.services || [];
+            for (const area of (Array.isArray(areas) ? areas : [areas])) {
+              const key = (area || '').toLowerCase().trim();
+              if (key) practiceAreaMentions[key] = (practiceAreaMentions[key] || 0) + 1;
+            }
+            const pains = extracted.pain_points || [];
+            for (const pain of (Array.isArray(pains) ? pains : [pains])) {
+              const key = (typeof pain === 'string' ? pain : pain?.description || '').toLowerCase().trim();
+              if (key && key.length > 10) painPointMentions[key] = (painPointMentions[key] || 0) + 1;
+            }
+          } catch {}
+        }
+
+        // Count content by practice area keywords
+        const recentContent = content.filter(c => {
+          const age = (Date.now() - new Date(c.generated_at).getTime()) / (1000 * 60 * 60 * 24);
+          return age <= 30;
+        });
+        const contentText = recentContent.map(c => `${c.trigger_title || ''} ${c.formats?.linkedin?.content || ''}`).join(' ').toLowerCase();
+
+        // Find gaps: practice areas mentioned in meetings but underrepresented in content
+        const practiceGaps = [];
+        for (const [area, count] of Object.entries(practiceAreaMentions).sort((a, b) => b[1] - a[1])) {
+          const contentMentions = (contentText.match(new RegExp(area.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi')) || []).length;
+          const ratio = count > 0 ? contentMentions / count : 0;
+          if (ratio < 1 && count >= 2) {
+            practiceGaps.push({ practice_area: area, meeting_mentions: count, content_mentions: contentMentions, gap_severity: count >= 4 ? 'high' : count >= 2 ? 'medium' : 'low' });
+          }
+        }
+
+        // Find pain point gaps
+        const painGaps = [];
+        for (const [pain, count] of Object.entries(painPointMentions).sort((a, b) => b[1] - a[1]).slice(0, 20)) {
+          const keywords = pain.split(/\s+/).filter(w => w.length > 4).slice(0, 3);
+          const contentHits = keywords.filter(kw => contentText.includes(kw)).length;
+          if (contentHits < keywords.length * 0.5 && count >= 2) {
+            painGaps.push({ pain_point: pain, meeting_mentions: count, content_coverage: contentHits > 0 ? 'partial' : 'none' });
+          }
+        }
+
+        // Format distribution gap
+        const formatCounts = {};
+        for (const c of recentContent) {
+          for (const [fmt, val] of Object.entries(c.formats || {})) {
+            if (val?.content) formatCounts[fmt] = (formatCounts[fmt] || 0) + 1;
+          }
+        }
+        const avgFormats = Object.values(formatCounts).length > 0
+          ? Object.values(formatCounts).reduce((a, b) => a + b, 0) / Object.values(formatCounts).length
+          : 0;
+        const formatGaps = Object.entries(formatCounts)
+          .filter(([, v]) => v < avgFormats * 0.5)
+          .map(([fmt, count]) => ({ format: fmt, count, avg: Math.round(avgFormats) }));
+
+        // Learned insights not yet turned into content
+        const insights = db.getInsights({ status: 'active', limit: 30 });
+        const unmined = insights.filter(i => i.frequency >= 3 && !triggers.some(t => t.insight_id === i.id));
+
+        return json(res, {
+          practice_area_gaps: practiceGaps.slice(0, 10),
+          pain_point_gaps: painGaps.slice(0, 10),
+          format_gaps: formatGaps,
+          unmined_insights: unmined.slice(0, 10).map(i => ({
+            id: i.id, category: i.category, insight: i.insight,
+            frequency: i.frequency, confidence: i.confidence
+          })),
+          summary: {
+            total_practice_areas: Object.keys(practiceAreaMentions).length,
+            gaps_found: practiceGaps.length,
+            pain_gaps: painGaps.length,
+            unmined_insights_count: unmined.length,
+            recent_content_count: recentContent.length
+          }
+        });
+      } catch (err) {
+        return json(res, { error: err.message }, 500);
+      }
     }
 
     // POST /api/triggers/generate — generate content for a trigger

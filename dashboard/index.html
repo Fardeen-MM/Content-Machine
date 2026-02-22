@@ -2546,21 +2546,22 @@ document.addEventListener('click', (e) => {
 
 document.addEventListener('keydown', (e) => {
   // Global shortcuts
-  if (e.key === '1' && !e.ctrlKey && !e.metaKey && !isEditing()) { state.page = 'dashboard'; render(); }
-  if (e.key === '2' && !e.ctrlKey && !e.metaKey && !isEditing()) { state.page = 'pipeline'; render(); }
-  if (e.key === '3' && !e.ctrlKey && !e.metaKey && !isEditing()) { state.page = 'meetings'; render(); }
-  if (e.key === '4' && !e.ctrlKey && !e.metaKey && !isEditing()) { state.page = 'clients'; render(); }
-  if (e.key === '5' && !e.ctrlKey && !e.metaKey && !isEditing()) { state.page = 'actions'; render(); }
-  if (e.key === '6' && !e.ctrlKey && !e.metaKey && !isEditing()) { state.page = 'pestering'; render(); }
-  if (e.key === '7' && !e.ctrlKey && !e.metaKey && !isEditing()) { state.page = 'insights'; render(); }
-  if (e.key === '8' && !e.ctrlKey && !e.metaKey && !isEditing()) { state.page = 'deals'; render(); }
-  if (e.key === '9' && !e.ctrlKey && !e.metaKey && !isEditing()) { state.page = 'settings'; render(); }
-  if (e.key === 'c' && !e.ctrlKey && !e.metaKey && !isEditing()) { state.page = 'content'; render(); }
-  if (e.key === 't' && !e.ctrlKey && !e.metaKey && !isEditing()) { state.page = 'triggers'; render(); }
-  if (e.key === 'l' && !e.ctrlKey && !e.metaKey && !isEditing()) { state.page = 'analytics'; render(); }
-  if (e.key === 'n' && !e.ctrlKey && !e.metaKey && !isEditing()) { state.page = 'calendar'; render(); }
+  const nav = (pg) => { state.page = pg; loadPageData(pg); };
+  if (e.key === '1' && !e.ctrlKey && !e.metaKey && !isEditing()) nav('dashboard');
+  if (e.key === '2' && !e.ctrlKey && !e.metaKey && !isEditing()) nav('pipeline');
+  if (e.key === '3' && !e.ctrlKey && !e.metaKey && !isEditing()) nav('meetings');
+  if (e.key === '4' && !e.ctrlKey && !e.metaKey && !isEditing()) nav('clients');
+  if (e.key === '5' && !e.ctrlKey && !e.metaKey && !isEditing()) nav('actions');
+  if (e.key === '6' && !e.ctrlKey && !e.metaKey && !isEditing()) nav('pestering');
+  if (e.key === '7' && !e.ctrlKey && !e.metaKey && !isEditing()) nav('insights');
+  if (e.key === '8' && !e.ctrlKey && !e.metaKey && !isEditing()) nav('deals');
+  if (e.key === '9' && !e.ctrlKey && !e.metaKey && !isEditing()) nav('settings');
+  if (e.key === 'c' && !e.ctrlKey && !e.metaKey && !isEditing()) nav('content');
+  if (e.key === 't' && !e.ctrlKey && !e.metaKey && !isEditing()) nav('triggers');
+  if (e.key === 'l' && !e.ctrlKey && !e.metaKey && !isEditing()) nav('analytics');
+  if (e.key === 'n' && !e.ctrlKey && !e.metaKey && !isEditing()) nav('calendar');
   if ((e.key === 'd' || e.key === 'D') && !e.ctrlKey && !e.metaKey && !isEditing()) { toggleDarkMode(); }
-  if (e.key === 'Escape') { state.editingFormat = null; state.sidebarOpen = false; state._remixOpen = null; state._calAssignSlot = null; state._showShortcuts = false; state._rejectModal = null; render(); }
+  if (e.key === 'Escape') { state.editingFormat = null; state.sidebarOpen = false; state._remixOpen = null; state._calAssignSlot = null; state._showShortcuts = false; state._rejectModal = null; state.showCapture = false; render(); }
   if (e.key === '?' && !e.ctrlKey && !e.metaKey && !isEditing()) { state._showShortcuts = !state._showShortcuts; render(); }
   if (e.key === '/' && !e.ctrlKey && !e.metaKey && !isEditing()) {
     e.preventDefault();
@@ -2795,6 +2796,9 @@ function renderTopbar() {
     memory: 'Brand Memory',
     'save-url': 'Save URL',
     inspirations: 'Inspiration Feed',
+    series: 'Content Series',
+    playbooks: 'Platform Playbooks',
+    'publish-tracker': 'Publish Tracker',
   };
 
   return h('header', { className: 'topbar' },
@@ -5781,7 +5785,7 @@ function renderDashboardPage() {
               cursor: 'pointer', transition: 'all 0.15s'
             },
             title: `${t.count} mentions in ${t.triggers} triggers`,
-            onclick: () => { state.page = 'triggers'; state.triggerSearch = t.word; render(); }
+            onclick: () => { state.searchQuery = t.word; state.page = 'triggers'; loadPageData('triggers'); }
           }, t.word, h('span', { style: { marginLeft: '4px', fontSize: '10px', fontWeight: '700', color: 'var(--blue)' } }, String(t.count)));
         })
       ),
@@ -9634,7 +9638,7 @@ function renderSeriesPage() {
   const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
   const dayColors = { monday: '#dc2626', tuesday: '#2563eb', wednesday: '#059669', thursday: '#d97706', friday: '#7c3aed', saturday: '#0ea5e9', sunday: '#ec4899' };
 
-  return h('div', {},
+  return h('div', { className: 'page-content' },
     h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' } },
       h('div', {},
         h('h2', { style: { fontFamily: "'Fraunces', serif", fontSize: '24px' } }, 'Content Series'),
@@ -9835,7 +9839,7 @@ function renderPublishTrackerPage() {
     byPlatform[p] = items.filter(i => i.publish_status?.[p]?.published).length;
   }
 
-  return h('div', {},
+  return h('div', { className: 'page-content' },
     h('h2', { style: { fontFamily: "'Fraunces', serif", fontSize: '24px', marginBottom: '4px' } }, 'Publish Tracker'),
     h('p', { style: { color: 'var(--gray-500)', fontSize: '14px', marginBottom: '20px' } }, `${totalPublished} of ${totalContent} pieces published across platforms`),
     // Platform stats bar

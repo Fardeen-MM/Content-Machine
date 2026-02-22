@@ -4855,7 +4855,7 @@ function renderDashboardPage() {
           h('div', { style: { fontSize: '10px', color: 'var(--gray-500)' } }, 'Created')
         ),
         h('div', { style: { background: 'var(--gray-50)', borderRadius: '6px', padding: '8px', textAlign: 'center' } },
-          h('div', { style: { fontWeight: '700', color: '#3b82f6' } }, String(state.weeklyGrowthReport.publishing.published)),
+          h('div', { style: { fontWeight: '700', color: '#3b82f6' } }, String(state.weeklyGrowthReport.publishing?.published || 0)),
           h('div', { style: { fontSize: '10px', color: 'var(--gray-500)' } }, 'Published')
         ),
         h('div', { style: { background: 'var(--gray-50)', borderRadius: '6px', padding: '8px', textAlign: 'center' } },

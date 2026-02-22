@@ -36,6 +36,7 @@
   --amber-light: #fef3c7;
   --purple: #7c3aed;
   --purple-light: #ede9fe;
+  --card-bg: #ffffff;
   --radius: 12px;
   --radius-sm: 8px;
   --shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
@@ -565,6 +566,9 @@ h1, h2, h3, h4 { font-family: 'Fraunces', serif; }
   font-weight: 500;
   color: var(--navy);
   max-width: 400px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   cursor: pointer;
 }
 
@@ -1205,6 +1209,7 @@ h1, h2, h3, h4 { font-family: 'Fraunces', serif; }
   --gray-800: #f1f5f9;
   --gray-900: #f8fafc;
   --white: #1e293b;
+  --card-bg: #1e293b;
   --shadow: 0 1px 3px rgba(0,0,0,0.3);
   --shadow-lg: 0 10px 15px rgba(0,0,0,0.3);
 }
@@ -3304,7 +3309,7 @@ function renderDashboardPage() {
         ),
         h('span', { style: { fontSize: '10px', color: 'var(--gray-400)' } }, state.contentIntelligence.generated_at?.slice(0, 16)?.replace('T', ' ') || '')
       ),
-      h('div', { style: { background: 'white', borderRadius: 'var(--radius-sm)', padding: '14px', border: '1px solid var(--gray-200)' } },
+      h('div', { style: { background: 'var(--card-bg)', borderRadius: 'var(--radius-sm)', padding: '14px', border: '1px solid var(--gray-200)' } },
         h('div', { style: { fontSize: '12px', color: 'var(--gray-600)', marginBottom: '12px', lineHeight: '1.5' } }, state.contentIntelligence.summary),
         h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' } },
           h('div', {},
@@ -3376,7 +3381,7 @@ function renderDashboardPage() {
       ),
       h('div', { style: { display: 'grid', gap: '4px', marginBottom: '8px' } },
         ...(state.hookAnalysis.hooks || []).slice(0, 5).map(h2 =>
-          h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 10px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)' } },
+          h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 10px', background: 'var(--card-bg)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)' } },
             h('div', { style: { width: '28px', height: '28px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: '700', color: 'white', background: h2.grade === 'A' ? '#059669' : h2.grade === 'B' ? '#2563eb' : h2.grade === 'C' ? '#d97706' : '#dc2626', flexShrink: 0 } }, h2.grade),
             h('div', { style: { flex: 1, minWidth: 0 } },
               h('div', { style: { fontSize: '11px', fontWeight: '500', color: 'var(--navy)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, h2.hook || ''),
@@ -3401,7 +3406,7 @@ function renderDashboardPage() {
       ),
       h('div', { style: { display: 'grid', gap: '6px' } },
         ...(state.contentMatrix.pillars || []).map(p =>
-          h('div', { style: { padding: '8px 12px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
+          h('div', { style: { padding: '8px 12px', background: 'var(--card-bg)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
             h('div', {},
               h('div', { style: { fontSize: '12px', fontWeight: '600', color: 'var(--navy)' } }, p.name || p.id),
               h('div', { style: { fontSize: '10px', color: 'var(--gray-500)' } }, `${p.concepts?.length || 0} concepts, ${(p.concepts || []).reduce((s, c) => s + (c.posts?.length || 0), 0)} posts`)
@@ -3417,7 +3422,7 @@ function renderDashboardPage() {
       h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)', marginBottom: '8px' } }, `WEEKLY SERIES (${state.seriesTemplates.series.length})`),
       h('div', { style: { display: 'grid', gap: '6px' } },
         ...state.seriesTemplates.series.map(s =>
-          h('div', { style: { padding: '10px 14px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)' } },
+          h('div', { style: { padding: '10px 14px', background: 'var(--card-bg)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)' } },
             h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' } },
               h('div', { style: { fontSize: '12px', fontWeight: '600', color: 'var(--navy)' } }, s.name),
               h('div', { style: { display: 'flex', gap: '4px' } },
@@ -3468,7 +3473,7 @@ function renderDashboardPage() {
       ) : null,
       h('div', { style: { display: 'grid', gap: '4px' } },
         ...Object.entries(state.engagementPlaybook.daily_routine || {}).map(([key, r]) =>
-          h('div', { style: { padding: '6px 10px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', display: 'flex', justifyContent: 'space-between' } },
+          h('div', { style: { padding: '6px 10px', background: 'var(--card-bg)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', display: 'flex', justifyContent: 'space-between' } },
             h('div', { style: { fontSize: '10px', fontWeight: '600', color: 'var(--navy)', textTransform: 'capitalize' } }, key.replace('_', ' ')),
             h('div', { style: { fontSize: '10px', color: 'var(--gray-500)' } }, r.time)
           )
@@ -3515,7 +3520,7 @@ function renderDashboardPage() {
       h('div', { style: { display: 'grid', gap: '4px' } },
         ...state.contentPillars.pillars.map(p => {
           const purposeColors = { educate: '#2563eb', trust: '#059669', desire: '#d97706', objections: '#dc2626', convert: '#7c3aed' };
-          return h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)' } },
+          return h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', background: 'var(--card-bg)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)' } },
             h('div', { style: { width: '8px', height: '8px', borderRadius: '50%', background: purposeColors[p.purpose] || '#6b7280', flexShrink: '0' } }),
             h('div', { style: { flex: 1 } },
               h('div', { style: { fontSize: '11px', fontWeight: '600', color: 'var(--navy)' } }, p.name),
@@ -3607,7 +3612,7 @@ function renderDashboardPage() {
       h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)', marginBottom: '8px' } }, `TOPIC CLUSTERS (${state.topicClusters.clusters.length})`),
       h('div', { style: { display: 'grid', gap: '4px' } },
         ...state.topicClusters.clusters.map(c =>
-          h('div', { style: { padding: '8px 12px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)' } },
+          h('div', { style: { padding: '8px 12px', background: 'var(--card-bg)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)' } },
             h('div', { style: { fontSize: '11px', fontWeight: '600', color: 'var(--navy)' } }, c.pillar_topic),
             h('div', { style: { display: 'flex', gap: '4px', marginTop: '4px' } },
               h('span', { style: { fontSize: '9px', padding: '2px 6px', background: '#eff6ff', color: '#2563eb', borderRadius: '8px', fontWeight: '600' } }, c.pillar_keyword),
@@ -3627,7 +3632,7 @@ function renderDashboardPage() {
       h('div', { style: { fontSize: '10px', color: 'var(--gray-500)', marginBottom: '6px' } }, `${state.systemHealth.active_systems}/${state.systemHealth.total_systems} systems active`),
       h('div', { style: { display: 'grid', gap: '3px' } },
         ...(state.systemHealth.checks || []).slice(0, 6).map(c =>
-          h('div', { style: { display: 'flex', alignItems: 'center', gap: '6px', padding: '4px 8px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)' } },
+          h('div', { style: { display: 'flex', alignItems: 'center', gap: '6px', padding: '4px 8px', background: 'var(--card-bg)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)' } },
             h('span', { style: { fontSize: '10px' } }, c.status === 'ok' ? '\u2705' : c.status === 'warning' ? '\u26A0\uFE0F' : '\u274C'),
             h('span', { style: { fontSize: '10px', flex: '1' } }, c.name),
             h('span', { style: { fontSize: '9px', color: 'var(--gray-400)' } }, c.detail || '')
@@ -3642,7 +3647,7 @@ function renderDashboardPage() {
       h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)', marginBottom: '8px' } }, 'REPLY STRATEGY'),
       h('div', { style: { display: 'grid', gap: '3px' } },
         ...(state.replyStrategy.target_accounts || []).slice(0, 5).map(a =>
-          h('div', { style: { padding: '6px 10px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)' } },
+          h('div', { style: { padding: '6px 10px', background: 'var(--card-bg)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)' } },
             h('div', { style: { fontSize: '11px', fontWeight: '600', color: 'var(--navy)' } }, a.name || a.handle),
             h('div', { style: { display: 'flex', gap: '4px', marginTop: '3px' } },
               h('span', { style: { fontSize: '9px', padding: '2px 6px', background: '#faf5ff', color: '#7c3aed', borderRadius: '8px', fontWeight: '600' } }, a.platform || 'X'),
@@ -3661,7 +3666,7 @@ function renderDashboardPage() {
       h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)', marginBottom: '8px' } }, 'COMMENT STRATEGY'),
       h('div', { style: { display: 'grid', gap: '3px' } },
         ...(state.commentStrategy.daily_targets || []).slice(0, 4).map(t =>
-          h('div', { style: { padding: '6px 10px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)' } },
+          h('div', { style: { padding: '6px 10px', background: 'var(--card-bg)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)' } },
             h('div', { style: { fontSize: '10px', fontWeight: '600', color: 'var(--navy)' } }, t.account_type),
             h('div', { style: { display: 'flex', gap: '4px', marginTop: '3px' } },
               h('span', { style: { fontSize: '9px', padding: '2px 6px', background: '#eff6ff', color: '#2563eb', borderRadius: '8px', fontWeight: '600' } }, t.platform || 'linkedin'),
@@ -3680,7 +3685,7 @@ function renderDashboardPage() {
       h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)', marginBottom: '8px' } }, `RECYCLE (${state.contentRecycler.suggestions.length})`),
       h('div', { style: { display: 'grid', gap: '3px' } },
         ...state.contentRecycler.suggestions.slice(0, 4).map(s =>
-          h('div', { style: { padding: '6px 10px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)' } },
+          h('div', { style: { padding: '6px 10px', background: 'var(--card-bg)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)' } },
             h('div', { style: { fontSize: '10px', fontWeight: '600', color: 'var(--navy)' } }, s.original_topic || s.fresh_angle),
             h('div', { style: { display: 'flex', gap: '4px', marginTop: '3px' } },
               h('span', { style: { fontSize: '9px', padding: '2px 6px', background: s.recycle_score >= 7 ? '#dcfce7' : '#fef3c7', color: s.recycle_score >= 7 ? '#059669' : '#d97706', borderRadius: '8px', fontWeight: '600' } }, `${s.recycle_score}/10`),
@@ -3699,7 +3704,7 @@ function renderDashboardPage() {
       ),
       h('div', { style: { display: 'grid', gap: '3px' } },
         ...(state.distributionEngine.plan || []).slice(0, 5).map(day =>
-          h('div', { style: { padding: '6px 10px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)' } },
+          h('div', { style: { padding: '6px 10px', background: 'var(--card-bg)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)' } },
             h('div', { style: { fontSize: '10px', fontWeight: '600', color: 'var(--navy)' } }, day.day),
             h('div', { style: { display: 'flex', gap: '4px', marginTop: '3px', flexWrap: 'wrap' } },
               ...(day.slots || []).slice(0, 3).map(s =>
@@ -3716,7 +3721,7 @@ function renderDashboardPage() {
       h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)', marginBottom: '8px' } }, '90-DAY GROWTH PLAYBOOK'),
       h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px' } },
         [state.growthPlaybook.month_1, state.growthPlaybook.month_2, state.growthPlaybook.month_3].map((m, i) =>
-          m ? h('div', { style: { padding: '8px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)' } },
+          m ? h('div', { style: { padding: '8px', background: 'var(--card-bg)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)' } },
             h('div', { style: { fontSize: '10px', fontWeight: '700', color: ['#2563eb', '#7c3aed', '#059669'][i] } }, `Month ${i + 1}: ${m.theme}`),
             h('div', { style: { fontSize: '9px', color: 'var(--gray-500)', marginTop: '3px' } }, (m.goals || []).slice(0, 2).join(' | '))
           ) : null
@@ -3757,7 +3762,7 @@ function renderDashboardPage() {
       ),
       h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px' } },
         ...(state.funnelAnalysis.stages || []).map(s =>
-          h('div', { style: { padding: '8px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', borderLeft: `3px solid ${s.health === 'strong' ? '#059669' : s.health === 'moderate' ? '#d97706' : '#dc2626'}` } },
+          h('div', { style: { padding: '8px', background: 'var(--card-bg)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', borderLeft: `3px solid ${s.health === 'strong' ? '#059669' : s.health === 'moderate' ? '#d97706' : '#dc2626'}` } },
             h('div', { style: { fontSize: '10px', fontWeight: '700', color: 'var(--navy)' } }, s.stage),
             h('div', { style: { fontSize: '9px', color: 'var(--gray-500)', marginTop: '2px' } }, `${s.content_count || 0} pieces`),
             s.gaps?.length ? h('div', { style: { fontSize: '9px', color: '#dc2626', marginTop: '2px' } }, s.gaps[0]) : null
@@ -3774,7 +3779,7 @@ function renderDashboardPage() {
       state.weeklyActionPlan.week_theme ? h('div', { style: { fontSize: '10px', color: '#7c3aed', fontStyle: 'italic', marginBottom: '6px' } }, state.weeklyActionPlan.week_theme) : null,
       h('div', { style: { display: 'grid', gap: '3px' } },
         ...(state.weeklyActionPlan.days || []).slice(0, 5).map(d =>
-          h('div', { style: { padding: '6px 10px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)' } },
+          h('div', { style: { padding: '6px 10px', background: 'var(--card-bg)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)' } },
             h('div', { style: { fontSize: '10px', fontWeight: '600', color: 'var(--navy)' } }, d.day),
             h('div', { style: { fontSize: '9px', color: 'var(--gray-500)', marginTop: '2px' } },
               [...(d.morning || []), ...(d.midday || [])].slice(0, 2).map(t => t.action).join(' | ')
@@ -3791,7 +3796,7 @@ function renderDashboardPage() {
       h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)', marginBottom: '8px' } }, `LEAD MAGNETS (${state.generatedLeadMagnets.length})`),
       h('div', { style: { display: 'grid', gap: '3px' } },
         ...state.generatedLeadMagnets.slice(0, 3).map(m =>
-          h('div', { style: { padding: '6px 10px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)' } },
+          h('div', { style: { padding: '6px 10px', background: 'var(--card-bg)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)' } },
             h('div', { style: { fontSize: '11px', fontWeight: '600', color: 'var(--navy)' } }, m.title || 'Lead Magnet'),
             h('div', { style: { display: 'flex', gap: '4px', marginTop: '3px' } },
               h('span', { style: { fontSize: '9px', padding: '2px 6px', background: '#faf5ff', color: '#7c3aed', borderRadius: '8px', fontWeight: '600' } }, m.type),
@@ -3830,7 +3835,7 @@ function renderDashboardPage() {
       h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)', marginBottom: '8px' } }, `TRENDS (${state.trendsAnalysis.emerging_trends.length})`),
       h('div', { style: { display: 'grid', gap: '3px' } },
         ...(state.trendsAnalysis.emerging_trends || []).slice(0, 4).map(t =>
-          h('div', { style: { padding: '6px 10px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)' } },
+          h('div', { style: { padding: '6px 10px', background: 'var(--card-bg)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)' } },
             h('div', { style: { fontSize: '10px', fontWeight: '600', color: 'var(--navy)' } }, t.trend),
             h('div', { style: { display: 'flex', gap: '4px', marginTop: '3px' } },
               h('span', { style: { fontSize: '9px', padding: '2px 6px', background: t.velocity === 'rising' ? '#dcfce7' : t.velocity === 'peaking' ? '#fef3c7' : '#fee2e2', color: t.velocity === 'rising' ? '#059669' : t.velocity === 'peaking' ? '#d97706' : '#dc2626', borderRadius: '8px', fontWeight: '600' } }, t.velocity),
@@ -3865,7 +3870,7 @@ function renderDashboardPage() {
       ),
       state.conversionOptimizer.quick_fixes ? h('div', { style: { display: 'grid', gap: '2px' } },
         ...(state.conversionOptimizer.quick_fixes || []).slice(0, 3).map(f =>
-          h('div', { style: { padding: '4px 10px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px', color: 'var(--gray-600)' } }, typeof f === 'string' ? f : f.fix || f.action || '')
+          h('div', { style: { padding: '4px 10px', background: 'var(--card-bg)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px', color: 'var(--gray-600)' } }, typeof f === 'string' ? f : f.fix || f.action || '')
         )
       ) : null
     ) : null,
@@ -3879,7 +3884,7 @@ function renderDashboardPage() {
       h('div', { style: { fontSize: '10px', color: 'var(--gray-600)', marginBottom: '6px', fontStyle: 'italic' } }, state.contentMatrix.mantra || ''),
       h('div', { style: { display: 'grid', gap: '2px' } },
         ...(state.contentMatrix.pillars || []).slice(0, 5).map(p =>
-          h('div', { style: { padding: '4px 10px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px', display: 'flex', justifyContent: 'space-between' } },
+          h('div', { style: { padding: '4px 10px', background: 'var(--card-bg)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px', display: 'flex', justifyContent: 'space-between' } },
             h('span', { style: { fontWeight: '600', color: 'var(--navy)' } }, p.name),
             h('span', { style: { color: 'var(--gray-500)' } }, `${(p.concepts || p.core_concepts || []).length} concepts`)
           )
@@ -3901,7 +3906,7 @@ function renderDashboardPage() {
       h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)', marginBottom: '8px' } }, 'DRAFTING STRATEGY'),
       h('div', { style: { display: 'grid', gap: '2px' } },
         ...(state.draftingStrategy.target_accounts || []).slice(0, 4).map(t =>
-          h('div', { style: { padding: '4px 10px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px' } },
+          h('div', { style: { padding: '4px 10px', background: 'var(--card-bg)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px' } },
             h('span', { style: { fontWeight: '600', color: 'var(--navy)' } }, t.name),
             h('div', { style: { color: 'var(--gray-500)', marginTop: '1px' } }, t.approach || t.comment_approach || '')
           )
@@ -3916,15 +3921,15 @@ function renderDashboardPage() {
         h('div', { style: { fontSize: '12px', fontWeight: '700', padding: '2px 8px', borderRadius: '8px', background: state.contentVelocity.speed?.bottleneck === 'healthy' ? '#dcfce7' : '#fef3c7', color: state.contentVelocity.speed?.bottleneck === 'healthy' ? '#059669' : '#d97706' } }, state.contentVelocity.speed?.bottleneck || 'unknown')
       ),
       h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '4px', textAlign: 'center' } },
-        h('div', { style: { padding: '6px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)' } },
+        h('div', { style: { padding: '6px', background: 'var(--card-bg)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)' } },
           h('div', { style: { fontSize: '16px', fontWeight: '700', color: 'var(--blue)' } }, String(state.contentVelocity.production?.daily_rate || 0)),
           h('div', { style: { fontSize: '9px', color: 'var(--gray-500)' } }, '/day')
         ),
-        h('div', { style: { padding: '6px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)' } },
+        h('div', { style: { padding: '6px', background: 'var(--card-bg)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)' } },
           h('div', { style: { fontSize: '16px', fontWeight: '700', color: 'var(--green)' } }, String(state.contentVelocity.production?.published_30_days || 0)),
           h('div', { style: { fontSize: '9px', color: 'var(--gray-500)' } }, 'published')
         ),
-        h('div', { style: { padding: '6px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)' } },
+        h('div', { style: { padding: '6px', background: 'var(--card-bg)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)' } },
           h('div', { style: { fontSize: '16px', fontWeight: '700', color: 'var(--amber)' } }, String(state.contentVelocity.pipeline?.approved_unpublished || 0)),
           h('div', { style: { fontSize: '9px', color: 'var(--gray-500)' } }, 'queued')
         )
@@ -3936,7 +3941,7 @@ function renderDashboardPage() {
       h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)', marginBottom: '8px' } }, 'NEXT 5 POSTS'),
       h('div', { style: { display: 'grid', gap: '2px' } },
         ...(state.pillarRotator.next_5_posts || []).map(p =>
-          h('div', { style: { padding: '4px 10px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
+          h('div', { style: { padding: '4px 10px', background: 'var(--card-bg)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
             h('span', { style: { fontWeight: '600', color: 'var(--navy)' } }, p.day || ''),
             h('span', { style: { color: 'var(--gray-600)', flex: 1, margin: '0 8px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, p.concept || p.hook || ''),
             h('span', { style: { fontSize: '9px', padding: '1px 5px', borderRadius: '4px', background: '#ede9fe', color: '#7c3aed' } }, p.format || '')
@@ -3984,7 +3989,7 @@ function renderDashboardPage() {
       ),
       state.competitiveIntel.gaps_we_can_fill ? h('div', { style: { display: 'grid', gap: '2px' } },
         ...(state.competitiveIntel.gaps_we_can_fill || []).slice(0, 3).map(g =>
-          h('div', { style: { padding: '4px 10px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px', color: 'var(--gray-600)' } }, typeof g === 'string' ? g : g.gap || '')
+          h('div', { style: { padding: '4px 10px', background: 'var(--card-bg)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px', color: 'var(--gray-600)' } }, typeof g === 'string' ? g : g.gap || '')
         )
       ) : null
     ) : null,
@@ -4007,7 +4012,7 @@ function renderDashboardPage() {
       h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)', marginBottom: '8px' } }, 'POST SCHEDULE'),
       h('div', { style: { display: 'grid', gap: '2px' } },
         ...(state.postScheduler.weekly_schedule || []).slice(0, 5).map(s =>
-          h('div', { style: { padding: '4px 10px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px', display: 'flex', justifyContent: 'space-between' } },
+          h('div', { style: { padding: '4px 10px', background: 'var(--card-bg)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px', display: 'flex', justifyContent: 'space-between' } },
             h('span', { style: { fontWeight: '600', color: 'var(--navy)' } }, `${s.day} ${s.time || ''}`),
             h('span', { style: { color: 'var(--gray-500)' } }, `${s.platform || ''} — ${s.type || ''}`)
           )
@@ -4020,7 +4025,7 @@ function renderDashboardPage() {
       h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)', marginBottom: '8px' } }, 'TREND HIJACKER'),
       h('div', { style: { display: 'grid', gap: '2px' } },
         ...(state.trendHijacker.trends || []).slice(0, 3).map(t =>
-          h('div', { style: { padding: '4px 10px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px' } },
+          h('div', { style: { padding: '4px 10px', background: 'var(--card-bg)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px' } },
             h('div', { style: { display: 'flex', justifyContent: 'space-between' } },
               h('span', { style: { fontWeight: '600', color: 'var(--navy)' } }, t.topic || ''),
               h('span', { style: { fontSize: '9px', padding: '1px 5px', borderRadius: '4px', background: t.urgency === 'hours' ? '#fee2e2' : '#fef3c7', color: t.urgency === 'hours' ? '#dc2626' : '#d97706' } }, t.urgency || '')
@@ -4050,7 +4055,7 @@ function renderDashboardPage() {
     // ICP Refined (Batch 66)
     state.icpRefined?.primary_icp ? h('div', { style: { marginBottom: '20px' } },
       h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)', marginBottom: '8px' } }, 'IDEAL CUSTOMER'),
-      h('div', { style: { padding: '8px 10px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)' } },
+      h('div', { style: { padding: '8px 10px', background: 'var(--card-bg)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)' } },
         h('div', { style: { fontWeight: '700', fontSize: '12px', color: 'var(--navy)' } }, state.icpRefined.primary_icp.title || ''),
         h('div', { style: { fontSize: '10px', color: 'var(--gray-500)', marginTop: '2px' } }, `${state.icpRefined.primary_icp.firm_size || ''} | ${state.icpRefined.primary_icp.revenue || ''}`),
         state.icpRefined.primary_icp.pain_points ? h('div', { style: { marginTop: '4px', display: 'flex', gap: '4px', flexWrap: 'wrap' } },
@@ -4069,7 +4074,7 @@ function renderDashboardPage() {
       ),
       state.winLossAnalysis.recommendations ? h('div', { style: { display: 'grid', gap: '2px' } },
         ...(state.winLossAnalysis.recommendations || []).slice(0, 2).map(r =>
-          h('div', { style: { padding: '4px 10px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px', color: 'var(--gray-600)' } }, r)
+          h('div', { style: { padding: '4px 10px', background: 'var(--card-bg)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px', color: 'var(--gray-600)' } }, r)
         )
       ) : null
     ) : null,
@@ -4090,7 +4095,7 @@ function renderDashboardPage() {
       state.quickWins.one_thing_today ? h('div', { style: { padding: '6px 10px', background: '#eff6ff', borderRadius: 'var(--radius-sm)', border: '1px solid #bfdbfe', fontSize: '10px', color: '#1d4ed8', fontWeight: '600', marginBottom: '4px' } }, state.quickWins.one_thing_today) : null,
       h('div', { style: { display: 'grid', gap: '2px' } },
         ...(state.quickWins.quick_wins || []).slice(0, 3).map(w =>
-          h('div', { style: { padding: '4px 10px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px', display: 'flex', justifyContent: 'space-between' } },
+          h('div', { style: { padding: '4px 10px', background: 'var(--card-bg)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px', display: 'flex', justifyContent: 'space-between' } },
             h('span', { style: { color: 'var(--gray-600)', flex: 1 } }, w.action || w),
             h('span', { style: { fontSize: '9px', padding: '1px 5px', borderRadius: '4px', background: w.impact === 'high' ? '#dcfce7' : '#fef3c7', color: w.impact === 'high' ? '#059669' : '#d97706' } }, w.time || '')
           )
@@ -4119,7 +4124,7 @@ function renderDashboardPage() {
       ),
       state.authorityBuilder.daily_habits ? h('div', { style: { display: 'grid', gap: '2px' } },
         ...(state.authorityBuilder.daily_habits || []).slice(0, 3).map(h2 =>
-          h('div', { style: { padding: '3px 10px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px', color: 'var(--gray-600)' } }, h2)
+          h('div', { style: { padding: '3px 10px', background: 'var(--card-bg)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px', color: 'var(--gray-600)' } }, h2)
         )
       ) : null
     ) : null,
@@ -4132,7 +4137,7 @@ function renderDashboardPage() {
       ),
       h('div', { style: { display: 'grid', gap: '2px' } },
         ...(state.contentExperiments.experiments || []).slice(0, 3).map(e =>
-          h('div', { style: { padding: '4px 10px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px' } },
+          h('div', { style: { padding: '4px 10px', background: 'var(--card-bg)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px' } },
             h('div', { style: { fontWeight: '600', color: 'var(--navy)' } }, e.name || ''),
             h('div', { style: { color: 'var(--gray-500)', marginTop: '1px' } }, e.hypothesis || '')
           )
@@ -4166,7 +4171,7 @@ function renderDashboardPage() {
           h('div', { style: { fontSize: '10px', fontWeight: '600', color: 'var(--gray-500)', marginBottom: '4px' } }, `Week ${w.week}: ${w.theme || ''}`),
           h('div', { style: { display: 'grid', gap: '2px' } },
             ...(w.posts || []).slice(0, 5).map(p =>
-              h('div', { style: { padding: '3px 10px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px', display: 'flex', justifyContent: 'space-between' } },
+              h('div', { style: { padding: '3px 10px', background: 'var(--card-bg)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px', display: 'flex', justifyContent: 'space-between' } },
                 h('span', { style: { fontWeight: '600', color: 'var(--navy)' } }, `${p.day} ${p.time || ''}`),
                 h('span', { style: { color: 'var(--gray-500)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '150px' } }, p.topic || p.hook || '')
               )
@@ -4184,7 +4189,7 @@ function renderDashboardPage() {
       ),
       h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '6px' } },
         ...Object.entries(state.engagementTracker.by_platform || {}).map(([platform, data]) =>
-          h('div', { style: { padding: '8px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px' } },
+          h('div', { style: { padding: '8px', background: 'var(--card-bg)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px' } },
             h('div', { style: { fontWeight: '700', color: 'var(--navy)', textTransform: 'uppercase', marginBottom: '4px' } }, platform),
             h('div', { style: { color: 'var(--gray-500)' } }, `${data.avg_engagement_rate}% avg rate`),
             h('div', { style: { color: 'var(--gray-500)' } }, `${data.total_likes} likes, ${data.total_comments} comments`)
@@ -4201,7 +4206,7 @@ function renderDashboardPage() {
       ),
       h('div', { style: { display: 'grid', gap: '4px' } },
         ...Object.entries(state.conversionTracker.by_type || {}).map(([type, count]) =>
-          h('div', { style: { display: 'flex', justifyContent: 'space-between', padding: '4px 8px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px' } },
+          h('div', { style: { display: 'flex', justifyContent: 'space-between', padding: '4px 8px', background: 'var(--card-bg)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px' } },
             h('span', { style: { color: 'var(--gray-600)' } }, type.replace(/_/g, ' ')),
             h('span', { style: { fontWeight: '700', color: 'var(--navy)' } }, String(count))
           )
@@ -4217,7 +4222,7 @@ function renderDashboardPage() {
       ),
       h('div', { style: { display: 'grid', gap: '4px' } },
         ...state.commentToDm.slice(0, 5).map(p =>
-          h('div', { style: { padding: '6px 10px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px' } },
+          h('div', { style: { padding: '6px 10px', background: 'var(--card-bg)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px' } },
             h('div', { style: { display: 'flex', justifyContent: 'space-between' } },
               h('span', { style: { fontWeight: '700', color: '#7c3aed' } }, `"${p.trigger_keyword}"`),
               h('span', { style: { color: 'var(--gray-500)' } }, `${p.triggers_count || 0} triggers`)
@@ -4236,7 +4241,7 @@ function renderDashboardPage() {
       ),
       h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '4px' } },
         ...Object.entries(state.hookBank.categories || {}).map(([cat, hooks]) =>
-          h('div', { style: { padding: '6px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px' } },
+          h('div', { style: { padding: '6px', background: 'var(--card-bg)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px' } },
             h('div', { style: { fontWeight: '700', color: 'var(--navy)', textTransform: 'capitalize', marginBottom: '2px' } }, cat.replace(/_/g, ' ')),
             h('div', { style: { color: 'var(--gray-500)' } }, `${(hooks || []).length} templates`)
           )
@@ -4249,7 +4254,7 @@ function renderDashboardPage() {
       h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)', marginBottom: '8px' } }, 'CONTENT SERIES'),
       h('div', { style: { display: 'grid', gap: '6px' } },
         ...state.contentSeriesPlanner.series.slice(0, 3).map(s =>
-          h('div', { style: { padding: '8px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px' } },
+          h('div', { style: { padding: '8px', background: 'var(--card-bg)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px' } },
             h('div', { style: { fontWeight: '700', color: 'var(--navy)', marginBottom: '2px' } }, s.title),
             h('div', { style: { color: 'var(--gray-500)', marginBottom: '4px' } }, s.hook || ''),
             h('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap' } },
@@ -4270,7 +4275,7 @@ function renderDashboardPage() {
       ),
       h('div', { style: { display: 'grid', gap: '3px' } },
         ...(state.engagementScorer.top_10 || []).slice(0, 5).map(s =>
-          h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 8px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px' } },
+          h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 8px', background: 'var(--card-bg)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px' } },
             h('span', { style: { color: 'var(--gray-600)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '180px' } }, (s.title || '').slice(0, 40)),
             h('span', { style: { fontWeight: '700', color: s.score >= 70 ? '#059669' : s.score >= 40 ? '#d97706' : '#dc2626', minWidth: '30px', textAlign: 'right' } }, String(s.score))
           )
@@ -4304,7 +4309,7 @@ function renderDashboardPage() {
       ),
       h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '4px' } },
         ...Object.entries(state.performanceBenchmarks.engagement_benchmarks || {}).slice(0, 4).map(([platform, data]) =>
-          h('div', { style: { padding: '6px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px' } },
+          h('div', { style: { padding: '6px', background: 'var(--card-bg)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px' } },
             h('div', { style: { fontWeight: '700', color: 'var(--navy)', textTransform: 'capitalize' } }, platform),
             h('div', { style: { color: data.vs_benchmark === 'above' ? '#059669' : data.vs_benchmark === 'below' ? '#dc2626' : 'var(--gray-500)' } },
               data.data_points > 0 ? `${data.your_rate}% (${data.vs_benchmark})` : 'No data yet'
@@ -4319,7 +4324,7 @@ function renderDashboardPage() {
       h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)', marginBottom: '8px' } }, 'AUDIENCE GROWTH'),
       h('div', { style: { display: 'grid', gap: '4px' } },
         ...Object.entries(state.audienceGrowthTracker.platforms || {}).map(([platform, data]) =>
-          h('div', { style: { display: 'flex', justifyContent: 'space-between', padding: '6px 10px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px' } },
+          h('div', { style: { display: 'flex', justifyContent: 'space-between', padding: '6px 10px', background: 'var(--card-bg)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px' } },
             h('span', { style: { fontWeight: '700', color: 'var(--navy)', textTransform: 'capitalize' } }, platform),
             h('div', { style: { textAlign: 'right' } },
               h('div', { style: { fontWeight: '700' } }, `${(data.current_followers || 0).toLocaleString()} followers`),
@@ -4357,7 +4362,7 @@ function renderDashboardPage() {
       ),
       h('div', { style: { display: 'grid', gap: '4px' } },
         ...(state.socialProofCollector.proofs || []).slice(0, 3).map(p =>
-          h('div', { style: { padding: '8px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px' } },
+          h('div', { style: { padding: '8px', background: 'var(--card-bg)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px' } },
             h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: '2px' } },
               h('span', { style: { fontWeight: '700', color: 'var(--navy)' } }, p.client_name || 'Anonymous'),
               h('span', { style: { padding: '1px 6px', borderRadius: '8px', background: '#ede9fe', color: '#7c3aed', fontSize: '9px' } }, p.type)
@@ -4377,7 +4382,7 @@ function renderDashboardPage() {
       ),
       h('div', { style: { display: 'grid', gap: '3px' } },
         ...state.newsletterBuilder.slice(-3).reverse().map(n =>
-          h('div', { style: { padding: '6px 10px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px', display: 'flex', justifyContent: 'space-between' } },
+          h('div', { style: { padding: '6px 10px', background: 'var(--card-bg)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px', display: 'flex', justifyContent: 'space-between' } },
             h('span', { style: { fontWeight: '600', color: 'var(--navy)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '200px' } }, n.subject_line || 'Untitled'),
             h('span', { style: { color: 'var(--gray-500)' } }, n.estimated_read_time || '')
           )
@@ -4393,7 +4398,7 @@ function renderDashboardPage() {
       ),
       h('div', { style: { display: 'grid', gap: '3px' } },
         ...state.dmSequenceBuilder.slice(-3).reverse().map(s =>
-          h('div', { style: { padding: '6px 10px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px' } },
+          h('div', { style: { padding: '6px 10px', background: 'var(--card-bg)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px' } },
             h('div', { style: { fontWeight: '600', color: 'var(--navy)' } }, s.sequence_name || s.trigger || 'Untitled'),
             h('div', { style: { color: 'var(--gray-500)' } }, `${(s.steps || []).length} steps | ${s.platform || 'linkedin'}`)
           )
@@ -4409,7 +4414,7 @@ function renderDashboardPage() {
       ),
       h('div', { style: { display: 'grid', gap: '3px' } },
         ...(state.contentRecyclerScan.items || []).slice(0, 5).map(r =>
-          h('div', { style: { padding: '5px 10px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px' } },
+          h('div', { style: { padding: '5px 10px', background: 'var(--card-bg)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px' } },
             h('div', { style: { display: 'flex', justifyContent: 'space-between' } },
               h('span', { style: { fontWeight: '600', color: 'var(--navy)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '180px' } }, (r.title || '').slice(0, 35)),
               h('span', { style: { padding: '1px 6px', borderRadius: '8px', background: r.recycle_type === 'high_performer_repost' ? '#d1fae5' : '#fef3c7', color: r.recycle_type === 'high_performer_repost' ? '#059669' : '#d97706', fontSize: '9px' } }, r.recycle_type?.replace(/_/g, ' ') || '')
@@ -4446,15 +4451,15 @@ function renderDashboardPage() {
         h('div', { style: { fontSize: '12px', color: 'var(--gray-500)' } }, `${state.contentDnaAnalyzer.total_content} analyzed`)
       ),
       h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px' } },
-        h('div', { style: { padding: '8px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px', textAlign: 'center' } },
+        h('div', { style: { padding: '8px', background: 'var(--card-bg)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px', textAlign: 'center' } },
           h('div', { style: { fontWeight: '700', color: 'var(--navy)' } }, 'Best Length'),
           h('div', { style: { color: 'var(--gray-500)' } }, state.contentDnaAnalyzer.optimal_length?.split('(')[0] || '?')
         ),
-        h('div', { style: { padding: '8px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px', textAlign: 'center' } },
+        h('div', { style: { padding: '8px', background: 'var(--card-bg)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px', textAlign: 'center' } },
           h('div', { style: { fontWeight: '700', color: 'var(--navy)' } }, 'Top Hook'),
           h('div', { style: { color: 'var(--gray-500)', textTransform: 'capitalize' } }, state.contentDnaAnalyzer.dominant_hook || '?')
         ),
-        h('div', { style: { padding: '8px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px', textAlign: 'center' } },
+        h('div', { style: { padding: '8px', background: 'var(--card-bg)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px', textAlign: 'center' } },
           h('div', { style: { fontWeight: '700', color: 'var(--navy)' } }, 'Top Words'),
           h('div', { style: { color: 'var(--gray-500)' } }, (state.contentDnaAnalyzer.top_topic_words || []).slice(0, 3).map(w => w.word).join(', '))
         )
@@ -4469,7 +4474,7 @@ function renderDashboardPage() {
       ),
       h('div', { style: { display: 'grid', gap: '3px' } },
         ...(state.smartScheduler.schedule || []).slice(0, 6).map(s =>
-          h('div', { style: { display: 'flex', justifyContent: 'space-between', padding: '4px 8px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px' } },
+          h('div', { style: { display: 'flex', justifyContent: 'space-between', padding: '4px 8px', background: 'var(--card-bg)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px' } },
             h('div', null,
               h('span', { style: { fontWeight: '600', color: 'var(--navy)' } }, `${s.day} ${s.time}`),
               h('span', { style: { color: 'var(--gray-400)', margin: '0 4px' } }, '|'),
@@ -4502,7 +4507,7 @@ function renderDashboardPage() {
       ),
       h('div', { style: { display: 'flex', gap: '6px' } },
         ...Object.entries(state.crossPostTracker.by_platform || {}).map(([p, c]) =>
-          h('span', { style: { padding: '4px 10px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px' } },
+          h('span', { style: { padding: '4px 10px', background: 'var(--card-bg)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px' } },
             h('span', { style: { fontWeight: '700', color: 'var(--navy)', textTransform: 'capitalize' } }, p),
             h('span', { style: { color: 'var(--gray-500)', marginLeft: '4px' } }, String(c))
           )
@@ -4536,15 +4541,15 @@ function renderDashboardPage() {
         h('div', { style: { fontSize: '14px', fontWeight: '700', color: state.campaignRoi.financial.roi_percentage >= 0 ? '#059669' : '#dc2626' } }, `${state.campaignRoi.financial.roi_percentage}% ROI`)
       ),
       h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px' } },
-        h('div', { style: { padding: '6px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px', textAlign: 'center' } },
+        h('div', { style: { padding: '6px', background: 'var(--card-bg)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px', textAlign: 'center' } },
           h('div', { style: { fontWeight: '700', color: 'var(--navy)' } }, `$${state.campaignRoi.financial.cost_per_lead || 0}`),
           h('div', { style: { color: 'var(--gray-500)' } }, 'Cost/Lead')
         ),
-        h('div', { style: { padding: '6px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px', textAlign: 'center' } },
+        h('div', { style: { padding: '6px', background: 'var(--card-bg)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px', textAlign: 'center' } },
           h('div', { style: { fontWeight: '700', color: 'var(--navy)' } }, `${state.campaignRoi.financial.roas}x`),
           h('div', { style: { color: 'var(--gray-500)' } }, 'ROAS')
         ),
-        h('div', { style: { padding: '6px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px', textAlign: 'center' } },
+        h('div', { style: { padding: '6px', background: 'var(--card-bg)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px', textAlign: 'center' } },
           h('div', { style: { fontWeight: '700', color: 'var(--navy)' } }, `${state.campaignRoi.funnel?.publish_to_conversion_rate || 0}%`),
           h('div', { style: { color: 'var(--gray-500)' } }, 'Conv Rate')
         )
@@ -4562,7 +4567,7 @@ function renderDashboardPage() {
       ),
       h('div', { style: { display: 'grid', gap: '3px' } },
         ...(state.leadScorer.leads || []).slice(0, 5).map(l =>
-          h('div', { style: { display: 'flex', justifyContent: 'space-between', padding: '4px 8px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px' } },
+          h('div', { style: { display: 'flex', justifyContent: 'space-between', padding: '4px 8px', background: 'var(--card-bg)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px' } },
             h('span', { style: { color: 'var(--gray-600)' } }, l.email || l.lead),
             h('div', { style: { display: 'flex', gap: '6px' } },
               h('span', { style: { fontWeight: '700', color: l.tier === 'hot' ? '#dc2626' : l.tier === 'warm' ? '#d97706' : 'var(--gray-400)' } }, l.tier),
@@ -4580,15 +4585,15 @@ function renderDashboardPage() {
         h('div', { style: { fontSize: '12px', color: 'var(--gray-500)' } }, `$${state.contentCostCalculator.per_piece.cost}/piece`)
       ),
       h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px' } },
-        h('div', { style: { padding: '6px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px', textAlign: 'center' } },
+        h('div', { style: { padding: '6px', background: 'var(--card-bg)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px', textAlign: 'center' } },
           h('div', { style: { fontWeight: '700', color: 'var(--navy)' } }, `$${state.contentCostCalculator.cost_breakdown?.total || 0}`),
           h('div', { style: { color: 'var(--gray-500)' } }, 'Total Cost')
         ),
-        h('div', { style: { padding: '6px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px', textAlign: 'center' } },
+        h('div', { style: { padding: '6px', background: 'var(--card-bg)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px', textAlign: 'center' } },
           h('div', { style: { fontWeight: '700', color: 'var(--navy)' } }, `$${state.contentCostCalculator.revenue?.attributed || 0}`),
           h('div', { style: { color: 'var(--gray-500)' } }, 'Revenue')
         ),
-        h('div', { style: { padding: '6px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px', textAlign: 'center' } },
+        h('div', { style: { padding: '6px', background: 'var(--card-bg)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px', textAlign: 'center' } },
           h('div', { style: { fontWeight: '700', color: state.contentCostCalculator.revenue?.roi_percentage >= 0 ? '#059669' : '#dc2626' } }, `${state.contentCostCalculator.revenue?.roi_percentage || 0}%`),
           h('div', { style: { color: 'var(--gray-500)' } }, 'ROI')
         )
@@ -5265,7 +5270,7 @@ function renderDashboardPage() {
       ),
       h('div', { style: { display: 'grid', gap: '6px' } },
         ...state.contentLeads.sort((a, b) => (b.score || 0) - (a.score || 0)).slice(0, 10).map(lead =>
-          h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 12px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)' } },
+          h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 12px', background: 'var(--card-bg)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)' } },
             h('div', {
               style: {
                 width: '32px', height: '32px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -5302,7 +5307,7 @@ function renderDashboardPage() {
           const dt = new Date(entry.scheduled_at);
           const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
           const platformColors = { linkedin: '#0a66c2', x_single: '#1da1f2', x_thread: '#1da1f2', carousel: '#e4405f', short_video: '#ff0050' };
-          return h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 12px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)' } },
+          return h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 12px', background: 'var(--card-bg)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)' } },
             h('div', { style: { textAlign: 'center', minWidth: '44px' } },
               h('div', { style: { fontSize: '10px', color: 'var(--gray-500)', textTransform: 'uppercase' } }, dayNames[dt.getDay()]),
               h('div', { style: { fontSize: '16px', fontWeight: '700', color: 'var(--navy)' } }, String(dt.getDate())),
@@ -5411,19 +5416,19 @@ function renderDashboardPage() {
         h('div', { style: { fontSize: '11px', color: 'var(--gray-500)' } }, `${state.engagementDashboard.total_tracked} tracked posts`)
       ),
       h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', marginBottom: '10px' } },
-        h('div', { style: { background: 'white', borderRadius: 'var(--radius-sm)', padding: '10px', textAlign: 'center', border: '1px solid var(--gray-200)' } },
+        h('div', { style: { background: 'var(--card-bg)', borderRadius: 'var(--radius-sm)', padding: '10px', textAlign: 'center', border: '1px solid var(--gray-200)' } },
           h('div', { style: { fontSize: '18px', fontWeight: '700', color: 'var(--blue)' } }, String(state.engagementDashboard.total_impressions?.toLocaleString() || 0)),
           h('div', { style: { fontSize: '10px', color: 'var(--gray-500)' } }, 'Impressions')
         ),
-        h('div', { style: { background: 'white', borderRadius: 'var(--radius-sm)', padding: '10px', textAlign: 'center', border: '1px solid var(--gray-200)' } },
+        h('div', { style: { background: 'var(--card-bg)', borderRadius: 'var(--radius-sm)', padding: '10px', textAlign: 'center', border: '1px solid var(--gray-200)' } },
           h('div', { style: { fontSize: '18px', fontWeight: '700', color: '#059669' } }, String(state.engagementDashboard.total_engagement?.toLocaleString() || 0)),
           h('div', { style: { fontSize: '10px', color: 'var(--gray-500)' } }, 'Engagement')
         ),
-        h('div', { style: { background: 'white', borderRadius: 'var(--radius-sm)', padding: '10px', textAlign: 'center', border: '1px solid var(--gray-200)' } },
+        h('div', { style: { background: 'var(--card-bg)', borderRadius: 'var(--radius-sm)', padding: '10px', textAlign: 'center', border: '1px solid var(--gray-200)' } },
           h('div', { style: { fontSize: '18px', fontWeight: '700', color: '#d97706' } }, String(state.engagementDashboard.total_clicks?.toLocaleString() || 0)),
           h('div', { style: { fontSize: '10px', color: 'var(--gray-500)' } }, 'Clicks')
         ),
-        h('div', { style: { background: 'white', borderRadius: 'var(--radius-sm)', padding: '10px', textAlign: 'center', border: '1px solid var(--gray-200)' } },
+        h('div', { style: { background: 'var(--card-bg)', borderRadius: 'var(--radius-sm)', padding: '10px', textAlign: 'center', border: '1px solid var(--gray-200)' } },
           h('div', { style: { fontSize: '18px', fontWeight: '700', color: '#7c3aed' } },
             Object.values(state.engagementDashboard.by_platform || {}).length > 0
               ? (Object.values(state.engagementDashboard.by_platform).reduce((s, p) => s + parseFloat(p.engagement_rate || 0), 0) / Object.values(state.engagementDashboard.by_platform).length).toFixed(1) + '%'
@@ -5496,7 +5501,7 @@ function renderDashboardPage() {
           const priorityColors = { high: { bg: '#fef2f2', color: '#dc2626', border: '#fecaca' }, medium: { bg: '#fffbeb', color: '#d97706', border: '#fde68a' }, low: { bg: '#f1f5f9', color: '#64748b', border: '#e2e8f0' } };
           const pc = priorityColors[idea.priority] || priorityColors.medium;
           const categoryIcons = { contrarian: 'C', data_point: 'D', question: '?', framework: 'F', case_study: 'CS', how_to: 'H', trend: 'T', myth_bust: 'M', comparison: '~', behind_scenes: 'B' };
-          return h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 14px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', borderLeft: `4px solid ${pc.color}` } },
+          return h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 14px', background: 'var(--card-bg)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', borderLeft: `4px solid ${pc.color}` } },
             h('div', {
               style: { width: '28px', height: '28px', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: '700', background: pc.bg, color: pc.color, flexShrink: '0' }
             }, categoryIcons[idea.category] || '?'),
@@ -5553,7 +5558,7 @@ function renderDashboardPage() {
       ),
       state.roiReport.top_content?.length > 0 ? h('div', { style: { display: 'grid', gap: '4px' } },
         ...state.roiReport.top_content.slice(0, 5).map(item =>
-          h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 10px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)' } },
+          h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 10px', background: 'var(--card-bg)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)' } },
             h('div', { style: { fontSize: '14px', fontWeight: '700', color: '#059669', minWidth: '60px' } }, '$' + (item.revenue || 0).toLocaleString()),
             h('div', { style: { flex: '1' } },
               h('div', { style: { fontSize: '11px', fontWeight: '600', color: 'var(--navy)' } }, (item.title || '').slice(0, 50)),
@@ -5600,7 +5605,7 @@ function renderDashboardPage() {
       ),
       h('div', { style: { display: 'grid', gap: '6px' } },
         ...state.dmPipelines.filter(p => p.status === 'active').slice(0, 5).map(pipeline =>
-          h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 12px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', borderLeft: '4px solid #6366f1' } },
+          h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 12px', background: 'var(--card-bg)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', borderLeft: '4px solid #6366f1' } },
             h('div', { style: { flex: '1' } },
               h('div', { style: { fontSize: '12px', fontWeight: '600', color: 'var(--navy)' } }, pipeline.sequence_name || pipeline.title?.slice(0, 40)),
               h('div', { style: { fontSize: '10px', color: 'var(--gray-500)' } }, `${pipeline.messages?.length || 0} messages | ${pipeline.expected_reply_rate || 'N/A'} est. reply rate`)
@@ -5635,7 +5640,7 @@ function renderDashboardPage() {
       ),
       h('div', { style: { display: 'grid', gap: '6px' } },
         ...state.dripCampaigns.slice(0, 5).map(drip =>
-          h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 14px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', borderLeft: '4px solid #059669' } },
+          h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 14px', background: 'var(--card-bg)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', borderLeft: '4px solid #059669' } },
             h('div', { style: { flex: '1' } },
               h('div', { style: { fontSize: '12px', fontWeight: '600', color: 'var(--navy)' } }, drip.campaign_name || drip.topic),
               h('div', { style: { fontSize: '10px', color: 'var(--gray-500)' } }, `${drip.days?.length || 0} days | ${drip.target_audience?.slice(0, 50) || ''} | ${drip.nurture_goal?.slice(0, 40) || ''}`)
@@ -5658,7 +5663,7 @@ function renderDashboardPage() {
       h('div', { style: { display: 'grid', gap: '4px' } },
         ...state.expiringContent.items.slice(0, 5).map(item => {
           const urgColors = { critical: '#dc2626', high: '#d97706', moderate: '#64748b' };
-          return h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 10px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)' } },
+          return h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 10px', background: 'var(--card-bg)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)' } },
             h('div', { style: { fontSize: '12px', fontWeight: '700', color: urgColors[item.urgency] || '#64748b', minWidth: '40px' } }, `${item.age_days}d`),
             h('div', { style: { flex: '1', fontSize: '11px', color: 'var(--navy)' } }, (item.title || '').slice(0, 50)),
             h('button', {
@@ -5684,7 +5689,7 @@ function renderDashboardPage() {
           const labels = { linkedin_followers: 'LinkedIn', x_followers: 'X/Twitter', email_subscribers: 'Email List' };
           const colors = { linkedin_followers: '#0a66c2', x_followers: '#1da1f2', email_subscribers: '#059669' };
           const g = state.audienceGrowth.growth?.[key];
-          return h('div', { style: { background: 'white', borderRadius: 'var(--radius-sm)', padding: '12px', textAlign: 'center', border: '1px solid var(--gray-200)' } },
+          return h('div', { style: { background: 'var(--card-bg)', borderRadius: 'var(--radius-sm)', padding: '12px', textAlign: 'center', border: '1px solid var(--gray-200)' } },
             h('div', { style: { fontSize: '20px', fontWeight: '700', color: colors[key] } }, String((state.audienceGrowth.latest[key] || 0).toLocaleString())),
             h('div', { style: { fontSize: '10px', color: 'var(--gray-500)', marginBottom: '2px' } }, labels[key]),
             g ? h('div', { style: { fontSize: '10px', fontWeight: '600', color: g.change >= 0 ? '#059669' : '#dc2626' } },
@@ -6109,7 +6114,7 @@ function renderContentCard(content) {
         h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '10px' } },
           ...Object.entries(sim).slice(0, 4).map(([fmt, data]) => {
             const fmtLabels = { linkedin: 'LinkedIn', x_single: 'Tweet', x_thread: 'Thread', carousel: 'Carousel', blog: 'Blog', short_video: 'Video', hot_take: 'Hot Take', poll: 'Poll', newsletter: 'Newsletter' };
-            return h('div', { style: { background: 'white', borderRadius: '8px', padding: '10px 12px', border: '1px solid #e2e8f0' } },
+            return h('div', { style: { background: 'var(--card-bg)', borderRadius: '8px', padding: '10px 12px', border: '1px solid #e2e8f0' } },
               h('div', { style: { fontSize: '12px', fontWeight: '600', color: 'var(--navy)', marginBottom: '6px' } }, fmtLabels[fmt] || fmt),
               h('div', { style: { fontSize: '11px', display: 'flex', flexDirection: 'column', gap: '3px' } },
                 h('div', { style: { display: 'flex', justifyContent: 'space-between' } },
@@ -6156,7 +6161,7 @@ function renderContentCard(content) {
         h('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px' } },
           ...pkgs.map(([fmt, pkg]) => {
             const fmtLabels = { linkedin: 'LinkedIn', x_single: 'Tweet', x_thread: 'Thread', blog: 'Blog', youtube_script: 'YouTube', newsletter: 'Newsletter', lead_magnet: 'Lead Magnet', short_video: 'Video', carousel: 'Carousel' };
-            return h('div', { style: { background: 'white', borderRadius: '8px', padding: '10px 12px', border: '1px solid #bbf7d0' } },
+            return h('div', { style: { background: 'var(--card-bg)', borderRadius: '8px', padding: '10px 12px', border: '1px solid #bbf7d0' } },
               h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: '6px' } },
                   h('span', { className: 'badge badge-blue', style: { fontSize: '10px' } }, fmtLabels[fmt] || fmt),
@@ -6372,7 +6377,7 @@ function renderFormatContent(content, formatKey, fmt) {
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: '4px' } },
               ...hooks.map((hook, i) =>
                 h('div', {
-                  style: { padding: '6px 10px', borderRadius: '6px', fontSize: '12px', cursor: 'pointer', border: '1px solid var(--gray-200)', background: 'white', transition: 'all 0.15s' },
+                  style: { padding: '6px 10px', borderRadius: '6px', fontSize: '12px', cursor: 'pointer', border: '1px solid var(--gray-200)', background: 'var(--card-bg)', transition: 'all 0.15s' },
                   onclick: async () => {
                     try {
                       await api(`/api/content/${content.id}/swap-hook`, { method: 'POST', body: { format: formatKey, hook_index: i } });
@@ -6557,7 +6562,7 @@ function renderFormatContent(content, formatKey, fmt) {
           }
         }, 'Remix'),
         state._remixOpen === `remix-${content.id}-${formatKey}`
-          ? h('div', { style: { position: 'absolute', bottom: '100%', left: '0', background: 'white', border: '1px solid var(--gray-200)', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', padding: '4px', zIndex: '100', minWidth: '180px', marginBottom: '4px' } },
+          ? h('div', { style: { position: 'absolute', bottom: '100%', left: '0', background: 'var(--card-bg)', border: '1px solid var(--gray-200)', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', padding: '4px', zIndex: '100', minWidth: '180px', marginBottom: '4px' } },
               h('div', { style: { padding: '4px 12px 2px', fontSize: '10px', color: 'var(--gray-400)', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Rewrite In-Place'),
               ...['more_contrarian', 'add_story', 'shorten', 'more_data', 'more_human', 'stronger_hook'].map(d => {
                 const labels = { more_contrarian: 'More Contrarian', add_story: 'Add a Story', shorten: 'Shorten 40%', more_data: 'More Data/Numbers', more_human: 'More Human', stronger_hook: 'Stronger Hook' };
@@ -6613,7 +6618,7 @@ function renderFormatContent(content, formatKey, fmt) {
           }
         }, 'Repurpose'),
         state._repurposeOpen === `repurpose-${content.id}-${formatKey}`
-          ? h('div', { style: { position: 'absolute', bottom: '100%', left: '0', background: 'white', border: '1px solid var(--gray-200)', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', padding: '4px', zIndex: '100', minWidth: '180px', marginBottom: '4px' } },
+          ? h('div', { style: { position: 'absolute', bottom: '100%', left: '0', background: 'var(--card-bg)', border: '1px solid var(--gray-200)', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', padding: '4px', zIndex: '100', minWidth: '180px', marginBottom: '4px' } },
               h('div', { style: { padding: '4px 12px 2px', fontSize: '10px', color: 'var(--gray-400)', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Repurpose To'),
               ...['linkedin', 'x_single', 'x_thread', 'carousel', 'short_video', 'hot_take', 'blog', 'newsletter', 'poll'].filter(f => f !== formatKey).map(target => {
                 const labels = { linkedin: 'LinkedIn Post', x_single: 'Tweet', x_thread: 'X Thread', carousel: 'Carousel', short_video: 'Video Script', hot_take: 'Hot Take', blog: 'Blog Post', newsletter: 'Newsletter', poll: 'Poll' };
@@ -7200,7 +7205,7 @@ function renderFormatContent(content, formatKey, fmt) {
           content.ab_variants[formatKey].winner ? 'A/B TEST — WINNER SELECTED' : 'A/B TEST VARIANTS'
         ),
         ...content.ab_variants[formatKey].variants.map(v =>
-          h('div', { style: { marginBottom: '6px', padding: '6px', background: 'white', borderRadius: '4px', border: v.id === content.ab_variants[formatKey].winner ? '2px solid #059669' : '1px solid #e5e7eb' } },
+          h('div', { style: { marginBottom: '6px', padding: '6px', background: 'var(--card-bg)', borderRadius: '4px', border: v.id === content.ab_variants[formatKey].winner ? '2px solid #059669' : '1px solid #e5e7eb' } },
             h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3px' } },
               h('span', { style: { fontSize: '10px', fontWeight: '700', color: 'var(--navy)' } }, `Variant ${v.label}: ${v.hook_style}`),
               !content.ab_variants[formatKey].winner ? h('button', {
@@ -9624,7 +9629,7 @@ function renderSeriesPage() {
     series.length > 0 ? h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '8px', marginBottom: '24px' } },
       ...days.map(day => {
         const daySeries = series.filter(s => s.day === day && s.active);
-        return h('div', { style: { background: 'white', borderRadius: 'var(--radius-sm)', padding: '12px', border: '1px solid var(--gray-200)', minHeight: '80px' } },
+        return h('div', { style: { background: 'var(--card-bg)', borderRadius: 'var(--radius-sm)', padding: '12px', border: '1px solid var(--gray-200)', minHeight: '80px' } },
           h('div', { style: { fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', color: dayColors[day] || 'var(--gray-500)', marginBottom: '8px' } }, day),
           ...daySeries.map(s => h('div', { style: { fontSize: '12px', padding: '4px 8px', borderRadius: '6px', background: `${dayColors[day]}15`, color: dayColors[day], fontWeight: '600', marginBottom: '4px' } }, s.name))
         );
@@ -9634,7 +9639,7 @@ function renderSeriesPage() {
     ...series.map(s => {
       const episodes = s.episodes || [];
       const isGenerating = state.seriesGenerating === s.id;
-      return h('div', { style: { background: 'white', borderRadius: 'var(--radius)', padding: '20px', marginBottom: '12px', border: '1px solid var(--gray-200)', opacity: s.active ? 1 : 0.5 } },
+      return h('div', { style: { background: 'var(--card-bg)', borderRadius: 'var(--radius)', padding: '20px', marginBottom: '12px', border: '1px solid var(--gray-200)', opacity: s.active ? 1 : 0.5 } },
         h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' } },
           h('div', {},
             h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' } },
@@ -9648,7 +9653,7 @@ function renderSeriesPage() {
           h('div', { style: { display: 'flex', gap: '6px' } },
             h('button', {
               className: 'btn btn-sm',
-              style: { fontSize: '12px', padding: '4px 12px', borderRadius: '6px', border: '1px solid var(--gray-200)', background: 'white', cursor: 'pointer' },
+              style: { fontSize: '12px', padding: '4px 12px', borderRadius: '6px', border: '1px solid var(--gray-200)', background: 'var(--card-bg)', cursor: 'pointer' },
               onclick: async () => {
                 const idx = state.series.findIndex(x => x.id === s.id);
                 if (idx !== -1) {
@@ -9698,14 +9703,14 @@ function renderSeriesPage() {
           h('h3', { style: { fontFamily: "'Fraunces', serif", fontSize: '18px', marginBottom: '12px' } }, `Lead Magnets (${state.leadMagnets.length})`),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '12px' } },
             ...state.leadMagnets.map(lm =>
-              h('div', { style: { background: 'white', borderRadius: 'var(--radius-sm)', padding: '16px', border: '1px solid var(--gray-200)' } },
+              h('div', { style: { background: 'var(--card-bg)', borderRadius: 'var(--radius-sm)', padding: '16px', border: '1px solid var(--gray-200)' } },
                 h('div', { style: { fontSize: '11px', padding: '2px 8px', borderRadius: '10px', background: 'var(--purple-light)', color: 'var(--purple)', fontWeight: '600', display: 'inline-block', marginBottom: '6px' } }, lm.type),
                 h('h4', { style: { fontSize: '14px', fontWeight: '600', marginBottom: '4px' } }, lm.title),
                 h('p', { style: { fontSize: '12px', color: 'var(--gray-500)' } }, lm.subtitle),
                 h('div', { style: { marginTop: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
                   h('span', { style: { fontSize: '11px', padding: '2px 8px', borderRadius: '10px', background: lm.status === 'approved' ? 'var(--green-light)' : 'var(--amber-light)', color: lm.status === 'approved' ? 'var(--green)' : 'var(--amber)', fontWeight: '600' } }, lm.status),
                   h('button', {
-                    style: { fontSize: '11px', padding: '2px 8px', borderRadius: '6px', border: '1px solid var(--gray-200)', background: 'white', cursor: 'pointer' },
+                    style: { fontSize: '11px', padding: '2px 8px', borderRadius: '6px', border: '1px solid var(--gray-200)', background: 'var(--card-bg)', cursor: 'pointer' },
                     onclick: () => {
                       state.page = 'content';
                       state.filter = { ...state.filter, format: 'lead_magnet' };
@@ -9740,7 +9745,7 @@ function renderSeriesPage() {
       (state.dmSequences || []).length > 0
         ? h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '12px' } },
             ...(state.dmSequences || []).map(seq =>
-              h('div', { style: { background: 'white', borderRadius: 'var(--radius-sm)', padding: '16px', border: '1px solid var(--gray-200)' } },
+              h('div', { style: { background: 'var(--card-bg)', borderRadius: 'var(--radius-sm)', padding: '16px', border: '1px solid var(--gray-200)' } },
                 h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
                   h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } },
                     h('span', { style: { background: '#059669', color: 'white', fontSize: '11px', fontWeight: '700', padding: '3px 8px', borderRadius: '4px' } }, seq.trigger_keyword),
@@ -9791,7 +9796,7 @@ function renderPublishTrackerPage() {
     // Platform stats bar
     h('div', { style: { display: 'grid', gridTemplateColumns: `repeat(${platforms.length}, 1fr)`, gap: '8px', marginBottom: '24px' } },
       ...platforms.map(p =>
-        h('div', { style: { background: 'white', borderRadius: 'var(--radius-sm)', padding: '12px', border: '1px solid var(--gray-200)', textAlign: 'center' } },
+        h('div', { style: { background: 'var(--card-bg)', borderRadius: 'var(--radius-sm)', padding: '12px', border: '1px solid var(--gray-200)', textAlign: 'center' } },
           h('div', { style: { fontSize: '22px', fontWeight: '700', fontFamily: "'Fraunces', serif", color: platformColors[p] || 'var(--gray-700)' } }, String(byPlatform[p] || 0)),
           h('div', { style: { fontSize: '11px', fontWeight: '600', textTransform: 'uppercase', color: 'var(--gray-500)' } }, p)
         )
@@ -9800,7 +9805,7 @@ function renderPublishTrackerPage() {
     // Content publish matrix
     items.length === 0
       ? h('div', { style: { textAlign: 'center', padding: '40px', color: 'var(--gray-400)' } }, 'No approved content yet. Approve content to start tracking.')
-      : h('div', { style: { background: 'white', borderRadius: 'var(--radius)', border: '1px solid var(--gray-200)', overflow: 'hidden' } },
+      : h('div', { style: { background: 'var(--card-bg)', borderRadius: 'var(--radius)', border: '1px solid var(--gray-200)', overflow: 'hidden' } },
           // Header row
           h('div', { style: { display: 'grid', gridTemplateColumns: `2fr repeat(${platforms.length}, 1fr)`, padding: '10px 16px', borderBottom: '2px solid var(--gray-200)', background: 'var(--gray-50)' } },
             h('div', { style: { fontSize: '12px', fontWeight: '700', color: 'var(--gray-500)' } }, 'CONTENT'),
@@ -9831,7 +9836,7 @@ function renderPublishTrackerPage() {
                 if (matchingFormats.length === 0) return h('div', { style: { textAlign: 'center', color: 'var(--gray-300)' } }, '\u2014');
                 return h('div', { style: { textAlign: 'center' } },
                   h('button', {
-                    style: { width: '24px', height: '24px', borderRadius: '50%', border: `2px solid ${platformColors[p]}40`, background: 'white', cursor: 'pointer', fontSize: '10px', color: platformColors[p], display: 'inline-flex', alignItems: 'center', justifyContent: 'center' },
+                    style: { width: '24px', height: '24px', borderRadius: '50%', border: `2px solid ${platformColors[p]}40`, background: 'var(--card-bg)', cursor: 'pointer', fontSize: '10px', color: platformColors[p], display: 'inline-flex', alignItems: 'center', justifyContent: 'center' },
                     onclick: async () => {
                       const url = prompt(`Enter the published URL for ${p} (optional):`);
                       try {
@@ -10599,7 +10604,7 @@ function renderChatPage() {
     // Input area
     h('div', { style: {
       padding: '16px 24px', borderTop: '1px solid var(--gray-200)',
-      display: 'flex', gap: '12px', background: 'white'
+      display: 'flex', gap: '12px', background: 'var(--card-bg)'
     } },
       h('input', {
         type: 'text',
@@ -10735,7 +10740,7 @@ function renderClientsPage() {
           }, '+ Follow-Up Schedule'),
           state.showPesterStageMenu ? h('div', { style: {
             position: 'absolute', top: '100%', left: 0, marginTop: '4px', zIndex: 100,
-            background: 'white', border: '1px solid var(--gray-200)', borderRadius: 'var(--radius-sm)',
+            background: 'var(--card-bg)', border: '1px solid var(--gray-200)', borderRadius: 'var(--radius-sm)',
             boxShadow: 'var(--shadow-lg)', padding: '4px 0', minWidth: '180px'
           } },
             ...['interested', 'report_sent', 'call_booked', 'discovery_done', 'proposal_sent'].map(stage =>

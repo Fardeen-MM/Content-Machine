@@ -6420,7 +6420,7 @@ Return JSON:
         text = await callClaude({ model: SONNET, system: 'Content strategist for B2B legal marketing. Create actionable, specific briefs that guide content creation.', prompt, maxTokens: 1200 });
         parsed = parseJsonResponse(text);
       } catch (err) {
-        return json(res, { error: 'Claude API error: ' + err.message }, 500);
+        return apiError(res, err);
       }
 
       if (parsed) {
@@ -6582,7 +6582,7 @@ Return JSON:
         text = await callClaude({ model: HAIKU, system: 'Content quality auditor. Be strict and specific. Always respond with valid JSON only.', prompt, maxTokens: 1000 });
         parsed = parseJsonResponse(text);
       } catch (err) {
-        return json(res, { error: 'Claude API error: ' + err.message }, 500);
+        return apiError(res, err);
       }
 
       if (parsed) {
@@ -6934,7 +6934,7 @@ Return JSON:
         text = await callClaude({ model: SONNET, system: 'Content strategist for B2B legal marketing. Generate creative, specific, actionable content ideas.', prompt, maxTokens: 2000 });
         parsed = parseJsonResponse(text);
       } catch (err) {
-        return json(res, { error: 'Claude API error: ' + err.message }, 500);
+        return apiError(res, err);
       }
 
       if (parsed?.ideas) {
@@ -7265,7 +7265,7 @@ Return JSON: {
         });
         parsed = parseJsonResponse(text);
       } catch (err) {
-        return json(res, { error: 'AI error: ' + err.message }, 500);
+        return apiError(res, err);
       }
       if (!parsed) return json(res, { error: 'Failed to generate plan', raw_preview: (text || '').slice(0, 200) }, 500);
 
@@ -7405,7 +7405,7 @@ Return JSON: { "themes": [...], "recommendations": ["..."], "theme_balance": "as
         });
         parsed = parseJsonResponse(text);
       } catch (err) {
-        return json(res, { error: 'AI error: ' + err.message }, 500);
+        return apiError(res, err);
       }
       if (!parsed) return json(res, { error: 'Failed to analyze themes', raw_preview: (text || '').slice(0, 200) }, 500);
 
@@ -7466,7 +7466,7 @@ Return JSON: {
         });
         parsed = parseJsonResponse(text);
       } catch (err) {
-        return json(res, { error: 'AI error: ' + err.message }, 500);
+        return apiError(res, err);
       }
       if (!parsed) return json(res, { error: 'Failed to generate DM sequence', raw_preview: (text || '').slice(0, 200) }, 500);
 
@@ -7597,7 +7597,7 @@ Return JSON: {
         });
         parsed = parseJsonResponse(text);
       } catch (err) {
-        return json(res, { error: 'AI error: ' + err.message }, 500);
+        return apiError(res, err);
       }
       if (!parsed) return json(res, { error: 'Failed to analyze', raw_preview: (text || '').slice(0, 200) }, 500);
 
@@ -7673,7 +7673,7 @@ Return JSON: {
         });
         parsed = parseJsonResponse(text);
       } catch (err) {
-        return json(res, { error: 'AI error: ' + err.message }, 500);
+        return apiError(res, err);
       }
       if (!parsed) return json(res, { error: 'Failed to build model', raw_preview: (text || '').slice(0, 200) }, 500);
 
@@ -7734,7 +7734,7 @@ Return JSON: {
         });
         parsed = parseJsonResponse(text);
       } catch (err) {
-        return json(res, { error: 'AI error: ' + err.message }, 500);
+        return apiError(res, err);
       }
       if (!parsed) return json(res, { error: 'Failed to predict', raw_preview: (text || '').slice(0, 200) }, 500);
 
@@ -7787,7 +7787,7 @@ Return JSON: {
         });
         parsed = parseJsonResponse(text);
       } catch (err) {
-        return json(res, { error: 'AI error: ' + err.message }, 500);
+        return apiError(res, err);
       }
       if (!parsed) return json(res, { error: 'Failed to create drip', raw_preview: (text || '').slice(0, 200) }, 500);
 
@@ -7860,7 +7860,7 @@ Return JSON: {
         });
         parsed = parseJsonResponse(text);
       } catch (err) {
-        return json(res, { error: 'AI error: ' + err.message }, 500);
+        return apiError(res, err);
       }
       if (!parsed) return json(res, { error: 'Failed to generate responses', raw_preview: (text || '').slice(0, 200) }, 500);
 
@@ -7990,7 +7990,7 @@ Return JSON: {
         });
         parsed = parseJsonResponse(text);
       } catch (err) {
-        return json(res, { error: 'AI error: ' + err.message }, 500);
+        return apiError(res, err);
       }
       if (!parsed) return json(res, { error: 'Failed to create ads', raw_preview: (text || '').slice(0, 200) }, 500);
 
@@ -8057,7 +8057,7 @@ Return JSON: {
         });
         parsed = parseJsonResponse(text);
       } catch (err) {
-        return json(res, { error: 'AI error: ' + err.message }, 500);
+        return apiError(res, err);
       }
       if (!parsed) return json(res, { error: 'Failed to build funnel', raw_preview: (text || '').slice(0, 200) }, 500);
 
@@ -8119,7 +8119,7 @@ Return JSON: {
         });
         parsed = parseJsonResponse(text);
       } catch (err) {
-        return json(res, { error: 'AI error: ' + err.message }, 500);
+        return apiError(res, err);
       }
       if (!parsed) return json(res, { error: 'Failed to optimize', raw_preview: (text || '').slice(0, 200) }, 500);
 
@@ -8278,7 +8278,7 @@ Return JSON: {
         });
         parsed = parseJsonResponse(text);
       } catch (err) {
-        return json(res, { error: 'AI error: ' + err.message }, 500);
+        return apiError(res, err);
       }
       if (!parsed) return json(res, { error: 'Failed to generate digest', raw_preview: (text || '').slice(0, 200) }, 500);
 
@@ -8325,7 +8325,7 @@ Return JSON: {
         });
         parsed = parseJsonResponse(text);
       } catch (err) {
-        return json(res, { error: 'AI error: ' + err.message }, 500);
+        return apiError(res, err);
       }
       if (!parsed) return json(res, { error: 'Failed to create variants', raw_preview: (text || '').slice(0, 200) }, 500);
 

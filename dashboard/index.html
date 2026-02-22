@@ -3289,34 +3289,6 @@ function renderDashboardPage() {
       }, state.showDashWidgets ? 'Hide Intelligence Widgets \u25B2' : 'Show Intelligence Widgets \u25BC')
     ),
     ...(state.showDashWidgets ? [
-    // Content Pillar Plan
-    state.pillarPlan?.pillars?.length > 0 ? h('div', { style: { marginBottom: '20px' } },
-      h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
-        h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)' } }, `CONTENT PILLARS (${state.pillarPlan.pillars.length})`),
-        h('span', { style: { fontSize: '11px', color: 'var(--gray-400)' } }, `Updated ${state.pillarPlan.generated_at?.slice(0, 10) || ''}`)
-      ),
-      h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '10px' } },
-        ...state.pillarPlan.pillars.map(p =>
-          h('div', { style: { background: 'white', borderRadius: 'var(--radius-sm)', padding: '12px', border: `2px solid ${p.color || 'var(--gray-200)'}`, borderTop: `4px solid ${p.color || 'var(--blue)'}` } },
-            h('div', { style: { fontSize: '13px', fontWeight: '700', color: p.color || 'var(--navy)', marginBottom: '4px' } }, p.name),
-            h('div', { style: { fontSize: '11px', color: 'var(--gray-500)', marginBottom: '6px' } }, p.description?.slice(0, 80)),
-            h('div', { style: { display: 'flex', gap: '3px', flexWrap: 'wrap', marginBottom: '6px' } },
-              ...(p.sub_topics || []).slice(0, 4).map(t => h('span', { style: { fontSize: '9px', padding: '1px 5px', borderRadius: '3px', background: `${p.color || '#2563eb'}15`, color: p.color || '#2563eb' } }, t))
-            ),
-            h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: '10px' } },
-              h('span', { style: { color: p.current_coverage === 'high' ? '#059669' : p.current_coverage === 'medium' ? '#d97706' : '#dc2626' } }, p.current_coverage + ' coverage'),
-              h('span', { style: { color: 'var(--gray-400)' } }, p.target_frequency)
-            ),
-            p.gap_areas?.length > 0 ? h('div', { style: { fontSize: '10px', color: '#dc2626', marginTop: '4px' } }, 'Gaps: ' + p.gap_areas.slice(0, 2).join(', ')) : null
-          )
-        )
-      ),
-      state.pillarPlan.recommendations?.length > 0 ? h('div', { style: { marginTop: '8px', padding: '8px 12px', background: '#fffbeb', borderRadius: '8px', border: '1px solid #fde68a' } },
-        ...state.pillarPlan.recommendations.map(r =>
-          h('div', { style: { fontSize: '11px', color: '#92400e', marginBottom: '4px' } }, '- ' + r)
-        )
-      ) : null
-    ) : null,
     // Content Intelligence Report
     state.contentIntelligence ? h('div', { style: { marginBottom: '20px' } },
       h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' } },
@@ -3373,67 +3345,6 @@ function renderDashboardPage() {
             h('div', { style: { fontSize: '11px', color: 'var(--gray-600)', marginBottom: '3px', paddingLeft: '8px', borderLeft: '2px solid #d97706' } }, g)
           )
         ) : null
-      )
-    ) : null,
-    // Weekly Digest
-    state.weeklyDigest?.grade ? h('div', { style: { marginBottom: '20px' } },
-      h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
-        h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } },
-          h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)' } }, 'WEEKLY DIGEST'),
-          h('span', {
-            style: {
-              padding: '3px 12px', borderRadius: '12px', fontSize: '14px', fontWeight: '700',
-              background: state.weeklyDigest.grade?.startsWith('A') ? '#dcfce7' : state.weeklyDigest.grade?.startsWith('B') ? '#dbeafe' : state.weeklyDigest.grade?.startsWith('C') ? '#fef9c3' : '#fef2f2',
-              color: state.weeklyDigest.grade?.startsWith('A') ? '#166534' : state.weeklyDigest.grade?.startsWith('B') ? '#1e40af' : state.weeklyDigest.grade?.startsWith('C') ? '#854d0e' : '#991b1b'
-            }
-          }, state.weeklyDigest.grade)
-        ),
-        h('span', { style: { fontSize: '10px', color: 'var(--gray-400)' } }, state.weeklyDigest.generated_at?.slice(0, 16)?.replace('T', ' ') || '')
-      ),
-      h('div', { style: { background: 'white', borderRadius: 'var(--radius-sm)', padding: '14px', border: '1px solid var(--gray-200)' } },
-        h('div', { style: { fontSize: '12px', fontWeight: '600', color: 'var(--navy)', marginBottom: '8px' } }, state.weeklyDigest.headline),
-        h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' } },
-          h('div', {},
-            h('div', { style: { fontSize: '11px', fontWeight: '700', color: '#059669', marginBottom: '4px' } }, 'WINS'),
-            ...(state.weeklyDigest.key_wins || []).slice(0, 3).map(w =>
-              h('div', { style: { fontSize: '11px', color: 'var(--gray-600)', marginBottom: '3px', paddingLeft: '8px', borderLeft: '2px solid #059669' } }, w)
-            )
-          ),
-          h('div', {},
-            h('div', { style: { fontSize: '11px', fontWeight: '700', color: '#dc2626', marginBottom: '4px' } }, 'NEEDS ATTENTION'),
-            ...(state.weeklyDigest.attention_needed || []).slice(0, 3).map(a =>
-              h('div', { style: { fontSize: '11px', color: 'var(--gray-600)', marginBottom: '3px', paddingLeft: '8px', borderLeft: '2px solid #dc2626' } }, a)
-            )
-          )
-        ),
-        (state.weeklyDigest.recommendations || []).length > 0 ? h('div', { style: { marginTop: '8px' } },
-          h('div', { style: { fontSize: '11px', fontWeight: '700', color: 'var(--blue)', marginBottom: '4px' } }, 'NEXT WEEK'),
-          ...(state.weeklyDigest.recommendations || []).slice(0, 3).map(r =>
-            h('div', { style: { fontSize: '11px', color: 'var(--gray-600)', marginBottom: '3px', paddingLeft: '8px', borderLeft: '2px solid var(--blue)' } }, r)
-          )
-        ) : null
-      )
-    ) : null,
-    // Split Tests
-    state.splitTests?.filter(t => t.status === 'active').length > 0 ? h('div', { style: { marginBottom: '20px' } },
-      h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)', marginBottom: '8px' } }, `ACTIVE SPLIT TESTS (${state.splitTests.filter(t => t.status === 'active').length})`),
-      h('div', { style: { display: 'grid', gap: '6px' } },
-        ...state.splitTests.filter(t => t.status === 'active').slice(0, 3).map(test =>
-          h('div', { style: { padding: '10px 14px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)' } },
-            h('div', { style: { fontSize: '12px', fontWeight: '600', color: 'var(--navy)', marginBottom: '6px' } }, (test.title || '').slice(0, 50)),
-            h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' } },
-              h('div', { style: { padding: '6px 8px', background: '#eff6ff', borderRadius: '6px', border: '1px solid #bfdbfe' } },
-                h('div', { style: { fontSize: '10px', fontWeight: '700', color: '#2563eb', marginBottom: '2px' } }, `A: ${test.variant_a?.hook_style || 'story'}`),
-                h('div', { style: { fontSize: '10px', color: 'var(--gray-500)' } }, `${test.performance?.a?.impressions || 0} imp | ${test.performance?.a?.engagement || 0} eng`)
-              ),
-              h('div', { style: { padding: '6px 8px', background: '#f0fdf4', borderRadius: '6px', border: '1px solid #bbf7d0' } },
-                h('div', { style: { fontSize: '10px', fontWeight: '700', color: '#059669', marginBottom: '2px' } }, `B: ${test.variant_b?.hook_style || 'data'}`),
-                h('div', { style: { fontSize: '10px', color: 'var(--gray-500)' } }, `${test.performance?.b?.impressions || 0} imp | ${test.performance?.b?.engagement || 0} eng`)
-              )
-            ),
-            h('div', { style: { fontSize: '10px', color: '#7c3aed', marginTop: '4px', fontStyle: 'italic' } }, test.hypothesis?.slice(0, 100) + '...')
-          )
-        )
       )
     ) : null,
     // CTA Strategy Tracker
@@ -3542,7 +3453,6 @@ function renderDashboardPage() {
       h('div', { style: { fontSize: '10px', color: 'var(--gray-600)', padding: '6px 10px', background: '#f8fafc', borderRadius: '6px', marginTop: '6px' } }, state.contentBank.recommendation || '')
     ) : null,
 
-    // YouTube Pipelines
     // Engagement Playbook
     state.engagementPlaybook ? h('div', { style: { marginBottom: '20px' } },
       h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
@@ -3569,131 +3479,6 @@ function renderDashboardPage() {
       )
     ) : null,
 
-    // Atomizations
-    state.atomizations?.length > 0 ? h('div', { style: { marginBottom: '20px' } },
-      h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)', marginBottom: '8px' } }, `CONTENT ATOMIZATIONS (${state.atomizations.length})`),
-      h('div', { style: { display: 'grid', gap: '6px' } },
-        ...state.atomizations.slice(0, 3).map(a =>
-          h('div', { style: { padding: '10px 14px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)' } },
-            h('div', { style: { fontSize: '12px', fontWeight: '600', color: 'var(--navy)', marginBottom: '4px' } }, (a.title || '').slice(0, 50)),
-            h('div', { style: { display: 'flex', gap: '6px' } },
-              h('span', { style: { fontSize: '9px', padding: '2px 6px', background: '#f0fdf4', color: '#059669', borderRadius: '8px', fontWeight: '600' } }, `${a.total_pieces || a.derivatives?.length || 0} pieces`),
-              h('span', { style: { fontSize: '9px', padding: '2px 6px', background: '#eff6ff', color: '#2563eb', borderRadius: '8px', fontWeight: '600' } }, `${a.coverage_weeks || '?'} weeks`),
-              h('span', { style: { fontSize: '9px', padding: '2px 6px', background: '#faf5ff', color: '#7c3aed', borderRadius: '8px', fontWeight: '600' } }, `T1: ${(a.derivatives || []).filter(d => d.tier === 1).length} | T2: ${(a.derivatives || []).filter(d => d.tier === 2).length}`)
-            )
-          )
-        )
-      )
-    ) : null,
-
-    state.youtubePipelines?.length > 0 ? h('div', { style: { marginBottom: '20px' } },
-      h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)', marginBottom: '8px' } }, `YOUTUBE PIPELINES (${state.youtubePipelines.length})`),
-      h('div', { style: { display: 'grid', gap: '6px' } },
-        ...state.youtubePipelines.slice(0, 5).map(p =>
-          h('div', { style: { padding: '10px 14px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)' } },
-            h('div', { style: { fontSize: '12px', fontWeight: '600', color: 'var(--navy)', marginBottom: '4px' } }, (p.script?.title || p.title || '').slice(0, 60)),
-            h('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap' } },
-              h('span', { style: { fontSize: '9px', padding: '2px 6px', background: '#fef2f2', color: '#dc2626', borderRadius: '8px', fontWeight: '600' } }, `${p.script?.estimated_duration || '?'}`),
-              h('span', { style: { fontSize: '9px', padding: '2px 6px', background: '#f0fdf4', color: '#059669', borderRadius: '8px', fontWeight: '600' } }, `${p.shorts?.length || 0} Shorts`),
-              h('span', { style: { fontSize: '9px', padding: '2px 6px', background: '#eff6ff', color: '#2563eb', borderRadius: '8px', fontWeight: '600' } }, `${p.seo?.tags?.length || 0} tags`),
-              h('span', { style: { fontSize: '9px', padding: '2px 6px', background: '#faf5ff', color: '#7c3aed', borderRadius: '8px', fontWeight: '600' } }, p.thumbnail?.emotion || 'no thumb')
-            )
-          )
-        )
-      )
-    ) : null,
-
-    // Carousels
-    state.carousels?.length > 0 ? h('div', { style: { marginBottom: '20px' } },
-      h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)', marginBottom: '8px' } }, `LINKEDIN CAROUSELS (${state.carousels.length})`),
-      h('div', { style: { display: 'grid', gap: '6px' } },
-        ...state.carousels.slice(0, 5).map(c =>
-          h('div', { style: { padding: '10px 14px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)' } },
-            h('div', { style: { fontSize: '12px', fontWeight: '600', color: 'var(--navy)', marginBottom: '4px' } }, (c.title || '').slice(0, 60)),
-            h('div', { style: { display: 'flex', gap: '6px', alignItems: 'center' } },
-              h('span', { style: { fontSize: '9px', padding: '2px 6px', background: '#fff7ed', color: '#c2410c', borderRadius: '8px', fontWeight: '600' } }, `${c.slide_count || c.slides?.length || 0} slides`),
-              c.design_guidelines?.color_primary ? h('span', { style: { width: '14px', height: '14px', borderRadius: '3px', background: c.design_guidelines.color_primary, border: '1px solid var(--gray-200)' } }) : null,
-              c.design_guidelines?.color_accent ? h('span', { style: { width: '14px', height: '14px', borderRadius: '3px', background: c.design_guidelines.color_accent, border: '1px solid var(--gray-200)' } }) : null,
-              c.companion_post ? h('span', { style: { fontSize: '9px', padding: '2px 6px', background: '#f0fdf4', color: '#059669', borderRadius: '8px', fontWeight: '600' } }, 'has companion post') : null
-            )
-          )
-        )
-      )
-    ) : null,
-
-    // Email Sequences
-    state.emailSequences?.length > 0 ? h('div', { style: { marginBottom: '20px' } },
-      h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)', marginBottom: '8px' } }, `EMAIL SEQUENCES (${state.emailSequences.length})`),
-      h('div', { style: { display: 'grid', gap: '6px' } },
-        ...state.emailSequences.slice(0, 5).map(seq =>
-          h('div', { style: { padding: '10px 14px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)' } },
-            h('div', { style: { fontSize: '12px', fontWeight: '600', color: 'var(--navy)', marginBottom: '4px' } }, (seq.sequence_name || seq.title || '').slice(0, 60)),
-            h('div', { style: { display: 'flex', gap: '6px' } },
-              h('span', { style: { fontSize: '9px', padding: '2px 6px', background: '#eff6ff', color: '#2563eb', borderRadius: '8px', fontWeight: '600' } }, `${seq.emails?.length || 0} emails`),
-              h('span', { style: { fontSize: '9px', padding: '2px 6px', background: seq.status === 'active' ? '#f0fdf4' : '#fefce8', color: seq.status === 'active' ? '#059669' : '#ca8a04', borderRadius: '8px', fontWeight: '600' } }, seq.status || 'draft'),
-              seq.send_schedule ? h('span', { style: { fontSize: '9px', padding: '2px 6px', background: '#faf5ff', color: '#7c3aed', borderRadius: '8px', fontWeight: '600' } }, seq.send_schedule) : null
-            )
-          )
-        )
-      )
-    ) : null,
-
-    // Weekly Content Plan
-    state.weeklyContentPlan?.plan ? h('div', { style: { marginBottom: '20px' } },
-      h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)', marginBottom: '8px' } }, 'WEEKLY CONTENT PLAN'),
-      h('div', { style: { display: 'grid', gap: '4px' } },
-        ...state.weeklyContentPlan.plan.map(day =>
-          h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)' } },
-            h('div', { style: { width: '60px', fontSize: '10px', fontWeight: '700', color: 'var(--navy)', textTransform: 'uppercase' } }, day.day.slice(0, 3)),
-            h('div', { style: { flex: 1 } },
-              h('div', { style: { fontSize: '11px', fontWeight: '600', color: 'var(--navy)' } }, day.series_name || 'Open slot'),
-              h('div', { style: { fontSize: '10px', color: 'var(--gray-500)' } }, day.posting_time)
-            ),
-            day.hashtag ? h('span', { style: { fontSize: '9px', padding: '2px 6px', background: '#eff6ff', color: '#2563eb', borderRadius: '8px', fontWeight: '600' } }, day.hashtag) : null,
-            h('span', { style: { fontSize: '9px', padding: '2px 6px', background: '#f0fdf4', color: '#059669', borderRadius: '8px', fontWeight: '600' } }, day.format),
-            day.lead_magnet ? h('span', { style: { fontSize: '9px', padding: '2px 6px', background: '#fef2f2', color: '#dc2626', borderRadius: '8px', fontWeight: '600' } }, 'LM') : null
-          )
-        )
-      ),
-      state.weeklyContentPlan.notes ? h('div', { style: { marginTop: '6px', fontSize: '10px', color: 'var(--gray-500)', lineHeight: '1.4' } },
-        state.weeklyContentPlan.notes.map(n => `• ${n}`).join(' ')
-      ) : null
-    ) : null,
-
-    // Repurpose Chains
-    state.repurposeChains?.length > 0 ? h('div', { style: { marginBottom: '20px' } },
-      h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)', marginBottom: '8px' } }, `REPURPOSE CHAINS (${state.repurposeChains.length})`),
-      h('div', { style: { display: 'grid', gap: '6px' } },
-        ...state.repurposeChains.slice(0, 5).map(ch =>
-          h('div', { style: { padding: '10px 14px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)' } },
-            h('div', { style: { fontSize: '12px', fontWeight: '600', color: 'var(--navy)', marginBottom: '4px' } }, (ch.title || '').slice(0, 60)),
-            h('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap' } },
-              h('span', { style: { fontSize: '9px', padding: '2px 6px', background: '#eff6ff', color: '#2563eb', borderRadius: '8px', fontWeight: '600' } }, `from: ${ch.source_format}`),
-              ch.x_thread ? h('span', { style: { fontSize: '9px', padding: '2px 6px', background: '#fef2f2', color: '#dc2626', borderRadius: '8px', fontWeight: '600' } }, `${ch.x_thread.length} tweets`) : null,
-              ch.carousel_outline ? h('span', { style: { fontSize: '9px', padding: '2px 6px', background: '#fff7ed', color: '#c2410c', borderRadius: '8px', fontWeight: '600' } }, `${ch.carousel_outline.length} slides`) : null,
-              h('span', { style: { fontSize: '9px', padding: '2px 6px', background: '#f0fdf4', color: '#059669', borderRadius: '8px', fontWeight: '600' } }, '9 formats')
-            )
-          )
-        )
-      )
-    ) : null,
-
-    // Lead Magnet Funnels
-    state.lmFunnels?.length > 0 ? h('div', { style: { marginBottom: '20px' } },
-      h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)', marginBottom: '8px' } }, `LEAD MAGNET FUNNELS (${state.lmFunnels.length})`),
-      h('div', { style: { display: 'grid', gap: '6px' } },
-        ...state.lmFunnels.slice(0, 5).map(f =>
-          h('div', { style: { padding: '10px 14px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)' } },
-            h('div', { style: { fontSize: '12px', fontWeight: '600', color: 'var(--navy)', marginBottom: '4px' } }, (f.funnel_name || f.lead_magnet?.title || '').slice(0, 60)),
-            h('div', { style: { display: 'flex', gap: '6px' } },
-              h('span', { style: { fontSize: '9px', padding: '2px 6px', background: f.status === 'active' ? '#f0fdf4' : '#fefce8', color: f.status === 'active' ? '#059669' : '#ca8a04', borderRadius: '8px', fontWeight: '600' } }, f.status || 'draft'),
-              h('span', { style: { fontSize: '9px', padding: '2px 6px', background: '#eff6ff', color: '#2563eb', borderRadius: '8px', fontWeight: '600' } }, f.lead_magnet?.format || 'PDF'),
-              h('span', { style: { fontSize: '9px', padding: '2px 6px', background: '#faf5ff', color: '#7c3aed', borderRadius: '8px', fontWeight: '600' } }, `${f.email_followup?.length || 0} emails`)
-            )
-          )
-        )
-      )
-    ) : null,
 
     // Performance Report
     state.perfReport ? h('div', { style: { marginBottom: '20px' } },
@@ -3742,64 +3527,6 @@ function renderDashboardPage() {
       )
     ) : null,
 
-    // Authority Plan
-    state.authorityPlan?.positioning_statement ? h('div', { style: { marginBottom: '20px' } },
-      h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)', marginBottom: '8px' } }, '90-DAY AUTHORITY PLAN'),
-      h('div', { style: { padding: '10px 14px', background: '#faf5ff', borderRadius: 'var(--radius-sm)', border: '1px solid #e9d5ff', marginBottom: '8px' } },
-        h('div', { style: { fontSize: '11px', fontWeight: '600', color: '#7c3aed', marginBottom: '4px' } }, 'POSITIONING'),
-        h('div', { style: { fontSize: '12px', color: 'var(--navy)', fontStyle: 'italic' } }, state.authorityPlan.positioning_statement)
-      ),
-      h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' } },
-        ...[state.authorityPlan.month_1, state.authorityPlan.month_2, state.authorityPlan.month_3].filter(Boolean).map((m, i) =>
-          h('div', { style: { padding: '10px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)' } },
-            h('div', { style: { fontSize: '10px', fontWeight: '700', color: '#7c3aed', marginBottom: '4px' } }, `MONTH ${i + 1}: ${(m.theme || '').toUpperCase()}`),
-            h('div', { style: { fontSize: '10px', color: 'var(--gray-500)', marginBottom: '4px' } }, m.goal),
-            h('div', { style: { fontSize: '9px', color: '#059669', fontWeight: '600' } }, m.milestone)
-          )
-        )
-      )
-    ) : null,
-
-    // Competitor Analysis
-    state.compAnalyses?.length > 0 ? h('div', { style: { marginBottom: '20px' } },
-      h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)', marginBottom: '8px' } }, 'COMPETITOR INTELLIGENCE'),
-      (() => {
-        const latest = state.compAnalyses[state.compAnalyses.length - 1];
-        return h('div', { style: { padding: '10px 14px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)' } },
-          latest.content_gaps?.length > 0 ? h('div', { style: { marginBottom: '6px' } },
-            h('div', { style: { fontSize: '10px', fontWeight: '700', color: '#dc2626', marginBottom: '4px' } }, 'GAPS TO EXPLOIT'),
-            ...latest.content_gaps.slice(0, 3).map(g =>
-              h('div', { style: { fontSize: '10px', color: 'var(--gray-600)', paddingLeft: '6px', borderLeft: '2px solid #dc2626', marginBottom: '2px' } }, g)
-            )
-          ) : null,
-          latest.counter_posts?.length > 0 ? h('div', {},
-            h('div', { style: { fontSize: '10px', fontWeight: '700', color: '#2563eb', marginBottom: '4px' } }, 'COUNTER POSTS'),
-            ...latest.counter_posts.slice(0, 2).map(cp =>
-              h('div', { style: { fontSize: '10px', color: 'var(--gray-600)', marginBottom: '4px' } },
-                h('span', { style: { fontWeight: '600' } }, 'Hook: '), cp.post_hook
-              )
-            )
-          ) : null
-        );
-      })()
-    ) : null,
-
-    // Nurture Campaigns
-    state.nurtureCampaigns?.length > 0 ? h('div', { style: { marginBottom: '20px' } },
-      h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)', marginBottom: '8px' } }, `NURTURE CAMPAIGNS (${state.nurtureCampaigns.length})`),
-      h('div', { style: { display: 'grid', gap: '6px' } },
-        ...state.nurtureCampaigns.slice(0, 5).map(nc =>
-          h('div', { style: { padding: '10px 14px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)' } },
-            h('div', { style: { fontSize: '12px', fontWeight: '600', color: 'var(--navy)', marginBottom: '4px' } }, (nc.campaign_name || nc.title || '').slice(0, 60)),
-            h('div', { style: { display: 'flex', gap: '6px' } },
-              h('span', { style: { fontSize: '9px', padding: '2px 6px', background: '#eff6ff', color: '#2563eb', borderRadius: '8px', fontWeight: '600' } }, `${nc.touchpoints?.length || 0} touchpoints`),
-              h('span', { style: { fontSize: '9px', padding: '2px 6px', background: '#f0fdf4', color: '#059669', borderRadius: '8px', fontWeight: '600' } }, nc.expected_timeline || '14 days'),
-              h('span', { style: { fontSize: '9px', padding: '2px 6px', background: nc.status === 'active' ? '#f0fdf4' : '#fefce8', color: nc.status === 'active' ? '#059669' : '#ca8a04', borderRadius: '8px', fontWeight: '600' } }, nc.status || 'draft')
-            )
-          )
-        )
-      )
-    ) : null,
 
     // Content Flywheel
     state.flywheelData?.flywheel ? h('div', { style: { marginBottom: '20px' } },
@@ -3854,22 +3581,6 @@ function renderDashboardPage() {
       )
     ) : null,
 
-    // Audience Segments
-    state.audienceSegments?.segments ? h('div', { style: { marginBottom: '20px' } },
-      h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)', marginBottom: '8px' } }, `AUDIENCE SEGMENTS (${state.audienceSegments.segments.length})`),
-      h('div', { style: { display: 'grid', gap: '4px' } },
-        ...state.audienceSegments.segments.map(s =>
-          h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)' } },
-            h('div', { style: { flex: 1 } },
-              h('div', { style: { fontSize: '11px', fontWeight: '600', color: 'var(--navy)' } }, s.name),
-              h('div', { style: { fontSize: '10px', color: 'var(--gray-500)' } }, (s.description || '').slice(0, 60))
-            ),
-            h('span', { style: { fontSize: '9px', padding: '2px 6px', background: '#eff6ff', color: '#2563eb', borderRadius: '8px', fontWeight: '600' } }, s.estimated_size || '?'),
-            h('span', { style: { fontSize: '9px', padding: '2px 6px', background: '#f0fdf4', color: '#059669', borderRadius: '8px', fontWeight: '600' } }, s.messaging_tone || 'direct')
-          )
-        )
-      )
-    ) : null,
 
     // Content DNA
     state.contentDna?.formula ? h('div', { style: { marginBottom: '20px' } },
@@ -3944,18 +3655,6 @@ function renderDashboardPage() {
       state.replyStrategy.daily_routine ? h('div', { style: { marginTop: '6px', padding: '6px 10px', background: '#faf5ff', borderRadius: 'var(--radius-sm)', fontSize: '10px', color: '#7c3aed' } }, typeof state.replyStrategy.daily_routine === 'string' ? state.replyStrategy.daily_routine : `${state.replyStrategy.daily_routine.time_per_day || '30 min'}/day`) : null
     ) : null,
 
-    // DM Scripts (Batch 57)
-    state.dmScripts?.length ? h('div', { style: { marginBottom: '20px' } },
-      h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)', marginBottom: '8px' } }, `DM SCRIPTS (${state.dmScripts.length})`),
-      h('div', { style: { display: 'grid', gap: '3px' } },
-        ...state.dmScripts.slice(0, 3).map(s =>
-          h('div', { style: { padding: '6px 10px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)' } },
-            h('div', { style: { fontSize: '10px', color: 'var(--gray-400)' } }, new Date(s.generated_at).toLocaleDateString()),
-            h('div', { style: { fontSize: '10px', color: 'var(--gray-600)', marginTop: '2px' } }, `${(s.scripts || s.scenarios || []).length} scenarios`)
-          )
-        )
-      )
-    ) : null,
 
     // Comment Strategy (Batch 58)
     state.commentStrategy ? h('div', { style: { marginBottom: '20px' } },
@@ -3975,21 +3674,6 @@ function renderDashboardPage() {
         `Daily: ${state.commentStrategy.daily_quota.linkedin || 5} LinkedIn + ${state.commentStrategy.daily_quota.x || 10} X comments (${state.commentStrategy.time_budget || '30 min'})`) : null
     ) : null,
 
-    // Newsletters (Batch 58)
-    state.newsletters?.length ? h('div', { style: { marginBottom: '20px' } },
-      h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)', marginBottom: '8px' } }, `NEWSLETTERS (${state.newsletters.length})`),
-      h('div', { style: { display: 'grid', gap: '3px' } },
-        ...state.newsletters.slice(0, 3).map(n =>
-          h('div', { style: { padding: '6px 10px', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)' } },
-            h('div', { style: { fontSize: '11px', fontWeight: '600', color: 'var(--navy)' } }, n.subject_line || 'Newsletter'),
-            h('div', { style: { display: 'flex', gap: '4px', marginTop: '3px' } },
-              h('span', { style: { fontSize: '9px', color: 'var(--gray-400)' } }, n.estimated_read_time || ''),
-              h('span', { style: { fontSize: '9px', color: 'var(--gray-400)' } }, new Date(n.compiled_at).toLocaleDateString())
-            )
-          )
-        )
-      )
-    ) : null,
 
     // Content Recycler (Batch 58)
     state.contentRecycler?.suggestions?.length ? h('div', { style: { marginBottom: '20px' } },

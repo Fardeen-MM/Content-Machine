@@ -26,7 +26,7 @@ async function remixContent(originalText, sourceUrl, system) {
 
   const prompt = `COMPETITOR CONTENT (source: ${sourceUrl}):
 ---
-${originalText.slice(0, 6000)}
+${(originalText || '').slice(0, 6000)}
 ---
 
 EXTRACTED ATOMS FROM THEIR CONTENT:

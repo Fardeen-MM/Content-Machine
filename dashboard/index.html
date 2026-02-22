@@ -6067,6 +6067,7 @@ function renderContentCard(content) {
         const missing = allFmts.length - existing;
         const genKey = `gen-${content.id}`;
         const actKey = `act-${content.id}`;
+        const aiKey = `ai-${content.id}`;
         if (!state._cardMenus) state._cardMenus = {};
 
         function cardBtn(label, color, onclickFn, disabled) {
@@ -6098,14 +6099,20 @@ function renderContentCard(content) {
           missing > 0 ? h('button', {
             className: 'btn btn-outline btn-sm',
             style: { color: '#7c3aed', borderColor: '#7c3aed', fontSize: '11px', background: state._cardMenus[genKey] ? '#f5f3ff' : 'transparent' },
-            onclick: (e) => { e.stopPropagation(); state._cardMenus[genKey] = !state._cardMenus[genKey]; state._cardMenus[actKey] = false; render(); }
+            onclick: (e) => { e.stopPropagation(); state._cardMenus[genKey] = !state._cardMenus[genKey]; state._cardMenus[actKey] = false; state._cardMenus[aiKey] = false; render(); }
           }, `Generate + (${missing})`) : null,
           // Actions dropdown toggle
           hasContent ? h('button', {
             className: 'btn btn-outline btn-sm',
             style: { fontSize: '11px', background: state._cardMenus[actKey] ? '#eff6ff' : 'transparent' },
-            onclick: (e) => { e.stopPropagation(); state._cardMenus[actKey] = !state._cardMenus[actKey]; state._cardMenus[genKey] = false; render(); }
+            onclick: (e) => { e.stopPropagation(); state._cardMenus[actKey] = !state._cardMenus[actKey]; state._cardMenus[genKey] = false; state._cardMenus[aiKey] = false; render(); }
           }, 'Actions \u25BE') : null,
+          // AI Tools dropdown toggle
+          hasContent ? h('button', {
+            className: 'btn btn-outline btn-sm',
+            style: { color: '#8B5CF6', borderColor: '#8B5CF6', fontSize: '11px', background: state._cardMenus[aiKey] ? '#f5f3ff' : 'transparent' },
+            onclick: (e) => { e.stopPropagation(); state._cardMenus[aiKey] = !state._cardMenus[aiKey]; state._cardMenus[genKey] = false; state._cardMenus[actKey] = false; render(); }
+          }, 'AI \u2728') : null,
           // Distribute (keep visible — key workflow)
           hasApproved ? h('button', {
             className: 'btn btn-outline btn-sm',
@@ -6163,7 +6170,83 @@ function renderContentCard(content) {
               ? cardBtn('DM CTA', '#2563eb', () => cardAction('Generating CTAs', 'comment-dm-cta', 'POST', r => `${r.cta_variants?.length || 0} CTA variants created`)) : null,
             (content.formats?.blog?.content || content.formats?.linkedin?.content)
               ? cardBtn('Atomize', '#d97706', () => cardAction('Atomizing content', 'atomize-20', 'POST', r => `${r.atomization?.total_pieces || r.atomization?.derivatives?.length || 0} derivatives created!`)) : null
-          ) : null
+          ) : null,
+          // AI Tools expansion panel
+          state._cardMenus[aiKey] ? h('div', { style: { width: '100%', display: 'flex', gap: '4px', flexWrap: 'wrap', paddingTop: '4px', borderTop: '1px solid #e9d5ff' } },
+            // Predict Performance
+            cardBtn('Predict', '#8B5CF6', async () => {
+              toast('Predicting performance...', 'info');
+              try {
+                const res = await api(`/api/content/${content.id}/predict-performance`, { method: 'POST', body: { format: 'linkedin' } });
+                const p = res.prediction;
+                toast(`Prediction: ${p.predicted_engagement_tier} (${p.predicted_engagement_rate} engagement, confidence ${Math.round((p.confidence || 0) * 100)}%)`, p.predicted_engagement_tier === 'low' ? 'warning' : 'success');
+                loadData();
+              } catch (err) { toast('Predict failed: ' + err.message, 'error'); }
+            }),
+            // Tone Adjustment dropdown
+            cardBtn('Tone: Aggressive', '#dc2626', async () => {
+              toast('Adjusting tone to aggressive...', 'info');
+              try {
+                const res = await api(`/api/content/${content.id}/adjust-tone`, { method: 'POST', body: { format: 'linkedin', tone: 'aggressive' } });
+                toast('Aggressive tone variant created!', 'success'); loadData();
+              } catch (err) { toast('Tone adjust failed: ' + err.message, 'error'); }
+            }),
+            cardBtn('Tone: Story', '#059669', async () => {
+              toast('Adjusting tone to storytelling...', 'info');
+              try {
+                await api(`/api/content/${content.id}/adjust-tone`, { method: 'POST', body: { format: 'linkedin', tone: 'storytelling' } });
+                toast('Storytelling tone variant created!', 'success'); loadData();
+              } catch (err) { toast('Tone adjust failed: ' + err.message, 'error'); }
+            }),
+            cardBtn('Tone: Data', '#2563eb', async () => {
+              toast('Adjusting tone to data-heavy...', 'info');
+              try {
+                await api(`/api/content/${content.id}/adjust-tone`, { method: 'POST', body: { format: 'linkedin', tone: 'data_heavy' } });
+                toast('Data-heavy tone variant created!', 'success'); loadData();
+              } catch (err) { toast('Tone adjust failed: ' + err.message, 'error'); }
+            }),
+            // Audience Variants
+            cardBtn('For: PI', '#b91c1c', async () => {
+              toast('Creating PI variant...', 'info');
+              try {
+                await api(`/api/content/${content.id}/audience-variant`, { method: 'POST', body: { format: 'linkedin', practice_area: 'personal_injury' } });
+                toast('PI variant created!', 'success'); loadData();
+              } catch (err) { toast('Variant failed: ' + err.message, 'error'); }
+            }),
+            cardBtn('For: Family', '#9333ea', async () => {
+              toast('Creating Family Law variant...', 'info');
+              try {
+                await api(`/api/content/${content.id}/audience-variant`, { method: 'POST', body: { format: 'linkedin', practice_area: 'family_law' } });
+                toast('Family Law variant created!', 'success'); loadData();
+              } catch (err) { toast('Variant failed: ' + err.message, 'error'); }
+            }),
+            cardBtn('For: Criminal', '#0369a1', async () => {
+              toast('Creating Criminal Defense variant...', 'info');
+              try {
+                await api(`/api/content/${content.id}/audience-variant`, { method: 'POST', body: { format: 'linkedin', practice_area: 'criminal_defense' } });
+                toast('Criminal Defense variant created!', 'success'); loadData();
+              } catch (err) { toast('Variant failed: ' + err.message, 'error'); }
+            }),
+            cardBtn('For: Immigration', '#ca8a04', async () => {
+              toast('Creating Immigration variant...', 'info');
+              try {
+                await api(`/api/content/${content.id}/audience-variant`, { method: 'POST', body: { format: 'linkedin', practice_area: 'immigration' } });
+                toast('Immigration variant created!', 'success'); loadData();
+              } catch (err) { toast('Variant failed: ' + err.message, 'error'); }
+            })
+          ) : null,
+          // Prediction badge (show if prediction exists)
+          content.predictions?.linkedin ? h('span', {
+            style: {
+              fontSize: '10px', padding: '2px 6px', borderRadius: '100px', fontWeight: '600',
+              background: content.predictions.linkedin.predicted_engagement_tier === 'exceptional' ? '#dcfce7' :
+                content.predictions.linkedin.predicted_engagement_tier === 'high' ? '#dbeafe' :
+                content.predictions.linkedin.predicted_engagement_tier === 'moderate' ? '#fef3c7' : '#fee2e2',
+              color: content.predictions.linkedin.predicted_engagement_tier === 'exceptional' ? '#166534' :
+                content.predictions.linkedin.predicted_engagement_tier === 'high' ? '#1e40af' :
+                content.predictions.linkedin.predicted_engagement_tier === 'moderate' ? '#92400e' : '#991b1b'
+            }
+          }, `AI: ${content.predictions.linkedin.predicted_engagement_tier}`) : null
         );
       })()
     ),
@@ -7867,6 +7950,21 @@ function renderContentPage() {
               } catch (err) { toast('Batch QA failed: ' + err.message, 'error'); }
             }
           }, 'QA All'),
+          h('button', {
+            className: 'btn btn-sm',
+            style: { background: '#8B5CF6', color: 'white', border: 'none' },
+            onclick: async () => {
+              const ids = [...state.selectedContent];
+              toast(`Checking coherence across ${ids.length} pieces...`, 'info');
+              try {
+                const res = await api('/api/content/batch/coherence-check', { method: 'POST', body: { ids } });
+                const score = res.coherence_score || 0;
+                const recs = (res.recommendations || []).slice(0, 3).join('. ');
+                const dupes = (res.redundant_pairs || []).length;
+                toast(`Coherence: ${score}/100${dupes ? ` (${dupes} redundant pairs)` : ''}. ${recs}`, score >= 70 ? 'success' : 'warning');
+              } catch (err) { toast('Coherence check failed: ' + err.message, 'error'); }
+            }
+          }, 'Coherence'),
           h('button', {
             className: 'btn btn-sm',
             onclick: () => { state.selectedContent = new Set(); render(); }

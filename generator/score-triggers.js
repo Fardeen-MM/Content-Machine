@@ -295,6 +295,73 @@ function getPatternBoost(trigger) {
   }
 }
 
+// Hook pattern library — extract winning patterns from high-performing published content
+let _hookPatternCache = null;
+let _hookPatternCachedAt = 0;
+
+function getHookPatternBoost(trigger) {
+  try {
+    if (!_hookPatternCache || Date.now() - _hookPatternCachedAt > RELIABILITY_CACHE_MS) {
+      const perfData = readJSON('performance.json', []);
+      const content = readJSON('content.json');
+      const published = readJSON('published.json', []);
+
+      // Build pattern library from top-performing content
+      const patterns = {
+        data_bomb: { regex: /\d+\s*(firms?|accounts?|campaigns?|clients?).*analyzed|audited\s+\d+|looked at \d+/i, boost: 3, count: 0 },
+        contrarian: { regex: /wrong|myth|actually|stop|doesn't work|overrated|unpopular opinion/i, boost: 2, count: 0 },
+        story_hook: { regex: /^(a|one|this)\s+(pi|family|criminal|immigration)?\s*(firm|lawyer|attorney|partner)/i, boost: 3, count: 0 },
+        math_problem: { regex: /\$[\d,]+.*\/month|\d+%.*waste|\d+\s*out of\s*\d+/i, boost: 2, count: 0 },
+        specific_number: { regex: /\$[\d,]+|\d+%|\d+x/i, boost: 1, count: 0 },
+        framework: { regex: /\d+[\s-]step|\d+ things|framework|system|playbook|blueprint/i, boost: 2, count: 0 },
+        confession: { regex: /i used to|i was wrong|my mistake|i learned|confession/i, boost: 2, count: 0 },
+        before_after: { regex: /from \$?[\d,]+.*to \$?[\d,]+|before.*after|went from/i, boost: 3, count: 0 }
+      };
+
+      // Count pattern occurrences in high-performing content
+      const globalAvgEngagement = perfData.length > 0
+        ? perfData.reduce((sum, p) => sum + (p.engagement || 0), 0) / perfData.length
+        : 0;
+
+      for (const p of perfData) {
+        if ((p.engagement || 0) <= globalAvgEngagement) continue; // Only learn from above-average
+        const item = content.find(c => c.id === p.content_id);
+        if (!item) continue;
+        const hookText = (item.trigger_title || '') + ' ' + (item.formats?.linkedin?.content || '').slice(0, 200);
+
+        for (const [, pat] of Object.entries(patterns)) {
+          if (pat.regex.test(hookText)) pat.count++;
+        }
+      }
+
+      // Rank patterns by frequency in high-performing content
+      const ranked = Object.entries(patterns)
+        .filter(([, p]) => p.count >= 2)
+        .sort((a, b) => b[1].count - a[1].count);
+
+      _hookPatternCache = { patterns, ranked, hasData: perfData.length >= 5 };
+      _hookPatternCachedAt = Date.now();
+    }
+
+    if (!_hookPatternCache.hasData) return 0;
+
+    const text = `${trigger.title || ''} ${(trigger.raw_content || '').slice(0, 300)}`;
+    let boost = 0;
+
+    // Boost triggers that match proven high-performing hook patterns
+    for (const [, pat] of _hookPatternCache.ranked.slice(0, 3)) {
+      if (pat[1].regex.test(text)) {
+        boost += Math.min(pat[1].boost, 3);
+        break; // Only count best matching pattern
+      }
+    }
+
+    return boost;
+  } catch {
+    return 0;
+  }
+}
+
 function scoreTrigger(trigger, allTriggers) {
   let score = 0;
   const text = `${trigger.title || ''} ${trigger.raw_content || ''}`;
@@ -406,6 +473,9 @@ function scoreTrigger(trigger, allTriggers) {
 
   // Rejection penalty — penalize triggers similar to previously rejected content
   score += getRejectionPenalty(trigger);
+
+  // Hook pattern boost — triggers matching proven high-performing hook patterns
+  score += getHookPatternBoost(trigger);
 
   return Math.max(0, score);
 }

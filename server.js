@@ -8629,6 +8629,140 @@ Add the series hashtag ${s.hashtag || ''} naturally at the end of social posts.`
       }
     }
 
+    // --- AI Intelligence Features ---
+
+    // POST /api/content/:id/predict-performance — predict engagement before generation
+    const predictMatch = pathname.match(/^\/api\/content\/([a-f0-9]+)\/predict-performance$/);
+    if (predictMatch && method === 'POST') {
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not configured' }, 503);
+      const content = readJSON('content.json');
+      const item = content.find(c => c.id === predictMatch[1]);
+      if (!item) return json(res, { error: 'Content not found' }, 404);
+
+      const body = await parseBody(req);
+      const format = body.format || 'linkedin';
+
+      try {
+        const { predictContentPerformance } = require('./lib/claude');
+        const { buildSystemPromptWithMemory } = require('./generator/content-writer');
+        const system = buildSystemPromptWithMemory();
+        const result = await predictContentPerformance(
+          item.trigger_title || '', item.trigger_category || '', item.trigger_url || item.formats?.linkedin?.content || '', format, system
+        );
+
+        // Save prediction to content item
+        const contentAll = readJSON('content.json');
+        const idx = contentAll.findIndex(c => c.id === predictMatch[1]);
+        if (idx !== -1) {
+          if (!contentAll[idx].predictions) contentAll[idx].predictions = {};
+          contentAll[idx].predictions[format] = { ...result, predicted_at: now() };
+          writeJSON('content.json', contentAll);
+        }
+
+        return json(res, { ok: true, content_id: item.id, format, prediction: result });
+      } catch (err) {
+        return apiError(res, err, 'predict performance');
+      }
+    }
+
+    // POST /api/content/:id/adjust-tone — rewrite content with different tone
+    const toneMatch = pathname.match(/^\/api\/content\/([a-f0-9]+)\/adjust-tone$/);
+    if (toneMatch && method === 'POST') {
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not configured' }, 503);
+      const body = await parseBody(req);
+      const format = body.format || 'linkedin';
+      const tone = body.tone;
+      const validTones = ['aggressive', 'educational', 'storytelling', 'data_heavy', 'conversational', 'authoritative'];
+      if (!tone || !validTones.includes(tone)) return json(res, { error: `tone required, one of: ${validTones.join(', ')}` }, 400);
+
+      const content = readJSON('content.json');
+      const idx = content.findIndex(c => c.id === toneMatch[1]);
+      if (idx === -1) return json(res, { error: 'Content not found' }, 404);
+      const item = content[idx];
+      const currentContent = item.formats?.[format]?.content;
+      if (!currentContent) return json(res, { error: `No content in format "${format}"` }, 400);
+
+      try {
+        const { adjustContentTone } = require('./lib/claude');
+        const { buildSystemPromptWithMemory } = require('./generator/content-writer');
+        const system = buildSystemPromptWithMemory();
+        const adjusted = await adjustContentTone(currentContent, format, tone, system);
+
+        // Save as tone variant
+        if (!content[idx].tone_variants) content[idx].tone_variants = {};
+        if (!content[idx].tone_variants[format]) content[idx].tone_variants[format] = {};
+        content[idx].tone_variants[format][tone] = { content: adjusted, generated_at: now() };
+        writeJSON('content.json', content);
+
+        return json(res, { ok: true, content_id: item.id, format, tone, adjusted_content: adjusted });
+      } catch (err) {
+        return apiError(res, err, 'adjust tone');
+      }
+    }
+
+    // POST /api/content/:id/audience-variant — rewrite for specific practice area
+    const audienceMatch = pathname.match(/^\/api\/content\/([a-f0-9]+)\/audience-variant$/);
+    if (audienceMatch && method === 'POST') {
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not configured' }, 503);
+      const body = await parseBody(req);
+      const format = body.format || 'linkedin';
+      const practiceArea = body.practice_area;
+      const validAreas = ['personal_injury', 'family_law', 'criminal_defense', 'immigration', 'estate_planning', 'workers_comp', 'bankruptcy', 'real_estate'];
+      if (!practiceArea || !validAreas.includes(practiceArea)) return json(res, { error: `practice_area required, one of: ${validAreas.join(', ')}` }, 400);
+
+      const content = readJSON('content.json');
+      const idx = content.findIndex(c => c.id === audienceMatch[1]);
+      if (idx === -1) return json(res, { error: 'Content not found' }, 404);
+      const item = content[idx];
+      const currentContent = item.formats?.[format]?.content;
+      if (!currentContent) return json(res, { error: `No content in format "${format}"` }, 400);
+
+      try {
+        const { generateAudienceVariant } = require('./lib/claude');
+        const { buildSystemPromptWithMemory } = require('./generator/content-writer');
+        const system = buildSystemPromptWithMemory();
+        const variant = await generateAudienceVariant(currentContent, format, practiceArea, system);
+
+        // Save as audience variant
+        if (!content[idx].audience_variants) content[idx].audience_variants = {};
+        if (!content[idx].audience_variants[format]) content[idx].audience_variants[format] = {};
+        content[idx].audience_variants[format][practiceArea] = { content: variant, generated_at: now() };
+        writeJSON('content.json', content);
+
+        return json(res, { ok: true, content_id: item.id, format, practice_area: practiceArea, variant_content: variant });
+      } catch (err) {
+        return apiError(res, err, 'generate audience variant');
+      }
+    }
+
+    // POST /api/content/batch/coherence-check — check weekly content batch for redundancy
+    if (pathname === '/api/content/batch/coherence-check' && method === 'POST') {
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not configured' }, 503);
+      const body = await parseBody(req);
+      const content = readJSON('content.json');
+
+      // Get content pieces to check — either by IDs or by status
+      let pieces;
+      if (body.ids?.length) {
+        pieces = content.filter(c => body.ids.includes(c.id));
+      } else {
+        // Default: all approved content not yet published (the upcoming publishing queue)
+        pieces = content.filter(c => c.status === 'approved' || c.status === 'review').slice(0, 10);
+      }
+      if (pieces.length < 2) return json(res, { error: 'Need at least 2 content pieces to check coherence' }, 400);
+
+      try {
+        const { checkBatchCoherence } = require('./lib/claude');
+        const { buildSystemPromptWithMemory } = require('./generator/content-writer');
+        const system = buildSystemPromptWithMemory();
+        const result = await checkBatchCoherence(pieces, system);
+
+        return json(res, { ok: true, pieces_checked: pieces.length, piece_ids: pieces.map(p => p.id), ...result });
+      } catch (err) {
+        return apiError(res, err, 'check batch coherence');
+      }
+    }
+
     // POST /api/lead-magnets/generate — auto-generate lead magnets from top triggers
     if (pathname === '/api/lead-magnets/generate' && method === 'POST') {
       if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not configured' }, 503);

@@ -3478,7 +3478,7 @@ Return JSON array (no fences):
       db.insertEvent({
         source: 'ghl',
         event_type: body.event || body.type || 'ghl_event',
-        client_name: body.contact?.name || body.contact?.firstName ? [body.contact.firstName, body.contact.lastName].filter(Boolean).join(' ') : body.contactName || null,
+        client_name: body.contact?.name || (body.contact?.firstName ? [body.contact.firstName, body.contact.lastName].filter(Boolean).join(' ') : null) || body.contactName || null,
         client_email: body.contact?.email || body.contactEmail || null,
         data: body
       });

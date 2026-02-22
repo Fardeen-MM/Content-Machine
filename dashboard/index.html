@@ -2974,7 +2974,7 @@ function renderContentActions() {
       ab('Series', '#dc2626', '/api/series-templates/setup', { stateKey: 'seriesTemplates', successMsg: r => `${r.templates?.series?.length || 0} series` }),
       ab('Gaps', '#475569', '/api/content-gap-finder', { stateKey: 'contentGapFinder', successMsg: r => `${r.coverage_score}% coverage` }),
       ab('Plan', '#0d9488', '/api/weekly-action-plan', { stateKey: 'weeklyActionPlan', successMsg: r => `Theme: ${r.week_theme}` }),
-      ab('Rotate', '#7c3aed', '/api/pillar-rotator', { stateKey: 'pillarRotator', successMsg: r => `Next: ${r.next_5_posts?.map(p => p.pillar).join(', ')}` }),
+      ab('Rotate', '#7c3aed', '/api/pillar-rotator', { stateKey: 'pillarRotator', successMsg: r => `Next: ${(r.next_5_posts || []).map(p => p.pillar).join(', ') || 'N/A'}` }),
       ab('Pipeline', '#475569', '/api/pipeline-board', { stateKey: 'pipelineBoard', successMsg: r => `${r.summary?.total_in_pipeline} items` }),
       ab('Authority', '#6d28d9', '/api/authority-builder', { stateKey: 'authorityBuilder', successMsg: r => `Stage: ${r.current_stage}` }),
       ab('ICP', '#4f46e5', '/api/icp-refiner', { stateKey: 'icpRefined', successMsg: r => `ICP: ${r.primary_icp?.title || 'refined'}` }),
@@ -4979,7 +4979,7 @@ function renderDashboardPage() {
         h('span', { style: { fontWeight: '700' } }, 'Engagement Predictions'),
         h('span', { style: { fontSize: '11px', color: '#6366f1' } }, state.engagementPredictor.high_potential + ' high potential')
       ),
-      state.engagementPredictor.predictions?.slice(0, 3).map(p =>
+      (state.engagementPredictor.predictions || []).slice(0, 3).map(p =>
         h('div', { style: { fontSize: '12px', marginBottom: '4px', display: 'flex', justifyContent: 'space-between' } },
           h('span', null, (p.title || '').substring(0, 40)),
           h('span', { style: { color: p.predicted_tier === 'high' ? '#059669' : p.predicted_tier === 'medium' ? '#f59e0b' : '#9ca3af', fontWeight: '600' } }, p.predicted_score)
@@ -4993,7 +4993,7 @@ function renderDashboardPage() {
         h('span', { style: { fontWeight: '700' } }, 'Cannibalisation Alerts'),
         h('span', { style: { fontSize: '11px', color: '#ef4444' } }, state.cannibalisationCheck.high_severity + ' high severity')
       ),
-      state.cannibalisationCheck.conflicts?.slice(0, 3).map(c =>
+      (state.cannibalisationCheck.conflicts || []).slice(0, 3).map(c =>
         h('div', { style: { fontSize: '12px', marginBottom: '4px', padding: '4px 8px', background: c.severity === 'high' ? '#fef2f2' : '#fffbeb', borderRadius: '4px' } },
           h('span', { style: { fontWeight: '600' } }, '"' + c.keyword + '"'),
           h('span', { style: { color: 'var(--gray-500)', marginLeft: '4px' } }, c.count + ' pieces')
@@ -5024,7 +5024,7 @@ function renderDashboardPage() {
         h('span', { style: { fontWeight: '700' } }, 'Headlines'),
         h('span', { style: { fontSize: '11px', color: state.headlineAnalyzer.avg_score >= 70 ? '#059669' : '#f59e0b' } }, 'Avg: ' + state.headlineAnalyzer.avg_score + '/100')
       ),
-      state.headlineAnalyzer.top_headlines?.slice(0, 3).map(h2 =>
+      (state.headlineAnalyzer.top_headlines || []).slice(0, 3).map(h2 =>
         h('div', { style: { fontSize: '12px', marginBottom: '4px', display: 'flex', justifyContent: 'space-between' } },
           h('span', null, (h2.headline || '').substring(0, 35) + '...'),
           h('span', { style: { color: h2.score >= 80 ? '#059669' : h2.score >= 60 ? '#f59e0b' : '#ef4444', fontWeight: '600' } }, h2.score)
@@ -5118,7 +5118,7 @@ function renderDashboardPage() {
         h('span', { style: { fontWeight: '700' } }, 'Competitor Gaps'),
         h('span', { style: { fontSize: '11px', color: '#6366f1' } }, state.competitorGapFinder.total_gaps + ' gaps found')
       ),
-      state.competitorGapFinder.gaps?.slice(0, 3).map(g =>
+      (state.competitorGapFinder.gaps || []).slice(0, 3).map(g =>
         h('div', { style: { fontSize: '12px', marginBottom: '4px', padding: '4px 6px', background: g.priority === 'high' ? '#fef2f2' : '#f9fafb', borderRadius: '4px' } },
           h('span', { style: { fontWeight: '600' } }, (g.competitor_title || '').substring(0, 45) + '...'),
           h('span', { style: { fontSize: '10px', color: g.priority === 'high' ? '#ef4444' : '#9ca3af', marginLeft: '4px' } }, g.priority)
@@ -5336,7 +5336,7 @@ function renderDashboardPage() {
       )
     ) : null,
     // Schedule Queue
-    state.scheduleQueue?.filter(q => q.status === 'scheduled').length > 0 ? h('div', { style: { marginBottom: '20px' } },
+    (state.scheduleQueue || []).filter(q => q.status === 'scheduled').length > 0 ? h('div', { style: { marginBottom: '20px' } },
       h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
         h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)' } }, `SCHEDULED POSTS (${state.scheduleQueue.filter(q => q.status === 'scheduled').length})`),
         h('div', { style: { fontSize: '11px', color: 'var(--gray-500)' } },
@@ -5610,7 +5610,7 @@ function renderDashboardPage() {
       ) : null
     ) : null,
     // Social Proof
-    state.socialProof?.filter(p => p.type === 'testimonial' || p.type === 'case_metric').length > 0 ? h('div', { style: { marginBottom: '20px' } },
+    (state.socialProof || []).filter(p => p.type === 'testimonial' || p.type === 'case_metric').length > 0 ? h('div', { style: { marginBottom: '20px' } },
       h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
         h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)' } }, `SOCIAL PROOF (${state.socialProof.filter(p => p.type === 'testimonial' || p.type === 'case_metric').length})`),
         h('div', { style: { display: 'flex', gap: '6px' } },
@@ -5637,7 +5637,7 @@ function renderDashboardPage() {
       )
     ) : null,
     // DM Pipelines
-    state.dmPipelines?.filter(p => p.status === 'active').length > 0 ? h('div', { style: { marginBottom: '20px' } },
+    (state.dmPipelines || []).filter(p => p.status === 'active').length > 0 ? h('div', { style: { marginBottom: '20px' } },
       h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
         h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)' } }, `DM PIPELINES (${state.dmPipelines.filter(p => p.status === 'active').length} active)`),
         h('div', { style: { fontSize: '11px', color: 'var(--gray-500)' } },
@@ -5901,11 +5901,11 @@ function renderDashboardPage() {
           h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)', marginBottom: '12px' } }, 'CONTENT PIPELINE'),
           h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } },
             ...[
-              { label: 'Triggers', count: state.triggers?.filter(t => t.status === 'pending').length || 0, color: 'var(--gray-400)', page: 'triggers' },
+              { label: 'Triggers', count: (state.triggers || []).filter(t => t.status === 'pending').length, color: 'var(--gray-400)', page: 'triggers' },
               { label: 'Generated', count: state.content?.length || 0, color: 'var(--blue)', page: 'content' },
-              { label: 'In Review', count: state.content?.filter(c => c.status === 'review').length || 0, color: 'var(--amber)', page: 'content' },
-              { label: 'Approved', count: state.content?.filter(c => Object.values(c.formats || {}).some(f => f.status === 'approved')).length || 0, color: 'var(--green)', page: 'content' },
-              { label: 'Published', count: state.content?.filter(c => Object.values(c.formats || {}).some(f => f.published_at)).length || 0, color: 'var(--purple)', page: 'content' }
+              { label: 'In Review', count: (state.content || []).filter(c => c.status === 'review').length, color: 'var(--amber)', page: 'content' },
+              { label: 'Approved', count: (state.content || []).filter(c => Object.values(c.formats || {}).some(f => f.status === 'approved')).length, color: 'var(--green)', page: 'content' },
+              { label: 'Published', count: (state.content || []).filter(c => Object.values(c.formats || {}).some(f => f.published_at)).length, color: 'var(--purple)', page: 'content' }
             ].flatMap((stage, i, arr) => [
               h('div', {
                 style: { flex: '1', textAlign: 'center', padding: '10px 4px', background: stage.color + '12', borderRadius: '8px', cursor: 'pointer' },

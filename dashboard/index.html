@@ -7247,7 +7247,7 @@ function renderFormatContent(content, formatKey, fmt) {
         h('div', { style: { fontSize: '10px', fontWeight: '700', color: '#ec4899', marginBottom: '6px' } },
           content.ab_variants[formatKey].winner ? 'A/B TEST — WINNER SELECTED' : 'A/B TEST VARIANTS'
         ),
-        ...content.ab_variants[formatKey].variants.map(v =>
+        ...(content.ab_variants[formatKey].variants || []).map(v =>
           h('div', { style: { marginBottom: '6px', padding: '6px', background: 'var(--card-bg)', borderRadius: '4px', border: v.id === content.ab_variants[formatKey].winner ? '2px solid #059669' : '1px solid #e5e7eb' } },
             h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3px' } },
               h('span', { style: { fontSize: '10px', fontWeight: '700', color: 'var(--navy)' } }, `Variant ${v.label}: ${v.hook_style}`),
@@ -9262,7 +9262,7 @@ function renderPerformancePage() {
               ...Object.entries(analytics.by_format || {})
                 .sort((a, b) => (b[1]?.engagement || 0) - (a[1]?.engagement || 0))
                 .map(([format, data]) => {
-                  const maxEng = Math.max(...Object.values(analytics.by_format).map(d => d.engagement), 1);
+                  const maxEng = Math.max(...Object.values(analytics.by_format || {}).map(d => d.engagement), 1);
                   return h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } },
                     h('span', { style: { fontSize: '11px', fontWeight: '600', width: '80px', color: 'var(--gray-500)' } }, formatName(format)),
                     h('div', { style: { flex: '1', height: '14px', background: 'var(--gray-100)', borderRadius: '7px', overflow: 'hidden' } },

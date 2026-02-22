@@ -1,21 +1,21 @@
 {
   "total_scored": 66,
   "tier_counts": {
-    "S": 1,
-    "A": 0,
+    "S": 0,
+    "A": 1,
     "B": 0,
-    "C": 8,
-    "D": 48,
+    "C": 4,
+    "D": 52,
     "F": 9
   },
-  "avg_score": 28,
+  "avg_score": 27,
   "top_performers": [
     {
       "id": "4aa23b276fa5218b",
       "title": "Lessons Learned From 5,000 Days of Crisp — Episode 438",
-      "score": 95,
-      "tier": "S",
-      "format_count": 20,
+      "score": 89,
+      "tier": "A",
+      "format_count": 8,
       "total_engagement": 45,
       "total_impressions": 2500,
       "status": "published"
@@ -61,46 +61,6 @@
       "status": "review"
     },
     {
-      "id": "84c5ceee86f4d356",
-      "title": "Doing the “Impossible”: Lawyer Who Grew His Revenue by 59% with Fewer Leads — with Eric Gros-Dubois",
-      "score": 40,
-      "tier": "C",
-      "format_count": 19,
-      "total_engagement": 0,
-      "total_impressions": 0,
-      "status": "review"
-    },
-    {
-      "id": "34f0159edc64e457",
-      "title": "Why Law Firm Marketing Costs Skyrocketed in 2025 (And What Comes Next)",
-      "score": 40,
-      "tier": "C",
-      "format_count": 19,
-      "total_engagement": 0,
-      "total_impressions": 0,
-      "status": "review"
-    },
-    {
-      "id": "5b24a722678acc8b",
-      "title": "Be a “Lazy” Lawyer: Expert Delegation Tips to Scale Your Revenue — with Cameron Herold",
-      "score": 40,
-      "tier": "C",
-      "format_count": 19,
-      "total_engagement": 0,
-      "total_impressions": 0,
-      "status": "review"
-    },
-    {
-      "id": "8ba52566277d9674",
-      "title": "1 month, 178k followers, 213M views, $500,000 Revenue",
-      "score": 40,
-      "tier": "C",
-      "format_count": 19,
-      "total_engagement": 0,
-      "total_impressions": 0,
-      "status": "review"
-    },
-    {
       "id": "dd33fd2be463cf5f",
       "title": "Spent $5K/month on Google Ads for my PI firm and got 2 cases",
       "score": 32,
@@ -109,6 +69,46 @@
       "total_engagement": 0,
       "total_impressions": 0,
       "status": "approved"
+    },
+    {
+      "id": "4c20a864324032bb",
+      "title": "Just found out my marketing agency was running ads to the wrong zip codes for 6 months",
+      "score": 32,
+      "tier": "D",
+      "format_count": 4,
+      "total_engagement": 0,
+      "total_impressions": 0,
+      "status": "approved"
+    },
+    {
+      "id": "6e4f84de57065",
+      "title": "Is TikTok worth it for a law firm? Seems unprofessional",
+      "score": 32,
+      "tier": "D",
+      "format_count": 4,
+      "total_engagement": 0,
+      "total_impressions": 0,
+      "status": "approved"
+    },
+    {
+      "id": "84c5ceee86f4d356",
+      "title": "Doing the “Impossible”: Lawyer Who Grew His Revenue by 59% with Fewer Leads — with Eric Gros-Dubois",
+      "score": 31,
+      "tier": "D",
+      "format_count": 7,
+      "total_engagement": 0,
+      "total_impressions": 0,
+      "status": "review"
+    },
+    {
+      "id": "34f0159edc64e457",
+      "title": "Why Law Firm Marketing Costs Skyrocketed in 2025 (And What Comes Next)",
+      "score": 31,
+      "tier": "D",
+      "format_count": 7,
+      "total_engagement": 0,
+      "total_impressions": 0,
+      "status": "review"
     }
   ],
   "bottom_performers": [
@@ -214,12 +214,12 @@
     }
   ],
   "tier_distribution": {
-    "S": 2,
-    "A": 0,
+    "S": 0,
+    "A": 2,
     "B": 0,
-    "C": 12,
-    "D": 73,
+    "C": 6,
+    "D": 79,
     "F": 14
   },
-  "generated_at": "2026-02-21T21:11:05.230Z"
+  "generated_at": "2026-02-21T23:33:07.081Z"
 }

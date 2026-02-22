@@ -88,7 +88,7 @@
           "id": "942509da1ea4f8",
           "title": "Hired 3 marketing agencies in 2 years — all terrible. What am I doing wrong?",
           "format_count": 7,
-          "age_days": 5
+          "age_days": 6
         },
         {
           "id": "6e4f84de57065",
@@ -130,5 +130,5 @@
     "throughput_rate": 2,
     "bottleneck": "review"
   },
-  "generated_at": "2026-02-21T21:11:05.178Z"
+  "generated_at": "2026-02-21T23:33:14.359Z"
 }

@@ -1,7 +1,7 @@
 {
   "total_checked": 66,
-  "compliant": 37,
-  "non_compliant": 29,
+  "compliant": 36,
+  "non_compliant": 30,
   "high_severity": 0,
   "medium_severity": 3,
   "issues": [
@@ -527,7 +527,7 @@
       "issues": [
         {
           "type": "excessive_caps",
-          "format": "short_video_script",
+          "format": "short_video",
           "caps_count": 7,
           "severity": "low"
         }
@@ -541,14 +541,14 @@
       "issues": [
         {
           "type": "excessive_caps",
-          "format": "linkedin_post",
+          "format": "linkedin",
           "caps_count": 9,
           "severity": "low"
         },
         {
           "type": "excessive_caps",
-          "format": "image_prompt",
-          "caps_count": 5,
+          "format": "x_thread",
+          "caps_count": 4,
           "severity": "low"
         }
       ],
@@ -561,18 +561,38 @@
       "issues": [
         {
           "type": "excessive_caps",
-          "format": "linkedin_post",
+          "format": "linkedin",
           "caps_count": 6,
           "severity": "low"
         },
         {
           "type": "excessive_caps",
-          "format": "short_video_script",
+          "format": "x_thread",
+          "caps_count": 4,
+          "severity": "low"
+        },
+        {
+          "type": "excessive_caps",
+          "format": "short_video",
           "caps_count": 6,
           "severity": "low"
         }
       ],
-      "issue_count": 2,
+      "issue_count": 3,
+      "highest_severity": "low"
+    },
+    {
+      "id": "8ba52566277d9674",
+      "title": "1 month, 178k followers, 213M views, $500,000 Revenue",
+      "issues": [
+        {
+          "type": "excessive_caps",
+          "format": "x_thread",
+          "caps_count": 5,
+          "severity": "low"
+        }
+      ],
+      "issue_count": 1,
       "highest_severity": "low"
     },
     {
@@ -581,7 +601,7 @@
       "issues": [
         {
           "type": "excessive_caps",
-          "format": "short_video_script",
+          "format": "short_video",
           "caps_count": 4,
           "severity": "low"
         }
@@ -604,6 +624,6 @@
       "highest_severity": "low"
     }
   ],
-  "compliance_rate": 56,
-  "generated_at": "2026-02-21T21:11:05.236Z"
+  "compliance_rate": 55,
+  "generated_at": "2026-02-21T23:33:37.289Z"
 }

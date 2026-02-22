@@ -4905,5 +4905,521 @@
     },
     "notes": "",
     "quality_scores": {}
+  },
+  {
+    "id": "7167ed1d20db5c69",
+    "trigger_id": "url-86781ee6dff2cd90",
+    "trigger_title": "https://example.com/test",
+    "trigger_source": "url",
+    "trigger_category": "CONTENT_PIECE",
+    "trigger_url": "https://example.com/test",
+    "generated_at": "2026-02-21T23:34:04.034Z",
+    "status": "review",
+    "formats": {
+      "linkedin": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "x_single": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "x_thread": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "short_video": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "carousel": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "poll": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "quote_cards": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "stat_graphic": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "hot_take": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "before_after": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "listicle": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      }
+    },
+    "hook_variants": {
+      "linkedin": [],
+      "x": []
+    },
+    "image_prompt": null,
+    "image_url": null,
+    "blog_keyword": null,
+    "youtube_topic": null,
+    "lead_magnet_topic": null,
+    "blog_post": null,
+    "youtube_script": null,
+    "quality_score": {
+      "score": 0,
+      "max": 0,
+      "earned": 0,
+      "flags": []
+    },
+    "notes": "",
+    "quality_scores": {}
+  },
+  {
+    "id": "af482ee64260c104",
+    "trigger_id": "reddit-1r9st0h",
+    "trigger_title": "Integrate CRM With AI Agents to Automate Lead Management",
+    "trigger_source": "reddit",
+    "trigger_category": "DATA_POINT",
+    "trigger_url": "https://reddit.com/r/CRM/comments/1r9st0h/integrate_crm_with_ai_agents_to_automate_lead/",
+    "generated_at": "2026-02-21T23:34:04.718Z",
+    "status": "review",
+    "formats": {
+      "linkedin": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "x_single": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "x_thread": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "short_video": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "carousel": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "poll": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "quote_cards": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "stat_graphic": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "hot_take": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "before_after": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "listicle": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      }
+    },
+    "hook_variants": {
+      "linkedin": [],
+      "x": []
+    },
+    "image_prompt": null,
+    "image_url": null,
+    "blog_keyword": null,
+    "youtube_topic": null,
+    "lead_magnet_topic": null,
+    "blog_post": null,
+    "youtube_script": null,
+    "quality_score": {
+      "score": 0,
+      "max": 0,
+      "earned": 0,
+      "flags": []
+    },
+    "notes": "",
+    "quality_scores": {}
+  },
+  {
+    "id": "0b89abd55ed23189",
+    "trigger_id": "reddit-1r9ri0u",
+    "trigger_title": "what is one pain around your lead gen workflow if solved you'd pay to get rid of?",
+    "trigger_source": "reddit",
+    "trigger_category": "DATA_POINT",
+    "trigger_url": "https://reddit.com/r/LeadGeneration/comments/1r9ri0u/what_is_one_pain_around_your_lead_gen_workflow_if/",
+    "generated_at": "2026-02-21T23:34:04.803Z",
+    "status": "review",
+    "formats": {
+      "linkedin": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "x_single": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "x_thread": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "short_video": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "carousel": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "poll": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "quote_cards": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "stat_graphic": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "hot_take": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "before_after": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "listicle": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      }
+    },
+    "hook_variants": {
+      "linkedin": [],
+      "x": []
+    },
+    "image_prompt": null,
+    "image_url": null,
+    "blog_keyword": null,
+    "youtube_topic": null,
+    "lead_magnet_topic": null,
+    "blog_post": null,
+    "youtube_script": null,
+    "quality_score": {
+      "score": 0,
+      "max": 0,
+      "earned": 0,
+      "flags": []
+    },
+    "notes": "",
+    "quality_scores": {}
+  },
+  {
+    "id": "e724c328b788b947",
+    "trigger_id": "reddit-1r8u1q1",
+    "trigger_title": "The ManyChat setup most business owners skip (and it's costing them sales)",
+    "trigger_source": "reddit",
+    "trigger_category": "DATA_POINT",
+    "trigger_url": "https://reddit.com/r/content_marketing/comments/1r8u1q1/the_manychat_setup_most_business_owners_skip_and/",
+    "generated_at": "2026-02-21T23:34:05.068Z",
+    "status": "review",
+    "formats": {
+      "linkedin": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "x_single": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "x_thread": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "short_video": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "carousel": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "poll": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "quote_cards": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "stat_graphic": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "hot_take": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "before_after": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "listicle": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      }
+    },
+    "hook_variants": {
+      "linkedin": [],
+      "x": []
+    },
+    "image_prompt": null,
+    "image_url": null,
+    "blog_keyword": null,
+    "youtube_topic": null,
+    "lead_magnet_topic": null,
+    "blog_post": null,
+    "youtube_script": null,
+    "quality_score": {
+      "score": 0,
+      "max": 0,
+      "earned": 0,
+      "flags": []
+    },
+    "notes": "",
+    "quality_scores": {}
+  },
+  {
+    "id": "87705e96bae6b6a9",
+    "trigger_id": "reddit-1rb01wp",
+    "trigger_title": "I wasted 14 months building products nobody wanted. The fix was embarrassingly simple.",
+    "trigger_source": "reddit",
+    "trigger_category": "DATA_POINT",
+    "trigger_url": "https://reddit.com/r/SaaS/comments/1rb01wp/i_wasted_14_months_building_products_nobody/",
+    "generated_at": "2026-02-21T23:34:05.167Z",
+    "status": "review",
+    "formats": {
+      "linkedin": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "x_single": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "x_thread": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "short_video": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "carousel": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "poll": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "quote_cards": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "stat_graphic": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "hot_take": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "before_after": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "listicle": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      }
+    },
+    "hook_variants": {
+      "linkedin": [],
+      "x": []
+    },
+    "image_prompt": null,
+    "image_url": null,
+    "blog_keyword": null,
+    "youtube_topic": null,
+    "lead_magnet_topic": null,
+    "blog_post": null,
+    "youtube_script": null,
+    "quality_score": {
+      "score": 0,
+      "max": 0,
+      "earned": 0,
+      "flags": []
+    },
+    "notes": "",
+    "quality_scores": {}
+  },
+  {
+    "id": "fad28293c4fab0e9",
+    "trigger_id": "reddit-1r7wli0",
+    "trigger_title": "Google’s “Auto-Apply” almost cost me a client (and my sanity)",
+    "trigger_source": "reddit",
+    "trigger_category": "DATA_POINT",
+    "trigger_url": "https://reddit.com/r/adwords/comments/1r7wli0/googles_autoapply_almost_cost_me_a_client_and_my/",
+    "generated_at": "2026-02-21T23:34:05.273Z",
+    "status": "review",
+    "formats": {
+      "linkedin": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "x_single": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "x_thread": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "short_video": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "carousel": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "poll": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "quote_cards": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "stat_graphic": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "hot_take": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "before_after": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "listicle": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      }
+    },
+    "hook_variants": {
+      "linkedin": [],
+      "x": []
+    },
+    "image_prompt": null,
+    "image_url": null,
+    "blog_keyword": null,
+    "youtube_topic": null,
+    "lead_magnet_topic": null,
+    "blog_post": null,
+    "youtube_script": null,
+    "quality_score": {
+      "score": 0,
+      "max": 0,
+      "earned": 0,
+      "flags": []
+    },
+    "notes": "",
+    "quality_scores": {}
   }
 ]

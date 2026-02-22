@@ -1,11 +1,11 @@
 {
   "total_scored": 6,
-  "avg_score": 62,
+  "avg_score": 60.8,
   "top_5": [
     {
       "id": "4aa23b276fa5218b",
-      "score": 80,
-      "formats": 20
+      "score": 73,
+      "formats": 8
     },
     {
       "id": "942509da1ea4f8",
@@ -56,9 +56,9 @@
     }
   ],
   "distribution": {
-    "excellent": 1,
-    "good": 1,
+    "excellent": 0,
+    "good": 2,
     "needs_work": 4
   },
-  "generated_at": "2026-02-21T21:11:07.851Z"
+  "generated_at": "2026-02-21T23:33:06.446Z"
 }

@@ -1,5 +1,5 @@
 {
-  "total_signals": 530,
+  "total_signals": 533,
   "by_source": {
     "reddit": 174,
     "google-news": 1,
@@ -7,7 +7,9 @@
     "youtube": 78,
     "hackernews": 42,
     "competitor": 45,
-    "content-ideas": 1
+    "content-ideas": 1,
+    "manual": 1,
+    "deal_insight": 2
   },
   "top_keywords": [
     {
@@ -72,9 +74,9 @@
     }
   ],
   "sentiment": {
-    "positive": 58,
+    "positive": 59,
     "negative": 16,
-    "neutral": 456
+    "neutral": 458
   },
   "dominant_sentiment": "positive",
   "trending_up": [
@@ -84,5 +86,5 @@
     "firms",
     "automation"
   ],
-  "generated_at": "2026-02-21T21:11:08.602Z"
+  "generated_at": "2026-02-21T23:33:21.424Z"
 }

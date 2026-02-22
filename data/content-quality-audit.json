@@ -1,9 +1,9 @@
 {
   "total_audited": 66,
-  "average_score": 50,
-  "grade": "D",
+  "average_score": 48,
+  "grade": "F",
   "issues_found": 66,
-  "critical_issues": 30,
+  "critical_issues": 34,
   "top_issues": [
     {
       "id": "657fd7635c61e6fc",
@@ -152,8 +152,8 @@
   ],
   "common_issues": {
     "Low format diversity": 9,
-    "Content too short": 61,
+    "Content too short": 66,
     "No clear CTA detected": 66
   },
-  "generated_at": "2026-02-21T21:11:05.181Z"
+  "generated_at": "2026-02-21T23:33:06.518Z"
 }

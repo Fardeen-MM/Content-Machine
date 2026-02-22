@@ -28,36 +28,25 @@
     "automation"
   ],
   "format_coverage": {
-    "linkedin": 60,
+    "linkedin": 65,
     "x_single": 58,
     "x_thread": 57,
-    "short_video": 51,
+    "short_video": 56,
     "carousel": 32,
     "hot_take": 38,
     "poll": 32,
     "quote_cards": 36,
-    "stat_graphic": 36,
-    "before_after": 36,
-    "listicle": 31,
+    "stat_graphic": 31,
+    "before_after": 31,
+    "listicle": 36,
     "blog": 3,
     "youtube_script": 3,
     "lead_magnet": 3,
-    "linkedin_post": 6,
-    "linkedin_hooks": 5,
-    "x_hooks": 5,
-    "short_video_script": 5,
-    "linkedin_carousel": 5,
-    "linkedin_poll": 5,
-    "listicle_post": 5,
-    "image_prompt": 5,
-    "blog_keyword": 5,
-    "youtube_topic": 5,
-    "lead_magnet_topic": 5,
-    "linkedin_cta": 5,
-    "x_cta": 5,
-    "x_thread_optimized": 1
+    "x_thread_optimized": 1,
+    "linkedin_post": 1
   },
   "format_gaps": [
+    "linkedin_post",
     "newsletter",
     "case_study"
   ],
@@ -68,7 +57,9 @@
     "youtube": 78,
     "hackernews": 42,
     "competitor": 45,
-    "content-ideas": 1
+    "content-ideas": 1,
+    "manual": 1,
+    "deal_insight": 2
   },
   "total_content": 66,
   "total_published": 1,
@@ -78,5 +69,5 @@
     "Good format diversity",
     "Pipeline is flowing"
   ],
-  "generated_at": "2026-02-21T21:11:09.483Z"
+  "generated_at": "2026-02-21T23:33:14.037Z"
 }

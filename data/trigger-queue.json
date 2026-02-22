@@ -7490,5 +7490,15 @@
     "status": "used",
     "score": 0,
     "requested_formats": null
+  },
+  {
+    "id": "deal-2cf52ea26f417be8",
+    "source": "deal_insight",
+    "title": "Deal lost: Too expensive compared to other agencies they looked at",
+    "raw_content": "Loss reason: Too expensive compared to other agencies they looked at\n\nPractice area: PI",
+    "category": "PAIN_POINT",
+    "url": null,
+    "captured_at": "2026-02-22T01:21:28.043Z",
+    "status": "pending"
   }
 ]

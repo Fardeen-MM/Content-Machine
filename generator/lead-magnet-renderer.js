@@ -293,7 +293,7 @@ function renderScorecard(data) {
 </style>`;
 
   const script = `
-var tiers = ${JSON.stringify(tiers)};
+var tiers = ${JSON.stringify(tiers).replace(/<\//g, '<\\/')};
 function updateScore() {
   var radios = document.querySelectorAll('input[type=radio]:checked');
   document.getElementById('scoreBtn').disabled = radios.length < ${questions.length};
@@ -302,7 +302,7 @@ function showResults() {
   var total = 0;
   document.querySelectorAll('input[type=radio]:checked').forEach(function(r) { total += parseInt(r.value) || 0; });
   var maxScore = ${questions.length} * 3;
-  var pct = Math.round((total / maxScore) * 100);
+  var pct = maxScore > 0 ? Math.round((total / maxScore) * 100) : 0;
   document.getElementById('scoreValue').textContent = pct + '/100';
   var tier = tiers.find(function(t) { return pct >= t.min && pct <= t.max; }) || tiers[tiers.length - 1];
   document.getElementById('scoreLabel').textContent = tier.label;
@@ -400,7 +400,7 @@ function renderChecklist(data) {
 function updateChecklist() {
   var total = document.querySelectorAll('.cl-item input').length;
   var checked = document.querySelectorAll('.cl-item input:checked').length;
-  var pct = Math.round((checked / total) * 100);
+  var pct = total > 0 ? Math.round((checked / total) * 100) : 0;
   document.getElementById('checkProgress').textContent = checked + ' of ' + total + ' completed';
   document.getElementById('checkPct').textContent = pct + '%';
   document.getElementById('checkBar').style.width = pct + '%';
@@ -462,10 +462,10 @@ function rateAudit(idx, rating, btn) {
 function updateAudit() {
   var total = ${criteria.length};
   var rated = Object.keys(auditRatings).length;
-  var pct = Math.round((rated / total) * 100);
+  var pct = total > 0 ? Math.round((rated / total) * 100) : 0;
   document.getElementById('auditBar').style.width = pct + '%';
   document.getElementById('auditProgress').textContent = rated + ' of ' + total + ' rated';
-  if (rated === total) {
+  if (rated === total && total > 0) {
     var pass = Object.values(auditRatings).filter(function(r) { return r === 'pass'; }).length;
     var grade = Math.round((pass / total) * 100);
     document.getElementById('auditScore').textContent = grade + '%';
@@ -642,7 +642,7 @@ function renderToolkit(data) {
   const categories = [...new Set(tools.map(t => t.category))];
 
   let filterBtns = `<button class="tk-filter active" onclick="filterTools('all')">All</button>` +
-    categories.map(c => `<button class="tk-filter" onclick="filterTools('${esc(c)}')">${esc(c)}</button>`).join('');
+    categories.map(c => `<button class="tk-filter" onclick="filterTools('${esc(c).replace(/'/g, '\\&#39;')}')">${esc(c)}</button>`).join('');
 
   let cards = tools.map(t =>
     `<div class="card tk-card" data-cat="${esc(t.category)}">

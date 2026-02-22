@@ -106,7 +106,7 @@ function gatherBriefData() {
       FROM deal_outcomes d LEFT JOIN clients c ON d.client_id = c.id
       WHERE d.recorded_at >= ? ORDER BY d.recorded_at DESC LIMIT 10
     `).all(weekAgo);
-  } catch {}
+  } catch (err) { console.error('[brief] Failed to load recent deals:', err.message); }
 
   // Performance metrics from performance.json (7-day window)
   let perfSummary = null;
@@ -125,7 +125,7 @@ function gatherBriefData() {
         avg_engagement: recentPerf.length > 0 ? Math.round(totalEng / recentPerf.length) : 0
       };
     }
-  } catch {}
+  } catch (err) { console.error('[brief] Failed to load performance data:', err.message); }
 
   // Rejection trends from memory.json (recent)
   let rejectionTrend = null;
@@ -144,7 +144,7 @@ function gatherBriefData() {
         topReasons: Object.entries(reasons).sort((a, b) => b[1] - a[1]).slice(0, 3)
       };
     }
-  } catch {}
+  } catch (err) { console.error('[brief] Failed to load rejection trends:', err.message); }
 
   // New/updated patterns from past 7 days
   let newPatterns = [];
@@ -152,7 +152,7 @@ function gatherBriefData() {
     newPatterns = d.prepare(`
       SELECT * FROM patterns WHERE last_seen >= ? ORDER BY frequency DESC LIMIT 5
     `).all(weekAgo);
-  } catch {}
+  } catch (err) { console.error('[brief] Failed to load patterns:', err.message); }
 
   return {
     date: now.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' }),

@@ -39,7 +39,7 @@ async function sendTelegram(text) {
       res.on('end', () => {
         if (res.statusCode === 200) {
           console.log('[brief] Telegram message sent');
-          resolve(JSON.parse(data));
+          try { resolve(JSON.parse(data)); } catch { resolve({ ok: true }); }
         } else {
           console.error('[brief] Telegram error:', data);
           reject(new Error(`Telegram ${res.statusCode}: ${data}`));

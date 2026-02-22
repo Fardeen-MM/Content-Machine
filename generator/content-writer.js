@@ -340,10 +340,12 @@ function buildSystemPromptWithMemory() {
         const randomCta = ctas.x_single.soft[Math.floor(Math.random() * ctas.x_single.soft.length)];
         prompt += `- X soft CTA example: "${randomCta}"\n`;
       }
-      if (ctas.meeting_hooks) {
+      if (ctas.meeting_hooks && typeof ctas.meeting_hooks === 'object') {
         const hookKeys = Object.keys(ctas.meeting_hooks);
-        const randomKey = hookKeys[Math.floor(Math.random() * hookKeys.length)];
-        prompt += `- Meeting hook: "${ctas.meeting_hooks[randomKey]}"\n`;
+        if (hookKeys.length > 0) {
+          const randomKey = hookKeys[Math.floor(Math.random() * hookKeys.length)];
+          prompt += `- Meeting hook: "${ctas.meeting_hooks[randomKey]}"\n`;
+        }
       }
       prompt += '- IMPORTANT: Weave CTAs naturally. Prefer comment-keyword patterns ("Comment AUDIT and I\'ll send it"). Don\'t end every post with "DM me." Rotate between soft, value-first, and engagement CTAs.\n';
     }

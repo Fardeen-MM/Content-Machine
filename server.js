@@ -19949,6 +19949,7 @@ cron.schedule('0 7 * * *', () => {
     }
   } catch (err) {
     console.error('[cron] Auto-archive failed:', err.message);
+    try { db.logError('cron', 'auto_archive', err.message); } catch {}
   }
 });
 
@@ -20016,11 +20017,12 @@ cron.schedule('0 */4 * * *', async () => {
     }
   } catch (err) {
     console.error('[cron] Queue auto-generation failed:', err.message);
+    try { db.logError('cron', 'queue_auto_gen', err.message); } catch {}
   }
 });
 
-// --- Auto-generate today's series episode every morning at 7:30 AM ---
-cron.schedule('30 7 * * *', async () => {
+// --- Auto-generate today's series episode every morning at 7:45 AM UTC ---
+cron.schedule('45 7 * * *', async () => {
   if (!process.env.ANTHROPIC_API_KEY) return;
   try {
     const series = readJSON('series.json', []);
@@ -20051,7 +20053,7 @@ SERIES: ${s.description}
 TEMPLATE: ${s.template_prompt}
 SOURCE: ${sourceTrigger.title}\n${(sourceTrigger.raw_content || '').slice(0, 1500)}
 
-Return JSON: { "episode_title": "title", ${s.formats.map(f => `"${f}": "content for ${f}"`).join(', ')} }`;
+Return JSON: { "episode_title": "title", ${(s.formats || ['linkedin']).map(f => `"${f}": "content for ${f}"`).join(', ')} }`;
 
       const text = await callClaude({ model: HAIKU, system: systemPrompt, prompt, maxTokens: 3000 });
       const parsed = parseJsonResponse(text);
@@ -20059,7 +20061,7 @@ Return JSON: { "episode_title": "title", ${s.formats.map(f => `"${f}": "content 
 
       const contentId = generateId();
       const formats = {};
-      for (const fmt of s.formats) {
+      for (const fmt of (s.formats || ['linkedin'])) {
         if (parsed[fmt]) formats[fmt] = { content: parsed[fmt], status: 'review', edited: false };
       }
       content.push({
@@ -20086,6 +20088,7 @@ Return JSON: { "episode_title": "title", ${s.formats.map(f => `"${f}": "content 
     writeJSON('trigger-queue.json', triggers);
   } catch (err) {
     console.error('[cron-series] Error:', err.message);
+    try { db.logError('cron', 'series_generation', err.message); } catch {}
   }
 }, { timezone: 'America/New_York' });
 

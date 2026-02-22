@@ -2352,21 +2352,7 @@ function updateContentInState(updated) {
   if (idx !== -1) state.content[idx] = updated;
 }
 
-function copyToClipboard(text) {
-  if (Array.isArray(text)) text = text.join('\n\n---\n\n');
-  navigator.clipboard.writeText(text).then(() => {
-    toast('Copied to clipboard!', 'success');
-  }).catch(() => {
-    // Fallback
-    const ta = document.createElement('textarea');
-    ta.value = text;
-    document.body.appendChild(ta);
-    ta.select();
-    document.execCommand('copy');
-    document.body.removeChild(ta);
-    toast('Copied!', 'success');
-  });
-}
+// copyToClipboard defined below (near publishing queue)
 
 // --- Dark Mode ---
 function toggleDarkMode() {
@@ -7564,6 +7550,7 @@ function renderFormatContent(content, formatKey, fmt) {
 }
 
 function copyToClipboard(text, label) {
+  if (Array.isArray(text)) text = text.join('\n\n---\n\n');
   navigator.clipboard.writeText(text).then(() => {
     toast(`${label} copied to clipboard`, 'success');
   }).catch(() => {

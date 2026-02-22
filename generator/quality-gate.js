@@ -146,12 +146,16 @@ function qualityCheck(content, formatKey, trigger, existingContent) {
       }
     }
     if (existing) {
-      const recent = (Array.isArray(existing) ? existing : [])
-        .filter(c => c.format === formatKey)
-        .slice(-20);
+      const recentTexts = (Array.isArray(existing) ? existing : [])
+        .slice(-20)
+        .map(c => {
+          const fmt = c.formats?.[formatKey];
+          return fmt?.content || null;
+        })
+        .filter(Boolean);
       const words = wordSet(text);
-      for (const item of recent) {
-        const itemWords = wordSet(textOf(item.content || item.body || ''));
+      for (const itemText of recentTexts) {
+        const itemWords = wordSet(textOf(typeof itemText === 'string' ? itemText : JSON.stringify(itemText)));
         if (jaccard(words, itemWords) > 0.5) {
           score -= 15;
           issues.push('High similarity with recent content in same format');

@@ -2,6 +2,7 @@ const { loadEnv, readJSON, writeJSON, now } = require('../lib/utils');
 const { selectTopTriggers } = require('./score-triggers');
 const { generateAllContent, generateBlog, generateYouTube, generateLeadMagnetContent } = require('./content-writer');
 const { generateContentImage } = require('./image-gen');
+const { qualityCheck } = require('./quality-gate');
 const fs = require('fs');
 const path = require('path');
 
@@ -114,7 +115,6 @@ async function runDaily(options = {}) {
       }
 
       // Step 6: Quality gate enforcement
-      const { qualityCheck } = require('./quality-gate');
       const qualityScores = {};
       let autoApproved = 0;
       let autoRejected = 0;

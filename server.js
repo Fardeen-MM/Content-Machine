@@ -612,7 +612,7 @@ async function handleRequest(req, res) {
       const body = await parseBody(req);
       const format = body.format; // specific format, or null for all
 
-      if (format && content[idx].formats[format]) {
+      if (format && content[idx].formats?.[format]) {
         content[idx].formats[format].status = 'approved';
       } else {
         // Approve all formats
@@ -636,7 +636,7 @@ async function handleRequest(req, res) {
       if (!memory.style_notes) memory.style_notes = [];
       if (!memory.rejection_patterns) memory.rejection_patterns = [];
       const item = content[idx];
-      const approvedFormats = Object.entries(item.formats)
+      const approvedFormats = Object.entries(item.formats || {})
         .filter(([, f]) => f.status === 'approved' && f.content);
       for (const [fmtKey, fmt] of approvedFormats) {
         const exists = memory.approved_examples.some(
@@ -688,7 +688,7 @@ async function handleRequest(req, res) {
       const reason = body.reason || 'other'; // too_generic, wrong_tone, missing_numbers, bad_hook, off_brand, other
       const suggestion = body.suggestion || '';
 
-      if (format && content[idx].formats[format]) {
+      if (format && content[idx].formats?.[format]) {
         content[idx].formats[format].status = 'rejected';
         content[idx].formats[format].rejection_reason = reason;
       } else {

@@ -3980,7 +3980,7 @@ function renderDashboardPage() {
       h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)', marginBottom: '8px' } }, 'AUDIENCE'),
       h('div', { style: { display: 'grid', gap: '2px' } },
         ...(state.audienceBuilder.segments || []).slice(0, 4).map(s =>
-          h('div', { style: { padding: '4px 10px', background: s.name === state.audienceBuilder.primary_segment ? '#eff6ff' : 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px' } },
+          h('div', { style: { padding: '4px 10px', background: s.name === state.audienceBuilder.primary_segment ? '#eff6ff' : 'var(--card-bg)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px' } },
             h('div', { style: { fontWeight: '600', color: 'var(--navy)' } }, s.name + (s.name === state.audienceBuilder.primary_segment ? ' *' : '')),
             h('div', { style: { color: 'var(--gray-500)', marginTop: '1px' } }, s.hook_style || s.description || '')
           )
@@ -4360,7 +4360,7 @@ function renderDashboardPage() {
         ...['creation', 'distribution', 'engagement', 'conversion'].map(stage => {
           const data = state.flywheelAnalyzer.stages?.[stage] || {};
           const isBottleneck = state.flywheelAnalyzer.bottleneck?.stage === stage;
-          return h('div', { style: { padding: '6px', background: isBottleneck ? '#fee2e2' : 'white', borderRadius: 'var(--radius-sm)', border: `1px solid ${isBottleneck ? '#fca5a5' : 'var(--gray-200)'}`, fontSize: '10px', textAlign: 'center' } },
+          return h('div', { style: { padding: '6px', background: isBottleneck ? '#fee2e2' : 'var(--card-bg)', borderRadius: 'var(--radius-sm)', border: `1px solid ${isBottleneck ? '#fca5a5' : 'var(--gray-200)'}`, fontSize: '10px', textAlign: 'center' } },
             h('div', { style: { fontWeight: '700', color: isBottleneck ? '#dc2626' : 'var(--navy)', textTransform: 'capitalize' } }, stage),
             h('div', { style: { color: 'var(--gray-500)' } }, stage === 'creation' ? `${data.total || 0} items` : stage === 'distribution' ? `${data.publish_rate || 0}%` : stage === 'engagement' ? `${data.avg_rate || 0}%` : `${data.total || 0}`)
           );
@@ -5393,7 +5393,7 @@ function renderDashboardPage() {
       h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '4px' } },
         ...state.calendarWeek.days.map(day => {
           const platformColors = { linkedin: '#0a66c2', x_single: '#1da1f2', x_thread: '#1da1f2', carousel: '#e4405f', short_video: '#ff0050' };
-          return h('div', { style: { padding: '8px', background: day.count > 0 ? '#f0fdf4' : '#fff', borderRadius: 'var(--radius-sm)', border: `1px solid ${day.count > 0 ? '#bbf7d0' : 'var(--gray-200)'}`, minHeight: '60px' } },
+          return h('div', { style: { padding: '8px', background: day.count > 0 ? '#f0fdf4' : 'var(--card-bg)', borderRadius: 'var(--radius-sm)', border: `1px solid ${day.count > 0 ? '#bbf7d0' : 'var(--gray-200)'}`, minHeight: '60px' } },
             h('div', { style: { fontSize: '10px', fontWeight: '700', color: 'var(--gray-500)', marginBottom: '4px' } }, `${day.day_name} ${day.date.slice(8)}`),
             ...day.posts.map(p => h('div', { style: { fontSize: '9px', padding: '2px 4px', marginBottom: '2px', borderRadius: '3px', background: `${platformColors[p.platform] || '#64748b'}15`, color: platformColors[p.platform] || '#64748b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } }, `${p.time} ${p.platform.replace('_', ' ')}`)),
             day.count === 0 ? h('div', { style: { fontSize: '9px', color: '#dc2626', fontStyle: 'italic' } }, 'empty') : null
@@ -5639,7 +5639,7 @@ function renderDashboardPage() {
       h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)', marginBottom: '8px' } }, `COMPETITOR WATCH (${state.competitorsTracked.length})`),
       h('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap' } },
         ...state.competitorsTracked.map(comp =>
-          h('div', { style: { padding: '8px 14px', background: comp.analysis ? '#f0fdf4' : 'white', borderRadius: 'var(--radius-sm)', border: `1px solid ${comp.analysis ? '#bbf7d0' : 'var(--gray-200)'}`, minWidth: '140px' } },
+          h('div', { style: { padding: '8px 14px', background: comp.analysis ? '#f0fdf4' : 'var(--card-bg)', borderRadius: 'var(--radius-sm)', border: `1px solid ${comp.analysis ? '#bbf7d0' : 'var(--gray-200)'}`, minWidth: '140px' } },
             h('div', { style: { fontSize: '12px', fontWeight: '700', color: 'var(--navy)', marginBottom: '2px' } }, comp.name),
             h('div', { style: { fontSize: '10px', color: 'var(--gray-500)' } }, `${comp.content_samples?.length || 0} samples`),
             comp.analysis ? h('div', { style: { fontSize: '10px', color: '#059669', marginTop: '2px' } }, 'Analyzed') : h('div', { style: { fontSize: '10px', color: '#d97706', marginTop: '2px' } }, 'Needs samples')
@@ -6401,7 +6401,7 @@ function renderFormatContent(content, formatKey, fmt) {
                     } catch (err) { toast('Swap failed: ' + err.message, 'error'); }
                   },
                   onmouseover: (e) => { e.currentTarget.style.borderColor = 'var(--blue)'; e.currentTarget.style.background = 'var(--blue-light, #eff6ff)'; },
-                  onmouseout: (e) => { e.currentTarget.style.borderColor = 'var(--gray-200)'; e.currentTarget.style.background = 'white'; }
+                  onmouseout: (e) => { e.currentTarget.style.borderColor = 'var(--gray-200)'; e.currentTarget.style.background = 'var(--card-bg)'; }
                 },
                   h('span', { style: { fontWeight: '600', color: 'var(--blue)', marginRight: '6px' } }, `${i + 1}.`),
                   hook.length > 120 ? hook.slice(0, 120) + '...' : hook
@@ -8914,7 +8914,7 @@ function renderCalendarPage() {
             return h('div', { style: {
               padding: '10px', borderRadius: '10px', textAlign: 'center',
               border: isToday ? '2px solid var(--blue)' : '1px solid var(--gray-200)',
-              background: isToday ? 'rgba(37,99,235,0.04)' : 'white',
+              background: isToday ? 'rgba(37,99,235,0.04)' : 'var(--card-bg)',
               cursor: 'pointer'
             }, onclick: () => { state.calendarSelectedDay = date; render(); } },
               h('div', { style: { fontSize: '11px', fontWeight: '600', color: isToday ? 'var(--blue)' : 'var(--gray-500)' } }, dayNames[i]),

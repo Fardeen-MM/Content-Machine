@@ -8974,7 +8974,7 @@ function renderCalendarPage() {
       // Empty padding cells
       ...emptyBefore,
       // Day cells
-      ...cal.days.map(day => {
+      ...(cal.days || []).map(day => {
         const filled = filledCount(day);
         const isSelected = state.calendarSelectedDay === day.date;
         return h('div', {
@@ -9104,7 +9104,7 @@ function renderCalendarAssignPicker(date, slotKey, platform) {
 }
 
 function renderCalendarDayDetail(cal) {
-  const day = cal.days.find(d => d.date === state.calendarSelectedDay);
+  const day = cal.days?.find(d => d.date === state.calendarSelectedDay);
   if (!day) return null;
 
   const timeLabels = { morning: 'Morning (8-10am)', midday: 'Midday (12-2pm)', evening: 'Evening (5-7pm)' };

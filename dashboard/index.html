@@ -3834,9 +3834,9 @@ function renderDashboardPage() {
 
     // Generated Lead Magnets (Batch 60)
     state.generatedLeadMagnets?.length ? h('div', { style: { marginBottom: '20px' } },
-      h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)', marginBottom: '8px' } }, `LEAD MAGNETS (${state.generatedLeadMagnets.length})`),
+      h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)', marginBottom: '8px' } }, `LEAD MAGNETS (${(state.generatedLeadMagnets || []).length})`),
       h('div', { style: { display: 'grid', gap: '3px' } },
-        ...state.generatedLeadMagnets.slice(0, 3).map(m =>
+        ...(state.generatedLeadMagnets || []).slice(0, 3).map(m =>
           h('div', { style: { padding: '6px 10px', background: 'var(--card-bg)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)' } },
             h('div', { style: { fontSize: '11px', fontWeight: '600', color: 'var(--navy)' } }, m.title || 'Lead Magnet'),
             h('div', { style: { display: 'flex', gap: '4px', marginTop: '3px' } },
@@ -4081,7 +4081,7 @@ function renderDashboardPage() {
     state.leadMagnetFunnels?.length > 0 ? h('div', { style: { marginBottom: '20px' } },
       h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
         h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)' } }, 'LEAD FUNNELS'),
-        h('div', { style: { fontSize: '12px', fontWeight: '700', padding: '2px 8px', borderRadius: '8px', background: '#ede9fe', color: '#7c3aed' } }, `${state.leadMagnetFunnels.length} built`)
+        h('div', { style: { fontSize: '12px', fontWeight: '700', padding: '2px 8px', borderRadius: '8px', background: '#ede9fe', color: '#7c3aed' } }, `${(state.leadMagnetFunnels || []).length} built`)
       )
     ) : null,
 
@@ -4089,7 +4089,7 @@ function renderDashboardPage() {
     state.outboundSequences?.length > 0 ? h('div', { style: { marginBottom: '20px' } },
       h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
         h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)' } }, 'OUTBOUND'),
-        h('div', { style: { fontSize: '12px', fontWeight: '700', padding: '2px 8px', borderRadius: '8px', background: '#dbeafe', color: '#2563eb' } }, `${state.outboundSequences.length} sequences`)
+        h('div', { style: { fontSize: '12px', fontWeight: '700', padding: '2px 8px', borderRadius: '8px', background: '#dbeafe', color: '#2563eb' } }, `${(state.outboundSequences || []).length} sequences`)
       )
     ) : null,
 
@@ -4259,10 +4259,10 @@ function renderDashboardPage() {
     state.commentToDm?.length ? h('div', { style: { marginBottom: '20px' } },
       h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
         h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)' } }, 'DM PIPELINES'),
-        h('div', { style: { fontSize: '12px', fontWeight: '700', padding: '2px 8px', borderRadius: '8px', background: '#ede9fe', color: '#7c3aed' } }, `${state.commentToDm.length} active`)
+        h('div', { style: { fontSize: '12px', fontWeight: '700', padding: '2px 8px', borderRadius: '8px', background: '#ede9fe', color: '#7c3aed' } }, `${(state.commentToDm || []).length} active`)
       ),
       h('div', { style: { display: 'grid', gap: '4px' } },
-        ...state.commentToDm.slice(0, 5).map(p =>
+        ...(state.commentToDm || []).slice(0, 5).map(p =>
           h('div', { style: { padding: '6px 10px', background: 'var(--card-bg)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px' } },
             h('div', { style: { display: 'flex', justifyContent: 'space-between' } },
               h('span', { style: { fontWeight: '700', color: '#7c3aed' } }, `"${p.trigger_keyword}"`),
@@ -4419,10 +4419,10 @@ function renderDashboardPage() {
     state.newsletterBuilder?.length ? h('div', { style: { marginBottom: '20px' } },
       h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
         h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)' } }, 'NEWSLETTERS'),
-        h('div', { style: { fontSize: '12px', fontWeight: '700', padding: '2px 8px', borderRadius: '8px', background: '#dbeafe', color: '#2563eb' } }, `${state.newsletterBuilder.length} drafts`)
+        h('div', { style: { fontSize: '12px', fontWeight: '700', padding: '2px 8px', borderRadius: '8px', background: '#dbeafe', color: '#2563eb' } }, `${(state.newsletterBuilder || []).length} drafts`)
       ),
       h('div', { style: { display: 'grid', gap: '3px' } },
-        ...state.newsletterBuilder.slice(-3).reverse().map(n =>
+        ...(state.newsletterBuilder || []).slice(-3).reverse().map(n =>
           h('div', { style: { padding: '6px 10px', background: 'var(--card-bg)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px', display: 'flex', justifyContent: 'space-between' } },
             h('span', { style: { fontWeight: '600', color: 'var(--navy)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '200px' } }, n.subject_line || 'Untitled'),
             h('span', { style: { color: 'var(--gray-500)' } }, n.estimated_read_time || '')
@@ -4435,10 +4435,10 @@ function renderDashboardPage() {
     state.dmSequenceBuilder?.length ? h('div', { style: { marginBottom: '20px' } },
       h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
         h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)' } }, 'DM SEQUENCES'),
-        h('div', { style: { fontSize: '12px', fontWeight: '700', padding: '2px 8px', borderRadius: '8px', background: '#ede9fe', color: '#7c3aed' } }, `${state.dmSequenceBuilder.length} active`)
+        h('div', { style: { fontSize: '12px', fontWeight: '700', padding: '2px 8px', borderRadius: '8px', background: '#ede9fe', color: '#7c3aed' } }, `${(state.dmSequenceBuilder || []).length} active`)
       ),
       h('div', { style: { display: 'grid', gap: '3px' } },
-        ...state.dmSequenceBuilder.slice(-3).reverse().map(s =>
+        ...(state.dmSequenceBuilder || []).slice(-3).reverse().map(s =>
           h('div', { style: { padding: '6px 10px', background: 'var(--card-bg)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '10px' } },
             h('div', { style: { fontWeight: '600', color: 'var(--navy)' } }, s.sequence_name || s.trigger || 'Untitled'),
             h('div', { style: { color: 'var(--gray-500)' } }, `${(s.steps || []).length} steps | ${s.platform || 'linkedin'}`)
@@ -5304,13 +5304,13 @@ function renderDashboardPage() {
     // Leads
     state.contentLeads?.length > 0 ? h('div', { style: { marginBottom: '20px' } },
       h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
-        h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)' } }, `CONTENT LEADS (${state.contentLeads.length})`),
+        h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)' } }, `CONTENT LEADS (${(state.contentLeads || []).length})`),
         h('div', { style: { fontSize: '11px', color: 'var(--gray-500)' } },
-          `${state.contentLeads.filter(l => l.status === 'hot').length} hot | ${state.contentLeads.reduce((s, l) => s + (l.score || 0), 0)} total score`
+          `${(state.contentLeads || []).filter(l => l.status === 'hot').length} hot | ${(state.contentLeads || []).reduce((s, l) => s + (l.score || 0), 0)} total score`
         )
       ),
       h('div', { style: { display: 'grid', gap: '6px' } },
-        ...state.contentLeads.sort((a, b) => (b.score || 0) - (a.score || 0)).slice(0, 10).map(lead =>
+        ...(state.contentLeads || []).sort((a, b) => (b.score || 0) - (a.score || 0)).slice(0, 10).map(lead =>
           h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 12px', background: 'var(--card-bg)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)' } },
             h('div', {
               style: {
@@ -5530,15 +5530,15 @@ function renderDashboardPage() {
     // Content Ideas Backlog
     state.contentIdeas?.length > 0 ? h('div', { style: { marginBottom: '20px' } },
       h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
-        h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)' } }, `CONTENT IDEAS (${state.contentIdeas.length})`),
+        h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)' } }, `CONTENT IDEAS (${(state.contentIdeas || []).length})`),
         h('div', { style: { display: 'flex', gap: '6px' } },
           h('span', { style: { fontSize: '11px', color: 'var(--gray-500)' } },
-            `${state.contentIdeas.filter(i => i.priority === 'high').length} high priority`
+            `${(state.contentIdeas || []).filter(i => i.priority === 'high').length} high priority`
           )
         )
       ),
       h('div', { style: { display: 'grid', gap: '6px' } },
-        ...state.contentIdeas.filter(i => i.status !== 'promoted' && i.status !== 'dismissed').slice(0, 8).map(idea => {
+        ...(state.contentIdeas || []).filter(i => i.status !== 'promoted' && i.status !== 'dismissed').slice(0, 8).map(idea => {
           const priorityColors = { high: { bg: '#fef2f2', color: '#dc2626', border: '#fecaca' }, medium: { bg: '#fffbeb', color: '#d97706', border: '#fde68a' }, low: { bg: '#f1f5f9', color: '#64748b', border: '#e2e8f0' } };
           const pc = priorityColors[idea.priority] || priorityColors.medium;
           const categoryIcons = { contrarian: 'C', data_point: 'D', question: '?', framework: 'F', case_study: 'CS', how_to: 'H', trend: 'T', myth_bust: 'M', comparison: '~', behind_scenes: 'B' };
@@ -5639,13 +5639,13 @@ function renderDashboardPage() {
     // DM Pipelines
     (state.dmPipelines || []).filter(p => p.status === 'active').length > 0 ? h('div', { style: { marginBottom: '20px' } },
       h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
-        h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)' } }, `DM PIPELINES (${state.dmPipelines.filter(p => p.status === 'active').length} active)`),
+        h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)' } }, `DM PIPELINES (${(state.dmPipelines || []).filter(p => p.status === 'active').length} active)`),
         h('div', { style: { fontSize: '11px', color: 'var(--gray-500)' } },
-          `${state.dmPipelines.reduce((s, p) => s + (p.stats?.sent || 0), 0)} sent | ${state.dmPipelines.reduce((s, p) => s + (p.stats?.replied || 0), 0)} replied | ${state.dmPipelines.reduce((s, p) => s + (p.stats?.booked || 0), 0)} booked`
+          `${(state.dmPipelines || []).reduce((s, p) => s + (p.stats?.sent || 0), 0)} sent | ${(state.dmPipelines || []).reduce((s, p) => s + (p.stats?.replied || 0), 0)} replied | ${(state.dmPipelines || []).reduce((s, p) => s + (p.stats?.booked || 0), 0)} booked`
         )
       ),
       h('div', { style: { display: 'grid', gap: '6px' } },
-        ...state.dmPipelines.filter(p => p.status === 'active').slice(0, 5).map(pipeline =>
+        ...(state.dmPipelines || []).filter(p => p.status === 'active').slice(0, 5).map(pipeline =>
           h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 12px', background: 'var(--card-bg)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', borderLeft: '4px solid #6366f1' } },
             h('div', { style: { flex: '1' } },
               h('div', { style: { fontSize: '12px', fontWeight: '600', color: 'var(--navy)' } }, pipeline.sequence_name || pipeline.title?.slice(0, 40)),
@@ -5662,9 +5662,9 @@ function renderDashboardPage() {
     ) : null,
     // Competitors
     state.competitorsTracked?.length > 0 ? h('div', { style: { marginBottom: '20px' } },
-      h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)', marginBottom: '8px' } }, `COMPETITOR WATCH (${state.competitorsTracked.length})`),
+      h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)', marginBottom: '8px' } }, `COMPETITOR WATCH (${(state.competitorsTracked || []).length})`),
       h('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap' } },
-        ...state.competitorsTracked.map(comp =>
+        ...(state.competitorsTracked || []).map(comp =>
           h('div', { style: { padding: '8px 14px', background: comp.analysis ? '#f0fdf4' : 'var(--card-bg)', borderRadius: 'var(--radius-sm)', border: `1px solid ${comp.analysis ? '#bbf7d0' : 'var(--gray-200)'}`, minWidth: '140px' } },
             h('div', { style: { fontSize: '12px', fontWeight: '700', color: 'var(--navy)', marginBottom: '2px' } }, comp.name),
             h('div', { style: { fontSize: '10px', color: 'var(--gray-500)' } }, `${comp.content_samples?.length || 0} samples`),
@@ -5676,11 +5676,11 @@ function renderDashboardPage() {
     // Drip Campaigns
     state.dripCampaigns?.length > 0 ? h('div', { style: { marginBottom: '20px' } },
       h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
-        h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)' } }, `DRIP CAMPAIGNS (${state.dripCampaigns.length})`),
-        h('div', { style: { fontSize: '11px', color: 'var(--gray-500)' } }, `${state.dripCampaigns.filter(d => d.status === 'active').length} active`)
+        h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)' } }, `DRIP CAMPAIGNS (${(state.dripCampaigns || []).length})`),
+        h('div', { style: { fontSize: '11px', color: 'var(--gray-500)' } }, `${(state.dripCampaigns || []).filter(d => d.status === 'active').length} active`)
       ),
       h('div', { style: { display: 'grid', gap: '6px' } },
-        ...state.dripCampaigns.slice(0, 5).map(drip =>
+        ...(state.dripCampaigns || []).slice(0, 5).map(drip =>
           h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 14px', background: 'var(--card-bg)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', borderLeft: '4px solid #059669' } },
             h('div', { style: { flex: '1' } },
               h('div', { style: { fontSize: '12px', fontWeight: '600', color: 'var(--navy)' } }, drip.campaign_name || drip.topic),

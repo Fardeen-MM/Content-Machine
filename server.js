@@ -13765,11 +13765,6 @@ Return COMPACT JSON:
       return json(res, readJSON('trend-hijacker.json', null));
     }
 
-    // GET /api/lead-magnet-funnels
-    if (method === 'GET' && pathname === '/api/lead-magnet-funnels') {
-      return json(res, readJSON('lead-magnet-funnels.json', []));
-    }
-
     // POST /api/outbound-sequence — Generate cold outbound email/DM sequences
     if (method === 'POST' && pathname === '/api/outbound-sequence') {
       const body = await parseBody(req) || {};

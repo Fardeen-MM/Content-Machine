@@ -123,7 +123,10 @@ function parseRawBody(req) {
 function verifyHmac(rawBody, signature, secret) {
   if (!signature || !secret) return false;
   const computed = crypto.createHmac('sha256', secret).update(rawBody).digest('hex');
-  return crypto.timingSafeEqual(Buffer.from(computed), Buffer.from(signature));
+  const computedBuf = Buffer.from(computed);
+  const signatureBuf = Buffer.from(signature);
+  if (computedBuf.length !== signatureBuf.length) return false;
+  return crypto.timingSafeEqual(computedBuf, signatureBuf);
 }
 
 function verifySecret(provided, expected) {
@@ -811,12 +814,6 @@ async function handleRequest(req, res) {
         return (b.quality_score || 0) - (a.quality_score || 0);
       });
       return json(res, { items: queue, total: queue.length });
-    }
-
-    // GET /api/series — content series templates
-    if (pathname === '/api/series' && method === 'GET') {
-      const series = readJSON('series.json');
-      return json(res, series);
     }
 
     // GET /api/calendar — monthly or weekly calendar
@@ -2256,18 +2253,6 @@ async function handleRequest(req, res) {
       } catch (err) {
         return json(res, { error: err.message }, 500);
       }
-    }
-
-    // GET /api/series — get content series config
-    if (pathname === '/api/series' && method === 'GET') {
-      const series = readJSON('series.json');
-      return json(res, series);
-    }
-
-    // GET /api/hooks — get hook library
-    if (pathname === '/api/hooks' && method === 'GET') {
-      const hooks = readJSON('hooks.json');
-      return json(res, hooks);
     }
 
     // POST /api/content/:id/remix — rewrite a format with a directive OR create new content piece with a mode
@@ -5355,12 +5340,6 @@ Make posts specific, data-driven, and not braggy. Show results naturally. Each 8
       }
     }
 
-    // GET /api/social-proof — list generated social proof posts
-    if (pathname === '/api/social-proof' && method === 'GET') {
-      const proof = readJSON('social-proof.json', []);
-      return json(res, proof);
-    }
-
     // --- Content Intelligence ---
 
     // GET /api/content-intelligence — AI-generated weekly content intelligence report
@@ -6206,54 +6185,6 @@ Return JSON:
       }));
 
       return json(res, recyclable);
-    }
-
-    // POST /api/content/:id/recycle — AI rewrites content with fresh angle
-    if (pathname.match(/^\/api\/content\/[^/]+\/recycle$/) && method === 'POST') {
-      const id = pathname.split('/')[3];
-      const body = await parseBody(req);
-      const platform = body.platform || 'linkedin';
-
-      const content = readJSON('content.json');
-      const item = content.find(c => c.id === id);
-      if (!item) return json(res, { error: 'content not found' }, 404);
-
-      const sourceContent = typeof item.formats?.[platform]?.content === 'string'
-        ? item.formats[platform].content : '';
-      if (!sourceContent) return json(res, { error: 'no content for this platform' }, 400);
-
-      const { callClaude, HAIKU } = require('./lib/claude');
-      const prompt = `Recycle this content with a fresh angle. Keep the core message but change:
-1. The hook (use a completely different opening style)
-2. The framing (different perspective, e.g., from data-driven to story-driven)
-3. Updated references (current year, fresh language)
-
-ORIGINAL:
-${sourceContent.slice(0, 2000)}
-
-Previous recycle count: ${item.recycle_count || 0}
-${item.recycled_versions ? 'Avoid similar angles to previous versions.' : ''}
-
-Return ONLY the refreshed content. Make it feel completely new while preserving the core insight.`;
-
-      const recycled = await callClaude({ model: HAIKU, system: 'Content recycling expert. Make old content feel brand new with different hooks and angles.', prompt, maxTokens: 1500 });
-
-      if (recycled) {
-        const allContent = readJSON('content.json');
-        const idx = allContent.findIndex(c => c.id === id);
-        if (idx !== -1) {
-          if (!allContent[idx].recycled_versions) allContent[idx].recycled_versions = [];
-          allContent[idx].recycled_versions.push({
-            platform,
-            content: recycled.trim(),
-            recycled_at: now()
-          });
-          allContent[idx].recycle_count = (allContent[idx].recycle_count || 0) + 1;
-          allContent[idx].recycled_at = now();
-          writeJSON('content.json', allContent);
-        }
-      }
-      return json(res, { ok: true, recycled: recycled?.trim(), platform });
     }
 
     // POST /api/content/recycle-evergreen — batch find and recycle top evergreen content
@@ -13479,11 +13410,6 @@ Return COMPACT JSON. Keep values SHORT (under 20 words each). Exactly 5 target a
       return json(res, { ok: true, ...velocity });
     }
 
-    // GET /api/content-velocity
-    if (method === 'GET' && pathname === '/api/content-velocity') {
-      return json(res, readJSON('content-velocity.json', null));
-    }
-
     // POST /api/engagement-predictor — Predict engagement before publishing using AI
     if (method === 'POST' && pathname.match(/^\/api\/content\/([^/]+)\/engagement-predictor$/)) {
       const contentId = pathname.match(/^\/api\/content\/([^/]+)\/engagement-predictor$/)[1];
@@ -13629,33 +13555,6 @@ Return JSON:
     // GET /api/audience-builder
     if (method === 'GET' && pathname === '/api/audience-builder') {
       return json(res, readJSON('audience-segments-ai.json', null));
-    }
-
-    // POST /api/profile-optimizer — Optimize LinkedIn/social profile for conversions
-    if (method === 'POST' && pathname === '/api/profile-optimizer') {
-      const body = await parseBody(req);
-      const platform = body.platform || 'linkedin';
-      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
-      const result = await callClaude({
-        model: HAIKU,
-        system: `You are a ${platform} profile optimization expert. Create a high-converting profile for a legal marketing agency owner. Return JSON only.`,
-        prompt: `Optimize a ${platform} profile for the founder of Mortar Metrics (legal marketing agency helping law firms get more signed cases).
-
-Return COMPACT JSON:
-{
-  "headline": "optimized headline (under 120 chars)",
-  "tagline": "one-line value prop",
-  "bio": "optimized bio (under 200 words)",
-  "featured_content": ["what to pin/feature"],
-  "banner_text": "what the cover image should say",
-  "cta_link": "what the website/link should point to",
-  "keywords": ["SEO keywords to include"],
-  "mistakes_to_fix": ["common profile mistakes"]
-}`,
-        maxTokens: 2000
-      });
-      const parsed = parseJsonResponse(result);
-      return json(res, { ok: true, platform, ...parsed });
     }
 
     // POST /api/weekly-content-report — Generate a weekly performance and action report
@@ -13866,36 +13765,6 @@ Return COMPACT JSON:
       return json(res, readJSON('trend-hijacker.json', null));
     }
 
-    // POST /api/lead-magnet-funnel — Design a complete lead magnet funnel with landing page copy
-    if (method === 'POST' && pathname === '/api/lead-magnet-funnel') {
-      const body = await parseBody(req);
-      const topic = body.topic || 'law firm marketing ROI';
-      const { callClaude, parseJsonResponse, SONNET } = require('./lib/claude');
-      const result = await callClaude({
-        model: SONNET,
-        system: 'You are a conversion funnel architect. Design complete lead magnet funnels that convert cold traffic into booked calls. Return JSON only.',
-        prompt: `Design a lead magnet funnel for topic: "${topic.slice(0, 200)}"
-
-Return JSON:
-{
-  "lead_magnet": { "title": "name", "type": "checklist|calculator|audit|template", "hook": "why someone downloads this" },
-  "landing_page": { "headline": "H1", "subhead": "supporting text", "bullet_points": ["b1", "b2", "b3"], "cta_text": "button text" },
-  "thank_you_page": { "next_step": "what happens after download", "upsell": "immediate next offer" },
-  "email_sequence": [
-    { "day": 0, "subject": "subject line", "purpose": "what this email does" }
-  ],
-  "expected_conversion": { "landing_page": "X%", "email_open": "X%", "call_booked": "X%" }
-}`,
-        maxTokens: 3000
-      });
-      const parsed = parseJsonResponse(result);
-      const funnel = { topic, ...(parsed || {}), generated_at: now() };
-      const existing = readJSON('lead-magnet-funnels.json', []);
-      existing.push(funnel);
-      writeJSON('lead-magnet-funnels.json', existing);
-      return json(res, { ok: true, ...funnel });
-    }
-
     // GET /api/lead-magnet-funnels
     if (method === 'GET' && pathname === '/api/lead-magnet-funnels') {
       return json(res, readJSON('lead-magnet-funnels.json', []));
@@ -13982,43 +13851,6 @@ Return COMPACT JSON:
     // GET /api/icp-refiner
     if (method === 'GET' && pathname === '/api/icp-refiner') {
       return json(res, readJSON('icp-refined.json', null));
-    }
-
-    // POST /api/content-atomizer — Break long-form content into micro-content pieces
-    if (method === 'POST' && pathname.match(/^\/api\/content\/([^/]+)\/atomize$/)) {
-      const contentId = pathname.match(/^\/api\/content\/([^/]+)\/atomize$/)[1];
-      const content = readJSON('content.json', []);
-      const item = content.find(c => c.id === contentId);
-      if (!item) return json(res, { error: 'Content not found' }, 404);
-
-      const blogText = typeof item.formats?.blog === 'string' ? item.formats.blog : item.formats?.blog?.content || '';
-      const liText = typeof item.formats?.linkedin_post === 'string' ? item.formats.linkedin_post : item.formats?.linkedin_post?.content || '';
-      const sourceText = blogText || liText || '';
-      if (!sourceText || sourceText.length < 200) return json(res, { error: 'Need long-form content (blog or linkedin) with 200+ chars' }, 400);
-
-      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
-      const result = await callClaude({
-        model: HAIKU,
-        system: 'You are a content atomization expert. Break one piece of long-form content into multiple micro-content pieces for different platforms. Return JSON only.',
-        prompt: `Atomize this content into 6 micro-content pieces.
-
-Source: "${sourceText.slice(0, 2000)}"
-
-Return COMPACT JSON:
-{
-  "atoms": [
-    { "type": "tweet", "content": "tweet text (under 280 chars)", "platform": "x" },
-    { "type": "linkedin_hook", "content": "standalone hook post", "platform": "linkedin" },
-    { "type": "quote_card", "content": "text for quote graphic", "platform": "instagram" },
-    { "type": "carousel_slide", "content": "key insight for carousel", "platform": "linkedin" },
-    { "type": "email_subject", "content": "subject line + preview text", "platform": "email" },
-    { "type": "video_hook", "content": "first 3 seconds of short video script", "platform": "tiktok" }
-  ]
-}`,
-        maxTokens: 2000
-      });
-      const parsed = parseJsonResponse(result);
-      return json(res, { ok: true, content_id: contentId, ...(parsed || {}) });
     }
 
     // POST /api/micro-content — Generate standalone micro-content pieces (quotes, stats, tips)
@@ -14286,42 +14118,6 @@ Return COMPACT JSON:
       return json(res, readJSON('social-listening.json', null));
     }
 
-    // POST /api/authority-builder — Step-by-step authority building plan
-    if (method === 'POST' && pathname === '/api/authority-builder') {
-      const published = readJSON('published.json', []);
-      const authorityScore = readJSON('authority-score.json', null);
-
-      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
-      const result = await callClaude({
-        model: HAIKU,
-        system: 'You are a personal brand authority strategist. Create a 30-day plan to establish thought leadership in legal marketing. Return JSON only.',
-        prompt: `Build a 30-day authority building plan.
-
-Current: ${published.length} published pieces
-${authorityScore ? `Authority score: ${authorityScore.total_score}/100` : 'No authority score yet'}
-
-Return COMPACT JSON:
-{
-  "current_stage": "unknown|emerging|growing|established|authority",
-  "thirty_day_plan": [
-    { "week": 1, "theme": "theme", "actions": ["a1", "a2", "a3"], "milestone": "what success looks like" }
-  ],
-  "daily_habits": ["habit 1", "habit 2", "habit 3"],
-  "quick_authority_wins": ["win 1", "win 2", "win 3"]
-}`,
-        maxTokens: 2000
-      });
-      const parsed = parseJsonResponse(result);
-      const plan = { ...(parsed || {}), generated_at: now() };
-      writeJSON('authority-builder.json', plan);
-      return json(res, { ok: true, ...plan });
-    }
-
-    // GET /api/authority-builder
-    if (method === 'GET' && pathname === '/api/authority-builder') {
-      return json(res, readJSON('authority-builder.json', null));
-    }
-
     // POST /api/content-compliance — Check content for legal/ethical compliance issues
     if (method === 'POST' && pathname.match(/^\/api\/content\/([^/]+)\/compliance-check$/)) {
       const contentId = pathname.match(/^\/api\/content\/([^/]+)\/compliance-check$/)[1];
@@ -14353,38 +14149,6 @@ Return COMPACT JSON:
       });
       const parsed = parseJsonResponse(result);
       return json(res, { ok: true, content_id: contentId, format: formatKey, ...(parsed || {}) });
-    }
-
-    // POST /api/repurpose-chain — Generate a full repurpose chain from one piece of content
-    if (method === 'POST' && pathname.match(/^\/api\/content\/([^/]+)\/repurpose-chain$/)) {
-      const contentId = pathname.match(/^\/api\/content\/([^/]+)\/repurpose-chain$/)[1];
-      const content = readJSON('content.json', []);
-      const item = content.find(c => c.id === contentId);
-      if (!item) return json(res, { error: 'Content not found' }, 404);
-
-      const text = typeof item.formats?.linkedin_post === 'string' ? item.formats.linkedin_post : item.formats?.linkedin_post?.content || item.formats?.blog?.content || '';
-      if (!text || text.length < 100) return json(res, { error: 'Need content with 100+ chars' }, 400);
-
-      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
-      const result = await callClaude({
-        model: HAIKU,
-        system: 'You are a content repurposing expert. Turn one piece into a full chain of 8 content pieces across platforms. Return JSON only.',
-        prompt: `Create a repurpose chain from this content:
-
-"${text.slice(0, 1500)}"
-
-Return COMPACT JSON:
-{
-  "chain": [
-    { "step": 1, "format": "format name", "platform": "platform", "adaptation": "how to adapt (under 30 words)" }
-  ],
-  "total_reach_multiplier": "Nx",
-  "production_time": "total time for all 8"
-}`,
-        maxTokens: 2000
-      });
-      const parsed = parseJsonResponse(result);
-      return json(res, { ok: true, content_id: contentId, ...(parsed || {}) });
     }
 
     // POST /api/warmup-planner — Build a social media warmup plan for cold accounts
@@ -15366,77 +15130,6 @@ Return COMPACT JSON:
         };
       }
       return json(res, { total_entries: tracker.length, platforms: summary, history: tracker.slice(-30) });
-    }
-
-    // POST /api/batch-generate — Generate a week of content in one batch
-    if (method === 'POST' && pathname === '/api/batch-generate') {
-      const triggers = readJSON('trigger-queue.json', []);
-      const pending = triggers.filter(t => t.status === 'pending').sort((a, b) => (b.score || 0) - (a.score || 0));
-
-      if (pending.length === 0) return json(res, { error: 'No pending triggers to generate from' }, 400);
-
-      const body = await parseBody(req);
-      const count = Math.min(Number(body.count) || 7, 15);
-      const selected = pending.slice(0, count);
-
-      const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
-      const { BRAND_SYSTEM_PROMPT } = require('./generator/content-writer');
-      const results = [];
-      let successes = 0;
-      let failures = 0;
-
-      for (const trigger of selected) {
-        try {
-          const result = await callClaude({
-            model: HAIKU,
-            system: BRAND_SYSTEM_PROMPT + '\nReturn JSON only.',
-            prompt: `Generate 3 social media posts for this topic. Return COMPACT JSON:
-{
-  "linkedin": "full linkedin post (1300-2000 chars, professional, line breaks)",
-  "x_single": "tweet under 280 chars",
-  "x_thread": ["tweet 1", "tweet 2", "tweet 3"]
-}
-
-Topic: ${trigger.title}
-Source: ${trigger.source}
-${trigger.summary ? `Summary: ${trigger.summary.slice(0, 300)}` : ''}
-
-Make each feel native to its platform. LinkedIn should have line breaks and storytelling. Tweet should be punchy. Thread should build an argument.`,
-            maxTokens: 2500
-          });
-          const parsed = parseJsonResponse(result);
-          if (parsed) {
-            const content = readJSON('content.json', []);
-            const newItem = {
-              id: generateId(),
-              trigger_id: trigger.id,
-              trigger_title: trigger.title,
-              status: 'review',
-              formats: {},
-              created_at: now(),
-              batch_generated: true
-            };
-            if (parsed.linkedin) newItem.formats.linkedin = { content: parsed.linkedin, status: 'review' };
-            if (parsed.x_single) newItem.formats.x_single = { content: parsed.x_single, status: 'review' };
-            if (parsed.x_thread) newItem.formats.x_thread = { content: Array.isArray(parsed.x_thread) ? parsed.x_thread.join('\n\n---\n\n') : parsed.x_thread, status: 'review' };
-            content.push(newItem);
-            writeJSON('content.json', content);
-
-            // Mark trigger as used
-            const triggerIdx = triggers.findIndex(t => t.id === trigger.id);
-            if (triggerIdx >= 0) { triggers[triggerIdx].status = 'used'; }
-
-            results.push({ trigger_id: trigger.id, title: trigger.title, content_id: newItem.id, formats: Object.keys(newItem.formats).length });
-            successes++;
-          } else { failures++; }
-        } catch (err) {
-          failures++;
-          results.push({ trigger_id: trigger.id, title: trigger.title, error: err.message });
-        }
-      }
-
-      writeJSON('trigger-queue.json', triggers);
-      return json(res, { ok: true, requested: count, successes, failures, results, generated_at: now() });
     }
 
     // POST /api/performance-benchmarks — Compare metrics against industry benchmarks
@@ -20067,6 +19760,7 @@ Content: ${firstContent.substring(0, 2000)}`;
 
 process.on('uncaughtException', (err) => {
   console.error('[FATAL] Uncaught exception:', err);
+  process.exit(1);
 });
 
 process.on('unhandledRejection', (err) => {

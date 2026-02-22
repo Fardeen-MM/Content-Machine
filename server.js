@@ -3095,6 +3095,13 @@ ${context}`;
       return json(res, { ok: true, deal });
     }
 
+    // DELETE /api/deals/:id — delete a deal outcome
+    if (dealUpdateMatch && method === 'DELETE') {
+      const deal = db.deleteDealOutcome(parseInt(dealUpdateMatch[1]));
+      if (!deal) return json(res, { error: 'Deal not found' }, 404);
+      return json(res, { ok: true });
+    }
+
     // --- Insights API ---
 
     // GET /api/insights — get learned insights

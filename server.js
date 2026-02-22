@@ -107,6 +107,9 @@ function apiError(res, err) {
   if (msg.includes('ANTHROPIC_API_KEY not set')) {
     return json(res, { error: 'Claude API key not configured. Set ANTHROPIC_API_KEY environment variable.' }, 503);
   }
+  if (msg.includes('Invalid JSON') || msg.includes('Body too large')) {
+    return json(res, { error: msg }, 400);
+  }
   return json(res, { error: msg || 'Internal server error' }, 500);
 }
 
@@ -819,7 +822,7 @@ async function handleRequest(req, res) {
             trigger_source: item.trigger_source,
             category: item.trigger_category,
             content: typeof fmt.content === 'string' ? fmt.content : JSON.stringify(fmt.content),
-            quality_score: item.quality_score || 0,
+            quality_score: item.quality_score?.score || item.quality_scores?.[fmtKey]?.score || 0,
             generated_at: item.generated_at,
             scheduled_for: fmt.scheduled_for || null,
             hook_variants: item.hook_variants?.[fmtKey === 'linkedin' ? 'linkedin' : 'x'] || []
@@ -8177,12 +8180,13 @@ Return JSON: {
           if (!data.content || data.status !== 'draft') continue;
 
           // Auto quality check
-          if (rules.auto_quality_check && !data.quality_score) {
+          const fmtQuality = item.quality_scores?.[fmt]?.score || 0;
+          if (rules.auto_quality_check && !fmtQuality) {
             checked++;
           }
 
           // Auto approve if quality score meets threshold
-          if (data.quality_score >= rules.auto_approve_threshold && data.status === 'draft') {
+          if (fmtQuality >= rules.auto_approve_threshold && data.status === 'draft') {
             data.status = 'approved';
             data.auto_approved = true;
             data.approved_at = now();
@@ -14785,7 +14789,7 @@ Keep LinkedIn 1300-2000 chars. Tweet under 280. Thread 3-5 tweets. Caption under
             const formatCount = Object.keys(c.formats || {}).length;
             const hasLong = ['blog', 'newsletter', 'case_study', 'youtube_script'].some(f => c.formats?.[f]?.content);
             const hasLinkedin = !!(c.formats?.linkedin_post?.content || c.formats?.linkedin?.content);
-            const score = Math.min(100, (formatCount * 8) + (hasLong ? 20 : 0) + (hasLinkedin ? 15 : 0) + (c.quality_score || 50));
+            const score = Math.min(100, (formatCount * 8) + (hasLong ? 20 : 0) + (hasLinkedin ? 15 : 0) + (c.quality_score?.score || 50));
             return { content_id: c.id, title: c.trigger_title, score: Math.round(score / 2), predicted: true, formats: formatCount };
           })
           .sort((a, b) => b.score - a.score);

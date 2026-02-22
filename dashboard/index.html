@@ -1799,6 +1799,7 @@ const state = {
   audiencePersonaInsights: null,
   contentCalendarOptimizer: null,
   contentImpactScore: null,
+  showDashWidgets: false,
   // Collapsible sections state (action categories default collapsed except first)
   collapsedSections: (() => { try { const v = localStorage.getItem('collapsedSections'); return v ? JSON.parse(v) : null; } catch { return null; } })() || {
     'cm-analyze': true, 'cm-strategy': true, 'cm-engage': true, 'cm-compete': true,
@@ -7593,7 +7594,7 @@ function getPublishingQueue() {
         format: fmtKey,
         trigger_title: item.trigger_title || 'Untitled',
         content: typeof fmt.content === 'string' ? fmt.content : JSON.stringify(fmt.content),
-        quality_score: item.quality_score || 0,
+        quality_score: item.quality_score?.score || item.quality_scores?.[fmtKey]?.score || 0,
         generated_at: item.generated_at,
         scheduled_for: fmt.scheduled_for || null
       });

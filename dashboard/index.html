@@ -2024,7 +2024,7 @@ async function startBatchGeneration(opts = {}) {
             }
             await loadData();
           }
-        } catch { /* ignore poll errors */ }
+        } catch (err) { console.warn('Batch poll error:', err.message); }
       }, 3000);
     }
   } catch (err) {
@@ -2118,7 +2118,7 @@ async function saveUrl() {
     toast(state.urlQueueOnly ? 'Added to queue!' : 'URL saved! Content generating...', 'success');
     await loadData();
   } catch (err) {
-    toast('Failed to save URL', 'error');
+    toast('Failed to save URL: ' + err.message, 'error');
   }
   state.savingUrl = false;
   render();
@@ -3233,7 +3233,7 @@ function renderDashboardPage() {
                 state.clientDetail = detail;
                 if (detail.latest_brief) { state.clientBrief = { ...detail.latest_brief, client_id: detail.id }; } else { state.clientBrief = null; }
                 state.page = 'clients'; render();
-              } catch (err) { toast('Failed', 'error'); }
+              } catch (err) { toast('Failed: ' + err.message, 'error'); }
             }
           },
             h('div', { style: { fontWeight: '600', fontSize: '14px' } }, c.client_name || 'Unknown'),
@@ -8496,7 +8496,7 @@ function renderTriggersPage() {
               const res = await api('/api/scrape-now', { method: 'POST' });
               toast(`Scraped ${res.new_triggers} new triggers`, 'success');
               await loadData();
-            } catch (err) { toast('Scrape failed', 'error'); }
+            } catch (err) { toast('Scrape failed: ' + err.message, 'error'); }
             state._scraping = false; render();
           }
         }, state._scraping ? 'Scraping...' : 'Refresh'),
@@ -10789,7 +10789,7 @@ function renderClientsPage() {
               state.clientDetail = null;
               state.page = 'meetings';
               render();
-            } catch (err) { toast('Failed to load meeting', 'error'); }
+            } catch (err) { toast('Failed to load meeting: ' + err.message, 'error'); }
           } },
             h('span', { style: { fontSize: '13px', flex: 1 } }, m.title || 'Untitled'),
             h('span', { style: {
@@ -10902,7 +10902,7 @@ function renderClientsPage() {
                     state.clientBrief = null;
                   }
                   render();
-                } catch (err) { toast('Failed to load client', 'error'); }
+                } catch (err) { toast('Failed to load client: ' + err.message, 'error'); }
               }
             },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: '12px' } },
@@ -11030,7 +11030,7 @@ function renderActionsPage() {
                         state.meetingDetail = { ...meeting, _actions: mActions, _atoms: atoms };
                         state.page = 'meetings';
                         render();
-                      } catch (err) { toast('Failed to load meeting', 'error'); }
+                      } catch (err) { toast('Failed to load meeting: ' + err.message, 'error'); }
                     }
                   }, `Meeting #${a.meeting_id}`) : null,
                   a.due_date ? h('span', {}, `Due: ${a.due_date}`) : null,
@@ -11107,7 +11107,7 @@ function renderPipelinePage() {
                   }
                   state.page = 'clients';
                   render();
-                } catch (err) { toast('Failed to load client', 'error'); }
+                } catch (err) { toast('Failed to load client: ' + err.message, 'error'); }
               }
             },
               h('span', { style: {
@@ -11373,7 +11373,7 @@ function renderInsightsPage() {
                     try {
                       await api(`/api/insights/${i.id}`, { method: 'PUT', body: { status: 'confirmed' } });
                       await loadData();
-                    } catch (err) { toast('Failed', 'error'); }
+                    } catch (err) { toast('Confirm failed: ' + err.message, 'error'); }
                   }
                 }, 'Confirm'),
                 h('button', {
@@ -11383,7 +11383,7 @@ function renderInsightsPage() {
                     try {
                       await api(`/api/insights/${i.id}`, { method: 'PUT', body: { status: 'rejected' } });
                       await loadData();
-                    } catch (err) { toast('Failed', 'error'); }
+                    } catch (err) { toast('Reject failed: ' + err.message, 'error'); }
                   }
                 }, 'Reject')
               ) : null

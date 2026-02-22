@@ -20059,7 +20059,7 @@ Content: ${firstContent.substring(0, 2000)}`;
     if (msg.includes('ANTHROPIC_API_KEY not set')) {
       return json(res, { error: 'Claude API key not configured. Set ANTHROPIC_API_KEY environment variable.' }, 503);
     }
-    json(res, { error: 'Internal server error' }, 500);
+    return json(res, { error: 'Internal server error' }, 500);
   }
 }
 

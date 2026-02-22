@@ -19768,7 +19768,7 @@ Content: ${firstContent.substring(0, 2000)}`;
     // --- Static file serving ---
 
     // Serve dashboard
-    if (pathname === '/' || pathname === '/index.html') {
+    if (pathname === '/' || pathname === '/index.html' || pathname === '/dashboard' || pathname === '/dashboard/') {
       return serveStatic(res, path.join(__dirname, 'dashboard', 'index.html'), 'text/html');
     }
 

@@ -3033,10 +3033,10 @@ function renderContentActions() {
                   } else if (prog.status === 'error') {
                     clearInterval(poll);
                     state._generatingWeek = false;
-                    toast('Generation failed', 'error');
+                    toast('Generation failed: ' + (prog.error || 'unknown error'), 'error');
                     render();
                   }
-                } catch (e) {}
+                } catch (e) { console.warn('Week gen poll error:', e.message); }
               }, 5000);
             }
           } catch (err) {
@@ -9485,6 +9485,7 @@ function renderMemoryPage() {
                   h('span', { style: { fontSize: '10px', color: 'var(--gray-400)', whiteSpace: 'nowrap' } }, timeAgo(note.added_at)),
                   h('button', {
                     className: 'btn btn-ghost btn-sm btn-icon',
+                    title: 'Remove note',
                     style: { padding: '4px', color: 'var(--red)' },
                     onclick: async () => {
                       try {
@@ -9571,6 +9572,7 @@ function renderMemoryPage() {
                     ),
                     h('button', {
                       className: 'btn btn-ghost btn-sm btn-icon',
+                      title: 'Remove example',
                       style: { padding: '4px', color: 'var(--red)', flexShrink: '0' },
                       onclick: async () => {
                         try {
@@ -9610,13 +9612,15 @@ function renderSeriesPage() {
               const res = await api('/api/lead-magnets/generate', { method: 'POST', body: { count: 3 } });
               if (res.batch_id) {
                 const poll = setInterval(async () => {
-                  const prog = await api(`/api/generate-batch/${res.batch_id}`);
-                  if (prog.status === 'done' || prog.status === 'error') {
-                    clearInterval(poll);
-                    state.leadMagnetGenerating = false;
-                    toast(`Generated ${prog.completed} lead magnets`, prog.status === 'done' ? 'success' : 'error');
-                    loadData();
-                  }
+                  try {
+                    const prog = await api(`/api/generate-batch/${res.batch_id}`);
+                    if (prog.status === 'done' || prog.status === 'error') {
+                      clearInterval(poll);
+                      state.leadMagnetGenerating = false;
+                      toast(`Generated ${prog.completed} lead magnets`, prog.status === 'done' ? 'success' : 'error');
+                      loadData();
+                    }
+                  } catch (e) { console.warn('Lead magnet poll error:', e.message); }
                 }, 5000);
               }
             } catch (err) { state.leadMagnetGenerating = false; toast(err.message, 'error'); render(); }

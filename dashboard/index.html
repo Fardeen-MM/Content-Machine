@@ -3111,7 +3111,7 @@ function renderContentActions() {
           } catch (err) { toast('Autopilot run failed: ' + err.message, 'error'); }
         }
       }, 'Run Now') : null,
-      h('button', { className: 'btn btn-ghost btn-sm', onclick: () => { state.page = 'content'; render(); } }, 'View Content')
+      h('button', { className: 'btn btn-ghost btn-sm', onclick: () => { state.page = 'content'; loadPageData('content'); } }, 'View Content')
     ),
     // Command panel toggle
     h('div', { style: { textAlign: 'center', marginTop: '4px' } },
@@ -3183,7 +3183,7 @@ function renderDashboardPage() {
     ),
     // Pipeline summary
     h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '12px', marginBottom: '20px' } },
-      h('div', { className: 'card', style: { textAlign: 'center', padding: '14px', cursor: 'pointer' }, onclick: () => { state.page = 'pipeline'; render(); } },
+      h('div', { className: 'card', style: { textAlign: 'center', padding: '14px', cursor: 'pointer' }, onclick: () => { state.page = 'pipeline'; loadPageData('pipeline'); } },
         h('div', { style: { fontSize: '22px', fontWeight: '700', color: 'var(--navy)', fontFamily: "'Fraunces', serif" } }, String(clients.length)),
         h('div', { style: { fontSize: '11px', color: 'var(--gray-500)' } }, 'Pipeline')
       ),
@@ -3304,7 +3304,7 @@ function renderDashboardPage() {
         ),
         renderContentActions(),
         h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '12px' } },
-          h('div', { className: 'card', style: { textAlign: 'center', padding: '14px', cursor: 'pointer' }, onclick: () => { state.page = 'triggers'; render(); } },
+          h('div', { className: 'card', style: { textAlign: 'center', padding: '14px', cursor: 'pointer' }, onclick: () => { state.page = 'triggers'; loadPageData('triggers'); } },
             h('div', { style: { fontSize: '22px', fontWeight: '700', color: 'var(--blue)', fontFamily: "'Fraunces', serif" } }, String(state.triggers.filter(t => t.status === 'pending').length)),
             h('div', { style: { fontSize: '11px', color: 'var(--gray-500)' } }, 'Pending Triggers')
           ),
@@ -3316,7 +3316,7 @@ function renderDashboardPage() {
             h('div', { style: { fontSize: '22px', fontWeight: '700', color: 'var(--green)', fontFamily: "'Fraunces', serif" } }, String(state.content.filter(c => c.status === 'approved').length)),
             h('div', { style: { fontSize: '11px', color: 'var(--gray-500)' } }, 'Approved')
           ),
-          h('div', { className: 'card', style: { textAlign: 'center', padding: '14px', cursor: 'pointer', background: pubQueue > 0 ? '#f0fdf4' : '' }, onclick: () => { state.page = 'content'; render(); } },
+          h('div', { className: 'card', style: { textAlign: 'center', padding: '14px', cursor: 'pointer', background: pubQueue > 0 ? '#f0fdf4' : '' }, onclick: () => { state.page = 'content'; loadPageData('content'); } },
             h('div', { style: { fontSize: '22px', fontWeight: '700', color: pubQueue > 0 ? 'var(--green)' : 'var(--gray-400)', fontFamily: "'Fraunces', serif" } }, String(pubQueue)),
             h('div', { style: { fontSize: '11px', color: 'var(--gray-500)' } }, 'Ready to Publish')
           ),
@@ -5874,7 +5874,7 @@ function renderDashboardPage() {
     recentMeetings.length > 0 ? h('div', { style: { marginBottom: '20px' } },
       h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
         h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)' } }, `RECENT MEETINGS (${recentMeetings.length})`),
-        h('button', { className: 'btn btn-ghost btn-sm', onclick: () => { state.page = 'meetings'; render(); } }, 'View All')
+        h('button', { className: 'btn btn-ghost btn-sm', onclick: () => { state.page = 'meetings'; loadPageData('meetings'); } }, 'View All')
       ),
       h('div', { className: 'card', style: { overflow: 'hidden' } },
         ...recentMeetings.map(m =>

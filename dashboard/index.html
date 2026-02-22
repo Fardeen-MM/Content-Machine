@@ -3582,7 +3582,7 @@ function renderDashboardPage() {
         h('div', { style: { fontSize: '10px', padding: '2px 8px', borderRadius: '8px', fontWeight: '600', background: state.flywheelData.flywheel.overall_health === 'thriving' ? '#dcfce7' : state.flywheelData.flywheel.overall_health === 'growing' ? '#fef9c3' : '#fef2f2', color: state.flywheelData.flywheel.overall_health === 'thriving' ? '#166534' : state.flywheelData.flywheel.overall_health === 'growing' ? '#854d0e' : '#991b1b' } }, state.flywheelData.flywheel.overall_health?.toUpperCase())
       ),
       h('div', { style: { display: 'flex', gap: '4px', marginBottom: '8px' } },
-        ...state.flywheelData.flywheel.stages.map(s => {
+        ...(state.flywheelData.flywheel.stages || []).map(s => {
           const colors = { green: '#059669', yellow: '#d97706', red: '#dc2626' };
           return h('div', { style: { flex: 1, textAlign: 'center', padding: '8px 4px', borderRadius: 'var(--radius-sm)', background: `${colors[s.health]}10`, border: `2px solid ${colors[s.health]}` } },
             h('div', { style: { fontSize: '16px', fontWeight: '700', color: colors[s.health] } }, String(s.metric)),
@@ -7395,7 +7395,7 @@ function renderFormatContent(content, formatKey, fmt) {
           )
         : null,
       // Apply template dropdown (for linkedin and x_thread formats)
-      typeof text === 'string' && ['linkedin', 'x_thread'].includes(formatKey) && state.templates.length > 0
+      typeof text === 'string' && ['linkedin', 'x_thread'].includes(formatKey) && (state.templates || []).length > 0
         ? h('select', {
             style: { fontSize: '10px', padding: '2px 6px', borderRadius: '4px', border: '1px solid var(--gray-200)', background: 'var(--card-bg)', color: 'var(--gray-500)', cursor: 'pointer', maxWidth: '110px' },
             value: '',
@@ -7412,7 +7412,7 @@ function renderFormatContent(content, formatKey, fmt) {
             }
           },
             h('option', { value: '' }, 'Apply Template'),
-            ...state.templates.filter(t => t.format === formatKey || t.format === 'any').map(t =>
+            ...(state.templates || []).filter(t => t.format === formatKey || t.format === 'any').map(t =>
               h('option', { value: t.id }, t.name)
             )
           )
@@ -7436,7 +7436,7 @@ function renderFormatContent(content, formatKey, fmt) {
           },
             h('option', { value: '' }, 'Rewrite Hook'),
             h('option', { value: 'auto' }, 'Auto (best fit)'),
-            ...state.hooks.filter(hk => hk.format === formatKey || hk.format === 'linkedin').slice(0, 8).map(hk =>
+            ...(state.hooks || []).filter(hk => hk.format === formatKey || hk.format === 'linkedin').slice(0, 8).map(hk =>
               h('option', { value: hk.id }, `${hk.category}: ${hk.text.slice(0, 30)}...`)
             )
           )

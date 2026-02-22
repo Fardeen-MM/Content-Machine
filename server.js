@@ -616,7 +616,7 @@ async function handleRequest(req, res) {
         content[idx].formats[format].status = 'approved';
       } else {
         // Approve all formats
-        for (const key of Object.keys(content[idx].formats)) {
+        for (const key of Object.keys(content[idx].formats || {})) {
           if (content[idx].formats[key].status !== 'rejected') {
             content[idx].formats[key].status = 'approved';
           }
@@ -624,7 +624,7 @@ async function handleRequest(req, res) {
       }
 
       // Check if all formats are approved
-      const allApproved = Object.values(content[idx].formats)
+      const allApproved = Object.values(content[idx].formats || {})
         .every(f => f.status === 'approved' || f.status === 'rejected');
       if (allApproved) content[idx].status = 'approved';
 
@@ -692,7 +692,7 @@ async function handleRequest(req, res) {
         content[idx].formats[format].status = 'rejected';
         content[idx].formats[format].rejection_reason = reason;
       } else {
-        for (const key of Object.keys(content[idx].formats)) {
+        for (const key of Object.keys(content[idx].formats || {})) {
           content[idx].formats[key].status = 'rejected';
           content[idx].formats[key].rejection_reason = reason;
         }
@@ -712,7 +712,7 @@ async function handleRequest(req, res) {
       if (!memory.rejection_stats) memory.rejection_stats = {};
       const rejectedFormats = format
         ? [format]
-        : Object.keys(content[idx].formats);
+        : Object.keys(content[idx].formats || {});
       for (const fmtKey of rejectedFormats) {
         const fmt = content[idx].formats[fmtKey];
         if (fmt?.content) {
@@ -1726,7 +1726,7 @@ async function handleRequest(req, res) {
         for (const id of ids) {
           const idx = content.findIndex(c => c.id === id);
           if (idx === -1) continue;
-          for (const key of Object.keys(content[idx].formats)) {
+          for (const key of Object.keys(content[idx].formats || {})) {
             if (content[idx].formats[key].status !== 'rejected') {
               content[idx].formats[key].status = 'approved';
             }
@@ -1751,7 +1751,7 @@ async function handleRequest(req, res) {
         for (const id of ids) {
           const idx = content.findIndex(c => c.id === id);
           if (idx === -1) continue;
-          for (const key of Object.keys(content[idx].formats)) {
+          for (const key of Object.keys(content[idx].formats || {})) {
             content[idx].formats[key].status = 'rejected';
           }
           content[idx].status = 'rejected';
@@ -3085,6 +3085,17 @@ ${context}`;
       const type = url.searchParams.get('type') || undefined;
       const limit = Math.max(1, parseInt(url.searchParams.get('limit')) || 100);
       return json(res, db.getPatterns({ type, limit }));
+    }
+
+    // GET /api/deals/stats — deal outcome analytics
+    if (pathname === '/api/deals/stats' && method === 'GET') {
+      try {
+        const { getDealPatterns } = require('./lib/intelligence');
+        const stats = getDealPatterns();
+        return json(res, stats || { total_deals: 0, closed: 0, lost: 0, close_rate: 0 });
+      } catch (err) {
+        return json(res, { error: err.message }, 500);
+      }
     }
 
     // GET /api/deals — get deal outcomes
@@ -8349,6 +8360,7 @@ Return JSON: {
 
       const variant = body.variant; // 'a' or 'b'
       if (variant !== 'a' && variant !== 'b') return json(res, { error: 'variant must be "a" or "b"' }, 400);
+      if (!test.performance?.[variant]) test.performance = { ...test.performance, [variant]: { impressions: 0, engagement: 0 } };
       if (body.impressions) test.performance[variant].impressions += body.impressions;
       if (body.engagement) test.performance[variant].engagement += body.engagement;
 

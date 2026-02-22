@@ -522,6 +522,7 @@ function renderBenchmark(data) {
 function updateBench(input) {
   var val = parseFloat(input.value) || 0;
   var bar = input.closest('.bench-bar');
+  if (!bar) return;
   var pct = Math.min(Math.max(val, 5), 100);
   bar.style.width = pct + '%';
 }`;
@@ -641,8 +642,8 @@ function renderToolkit(data) {
   const tools = data.sections || [];
   const categories = [...new Set(tools.map(t => t.category))];
 
-  let filterBtns = `<button class="tk-filter active" onclick="filterTools('all')">All</button>` +
-    categories.map(c => `<button class="tk-filter" onclick="filterTools('${esc(c).replace(/'/g, '\\&#39;')}')">${esc(c)}</button>`).join('');
+  let filterBtns = `<button class="tk-filter active" onclick="filterTools('all', this)">All</button>` +
+    categories.map(c => `<button class="tk-filter" onclick="filterTools('${esc(c).replace(/'/g, '\\&#39;')}', this)">${esc(c)}</button>`).join('');
 
   let cards = tools.map(t =>
     `<div class="card tk-card" data-cat="${esc(t.category)}">
@@ -667,9 +668,9 @@ function renderToolkit(data) {
 </style>`;
 
   const script = `
-function filterTools(cat) {
+function filterTools(cat, btn) {
   document.querySelectorAll('.tk-filter').forEach(function(b) { b.classList.remove('active'); });
-  event.target.classList.add('active');
+  if (btn) btn.classList.add('active');
   document.querySelectorAll('.tk-card').forEach(function(c) {
     c.classList.toggle('hidden', cat !== 'all' && c.dataset.cat !== cat);
   });

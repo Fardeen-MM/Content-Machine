@@ -260,12 +260,14 @@ function renderScorecard(data) {
 
   let html = '';
   questions.forEach((q, i) => {
-    const options = (q.options || []).map((opt, j) =>
-      `<label class="sc-option">
-        <input type="radio" name="q${i}" value="${opt.score || 0}" onchange="updateScore()">
-        <span class="sc-option-text">${esc(opt.label)}</span>
-      </label>`
-    ).join('');
+    const options = (q.options || []).map((opt, j) => {
+      const label = typeof opt === 'string' ? opt : (opt.label || opt.text || '');
+      const score = typeof opt === 'string' ? j : (opt.score ?? j);
+      return `<label class="sc-option">
+        <input type="radio" name="q${i}" value="${score}" onchange="updateScore()">
+        <span class="sc-option-text">${esc(label)}</span>
+      </label>`;
+    }).join('');
     html += `<div class="card sc-question" data-q="${i}">
       <div class="sc-num">Question ${i + 1} of ${questions.length}</div>
       <h3 style="font-size:1.1rem;margin-bottom:16px;">${esc(q.question)}</h3>

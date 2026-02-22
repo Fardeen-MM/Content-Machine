@@ -3492,7 +3492,7 @@ function renderDashboardPage() {
         ),
         h('div', { style: { background: state.contentBank.can_ask ? '#f0fdf4' : '#fef2f2', borderRadius: 'var(--radius-sm)', padding: '10px', textAlign: 'center', border: `1px solid ${state.contentBank.can_ask ? '#bbf7d0' : '#fecaca'}` } },
           h('div', { style: { fontSize: '14px', fontWeight: '700', color: state.contentBank.can_ask ? '#059669' : '#dc2626' } }, state.contentBank.can_ask ? 'CAN ASK' : 'SAVE MORE'),
-          h('div', { style: { fontSize: '10px', color: 'var(--gray-500)' } }, `Next: ${state.contentBank.next_action}`)
+          h('div', { style: { fontSize: '10px', color: 'var(--gray-500)' } }, `Next: ${state.contentBank.next_action || 'Save more content'}`)
         )
       ),
       h('div', { style: { fontSize: '10px', color: 'var(--gray-600)', padding: '6px 10px', background: '#f8fafc', borderRadius: '6px', marginTop: '6px' } }, state.contentBank.recommendation || '')
@@ -3502,11 +3502,11 @@ function renderDashboardPage() {
     state.engagementPlaybook ? h('div', { style: { marginBottom: '20px' } },
       h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
         h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)' } }, 'DAILY ENGAGEMENT PLAYBOOK'),
-        h('div', { style: { fontSize: '10px', color: 'var(--gray-500)' } }, `Best time: ${state.engagementPlaybook.best_posting_time}`)
+        h('div', { style: { fontSize: '10px', color: 'var(--gray-500)' } }, `Best time: ${state.engagementPlaybook.best_posting_time || '—'}`)
       ),
       state.engagementPlaybook.todays_series ? h('div', { style: { padding: '10px 14px', background: '#eff6ff', borderRadius: 'var(--radius-sm)', border: '1px solid #bfdbfe', marginBottom: '8px' } },
-        h('div', { style: { fontSize: '11px', fontWeight: '700', color: '#2563eb', marginBottom: '2px' } }, `TODAY'S SERIES: ${state.engagementPlaybook.todays_series.name} ${state.engagementPlaybook.todays_series.hashtag}`),
-        h('div', { style: { fontSize: '10px', color: '#1e40af' } }, `Format: ${state.engagementPlaybook.todays_series.format} | CTA tier: ${state.engagementPlaybook.todays_series.cta_tier}`),
+        h('div', { style: { fontSize: '11px', fontWeight: '700', color: '#2563eb', marginBottom: '2px' } }, `TODAY'S SERIES: ${state.engagementPlaybook.todays_series.name || ''} ${state.engagementPlaybook.todays_series.hashtag || ''}`),
+        h('div', { style: { fontSize: '10px', color: '#1e40af' } }, `Format: ${state.engagementPlaybook.todays_series.format || '—'} | CTA tier: ${state.engagementPlaybook.todays_series.cta_tier || '—'}`),
         (state.engagementPlaybook.todays_series.example_topics || []).length > 0
           ? h('div', { style: { fontSize: '10px', color: 'var(--gray-500)', marginTop: '4px' } }, `Ideas: ${state.engagementPlaybook.todays_series.example_topics[0]}`)
           : null
@@ -8388,7 +8388,7 @@ function renderInsightsSection() {
 }
 
 function buildDonutSVG(approved, review, rejected) {
-  const total = approved + review + rejected || 1;
+  const total = (approved + review + rejected) || 1;
   const r = 54, cx = 70, cy = 70, sw = 12;
   const circumference = 2 * Math.PI * r;
 

@@ -3552,7 +3552,7 @@ function renderDashboardPage() {
       (state.flywheelData.next_actions || []).length > 0 ? h('div', { style: { marginTop: '6px' } },
         ...state.flywheelData.next_actions.slice(0, 3).map(a =>
           h('div', { style: { fontSize: '10px', color: a.priority === 'high' ? '#dc2626' : a.priority === 'medium' ? '#d97706' : '#6b7280', paddingLeft: '6px', borderLeft: `2px solid ${a.priority === 'high' ? '#dc2626' : a.priority === 'medium' ? '#d97706' : '#d1d5db'}`, marginBottom: '3px' } },
-            h('span', { style: { fontWeight: '600' } }, `${a.priority.toUpperCase()}: `), a.action
+            h('span', { style: { fontWeight: '600' } }, `${(a.priority || 'med').toUpperCase()}: `), a.action
           )
         )
       ) : null
@@ -6103,7 +6103,7 @@ function renderContentCard(content) {
     ),
     // Simulation panel
     state._simOpen === `sim-${content.id}` && state._simData?.[content.id] ? (() => {
-      const sim = state._simData[content.id].simulation || {};
+      const sim = state._simData[content.id]?.simulation || {};
       return h('div', { style: { padding: '12px 20px', background: 'linear-gradient(135deg, #f5f3ff, #eff6ff)', borderBottom: '1px solid #c4b5fd' } },
         h('div', { style: { fontSize: '12px', fontWeight: '700', color: '#7c3aed', textTransform: 'uppercase', marginBottom: '8px' } }, 'Performance Simulation'),
         h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '10px' } },

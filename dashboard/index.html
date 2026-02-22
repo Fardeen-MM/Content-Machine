@@ -2805,6 +2805,7 @@ function renderTopbar() {
     h('div', { style: { display: 'flex', alignItems: 'center', gap: '12px' } },
       h('button', {
         className: 'mobile-toggle',
+        'aria-label': 'Toggle sidebar',
         onclick: () => { state.sidebarOpen = !state.sidebarOpen; render(); }
       }, h('span', { innerHTML: icons.menu })),
       h('h2', {}, titles[state.page] || 'Dashboard')
@@ -6534,7 +6535,8 @@ function renderFormatContent(content, formatKey, fmt) {
               style: { background: 'var(--blue)', color: 'white', fontSize: '11px' },
               onclick: async () => {
                 const date = prompt('Schedule for date (YYYY-MM-DD):');
-                if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return;
+                if (!date) return;
+                if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) { toast('Invalid date format. Use YYYY-MM-DD', 'error'); return; }
                 try {
                   await api(`/api/content/${content.id}/schedule`, { method: 'POST', body: { format: formatKey, date } });
                   toast(`Scheduled ${formatKey} for ${date}`, 'success');

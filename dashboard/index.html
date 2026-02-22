@@ -1561,9 +1561,6 @@ const state = {
   dmSequences: [],
   // Hooks Library
   hooks: [],
-  // Pillar Plan
-  pillarPlan: null,
-  generatingPillarPlan: false,
   // Distribution Package
   distributionPackage: null,
   // Content Intelligence
@@ -1608,51 +1605,33 @@ const state = {
   amplifications: [],
   leadFunnels: [],
   calendarInsights: null,
-  // Weekly Digest & Split Tests
-  weeklyDigest: null,
-  splitTests: [],
   workflowRules: null,
-  // Batch 49: YouTube Pipeline + Carousel + Content Matrix + Hooks + CTA
-  youtubePipelines: [],
-  carousels: [],
+  // Batch 49: Content Matrix + Hooks + CTA
   contentMatrix: null,
   hookAnalysis: null,
   ctaStrategy: null,
   // Batch 50: Series Templates + Content Bank
   seriesTemplates: null,
   contentBank: null,
-  // Batch 51: Engagement Playbook + Atomizations + Platform Rules
+  // Batch 51: Engagement Playbook + Platform Rules
   engagementPlaybook: null,
-  atomizations: [],
   platformRules: null,
-  // Batch 52: Email Sequences + Weekly Plan + Profile Optimizer
-  emailSequences: [],
-  weeklyContentPlan: null,
-  // Batch 53: Repurpose Chains + Lead Magnet Funnels + Performance Report
-  repurposeChains: [],
-  lmFunnels: [],
   perfReport: null,
-  // Batch 54: Content Pillars + Competitor Analysis + Nurture + Authority Plan
+  // Batch 54: Content Pillars
   contentPillars: null,
-  compAnalyses: [],
-  nurtureCampaigns: [],
-  authorityPlan: null,
-  // Batch 55: Flywheel + Velocity + Segments
+  // Batch 55: Flywheel + Velocity
   flywheelData: null,
   velocityData: null,
-  audienceSegments: null,
   // Batch 56: Content DNA + Topic Clusters + Voice Profiles
   contentDna: null,
   topicClusters: null,
   voiceProfiles: [],
-  // Batch 57: X/Twitter Optimization + DM Scripts + System Health
-  dmScripts: [],
+  // Batch 57: X/Twitter Optimization + System Health
   replyStrategy: null,
   systemHealth: null,
-  // Batch 58: LinkedIn Optimizer, Recycler, Comments, Newsletter, A/B
+  // Batch 58: LinkedIn Optimizer, Recycler, Comments, A/B
   contentRecycler: null,
   commentStrategy: null,
-  newsletters: [],
   // Batch 59: Distribution, Social Proof Engine, Analytics, Growth Playbook
   distributionEngine: null,
   socialProofEngine: null,
@@ -2331,12 +2310,6 @@ function getFilteredContent() {
   else if (sort === 'oldest') filtered.sort((a, b) => new Date(a.generated_at) - new Date(b.generated_at));
   else if (sort === 'quality-high') filtered.sort((a, b) => (b.quality_score?.score || 0) - (a.quality_score?.score || 0));
   else if (sort === 'quality-low') filtered.sort((a, b) => (a.quality_score?.score || 0) - (b.quality_score?.score || 0));
-  else if (sort === 'predicted') {
-    const preds = state.predictions?.predictions || [];
-    const predMap = {};
-    for (const p of preds) predMap[p.content_id] = p.predicted_score;
-    filtered.sort((a, b) => (predMap[b.id] || 0) - (predMap[a.id] || 0));
-  }
   return filtered;
 }
 
@@ -2650,7 +2623,9 @@ function h(tag, attrs = {}, ...children) {
       el.className = val;
     } else if (key === 'style' && typeof val === 'object') {
       Object.assign(el.style, val);
-    } else {
+    } else if (val === true) {
+      el.setAttribute(key, '');
+    } else if (val !== false && val != null) {
       el.setAttribute(key, val);
     }
   }
@@ -7990,7 +7965,6 @@ function renderContentPage() {
             h('option', { value: 'oldest' }, 'Oldest First'),
             h('option', { value: 'quality-high' }, 'Quality: High \u2192 Low'),
             h('option', { value: 'quality-low' }, 'Quality: Low \u2192 High'),
-            h('option', { value: 'predicted' }, 'Predicted Performance')
           ),
           (activeFilterCount > 0)
             ? h('span', {

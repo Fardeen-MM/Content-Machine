@@ -6036,7 +6036,7 @@ function renderContentCard(content) {
       ),
       (() => {
         // Compact action toolbar — primary actions visible, rest in expandable groups
-        const hasReview = Object.values(content.formats).some(f => f.content && f.status === 'review');
+        const hasReview = Object.values(content.formats || {}).some(f => f.content && f.status === 'review');
         const hasContent = Object.values(content.formats || {}).some(f => f.content);
         const hasApproved = Object.values(content.formats || {}).some(f => f.content && f.status === 'approved');
         const allFmts = ['linkedin', 'x_single', 'x_thread', 'short_video', 'carousel', 'blog', 'newsletter', 'lead_magnet', 'youtube_script'];
@@ -9125,7 +9125,7 @@ function renderCalendarDayDetail(cal) {
     ),
     series ? h('div', { style: { padding: '8px 12px', background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: '6px', marginBottom: '16px', fontSize: '12px', color: '#0369a1' } },
       h('strong', {}, series.name),
-      h('span', { style: { marginLeft: '8px', color: '#64748b' } }, `Pillar: ${series.pillar} | Formats: ${series.formats.join(', ')}`)
+      h('span', { style: { marginLeft: '8px', color: '#64748b' } }, `Pillar: ${series.pillar} | Formats: ${(series.formats || []).join(', ')}`)
     ) : null,
     h('div', { className: 'cal-detail-grid' },
       ...['morning', 'midday', 'evening'].map(time =>
@@ -9862,7 +9862,7 @@ function renderPublishTrackerPage() {
               h('div', {},
                 h('div', { style: { fontSize: '13px', fontWeight: '500' } }, item.title?.slice(0, 60) || 'Untitled'),
                 h('div', { style: { fontSize: '11px', color: 'var(--gray-400)', display: 'flex', gap: '6px' } },
-                  ...item.formats.slice(0, 3).map(f => h('span', {}, f)),
+                  ...(item.formats || []).slice(0, 3).map(f => h('span', {}, f)),
                   item.series_id ? h('span', { style: { color: 'var(--blue)' } }, item.series_id) : null
                 )
               ),
@@ -9877,7 +9877,7 @@ function renderPublishTrackerPage() {
                 }
                 // Show publish button for formats matching this platform
                 const platformFormats = { linkedin: ['linkedin', 'carousel', 'poll'], x: ['x_single', 'x_thread'], youtube: ['short_video', 'youtube_script'], blog: ['blog'], newsletter: ['newsletter'], instagram: ['carousel', 'quote_cards', 'stat_graphic'] };
-                const matchingFormats = (platformFormats[p] || []).filter(f => item.formats.includes(f));
+                const matchingFormats = (platformFormats[p] || []).filter(f => (item.formats || []).includes(f));
                 if (matchingFormats.length === 0) return h('div', { style: { textAlign: 'center', color: 'var(--gray-300)' } }, '\u2014');
                 return h('div', { style: { textAlign: 'center' } },
                   h('button', {

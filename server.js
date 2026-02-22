@@ -3052,6 +3052,13 @@ ${context}`;
 
     // --- Deal Outcomes API ---
 
+    // GET /api/patterns — get cross-meeting patterns
+    if (pathname === '/api/patterns' && method === 'GET') {
+      const type = url.searchParams.get('type') || undefined;
+      const limit = parseInt(url.searchParams.get('limit')) || 100;
+      return json(res, db.getPatterns({ type, limit }));
+    }
+
     // GET /api/deals — get deal outcomes
     if (pathname === '/api/deals' && method === 'GET') {
       const outcome = url.searchParams.get('outcome') || undefined;

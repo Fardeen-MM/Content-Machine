@@ -2611,6 +2611,16 @@ document.addEventListener('keydown', (e) => {
       else state.selectedContent.add(current.id);
       render();
     }
+    if (e.key === 'a' && current) {
+      e.preventDefault();
+      const hasReview = Object.values(current.formats || {}).some(f => f.content && f.status === 'review');
+      if (hasReview) approveFormat(current.id, null);
+    }
+    if (e.key === 'r' && current) {
+      e.preventDefault();
+      const reviewFmt = Object.entries(current.formats || {}).find(([, v]) => v?.content && v.status === 'review');
+      if (reviewFmt) rejectFormat(current.id, reviewFmt[0]);
+    }
   }
 });
 
@@ -11998,13 +12008,15 @@ function render() {
 
   // Restore focus after DOM swap
   if (focusSelector) {
-    const el = document.querySelector(focusSelector);
-    if (el && typeof el.focus === 'function') {
-      el.focus();
-      if (selStart !== null && el.setSelectionRange) {
-        try { el.setSelectionRange(selStart, selEnd); } catch {}
+    try {
+      const el = document.querySelector(focusSelector);
+      if (el && typeof el.focus === 'function') {
+        el.focus();
+        if (selStart !== null && el.setSelectionRange) {
+          try { el.setSelectionRange(selStart, selEnd); } catch {}
+        }
       }
-    }
+    } catch {}
   }
 
   // Restore textarea content after render if editing

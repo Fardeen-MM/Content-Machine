@@ -7500,5 +7500,15 @@
     "url": null,
     "captured_at": "2026-02-22T01:21:28.043Z",
     "status": "pending"
+  },
+  {
+    "id": "deal-89e701ebacc575fe",
+    "source": "deal_insight",
+    "title": "Deal lost: Budget constraints - they went with cheaper option",
+    "raw_content": "Loss reason: Budget constraints - they went with cheaper option\n\nPractice area: unknown",
+    "category": "PAIN_POINT",
+    "url": null,
+    "captured_at": "2026-02-22T01:37:25.264Z",
+    "status": "pending"
   }
 ]

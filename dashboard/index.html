@@ -1775,10 +1775,10 @@ const state = {
   contentCalendarOptimizer: null,
   contentImpactScore: null,
   // Collapsible sections state (action categories default collapsed except first)
-  collapsedSections: JSON.parse(localStorage.getItem('collapsedSections') || JSON.stringify({
+  collapsedSections: (() => { try { const v = localStorage.getItem('collapsedSections'); return v ? JSON.parse(v) : null; } catch { return null; } })() || {
     'cm-analyze': true, 'cm-strategy': true, 'cm-engage': true, 'cm-compete': true,
     'wg-strategy': true, 'wg-scheduling': true, 'wg-performance': true, 'wg-competition': true, 'wg-automation': true, 'wg-other': true
-  })),
+  },
 };
 
 // --- Collapsible Section Helper ---
@@ -2012,8 +2012,11 @@ async function startBatchGeneration(opts = {}) {
   try {
     const result = await api('/api/generate-batch', { method: 'POST', body: opts });
     if (result.batch_id) {
-      // Poll for progress
+      // Poll for progress (max 5 minutes)
+      let pollCount = 0;
       const pollInterval = setInterval(async () => {
+        pollCount++;
+        if (pollCount > 100) { clearInterval(pollInterval); state.generating = false; state._batchProgress = null; toast('Batch generation timed out', 'warning'); render(); return; }
         try {
           const progress = await api(`/api/generate-batch/${result.batch_id}`);
           state._batchProgress = progress;
@@ -2377,7 +2380,14 @@ function renderToastsOnly() {
     const el = document.createElement('div');
     el.className = `toast toast-${t.type}`;
     el.style.cssText = 'display:flex;align-items:center;gap:8px;justify-content:space-between;';
-    el.innerHTML = `<span>${t.msg}</span><button onclick="dismissToast(${t.id})" style="background:none;border:none;color:inherit;cursor:pointer;font-size:16px;padding:0 4px;opacity:0.7;">&times;</button>`;
+    const msgSpan = document.createElement('span');
+    msgSpan.textContent = t.msg;
+    const closeBtn = document.createElement('button');
+    closeBtn.textContent = '\u00d7';
+    closeBtn.style.cssText = 'background:none;border:none;color:inherit;cursor:pointer;font-size:16px;padding:0 4px;opacity:0.7;';
+    closeBtn.onclick = () => dismissToast(t.id);
+    el.appendChild(msgSpan);
+    el.appendChild(closeBtn);
     container.appendChild(el);
   });
 }
@@ -2494,7 +2504,9 @@ function categoryToPillar(cat) {
 }
 
 function timeAgo(dateStr) {
+  if (!dateStr) return '';
   const seconds = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
+  if (isNaN(seconds) || seconds < 0) return '';
   if (seconds < 60) return 'just now';
   if (seconds < 3600) return Math.floor(seconds/60) + 'm ago';
   if (seconds < 86400) return Math.floor(seconds/3600) + 'h ago';
@@ -2849,7 +2861,7 @@ function renderCategoryBreakdown(s) {
     h('h4', { style: { fontSize: '14px', marginBottom: '12px', color: 'var(--gray-600)' } }, 'Triggers by Category'),
     h('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px' } },
       ...Object.entries(cats).map(([cat, count]) => {
-        const maxCount = Math.max(...Object.values(cats));
+        const maxCount = Math.max(...Object.values(cats), 1);
         return h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } },
           h('span', { style: { fontSize: '11px', fontWeight: '600', width: '110px', color: 'var(--gray-500)', textTransform: 'capitalize' } },
             cat.replace(/_/g, ' ').toLowerCase()
@@ -3022,7 +3034,10 @@ function renderContentActions() {
             const res = await api('/api/generate-week', { method: 'POST' });
             if (res.batch_id) {
               state._weekBatchId = res.batch_id;
+              let weekPollCount = 0;
               const poll = setInterval(async () => {
+                weekPollCount++;
+                if (weekPollCount > 120) { clearInterval(poll); state._generatingWeek = false; toast('Week generation timed out', 'warning'); render(); return; }
                 try {
                   const prog = await api(`/api/generate-batch/${res.batch_id}`);
                   if (prog.status === 'done') {
@@ -8035,7 +8050,7 @@ function renderAnalyticsPage() {
         h('h4', {}, 'Content Pillar Mix'),
         h('div', { style: { display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '8px' } },
           ...Object.entries(pillarCounts).sort((a,b) => b[1]-a[1]).map(([pillar, count]) => {
-            const maxCount = Math.max(...Object.values(pillarCounts));
+            const maxCount = Math.max(...Object.values(pillarCounts), 1);
             const pillarColor = { 'Hot Take': '#dc2626', 'Tactical How-To': '#2563eb', 'Industry Insight': '#059669', 'Social Proof': '#d97706', 'General': '#64748b' }[pillar] || '#94a3b8';
             return h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px' } },
               h('span', { style: { fontSize: '12px', fontWeight: '600', width: '110px', color: 'var(--gray-500)' } }, pillar),
@@ -8061,7 +8076,7 @@ function renderAnalyticsPage() {
         h('h4', {}, 'Content by Source'),
         h('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px' } },
           ...Object.entries(sourceCounts).sort((a,b) => b[1].total - a[1].total).map(([src, data]) => {
-            const maxCount = Math.max(...Object.values(sourceCounts).map(d => d.total));
+            const maxCount = Math.max(...Object.values(sourceCounts).map(d => d.total), 1);
             const colors = { reddit: '#ff4500', rss: '#2563eb', youtube: '#cc0000', url: '#7c3aed', competitor: '#0891b2', question: '#ea580c', 'google-news': '#4285f4', hackernews: '#ff6600', manual: '#7c3aed' };
             return h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px' } },
               h('span', { style: { fontSize: '12px', fontWeight: '600', width: '100px', color: 'var(--gray-500)' } }, sourceLabel(src)),
@@ -9611,7 +9626,10 @@ function renderSeriesPage() {
             try {
               const res = await api('/api/lead-magnets/generate', { method: 'POST', body: { count: 3 } });
               if (res.batch_id) {
+                let lmPollCount = 0;
                 const poll = setInterval(async () => {
+                  lmPollCount++;
+                  if (lmPollCount > 60) { clearInterval(poll); state.leadMagnetGenerating = false; toast('Lead magnet generation timed out', 'warning'); render(); return; }
                   try {
                     const prog = await api(`/api/generate-batch/${res.batch_id}`);
                     if (prog.status === 'done' || prog.status === 'error') {
@@ -11228,7 +11246,7 @@ function renderPesteringPage() {
                 ),
                 e.content ? h('div', { style: { fontSize: '12px', color: 'var(--gray-500)', marginTop: '2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '400px' } }, e.content) : null,
                 h('div', { style: { fontSize: '11px', color: 'var(--gray-400)', marginTop: '2px' } },
-                  `${e.stage} — ${new Date(e.scheduled_for).toLocaleDateString()} ${new Date(e.scheduled_for).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`)
+                  `${e.stage} — ${e.scheduled_for ? new Date(e.scheduled_for).toLocaleDateString() + ' ' + new Date(e.scheduled_for).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'unscheduled'}`)
               ),
               // Status badge
               h('span', { style: {

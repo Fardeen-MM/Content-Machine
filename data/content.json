@@ -2392,41 +2392,41 @@
     "formats": {
       "linkedin": {
         "content": "A creator hit $500k revenue in 30 days with 178k followers and 213M views. The math: that's $2.80 per thousand views. Most agencies I talk to are doing $0.14 per thousand. The difference isn't luck—it's monetization strategy. They weren't optimizing for views. They were optimizing for conversions. They had a product people actually wanted to buy. They had scarcity. They had urgency. They had a funnel. Here's what changes the game: (1) Stop chasing vanity metrics—track revenue per view instead. (2) Build a waiting list before you launch. (3) Create artificial scarcity with limited spots or early-bird pricing. (4) Test your offer with 1% of your audience first. (5) Measure everything: cost to acquire that follower vs. lifetime value.",
-        "status": "review",
+        "status": "approved",
         "edited": false
       },
       "x_single": {
         "content": "Most creators optimize for views. This one optimized for revenue. $500k in 30 days on the same traffic everyone else is getting.",
-        "status": "review",
+        "status": "approved",
         "edited": false
       },
       "x_thread": {
         "content": "A creator made $500,000 in one month. 213 million views. 178k followers. The wild part? This isn't a record. It's repeatable.\n\n---\n\nHere's the setup: everyone measures success by views and followers. They chase the vanity metrics. This creator chased something else.\n\n---\n\nMath: $500k ÷ 213M views = $2.35 per thousand views. Most creators at this scale earn $0.08-0.15 CPM. 15x difference.\n\n---\n\nThe gap isn't traffic. It's conversion. He had: (1) A proven product (2) Genuine scarcity (3) A qualified audience (4) A real funnel. Not guesses.\n\n---\n\nIf you're building an audience—stop optimizing for views. Optimize for revenue per view. Track it weekly. Everything changes after that. Follow for more.",
-        "status": "review",
+        "status": "approved",
         "edited": false
       },
       "short_video": {
         "content": "If you're a service provider or course creator and you're measuring success by follower count, you're already losing. [PAUSE] This creator hit half a million dollars in revenue in 30 days. 213 million views. 178k followers. And here's what most people miss—that's not an outlier. That's what happens when you stop chasing vanity metrics and start building a real funnel. [PAUSE] Most creators at that scale are making pennies per thousand views. This one made dollars. The difference? They weren't optimizing for eyeballs. They were optimizing for conversions. They had a product. They had scarcity. They had an audience that actually wanted to buy. [PAUSE] So here's your one takeaway: stop counting followers. Start counting revenue per view. That number changes everything.",
-        "status": "review",
+        "status": "approved",
         "edited": false
       },
       "quote_cards": {
         "content": "Views are vanity. Revenue per view is survival.\n\n---\n\nEveryone chases 10 million followers. Nobody tracks $10 per thousand views.",
-        "status": "review",
+        "status": "approved",
         "edited": false
       },
       "hot_take": {
         "content": "Course creators and agencies obsess over 'scaling an audience' before they've proven a $5k-$10k/month funnel with their existing one. You don't have an audience problem. You have a monetization problem.",
-        "status": "review",
+        "status": "approved",
         "edited": false
       },
       "listicle": {
         "content": "1. Track revenue per thousand views (not follower count). 2. Build a waiting list before launch—urgency increases conversion by 30-60%. 3. Create artificial scarcity: limited spots, early-bird pricing, or closing after X days. 4. Segment your audience and test offers on 1% before rolling out to all. 5. Document your funnel: where do viewers go? Which step leaks? 6. Price based on perceived value, not guessing. Charge 10x what you think is fair, then measure response.",
-        "status": "review",
+        "status": "approved",
         "edited": false
       }
     },
-    "status": "review",
+    "status": "approved",
     "generated_at": "2026-02-21T01:19:53.383Z",
     "generation_mode": "autopilot",
     "linkedin_hooks": [
@@ -5344,6 +5344,92 @@
     "trigger_category": "DATA_POINT",
     "trigger_url": "https://reddit.com/r/adwords/comments/1r7wli0/googles_autoapply_almost_cost_me_a_client_and_my/",
     "generated_at": "2026-02-21T23:34:05.273Z",
+    "status": "review",
+    "formats": {
+      "linkedin": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "x_single": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "x_thread": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "short_video": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "carousel": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "poll": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "quote_cards": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "stat_graphic": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "hot_take": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "before_after": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      },
+      "listicle": {
+        "content": null,
+        "status": "review",
+        "edited": false
+      }
+    },
+    "hook_variants": {
+      "linkedin": [],
+      "x": []
+    },
+    "image_prompt": null,
+    "image_url": null,
+    "blog_keyword": null,
+    "youtube_topic": null,
+    "lead_magnet_topic": null,
+    "blog_post": null,
+    "youtube_script": null,
+    "quality_score": {
+      "score": 0,
+      "max": 0,
+      "earned": 0,
+      "flags": []
+    },
+    "notes": "",
+    "quality_scores": {}
+  },
+  {
+    "id": "8e09bf0baa8caef6",
+    "trigger_id": "reddit-1r9w56c",
+    "trigger_title": "[Day 11] 30,000 Twitter impressions every single day with $0 ads. How I finally killed the friction that was ruining my SaaS.",
+    "trigger_source": "reddit",
+    "trigger_category": "DATA_POINT",
+    "trigger_url": "https://reddit.com/r/EntrepreneurRideAlong/comments/1r9w56c/day_11_30000_twitter_impressions_every_single_day/",
+    "generated_at": "2026-02-22T00:41:59.212Z",
     "status": "review",
     "formats": {
       "linkedin": {

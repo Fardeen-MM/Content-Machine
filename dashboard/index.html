@@ -2723,7 +2723,6 @@ function renderSidebar() {
     { section: 'Manage', items: [
       { id: 'actions', icon: icons.actions, label: 'Actions', key: '5' },
       { id: 'pestering', icon: icons.pestering, label: 'Follow-ups', key: '6' },
-      { id: 'deals', icon: icons.pipeline, label: 'Deals', key: '8' },
       { id: 'series', icon: icons.calendar, label: 'Series', key: 'S' },
       { id: 'publish-tracker', icon: icons.analytics, label: 'Publish Tracker' },
     ]},
@@ -3343,6 +3342,54 @@ function renderDashboardPage() {
               h('span', { style: { padding: '2px 8px', borderRadius: '4px', fontSize: '10px', fontWeight: '600', background: prioBg[item.priority], color: prioColors[item.priority] } }, item.priority)
             )
           )
+        )
+      );
+    })(),
+    // CONTENT PIPELINE HEALTH BAR
+    (() => {
+      const allContent = state.content || [];
+      const triggers = state.triggers || [];
+      const published = state.published || [];
+      const pendingT = triggers.filter(t => t.status === 'pending').length;
+      const review = allContent.filter(c => c.status === 'review').length;
+      const approved = allContent.filter(c => c.status === 'approved').length;
+      const pubCount = published.length;
+      const perf = (state.performance || []).length;
+      const stages = [
+        { label: 'Triggers', count: pendingT, color: '#6366f1', icon: '\u{1F4A1}' },
+        { label: 'Review', count: review, color: '#d97706', icon: '\u{1F50D}' },
+        { label: 'Approved', count: approved, color: '#059669', icon: '\u2705' },
+        { label: 'Published', count: pubCount, color: '#2563eb', icon: '\u{1F4E4}' },
+        { label: 'Tracked', count: perf, color: '#7c3aed', icon: '\u{1F4CA}' },
+      ];
+      const maxCount = Math.max(...stages.map(s => s.count), 1);
+      const bottleneck = review > 10 ? 'Review backlog building up — Monty needs to approve/reject' : approved > 10 ? 'Approved content waiting to publish' : pendingT > 100 ? `${pendingT} triggers waiting — run autopilot or generate` : perf === 0 ? 'No performance data yet — log metrics after publishing' : null;
+      return h('div', { style: { marginBottom: '20px', padding: '16px', background: 'linear-gradient(135deg, #f8fafc, #f0f9ff)', borderRadius: '12px', border: '1px solid var(--gray-200)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' } },
+          h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)' } }, 'CONTENT PIPELINE'),
+          bottleneck ? h('span', { style: { fontSize: '11px', color: '#d97706', marginLeft: 'auto' } }, bottleneck) : null
+        ),
+        h('div', { style: { display: 'flex', gap: '4px', alignItems: 'flex-end', height: '60px' } },
+          ...stages.map((s, i) => {
+            const height = Math.max((s.count / maxCount) * 100, 8);
+            return h('div', { style: { flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' } },
+              h('span', { style: { fontSize: '14px', fontWeight: '700', color: s.color, fontFamily: "'Fraunces', serif" } }, String(s.count)),
+              h('div', { style: { width: '100%', height: `${height}%`, background: `${s.color}25`, borderRadius: '4px 4px 0 0', border: `1px solid ${s.color}40`, position: 'relative' } },
+                h('div', { style: { position: 'absolute', bottom: 0, left: 0, right: 0, height: `${Math.min(height, 100)}%`, background: s.color, borderRadius: '4px 4px 0 0', opacity: 0.6 } })
+              )
+            );
+          })
+        ),
+        h('div', { style: { display: 'flex', gap: '4px', marginTop: '4px' } },
+          ...stages.map(s =>
+            h('div', { style: { flex: 1, textAlign: 'center', fontSize: '10px', color: 'var(--gray-500)', fontWeight: '600' } },
+              `${s.icon} ${s.label}`
+            )
+          )
+        ),
+        // Arrow flow indicator
+        h('div', { style: { display: 'flex', justifyContent: 'center', gap: '10px', marginTop: '8px', fontSize: '10px', color: 'var(--gray-400)' } },
+          'Triggers', '\u2192', 'Generate', '\u2192', 'Review', '\u2192', 'Approve', '\u2192', 'Publish', '\u2192', 'Track'
         )
       );
     })(),

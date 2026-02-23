@@ -1952,9 +1952,11 @@ const pageDataMap = {
   'publish-tracker': [
     ['publishTracker', '/api/publish-tracker', { items: [], platforms: [] }],
     ['published', '/api/published', []],
+    ['performance', '/api/performance', []],
   ],
   settings: [
     ['settings', '/api/settings', {}],
+    ['autopilot', '/api/autopilot/status', { enabled: false, settings: {}, today: {}, recent_log: [] }],
   ],
   memory: [
     ['memory', '/api/memory', { approved_examples: [], style_notes: [] }],
@@ -2581,7 +2583,7 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'l' && !e.ctrlKey && !e.metaKey && !isEditing()) nav('analytics');
   if (e.key === 'n' && !e.ctrlKey && !e.metaKey && !isEditing()) nav('calendar');
   if ((e.key === 'd' || e.key === 'D') && !e.ctrlKey && !e.metaKey && !isEditing()) { toggleDarkMode(); }
-  if (e.key === 'Escape') { state.editingFormat = null; state.sidebarOpen = false; state._remixOpen = null; state._calAssignSlot = null; state._showShortcuts = false; state._rejectModal = null; state.showCapture = false; render(); }
+  if (e.key === 'Escape') { state.editingFormat = null; state.sidebarOpen = false; state._remixOpen = null; state._calAssignSlot = null; state._showShortcuts = false; state._rejectModal = null; state.showCapture = false; state._contentDetail = null; state._detailFormat = null; render(); }
   if (e.key === '?' && !e.ctrlKey && !e.metaKey && !isEditing()) { state._showShortcuts = !state._showShortcuts; render(); }
   if (e.key === '/' && !e.ctrlKey && !e.metaKey && !isEditing()) {
     e.preventDefault();
@@ -6476,6 +6478,13 @@ function renderContentCard(content) {
             onclick: () => approveFormat(content.id, null),
             title: 'Approve all formats'
           }, h('span', { innerHTML: icons.check, style: { width: '14px', height: '14px' } }), ' All') : null,
+          // Detail view button
+          h('button', {
+            className: 'btn btn-outline btn-sm',
+            style: { color: 'var(--purple)', borderColor: 'var(--purple)', fontSize: '11px' },
+            onclick: (e) => { e.stopPropagation(); state._contentDetail = content.id; render(); },
+            title: 'Open full detail view'
+          }, 'Detail'),
           // Generate dropdown toggle
           missing > 0 ? h('button', {
             className: 'btn btn-outline btn-sm',
@@ -10908,10 +10917,20 @@ function renderPublishTrackerPage() {
             ...platforms.map(p => h('div', { style: { fontSize: '11px', fontWeight: '700', color: platformColors[p], textAlign: 'center', textTransform: 'uppercase' } }, p))
           ),
           // Content rows
-          ...items.slice(0, 50).map(item =>
+          ...items.slice(0, 50).map(item => {
+            const itemPerf = (state.performance || []).filter(p => p.content_id === item.content_id);
+            const hasPerf = itemPerf.length > 0;
+            return h('div', {},
             h('div', { style: { display: 'grid', gridTemplateColumns: `2fr repeat(${platforms.length}, 1fr)`, padding: '10px 16px', borderBottom: '1px solid var(--gray-100)', alignItems: 'center' } },
               h('div', {},
-                h('div', { style: { fontSize: '13px', fontWeight: '500' } }, item.title?.slice(0, 60) || 'Untitled'),
+                h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } },
+                  h('div', { style: { fontSize: '13px', fontWeight: '500' } }, item.title?.slice(0, 60) || 'Untitled'),
+                  hasPerf ? h('span', { style: { fontSize: '9px', background: '#dcfce7', color: '#059669', padding: '1px 6px', borderRadius: '4px', fontWeight: '600' } }, `${itemPerf.reduce((s, p) => s + (p.engagement || 0), 0)} eng`) : null,
+                  h('button', {
+                    style: { fontSize: '10px', background: 'none', border: '1px solid var(--gray-300)', borderRadius: '4px', padding: '1px 6px', cursor: 'pointer', color: 'var(--gray-500)' },
+                    onclick: () => { state._pubPerfOpen = state._pubPerfOpen === item.content_id ? null : item.content_id; render(); }
+                  }, state._pubPerfOpen === item.content_id ? 'Close' : 'Perf')
+                ),
                 h('div', { style: { fontSize: '11px', color: 'var(--gray-400)', display: 'flex', gap: '6px' } },
                   ...(item.formats || []).slice(0, 3).map(f => h('span', {}, f)),
                   item.series_id ? h('span', { style: { color: 'var(--blue)' } }, item.series_id) : null
@@ -10948,8 +10967,61 @@ function renderPublishTrackerPage() {
                   }, '+')
                 );
               })
-            )
-          )
+            ),
+            // Inline performance logging form
+            state._pubPerfOpen === item.content_id ? h('div', { style: { gridColumn: '1 / -1', padding: '10px 16px', background: '#f8fafc', borderBottom: '1px solid var(--gray-200)' } },
+              h('div', { style: { display: 'flex', gap: '8px', alignItems: 'flex-end', flexWrap: 'wrap' } },
+                h('div', {},
+                  h('label', { style: { fontSize: '10px', fontWeight: '600', color: 'var(--gray-500)', display: 'block', marginBottom: '2px' } }, 'Format'),
+                  h('select', {
+                    id: `pub-perf-fmt-${item.content_id}`,
+                    style: { padding: '4px 8px', border: '1px solid var(--gray-200)', borderRadius: '4px', fontSize: '12px', background: 'white', color: 'var(--gray-700)' }
+                  },
+                    ...(item.formats || ['linkedin']).map(f => h('option', { value: f }, formatName(f)))
+                  )
+                ),
+                h('div', {},
+                  h('label', { style: { fontSize: '10px', fontWeight: '600', color: 'var(--gray-500)', display: 'block', marginBottom: '2px' } }, 'Impr'),
+                  h('input', { type: 'number', placeholder: '0', id: `pub-perf-imp-${item.content_id}`, style: { width: '70px', padding: '4px 8px', border: '1px solid var(--gray-200)', borderRadius: '4px', fontSize: '12px', background: 'white', color: 'var(--gray-700)' } })
+                ),
+                h('div', {},
+                  h('label', { style: { fontSize: '10px', fontWeight: '600', color: 'var(--gray-500)', display: 'block', marginBottom: '2px' } }, 'Engage'),
+                  h('input', { type: 'number', placeholder: '0', id: `pub-perf-eng-${item.content_id}`, style: { width: '70px', padding: '4px 8px', border: '1px solid var(--gray-200)', borderRadius: '4px', fontSize: '12px', background: 'white', color: 'var(--gray-700)' } })
+                ),
+                h('div', {},
+                  h('label', { style: { fontSize: '10px', fontWeight: '600', color: 'var(--gray-500)', display: 'block', marginBottom: '2px' } }, 'Clicks'),
+                  h('input', { type: 'number', placeholder: '0', id: `pub-perf-cli-${item.content_id}`, style: { width: '70px', padding: '4px 8px', border: '1px solid var(--gray-200)', borderRadius: '4px', fontSize: '12px', background: 'white', color: 'var(--gray-700)' } })
+                ),
+                h('div', {},
+                  h('label', { style: { fontSize: '10px', fontWeight: '600', color: 'var(--gray-500)', display: 'block', marginBottom: '2px' } }, 'Leads'),
+                  h('input', { type: 'number', placeholder: '0', id: `pub-perf-lea-${item.content_id}`, style: { width: '70px', padding: '4px 8px', border: '1px solid var(--gray-200)', borderRadius: '4px', fontSize: '12px', background: 'white', color: 'var(--gray-700)' } })
+                ),
+                h('button', {
+                  className: 'btn btn-sm',
+                  style: { background: 'var(--blue)', color: 'white', border: 'none', fontSize: '11px', padding: '4px 12px' },
+                  onclick: async () => {
+                    const fmt = document.getElementById(`pub-perf-fmt-${item.content_id}`)?.value || 'linkedin';
+                    const imp = document.getElementById(`pub-perf-imp-${item.content_id}`)?.value || 0;
+                    const eng = document.getElementById(`pub-perf-eng-${item.content_id}`)?.value || 0;
+                    const cli = document.getElementById(`pub-perf-cli-${item.content_id}`)?.value || 0;
+                    const lea = document.getElementById(`pub-perf-lea-${item.content_id}`)?.value || 0;
+                    try {
+                      await api(`/api/content/${item.content_id}/performance`, {
+                        method: 'POST',
+                        body: { format: fmt, impressions: imp, engagement: eng, clicks: cli, leads: lea }
+                      });
+                      toast('Performance logged!', 'success');
+                      state._pubPerfOpen = null;
+                      loadData();
+                    } catch (err) { toast('Failed: ' + err.message, 'error'); }
+                  }
+                }, 'Log'),
+                hasPerf ? h('div', { style: { fontSize: '10px', color: 'var(--gray-400)', marginLeft: '8px' } },
+                  `Existing: ${itemPerf.reduce((s, p) => s + (p.impressions || 0), 0)} imp, ${itemPerf.reduce((s, p) => s + (p.engagement || 0), 0)} eng`
+                ) : null
+              )
+            ) : null
+            ); })
         )
   );
 }
@@ -11156,6 +11228,153 @@ function renderSettingsPage() {
             h('span', { style: { fontWeight: '600' } }, String(settings.data?.clients || 0))
           )
         )
+      ),
+      // Autopilot Settings
+      h('div', { className: 'card', style: { padding: '24px', borderLeft: '3px solid #059669' } },
+        h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' } },
+          h('h3', { style: { fontSize: '16px', color: 'var(--navy)', margin: 0 } }, 'Autopilot Settings'),
+          h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } },
+            h('div', { style: { width: '8px', height: '8px', borderRadius: '50%', background: state.autopilot?.enabled ? '#059669' : '#94a3b8', animation: state.autopilot?.enabled ? 'pulse 2s infinite' : 'none' } }),
+            h('span', { style: { fontSize: '11px', fontWeight: '600', color: state.autopilot?.enabled ? '#059669' : '#94a3b8' } }, state.autopilot?.enabled ? 'ACTIVE' : 'OFF')
+          )
+        ),
+        (() => {
+          const ap = state.autopilot || {};
+          const s = ap.settings || {};
+          if (!state._apSettings) {
+            state._apSettings = {
+              scrape_time: s.scrape_time || '06:00',
+              generate_time: s.generate_time || '07:00',
+              series_time: s.series_time || '07:30',
+              max_daily_generates: s.max_daily_generates || 10,
+              auto_cta: s.auto_cta !== false,
+              auto_swipe: s.auto_swipe !== false
+            };
+          }
+          const aps = state._apSettings;
+          return h('div', { style: { display: 'flex', flexDirection: 'column', gap: '14px' } },
+            // Schedule row
+            h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' } },
+              h('div', {},
+                h('label', { style: { fontSize: '11px', fontWeight: '600', color: 'var(--gray-500)', display: 'block', marginBottom: '4px' } }, 'SCRAPE TIME'),
+                h('input', {
+                  type: 'time', value: aps.scrape_time,
+                  style: { width: '100%', padding: '6px 10px', border: '1px solid var(--gray-200)', borderRadius: '6px', fontSize: '13px', background: 'var(--white)', color: 'var(--gray-700)' },
+                  oninput: (e) => { state._apSettings.scrape_time = e.target.value; }
+                })
+              ),
+              h('div', {},
+                h('label', { style: { fontSize: '11px', fontWeight: '600', color: 'var(--gray-500)', display: 'block', marginBottom: '4px' } }, 'GENERATE TIME'),
+                h('input', {
+                  type: 'time', value: aps.generate_time,
+                  style: { width: '100%', padding: '6px 10px', border: '1px solid var(--gray-200)', borderRadius: '6px', fontSize: '13px', background: 'var(--white)', color: 'var(--gray-700)' },
+                  oninput: (e) => { state._apSettings.generate_time = e.target.value; }
+                })
+              ),
+              h('div', {},
+                h('label', { style: { fontSize: '11px', fontWeight: '600', color: 'var(--gray-500)', display: 'block', marginBottom: '4px' } }, 'SERIES TIME'),
+                h('input', {
+                  type: 'time', value: aps.series_time,
+                  style: { width: '100%', padding: '6px 10px', border: '1px solid var(--gray-200)', borderRadius: '6px', fontSize: '13px', background: 'var(--white)', color: 'var(--gray-700)' },
+                  oninput: (e) => { state._apSettings.series_time = e.target.value; }
+                })
+              )
+            ),
+            // Max generates slider
+            h('div', {},
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: '4px' } },
+                h('label', { style: { fontSize: '11px', fontWeight: '600', color: 'var(--gray-500)' } }, 'MAX DAILY GENERATES'),
+                h('span', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)' } }, String(aps.max_daily_generates))
+              ),
+              h('input', {
+                type: 'range', min: '1', max: '30', value: String(aps.max_daily_generates),
+                style: { width: '100%', accentColor: '#059669' },
+                oninput: (e) => { state._apSettings.max_daily_generates = parseInt(e.target.value); render(); }
+              })
+            ),
+            // Toggle switches
+            h('div', { style: { display: 'flex', gap: '16px' } },
+              h('label', { style: { display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px' } },
+                h('div', {
+                  style: {
+                    width: '36px', height: '20px', borderRadius: '10px', position: 'relative', cursor: 'pointer',
+                    background: aps.auto_cta ? '#059669' : '#cbd5e1', transition: 'background 0.2s'
+                  },
+                  onclick: () => { state._apSettings.auto_cta = !state._apSettings.auto_cta; render(); }
+                },
+                  h('div', { style: {
+                    width: '16px', height: '16px', borderRadius: '50%', background: 'white', position: 'absolute', top: '2px',
+                    left: aps.auto_cta ? '18px' : '2px', transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.2)'
+                  } })
+                ),
+                h('span', { style: { color: 'var(--gray-600)' } }, 'Auto-generate CTAs')
+              ),
+              h('label', { style: { display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px' } },
+                h('div', {
+                  style: {
+                    width: '36px', height: '20px', borderRadius: '10px', position: 'relative', cursor: 'pointer',
+                    background: aps.auto_swipe ? '#059669' : '#cbd5e1', transition: 'background 0.2s'
+                  },
+                  onclick: () => { state._apSettings.auto_swipe = !state._apSettings.auto_swipe; render(); }
+                },
+                  h('div', { style: {
+                    width: '16px', height: '16px', borderRadius: '50%', background: 'white', position: 'absolute', top: '2px',
+                    left: aps.auto_swipe ? '18px' : '2px', transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.2)'
+                  } })
+                ),
+                h('span', { style: { color: 'var(--gray-600)' } }, 'Auto-save to swipe file')
+              )
+            ),
+            // Save + Enable/Disable buttons
+            h('div', { style: { display: 'flex', gap: '8px', marginTop: '4px' } },
+              h('button', {
+                className: 'btn btn-sm',
+                style: { background: '#059669', color: 'white', border: 'none', flex: 1 },
+                onclick: async () => {
+                  try {
+                    const res = await api('/api/autopilot/enable', {
+                      method: 'POST',
+                      body: {
+                        enabled: state.autopilot?.enabled !== false ? state.autopilot.enabled : false,
+                        scrape_time: state._apSettings.scrape_time,
+                        generate_time: state._apSettings.generate_time,
+                        series_time: state._apSettings.series_time,
+                        max_daily_generates: state._apSettings.max_daily_generates,
+                        auto_cta: state._apSettings.auto_cta,
+                        auto_swipe: state._apSettings.auto_swipe
+                      }
+                    });
+                    state.autopilot = { ...state.autopilot, settings: res.settings };
+                    toast('Autopilot settings saved', 'success');
+                    render();
+                  } catch (err) { toast('Save failed: ' + err.message, 'error'); }
+                }
+              }, 'Save Settings'),
+              h('button', {
+                className: 'btn btn-sm',
+                style: { background: state.autopilot?.enabled ? '#dc2626' : '#2563eb', color: 'white', border: 'none', flex: 1 },
+                onclick: async () => {
+                  try {
+                    const newEnabled = !state.autopilot?.enabled;
+                    const res = await api('/api/autopilot/enable', {
+                      method: 'POST',
+                      body: { enabled: newEnabled, ...state._apSettings }
+                    });
+                    state.autopilot = { ...state.autopilot, enabled: res.enabled, settings: res.settings };
+                    toast(res.enabled ? 'Autopilot ENABLED' : 'Autopilot disabled', res.enabled ? 'success' : 'info');
+                    render();
+                  } catch (err) { toast('Toggle failed: ' + err.message, 'error'); }
+                }
+              }, state.autopilot?.enabled ? 'Disable Autopilot' : 'Enable Autopilot')
+            ),
+            // Last run info
+            (state.autopilot?.today?.actions || 0) > 0
+              ? h('div', { style: { fontSize: '11px', color: 'var(--gray-400)', padding: '8px', background: 'var(--gray-50)', borderRadius: '6px', marginTop: '4px' } },
+                  `Today: ${state.autopilot.today.scraped || 0} scraped, ${state.autopilot.today.generated || 0} generated, ${state.autopilot.today.ctas_created || 0} CTAs, ${state.autopilot.today.swipes_saved || 0} swipes`
+                )
+              : null
+          );
+        })()
       ),
       // Keyboard Shortcuts
       h('div', { className: 'card', style: { padding: '24px' } },
@@ -13417,6 +13636,278 @@ function render() {
             )
           )
         )
+      : null,
+    // Content Detail Modal
+    state._contentDetail
+      ? (() => {
+          const item = (state.content || []).find(c => c.id === state._contentDetail);
+          if (!item) { state._contentDetail = null; return null; }
+          const formats = Object.entries(item.formats || {}).filter(([,v]) => v?.content);
+          const qScore = contentQualityScore(item);
+          const qLabel = qualityLabel(qScore);
+          const pillar = categoryToPillar(item.trigger_category);
+          const perf = (state.performance || []).filter(p => p.content_id === item.id);
+          const totalEng = perf.reduce((s, p) => s + (p.engagement || 0), 0);
+          const totalImp = perf.reduce((s, p) => s + (p.impressions || 0), 0);
+          const abTests = item.ab_tests || {};
+          const detailFmt = state._detailFormat || (formats[0] ? formats[0][0] : null);
+          const activeFmt = detailFmt ? item.formats[detailFmt] : null;
+          const contentStr = typeof activeFmt?.content === 'object' ? activeFmt.content.content : activeFmt?.content;
+
+          return h('div', { className: 'modal-overlay', onclick: (e) => { if (e.target.classList.contains('modal-overlay')) { state._contentDetail = null; state._detailFormat = null; render(); } } },
+            h('div', { style: {
+              background: 'var(--white)', borderRadius: '12px', width: '95%', maxWidth: '1000px',
+              maxHeight: '90vh', overflow: 'hidden', display: 'flex', flexDirection: 'column',
+              boxShadow: '0 25px 60px rgba(0,0,0,0.3)'
+            } },
+              // Modal header
+              h('div', { style: { padding: '20px 24px', borderBottom: '1px solid var(--gray-200)', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexShrink: 0 } },
+                h('div', { style: { flex: 1 } },
+                  h('h2', { style: { fontFamily: "'Fraunces', serif", fontSize: '20px', color: 'var(--navy)', marginBottom: '8px' } }, item.trigger_title || 'Untitled'),
+                  h('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center' } },
+                    h('span', { className: `badge ${sourceBadgeClass(item.trigger_source)}` }, sourceLabel(item.trigger_source)),
+                    h('span', { className: `badge badge-${item.status}` }, item.status),
+                    h('span', { style: { background: pillar.color + '18', color: pillar.color, border: `1px solid ${pillar.color}33`, padding: '2px 8px', borderRadius: '12px', fontSize: '11px', fontWeight: '600' } }, pillar.label),
+                    h('span', { style: { fontSize: '11px', color: qLabel.color, fontWeight: '600', border: `1px solid ${qLabel.color}44`, borderRadius: '4px', padding: '2px 8px' } }, `Quality: ${qScore}/100`),
+                    h('span', { style: { fontSize: '11px', color: 'var(--gray-400)' } }, timeAgo(item.generated_at)),
+                    item.generation_mode ? h('span', { style: { fontSize: '10px', background: '#dbeafe', color: '#2563eb', padding: '2px 6px', borderRadius: '4px' } }, item.generation_mode) : null
+                  )
+                ),
+                h('button', {
+                  style: { background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: 'var(--gray-400)', padding: '4px 8px' },
+                  onclick: () => { state._contentDetail = null; state._detailFormat = null; render(); }
+                }, '\u2715')
+              ),
+              // Body — two columns
+              h('div', { style: { display: 'flex', flex: 1, overflow: 'hidden', minHeight: 0 } },
+                // Left column — content
+                h('div', { style: { flex: '1.5', padding: '20px 24px', overflowY: 'auto', borderRight: '1px solid var(--gray-200)' } },
+                  // Format tabs
+                  h('div', { style: { display: 'flex', gap: '4px', marginBottom: '16px', flexWrap: 'wrap' } },
+                    ...formats.map(([key]) => {
+                      const isActive = detailFmt === key;
+                      const fmtStatus = item.formats[key]?.status || 'review';
+                      const statusDot = fmtStatus === 'approved' ? '#059669' : fmtStatus === 'rejected' ? '#dc2626' : '#d97706';
+                      return h('button', {
+                        style: {
+                          padding: '6px 14px', borderRadius: '6px', fontSize: '12px', fontWeight: '600', border: 'none', cursor: 'pointer',
+                          background: isActive ? 'var(--navy)' : 'var(--gray-100)', color: isActive ? 'white' : 'var(--gray-600)',
+                          display: 'flex', alignItems: 'center', gap: '6px'
+                        },
+                        onclick: () => { state._detailFormat = key; render(); }
+                      },
+                        h('div', { style: { width: '6px', height: '6px', borderRadius: '50%', background: statusDot } }),
+                        formatName(key)
+                      );
+                    })
+                  ),
+                  // Format action buttons
+                  activeFmt ? h('div', { style: { display: 'flex', gap: '8px', marginBottom: '16px' } },
+                    activeFmt.status === 'review' ? h('button', {
+                      className: 'btn btn-success btn-sm', style: { fontSize: '12px' },
+                      onclick: async () => { await approveFormat(item.id, detailFmt); }
+                    }, 'Approve') : null,
+                    activeFmt.status === 'review' ? h('button', {
+                      className: 'btn btn-sm', style: { background: '#dc2626', color: 'white', border: 'none', fontSize: '12px' },
+                      onclick: () => rejectFormat(item.id, detailFmt)
+                    }, 'Reject') : null,
+                    h('button', {
+                      className: 'btn btn-ghost btn-sm', style: { fontSize: '12px' },
+                      onclick: () => { navigator.clipboard.writeText(contentStr || ''); toast('Copied!', 'success'); }
+                    }, 'Copy'),
+                    activeFmt.status === 'approved' ? h('button', {
+                      className: 'btn btn-sm', style: { background: 'var(--purple)', color: 'white', border: 'none', fontSize: '12px' },
+                      onclick: async () => {
+                        try {
+                          await api(`/api/content/${item.id}/publish`, { method: 'POST', body: { format: detailFmt } });
+                          toast('Published!', 'success'); loadData();
+                        } catch (err) { toast('Publish failed: ' + err.message, 'error'); }
+                      }
+                    }, 'Publish') : null
+                  ) : null,
+                  // Hook variants
+                  (() => {
+                    if (!item.hook_variants || !(detailFmt === 'linkedin' || detailFmt === 'x_single')) return null;
+                    const hookKey = detailFmt === 'linkedin' ? 'linkedin' : 'x';
+                    const hooks = item.hook_variants[hookKey] || [];
+                    if (hooks.length === 0) return null;
+                    return h('div', { style: { marginBottom: '16px', padding: '12px', background: '#f8fafc', borderRadius: '8px', border: '1px solid var(--gray-200)' } },
+                      h('div', { style: { fontSize: '11px', fontWeight: '700', color: 'var(--gray-500)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' } }, 'Hook Variants'),
+                      h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
+                        ...hooks.map((hook, i) =>
+                          h('div', {
+                            style: { padding: '8px 12px', borderRadius: '6px', fontSize: '13px', cursor: 'pointer', border: '1px solid var(--gray-200)', background: 'var(--white)', transition: 'all 0.15s' },
+                            onclick: async () => {
+                              try {
+                                await api(`/api/content/${item.id}/swap-hook`, { method: 'POST', body: { format: detailFmt, hook_index: i } });
+                                toast('Hook swapped!', 'success'); loadData();
+                              } catch (err) { toast('Swap failed', 'error'); }
+                            },
+                            onmouseover: (e) => { e.currentTarget.style.borderColor = 'var(--blue)'; e.currentTarget.style.background = '#eff6ff'; },
+                            onmouseout: (e) => { e.currentTarget.style.borderColor = 'var(--gray-200)'; e.currentTarget.style.background = 'var(--white)'; }
+                          },
+                            h('span', { style: { fontWeight: '700', color: 'var(--blue)', marginRight: '8px' } }, `${i + 1}.`),
+                            hook
+                          )
+                        )
+                      )
+                    );
+                  })(),
+                  // A/B Test variants
+                  abTests[detailFmt] ? h('div', { style: { marginBottom: '16px', padding: '12px', background: '#fefce8', borderRadius: '8px', border: '1px solid #fef08a' } },
+                    h('div', { style: { fontSize: '11px', fontWeight: '700', color: '#a16207', marginBottom: '8px', textTransform: 'uppercase' } }, 'A/B Test Variants'),
+                    h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' } },
+                      h('div', { style: { padding: '10px', background: 'white', borderRadius: '6px', border: abTests[detailFmt].winner === 'variant_a' ? '2px solid #059669' : '1px solid #e5e7eb' } },
+                        h('div', { style: { fontSize: '11px', fontWeight: '700', color: '#2563eb', marginBottom: '4px' } }, `A: ${abTests[detailFmt].variant_a?.hook_type || 'variant'}`),
+                        h('div', { style: { fontSize: '12px', color: 'var(--gray-600)' } }, (abTests[detailFmt].variant_a?.hook || abTests[detailFmt].variant_a?.content || '').slice(0, 200)),
+                        !abTests[detailFmt].winner ? h('button', {
+                          className: 'btn btn-sm', style: { marginTop: '8px', background: '#2563eb', color: 'white', border: 'none', fontSize: '11px', width: '100%' },
+                          onclick: async () => {
+                            await api(`/api/content/${item.id}/ab-test/select`, { method: 'POST', body: { format: detailFmt, winner: 'variant_a' } });
+                            toast('Variant A selected!', 'success'); loadData();
+                          }
+                        }, 'Select A') : null
+                      ),
+                      h('div', { style: { padding: '10px', background: 'white', borderRadius: '6px', border: abTests[detailFmt].winner === 'variant_b' ? '2px solid #059669' : '1px solid #e5e7eb' } },
+                        h('div', { style: { fontSize: '11px', fontWeight: '700', color: '#7c3aed', marginBottom: '4px' } }, `B: ${abTests[detailFmt].variant_b?.hook_type || 'variant'}`),
+                        h('div', { style: { fontSize: '12px', color: 'var(--gray-600)' } }, (abTests[detailFmt].variant_b?.hook || abTests[detailFmt].variant_b?.content || '').slice(0, 200)),
+                        !abTests[detailFmt].winner ? h('button', {
+                          className: 'btn btn-sm', style: { marginTop: '8px', background: '#7c3aed', color: 'white', border: 'none', fontSize: '11px', width: '100%' },
+                          onclick: async () => {
+                            await api(`/api/content/${item.id}/ab-test/select`, { method: 'POST', body: { format: detailFmt, winner: 'variant_b' } });
+                            toast('Variant B selected!', 'success'); loadData();
+                          }
+                        }, 'Select B') : null
+                      )
+                    ),
+                    abTests[detailFmt].winner ? h('div', { style: { marginTop: '8px', fontSize: '12px', color: '#059669', fontWeight: '600' } }, `Winner: ${abTests[detailFmt].winner === 'variant_a' ? 'A' : 'B'} (${abTests[detailFmt][abTests[detailFmt].winner]?.hook_type})`) : null
+                  ) : null,
+                  // Content body
+                  h('div', { style: { background: 'var(--gray-50)', borderRadius: '8px', padding: '16px', fontSize: '14px', lineHeight: '1.7', whiteSpace: 'pre-wrap', wordBreak: 'break-word', color: 'var(--gray-700)', border: '1px solid var(--gray-200)' } },
+                    contentStr || 'No content'
+                  )
+                ),
+                // Right column — metadata & performance
+                h('div', { style: { width: '320px', padding: '20px', overflowY: 'auto', background: '#f8fafc', flexShrink: 0 } },
+                  // Metadata section
+                  h('div', { style: { marginBottom: '20px' } },
+                    h('div', { style: { fontSize: '11px', fontWeight: '700', color: 'var(--gray-500)', marginBottom: '8px', textTransform: 'uppercase' } }, 'Metadata'),
+                    h('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px' } },
+                      ...[
+                        ['Source', sourceLabel(item.trigger_source)],
+                        ['Category', item.trigger_category || 'N/A'],
+                        ['Generated', item.generated_at ? new Date(item.generated_at).toLocaleDateString() : 'N/A'],
+                        ['Formats', `${formats.length} generated`],
+                        ['Mode', item.generation_mode || 'manual'],
+                        ['Voice', item.voice || 'default'],
+                        ['Audience', item.audience || 'default']
+                      ].map(([label, val]) =>
+                        h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: '12px' } },
+                          h('span', { style: { color: 'var(--gray-500)' } }, label),
+                          h('span', { style: { fontWeight: '500', color: 'var(--gray-700)' } }, val)
+                        )
+                      )
+                    )
+                  ),
+                  // Source URL
+                  item.trigger_url ? h('div', { style: { marginBottom: '20px' } },
+                    h('a', {
+                      href: item.trigger_url, target: '_blank', rel: 'noopener',
+                      style: { fontSize: '12px', color: 'var(--blue)', textDecoration: 'none', wordBreak: 'break-all' }
+                    }, item.trigger_url.slice(0, 60) + (item.trigger_url.length > 60 ? '...' : ''))
+                  ) : null,
+                  // Performance section
+                  h('div', { style: { marginBottom: '20px' } },
+                    h('div', { style: { fontSize: '11px', fontWeight: '700', color: 'var(--gray-500)', marginBottom: '8px', textTransform: 'uppercase' } }, 'Performance'),
+                    perf.length > 0
+                      ? h('div', {},
+                          h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '10px' } },
+                            h('div', { style: { background: 'white', borderRadius: '6px', padding: '10px', textAlign: 'center', border: '1px solid var(--gray-200)' } },
+                              h('div', { style: { fontSize: '18px', fontWeight: '700', color: 'var(--navy)', fontFamily: "'Fraunces', serif" } }, String(totalImp.toLocaleString())),
+                              h('div', { style: { fontSize: '10px', color: 'var(--gray-400)' } }, 'Impressions')
+                            ),
+                            h('div', { style: { background: 'white', borderRadius: '6px', padding: '10px', textAlign: 'center', border: '1px solid var(--gray-200)' } },
+                              h('div', { style: { fontSize: '18px', fontWeight: '700', color: '#059669', fontFamily: "'Fraunces', serif" } }, String(totalEng)),
+                              h('div', { style: { fontSize: '10px', color: 'var(--gray-400)' } }, 'Engagement')
+                            )
+                          ),
+                          ...perf.map(p =>
+                            h('div', { style: { fontSize: '11px', color: 'var(--gray-500)', padding: '4px 0', borderBottom: '1px solid var(--gray-100)' } },
+                              `${formatName(p.format)}: ${p.impressions} imp, ${p.engagement} eng, ${p.clicks} clicks, ${p.leads} leads`
+                            )
+                          )
+                        )
+                      : h('div', { style: { fontSize: '12px', color: 'var(--gray-400)', padding: '12px', background: 'white', borderRadius: '6px', textAlign: 'center', border: '1px solid var(--gray-200)' } }, 'No performance data yet')
+                  ),
+                  // Quick log performance
+                  h('div', { style: { marginBottom: '20px' } },
+                    h('div', { style: { fontSize: '11px', fontWeight: '700', color: 'var(--gray-500)', marginBottom: '8px', textTransform: 'uppercase' } }, 'Log Performance'),
+                    h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' } },
+                      h('input', {
+                        type: 'number', placeholder: 'Impressions', id: `detail-imp-${item.id}`,
+                        style: { padding: '6px 8px', border: '1px solid var(--gray-200)', borderRadius: '6px', fontSize: '12px', background: 'white', color: 'var(--gray-700)' }
+                      }),
+                      h('input', {
+                        type: 'number', placeholder: 'Engagement', id: `detail-eng-${item.id}`,
+                        style: { padding: '6px 8px', border: '1px solid var(--gray-200)', borderRadius: '6px', fontSize: '12px', background: 'white', color: 'var(--gray-700)' }
+                      }),
+                      h('input', {
+                        type: 'number', placeholder: 'Clicks', id: `detail-cli-${item.id}`,
+                        style: { padding: '6px 8px', border: '1px solid var(--gray-200)', borderRadius: '6px', fontSize: '12px', background: 'white', color: 'var(--gray-700)' }
+                      }),
+                      h('input', {
+                        type: 'number', placeholder: 'Leads', id: `detail-lea-${item.id}`,
+                        style: { padding: '6px 8px', border: '1px solid var(--gray-200)', borderRadius: '6px', fontSize: '12px', background: 'white', color: 'var(--gray-700)' }
+                      })
+                    ),
+                    h('button', {
+                      className: 'btn btn-sm',
+                      style: { background: 'var(--blue)', color: 'white', border: 'none', width: '100%', marginTop: '8px', fontSize: '12px' },
+                      onclick: async () => {
+                        const imp = document.getElementById(`detail-imp-${item.id}`)?.value || 0;
+                        const eng = document.getElementById(`detail-eng-${item.id}`)?.value || 0;
+                        const cli = document.getElementById(`detail-cli-${item.id}`)?.value || 0;
+                        const lea = document.getElementById(`detail-lea-${item.id}`)?.value || 0;
+                        try {
+                          await api(`/api/content/${item.id}/performance`, {
+                            method: 'POST',
+                            body: { format: detailFmt || 'linkedin', impressions: imp, engagement: eng, clicks: cli, leads: lea }
+                          });
+                          toast('Performance logged!', 'success');
+                          loadData();
+                        } catch (err) { toast('Failed: ' + err.message, 'error'); }
+                      }
+                    }, 'Log Metrics')
+                  ),
+                  // Autopilot metadata
+                  item.autopilot_meta ? h('div', { style: { marginBottom: '20px' } },
+                    h('div', { style: { fontSize: '11px', fontWeight: '700', color: 'var(--gray-500)', marginBottom: '8px', textTransform: 'uppercase' } }, 'Autopilot Info'),
+                    h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
+                      ...[
+                        ['Score', item.autopilot_meta.score],
+                        ['Tier', item.autopilot_meta.tier],
+                        ['Pillar', item.autopilot_meta.pillar],
+                        ['Gap Fill', item.autopilot_meta.gap_boost ? 'Yes' : 'No']
+                      ].map(([label, val]) =>
+                        h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: '12px' } },
+                          h('span', { style: { color: 'var(--gray-500)' } }, label),
+                          h('span', { style: { fontWeight: '500', color: 'var(--gray-700)' } }, String(val))
+                        )
+                      )
+                    )
+                  ) : null,
+                  // Comment CTAs
+                  item.comment_ctas?.[detailFmt] ? h('div', { style: { marginBottom: '20px' } },
+                    h('div', { style: { fontSize: '11px', fontWeight: '700', color: 'var(--gray-500)', marginBottom: '8px', textTransform: 'uppercase' } }, 'Comment CTA'),
+                    h('div', { style: { padding: '10px', background: 'white', borderRadius: '6px', fontSize: '12px', color: 'var(--gray-600)', border: '1px solid var(--gray-200)', lineHeight: '1.5' } },
+                      item.comment_ctas[detailFmt]
+                    )
+                  ) : null
+                )
+              )
+            )
+          );
+        })()
       : null,
     renderToasts()
   );

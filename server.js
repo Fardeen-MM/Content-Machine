@@ -7695,13 +7695,13 @@ Return JSON (raw, no fences):
 
       config.enabled = body.enabled !== false;
       config.settings = {
-        scrape_time: body.scrape_time || '06:00',
-        generate_time: body.generate_time || '07:00',
-        series_time: body.series_time || '07:30',
-        auto_cta: body.auto_cta !== false,
-        auto_swipe: body.auto_swipe !== false,
-        max_daily_generates: body.max_daily_generates || 10,
         ...config.settings,
+        scrape_time: body.scrape_time || config.settings.scrape_time || '06:00',
+        generate_time: body.generate_time || config.settings.generate_time || '07:00',
+        series_time: body.series_time || config.settings.series_time || '07:30',
+        auto_cta: body.auto_cta !== undefined ? body.auto_cta : (config.settings.auto_cta !== false),
+        auto_swipe: body.auto_swipe !== undefined ? body.auto_swipe : (config.settings.auto_swipe !== false),
+        max_daily_generates: body.max_daily_generates || config.settings.max_daily_generates || 10,
         ...body.settings
       };
       config.updated_at = now();

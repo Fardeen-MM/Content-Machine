@@ -4204,6 +4204,49 @@ ${context}`;
       }
     }
 
+    // POST /api/clients/:id/talking-points — AI-generated quick prep talking points
+    const talkingPointsMatch = pathname.match(/^\/api\/clients\/(\d+)\/talking-points$/);
+    if (talkingPointsMatch && method === 'POST') {
+      const clientId = parseInt(talkingPointsMatch[1]);
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not configured' }, 503);
+      try {
+        const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+        db.initDb();
+        const client = db.getClient(clientId);
+        if (!client) return json(res, { error: 'Client not found' }, 404);
+
+        const meetings = db.getMeetings({ limit: 50 }).filter(m => m.client_name === client.name);
+        const actions = db.getActions({ status: 'open' }).filter(a => a.client_id === clientId);
+        const health = db.computeClientHealth(clientId);
+        const deals = db.getDealOutcomes({}).filter(d => d.client_id === clientId);
+
+        const ctx = [];
+        ctx.push(`CLIENT: ${client.name}${client.firm_name ? ' (' + client.firm_name + ')' : ''}`);
+        ctx.push(`STATUS: ${client.status}, HEALTH: ${health?.score || 'N/A'}/100`);
+        if (client.practice_areas?.length) ctx.push(`PRACTICE: ${client.practice_areas.join(', ')}`);
+        if (meetings.length > 0) {
+          ctx.push(`\nMEETINGS (${meetings.length}):`);
+          for (const m of meetings.slice(0, 5)) {
+            ctx.push(`- ${m.meeting_type}: ${m.summary?.slice(0, 120) || m.title} (${m.sentiment || 'n/a'})`);
+          }
+        }
+        if (actions.length > 0) {
+          ctx.push(`\nOPEN ACTIONS (${actions.length}):`);
+          for (const a of actions.slice(0, 5)) ctx.push(`- [${a.owner}] ${a.description}`);
+        }
+
+        const result = await callClaude({
+          model: HAIKU,
+          system: 'You generate concise call prep talking points for a sales team. Be specific, reference names and details. Return JSON.',
+          prompt: `Generate talking points for the next call with this client.\n\n${ctx.join('\n')}\n\nReturn JSON: { "opener": "specific opening line", "talking_points": ["point 1", "point 2", ...], "watch_out": "key risk to address", "close_with": "specific next step to propose" }`,
+          maxTokens: 500
+        });
+
+        const points = parseJsonResponse(result);
+        return json(res, { client_name: client.name, ...points });
+      } catch (err) { return apiError(res, err); }
+    }
+
     // --- Health API ---
 
     // GET /api/health — get health overview for all clients

@@ -11092,7 +11092,43 @@ function renderMeetingsPage() {
               }
               state._extractingTriggers = false; render();
             }
-          }, state._extractingTriggers ? 'Extracting...' : 'Extract Content Triggers')
+          }, state._extractingTriggers ? 'Extracting...' : 'Extract Content Triggers'),
+          h('button', {
+            className: 'btn btn-sm',
+            style: { marginLeft: '6px', background: 'var(--purple)', color: 'white', border: 'none' },
+            disabled: state._meetingContentGen,
+            onclick: async () => {
+              state._meetingContentGen = true; render();
+              try {
+                // Create a manual trigger from the meeting then generate
+                const atoms = detail._atoms || [];
+                const summary = detail.summary || '';
+                const painPoints = (detail.extracted_data?.pain_points || []).join('; ');
+                const triggerTitle = atoms.length > 0
+                  ? atoms[0].content.slice(0, 120)
+                  : (painPoints || summary).slice(0, 120);
+
+                // Add as trigger
+                const addRes = await api('/api/triggers/add', { method: 'POST', body: {
+                  title: triggerTitle,
+                  source: 'meeting_insight',
+                  category: 'PAIN_POINT',
+                  raw_content: `From meeting: ${detail.title}\n\nSummary: ${summary}\n\nPain points: ${painPoints}\n\nKey insights: ${atoms.map(a => a.content).join('\n')}`
+                }});
+
+                // Generate content from it
+                if (addRes.trigger?.id) {
+                  const genRes = await api('/api/triggers/generate', { method: 'POST', body: { trigger_id: addRes.trigger.id } });
+                  toast(`Generated content from meeting insight!`, 'success');
+                  loadData();
+                } else {
+                  toast('Created trigger — generate from Triggers page', 'info');
+                  loadData();
+                }
+              } catch (err) { toast('Failed: ' + err.message, 'error'); }
+              state._meetingContentGen = false; render();
+            }
+          }, state._meetingContentGen ? 'Generating...' : 'Generate Content')
         )
       ),
 
@@ -11628,7 +11664,25 @@ function renderClientsPage() {
           h('div', {}, h('span', { style: { color: 'var(--gray-500)' } }, 'Meetings'), h('div', { style: { fontWeight: '600' } }, String(ch.meeting_count))),
           h('div', {}, h('span', { style: { color: 'var(--gray-500)' } }, 'Sentiment'), h('div', { style: { fontWeight: '600' } }, ch.sentiment || 'N/A'))
         ),
-        ch.notes && ch.notes !== 'Healthy' ? h('div', { style: { marginTop: '8px', fontSize: '12px', color: 'var(--gray-500)' } }, ch.notes) : null
+        ch.notes && ch.notes !== 'Healthy' ? h('div', { style: { marginTop: '8px', fontSize: '12px', color: 'var(--gray-500)' } }, ch.notes) : null,
+        // Churn prediction inline
+        (() => {
+          if (!ch) return null;
+          const wp = (state._winProbabilities || {})[detail.id];
+          const churnRisk = ch.score < 30 ? 'high' : ch.score < 60 ? 'medium' : 'low';
+          const churnColor = churnRisk === 'high' ? 'var(--red)' : churnRisk === 'medium' ? 'var(--amber)' : 'var(--green)';
+          const churnBg = churnRisk === 'high' ? '#fef2f2' : churnRisk === 'medium' ? '#fffbeb' : '#f0fdf4';
+          const signals = [];
+          if (ch.days_since_contact > 10) signals.push(`${ch.days_since_contact} days silent`);
+          if (ch.open_actions > 3) signals.push(`${ch.open_actions} overdue actions`);
+          if (ch.sentiment === 'negative') signals.push('negative sentiment');
+          if (ch.meeting_count <= 1) signals.push('only 1 meeting');
+          return h('div', { style: { marginTop: '12px', padding: '10px 14px', background: churnBg, borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '12px' } },
+            h('span', { style: { fontSize: '12px', fontWeight: '700', color: churnColor, textTransform: 'uppercase' } }, `${churnRisk} churn risk`),
+            wp ? h('span', { style: { fontSize: '12px', color: 'var(--gray-500)' } }, `| Win probability: ${wp.win_probability}%`) : null,
+            signals.length > 0 ? h('span', { style: { fontSize: '11px', color: 'var(--gray-400)' } }, `Signals: ${signals.join(', ')}`) : null
+          );
+        })()
       ) : null,
       h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px', marginBottom: '20px' } },
         h('div', { className: 'card', style: { padding: '16px' } },
@@ -11664,6 +11718,19 @@ function renderClientsPage() {
             state.generatingBrief = false; render();
           }
         }, state.generatingBrief ? 'Generating...' : 'Generate Pre-Call Brief'),
+        h('button', {
+          className: 'btn btn-sm',
+          style: { background: 'var(--purple)', color: 'white', border: 'none' },
+          disabled: state._genTalkingPoints,
+          onclick: async () => {
+            state._genTalkingPoints = true; render();
+            try {
+              state._talkingPoints = await api(`/api/clients/${detail.id}/talking-points`, { method: 'POST' });
+              toast('Talking points ready', 'success');
+            } catch (err) { toast('Failed: ' + err.message, 'error'); }
+            state._genTalkingPoints = false; render();
+          }
+        }, state._genTalkingPoints ? 'Thinking...' : 'Quick Prep'),
         h('div', { style: { position: 'relative', display: 'inline-block' } },
           h('button', {
             className: 'btn btn-outline btn-sm',
@@ -11693,6 +11760,33 @@ function renderClientsPage() {
         )
       ),
       // Pre-call brief
+      // AI Talking Points
+      state._talkingPoints ? h('div', { className: 'card', style: { marginBottom: '16px', borderLeft: '4px solid var(--purple)' } },
+        h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' } },
+          h('h4', { style: { fontFamily: "'Fraunces', serif" } }, 'Quick Prep — Talking Points'),
+          h('button', { className: 'btn btn-ghost btn-sm', onclick: () => { state._talkingPoints = null; render(); } }, 'Close')
+        ),
+        state._talkingPoints.opener ? h('div', { style: { padding: '10px 14px', background: '#f0fdf4', borderRadius: '8px', marginBottom: '12px', fontSize: '13px' } },
+          h('span', { style: { fontWeight: '600', color: 'var(--green)' } }, 'Opener: '),
+          state._talkingPoints.opener
+        ) : null,
+        (state._talkingPoints.talking_points || []).length > 0 ? h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '12px' } },
+          ...(state._talkingPoints.talking_points || []).map((tp, i) =>
+            h('div', { style: { display: 'flex', gap: '8px', fontSize: '13px', padding: '4px 0' } },
+              h('span', { style: { fontWeight: '700', color: 'var(--purple)', flexShrink: '0' } }, `${i + 1}.`),
+              h('span', {}, tp)
+            )
+          )
+        ) : null,
+        state._talkingPoints.watch_out ? h('div', { style: { padding: '10px 14px', background: '#fef2f2', borderRadius: '8px', marginBottom: '12px', fontSize: '13px' } },
+          h('span', { style: { fontWeight: '600', color: 'var(--red)' } }, 'Watch Out: '),
+          state._talkingPoints.watch_out
+        ) : null,
+        state._talkingPoints.close_with ? h('div', { style: { padding: '10px 14px', background: '#eff6ff', borderRadius: '8px', fontSize: '13px' } },
+          h('span', { style: { fontWeight: '600', color: 'var(--blue)' } }, 'Close With: '),
+          state._talkingPoints.close_with
+        ) : null
+      ) : null,
       state.clientBrief && state.clientBrief.client_id === detail.id ? h('div', { className: 'card', style: {
         marginBottom: '16px', borderLeft: '4px solid var(--blue)'
       } },

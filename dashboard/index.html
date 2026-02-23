@@ -11261,6 +11261,69 @@ function renderSettingsPage() {
           );
         })()
       )
+    ),
+    // Activity Feed + Notifications
+    h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', maxWidth: '900px', marginTop: '20px' } },
+      // Activity Feed
+      h('div', { className: 'card', style: { padding: '24px' } },
+        h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' } },
+          h('h3', { style: { fontSize: '16px', color: 'var(--navy)', margin: 0 } }, 'Activity Feed'),
+          h('button', {
+            className: 'btn btn-ghost btn-sm',
+            style: { fontSize: '11px' },
+            onclick: async () => {
+              try {
+                state._activityFeed = await api('/api/activity-feed?limit=20');
+                render();
+              } catch (err) { toast('Failed: ' + err.message, 'error'); }
+            }
+          }, state._activityFeed ? 'Refresh' : 'Load')
+        ),
+        state._activityFeed ? h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px', maxHeight: '400px', overflowY: 'auto' } },
+          ...(state._activityFeed.feed || []).slice(0, 20).map(item => {
+            const typeColors = { webhook: '#7c3aed', generation: '#2563eb', publish: '#059669', meeting: '#0ea5e9', alert: '#dc2626', autopilot: '#d97706' };
+            const typeIcons = { webhook: '\u{1F517}', generation: '\u{2728}', publish: '\u{1F4E4}', meeting: '\u{1F3A4}', alert: '\u{1F514}', autopilot: '\u{1F916}' };
+            return h('div', { style: { display: 'flex', gap: '8px', padding: '8px', borderRadius: '6px', background: 'var(--gray-50)', fontSize: '12px' } },
+              h('span', { style: { fontSize: '14px', flexShrink: 0 } }, typeIcons[item.type] || '\u{1F4AC}'),
+              h('div', { style: { flex: 1, minWidth: 0 } },
+                h('div', { style: { fontWeight: '500', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, item.title),
+                h('div', { style: { color: 'var(--gray-400)', fontSize: '10px', marginTop: '1px' } },
+                  `${item.source || ''} \u2022 ${item.timestamp ? timeAgo(item.timestamp) : '?'}`
+                )
+              ),
+              h('span', { style: { padding: '1px 6px', borderRadius: '4px', fontSize: '9px', fontWeight: '600', background: (typeColors[item.type] || '#64748b') + '18', color: typeColors[item.type] || '#64748b', flexShrink: 0 } }, item.type)
+            );
+          })
+        ) : h('div', { style: { fontSize: '13px', color: 'var(--gray-400)', textAlign: 'center', padding: '20px' } }, 'Click "Load" to see recent activity')
+      ),
+      // Notification History
+      h('div', { className: 'card', style: { padding: '24px' } },
+        h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' } },
+          h('h3', { style: { fontSize: '16px', color: 'var(--navy)', margin: 0 } }, 'Notification History'),
+          h('button', {
+            className: 'btn btn-ghost btn-sm',
+            style: { fontSize: '11px' },
+            onclick: async () => {
+              try {
+                state._notifications = await api('/api/notifications');
+                render();
+              } catch (err) { toast('Failed: ' + err.message, 'error'); }
+            }
+          }, state._notifications ? 'Refresh' : 'Load')
+        ),
+        state._notifications ? h('div', { style: { display: 'flex', flexDirection: 'column', gap: '4px', maxHeight: '400px', overflowY: 'auto' } },
+          ...(state._notifications.notifications || []).slice(0, 20).map(n =>
+            h('div', { style: { padding: '8px 10px', borderRadius: '6px', background: n.delivered ? '#f0fdf4' : '#fef2f2', border: '1px solid ' + (n.delivered ? '#bbf7d0' : '#fecaca'), fontSize: '12px' } },
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: '2px' } },
+                h('span', { style: { fontSize: '10px', color: n.delivered ? '#059669' : '#dc2626', fontWeight: '600' } }, n.delivered ? 'Sent' : 'Not configured'),
+                h('span', { style: { fontSize: '10px', color: 'var(--gray-400)' } }, n.sent_at ? timeAgo(n.sent_at) : '?')
+              ),
+              h('div', { style: { color: 'var(--gray-600)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, n.text)
+            )
+          ),
+          (state._notifications.notifications || []).length === 0 ? h('div', { style: { fontSize: '13px', color: 'var(--gray-400)', textAlign: 'center', padding: '20px' } }, 'No notifications yet') : null
+        ) : h('div', { style: { fontSize: '13px', color: 'var(--gray-400)', textAlign: 'center', padding: '20px' } }, 'Click "Load" to see notification history')
+      )
     )
   );
 }
@@ -11638,6 +11701,11 @@ function renderMeetingsPage() {
           state.reprocessingMeetings = false; render();
         }
       }, state.reprocessingMeetings ? 'Reprocessing...' : 'Reprocess All') : null,
+      meetings.length > 0 ? h('a', {
+        className: 'btn btn-sm btn-outline',
+        href: '/api/export/meetings',
+        style: { textDecoration: 'none' }
+      }, 'Export CSV') : null,
 
       // Type filter
       h('select', {
@@ -12151,14 +12219,15 @@ function renderClientsPage() {
         h('div', { className: 'sub' }, '/100')
       )
     ),
-    // Search
-    h('div', { style: { marginBottom: '20px' } },
+    // Search + Export
+    h('div', { style: { marginBottom: '20px', display: 'flex', gap: '10px', alignItems: 'center' } },
       h('input', {
         type: 'text', placeholder: 'Search by name, email, or firm...',
-        style: { padding: '8px 12px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '13px', width: '100%', maxWidth: '400px' },
+        style: { padding: '8px 12px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-200)', fontSize: '13px', flex: 1, maxWidth: '400px' },
         value: state.clientSearch || '',
         oninput: (e) => { state.clientSearch = e.target.value; render(); }
-      })
+      }),
+      clients.length > 0 ? h('a', { className: 'btn btn-sm btn-outline', href: '/api/export/clients', style: { textDecoration: 'none' } }, 'Export CSV') : null
     ),
     // Client list
     filtered.length === 0
@@ -12261,6 +12330,7 @@ function renderActionsPage() {
         h('option', { value: '' }, 'All Owners'),
         ...owners.map(o => h('option', { value: o }, o))
       ),
+      actions.length > 0 ? h('a', { className: 'btn btn-sm btn-outline', href: '/api/export/actions', style: { textDecoration: 'none' } }, 'Export CSV') : null,
       h('span', { style: { marginLeft: 'auto', fontSize: '12px', color: 'var(--gray-400)' } },
         `${filtered.length} action${filtered.length !== 1 ? 's' : ''}`)
     ),

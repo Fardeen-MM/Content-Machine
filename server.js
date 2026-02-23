@@ -406,7 +406,15 @@ const MIME = {
 
 // --- Telegram alerts ---
 
+// Notification log (in-memory ring buffer, persisted to JSON)
+const _notificationLog = readJSON('notifications.json', []);
+
 function sendTelegramAlert(text) {
+  // Log every notification attempt
+  _notificationLog.push({ text: text.replace(/<[^>]+>/g, '').slice(0, 300), sent_at: now(), delivered: !!process.env.TELEGRAM_BOT_TOKEN });
+  if (_notificationLog.length > 200) _notificationLog.splice(0, _notificationLog.length - 200);
+  try { writeJSON('notifications.json', _notificationLog); } catch {}
+
   const token = process.env.TELEGRAM_BOT_TOKEN;
   const chatId = process.env.TELEGRAM_CHAT_ID;
   if (!token || !chatId) return;
@@ -4466,6 +4474,108 @@ Extract patterns and return JSON (no fences):
     if (pathname === '/api/events' && method === 'GET') {
       const source = url.searchParams.get('source') || undefined;
       return json(res, db.getEvents({ source }));
+    }
+
+    // GET /api/notifications — notification/alert history
+    if (pathname === '/api/notifications' && method === 'GET') {
+      return json(res, { notifications: _notificationLog.slice().reverse(), total: _notificationLog.length });
+    }
+
+    // GET /api/activity-feed — unified activity timeline across all systems
+    if (pathname === '/api/activity-feed' && method === 'GET') {
+      try {
+        const limit = parseInt(url.searchParams.get('limit') || '50');
+        const feed = [];
+
+        // External events (webhooks)
+        try {
+          const events = db.getEvents({ limit: 30 });
+          for (const e of events) {
+            feed.push({ type: 'webhook', source: e.source, title: `${e.event_type}: ${e.client_name || e.client_email || 'Unknown'}`, detail: e.data ? JSON.stringify(e.data).slice(0, 200) : '', timestamp: e.created_at });
+          }
+        } catch {}
+
+        // Recent content generations
+        try {
+          const content = readJSON('content.json');
+          for (const c of content.slice(-20).reverse()) {
+            feed.push({ type: 'generation', source: c.trigger_source || 'manual', title: `Content generated: ${(c.trigger_title || '').slice(0, 60)}`, detail: `Status: ${c.status} | Mode: ${c.generation_mode || 'manual'}`, timestamp: c.generated_at || c.created_at });
+          }
+        } catch {}
+
+        // Published content
+        try {
+          const published = readJSON('published.json', []);
+          for (const p of published.slice(-15).reverse()) {
+            feed.push({ type: 'publish', source: p.platform || p.format, title: `Published: ${(p.title || '').slice(0, 60)}`, detail: `Platform: ${p.platform || p.format}`, timestamp: p.published_at });
+          }
+        } catch {}
+
+        // Recent meetings
+        try {
+          const meetings = db.getMeetings({ limit: 10 });
+          for (const m of meetings) {
+            feed.push({ type: 'meeting', source: 'fireflies', title: `Meeting: ${m.title}`, detail: `Type: ${m.meeting_type} | Client: ${m.client_name || 'N/A'}`, timestamp: m.date });
+          }
+        } catch {}
+
+        // Notifications
+        for (const n of _notificationLog.slice(-10).reverse()) {
+          feed.push({ type: 'alert', source: 'telegram', title: n.text.slice(0, 80), detail: n.delivered ? 'Delivered' : 'Not sent (Telegram not configured)', timestamp: n.sent_at });
+        }
+
+        // Autopilot log
+        try {
+          const autoLog = readJSON('autopilot-log.json', []);
+          for (const l of autoLog.slice(-10).reverse()) {
+            feed.push({ type: 'autopilot', source: 'autopilot', title: `Autopilot ${l.action}: ${l.result ? JSON.stringify(l.result).slice(0, 80) : l.error || ''}`, detail: l.error ? `Error: ${l.error}` : '', timestamp: l.timestamp });
+          }
+        } catch {}
+
+        // Sort by timestamp descending and limit
+        feed.sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0));
+
+        return json(res, { feed: feed.slice(0, limit), total: feed.length });
+      } catch (err) { return apiError(res, err); }
+    }
+
+    // GET /api/export/meetings — export meetings as CSV
+    if (pathname === '/api/export/meetings' && method === 'GET') {
+      try {
+        const meetings = db.getMeetings({ limit: 1000 });
+        const header = 'Date,Title,Type,Client,Sentiment,Duration,Summary\n';
+        const rows = meetings.map(m =>
+          `"${m.date || ''}","${(m.title || '').replace(/"/g, '""')}","${m.meeting_type || ''}","${(m.client_name || '').replace(/"/g, '""')}","${m.sentiment || ''}","${m.duration_minutes || ''}","${(m.summary || '').replace(/"/g, '""').slice(0, 500)}"`
+        ).join('\n');
+        res.writeHead(200, { 'Content-Type': 'text/csv', 'Content-Disposition': 'attachment; filename=meetings.csv', 'Access-Control-Allow-Origin': '*' });
+        return res.end(header + rows);
+      } catch (err) { return apiError(res, err); }
+    }
+
+    // GET /api/export/clients — export clients as CSV
+    if (pathname === '/api/export/clients' && method === 'GET') {
+      try {
+        const clients = db.getClients({ limit: 1000 });
+        const header = 'Name,Email,Firm,Practice Areas,Status,Created\n';
+        const rows = clients.map(c =>
+          `"${(c.name || '').replace(/"/g, '""')}","${c.email || ''}","${(c.firm_name || '').replace(/"/g, '""')}","${(c.practice_areas || []).join('; ')}","${c.status || ''}","${c.created_at || ''}"`
+        ).join('\n');
+        res.writeHead(200, { 'Content-Type': 'text/csv', 'Content-Disposition': 'attachment; filename=clients.csv', 'Access-Control-Allow-Origin': '*' });
+        return res.end(header + rows);
+      } catch (err) { return apiError(res, err); }
+    }
+
+    // GET /api/export/actions — export actions as CSV
+    if (pathname === '/api/export/actions' && method === 'GET') {
+      try {
+        const actions = db.getActions({});
+        const header = 'Description,Owner,Status,Due Date,Client,Created\n';
+        const rows = actions.map(a =>
+          `"${(a.description || '').replace(/"/g, '""')}","${a.owner || ''}","${a.status || ''}","${a.due_date || ''}","${(a.client_name || '').replace(/"/g, '""')}","${a.created_at || ''}"`
+        ).join('\n');
+        res.writeHead(200, { 'Content-Type': 'text/csv', 'Content-Disposition': 'attachment; filename=actions.csv', 'Access-Control-Allow-Origin': '*' });
+        return res.end(header + rows);
+      } catch (err) { return apiError(res, err); }
     }
 
     // --- Actions API ---

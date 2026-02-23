@@ -1000,6 +1000,79 @@ async function handleRequest(req, res) {
       }
     }
 
+    // GET /api/pipeline/win-probability — calculate win probability for each prospect
+    if (pathname === '/api/pipeline/win-probability' && method === 'GET') {
+      try {
+        db.initDb();
+        const conn = db.getDb();
+        const healthOverview = db.getHealthOverview();
+        const clients = healthOverview.clients || [];
+        const deals = db.getDealOutcomes({});
+        const allMeetings = db.getMeetings({ limit: 200 });
+
+        // Build historical benchmarks from closed deals
+        const wonDeals = deals.filter(d => d.outcome === 'won');
+        const lostDeals = deals.filter(d => d.outcome === 'lost');
+        const baseWinRate = deals.length > 0 ? wonDeals.length / deals.length : 0.3;
+
+        // Factors that predict wins (from historical data)
+        const wonMeetingCounts = wonDeals.map(d => {
+          const clientMeetings = allMeetings.filter(m => m.client_name === d.client_name);
+          return clientMeetings.length;
+        });
+        const avgWonMeetings = wonMeetingCounts.length > 0 ? wonMeetingCounts.reduce((s, c) => s + c, 0) / wonMeetingCounts.length : 2;
+
+        const probabilities = clients.map(c => {
+          let prob = baseWinRate;
+
+          // Health score factor (0-100 → 0.5x-1.5x)
+          const healthMultiplier = 0.5 + (c.score / 100);
+          prob *= healthMultiplier;
+
+          // Meeting count factor (more meetings = higher chance)
+          const meetingRatio = Math.min(2, (c.meeting_count || 0) / Math.max(1, avgWonMeetings));
+          prob *= (0.5 + meetingRatio * 0.5);
+
+          // Recency factor (recent contact = higher)
+          if (c.days_since_contact <= 2) prob *= 1.3;
+          else if (c.days_since_contact <= 5) prob *= 1.0;
+          else if (c.days_since_contact <= 10) prob *= 0.7;
+          else prob *= 0.4;
+
+          // Proposal factor (has proposal = 2x more likely)
+          const hasProposal = conn.prepare('SELECT 1 FROM proposals WHERE client_id = ?').get(c.client_id);
+          if (hasProposal) prob *= 1.8;
+
+          // Coaching score factor (high coaching = better calls)
+          const latestMeeting = allMeetings.find(m => m.client_name === c.client_name && m.coaching_notes);
+          if (latestMeeting?.coaching_notes?.score >= 70) prob *= 1.2;
+
+          // Cap at 0-95%
+          prob = Math.min(0.95, Math.max(0.05, prob));
+
+          return {
+            client_id: c.client_id,
+            client_name: c.client_name,
+            win_probability: Math.round(prob * 100),
+            factors: {
+              health: Math.round(healthMultiplier * 100) + '%',
+              meetings: c.meeting_count || 0,
+              days_silent: c.days_since_contact,
+              has_proposal: !!hasProposal,
+              coaching_score: latestMeeting?.coaching_notes?.score || null
+            }
+          };
+        }).sort((a, b) => b.win_probability - a.win_probability);
+
+        return json(res, {
+          probabilities,
+          benchmarks: { base_win_rate: Math.round(baseWinRate * 100), avg_meetings_to_close: Math.round(avgWonMeetings * 10) / 10, total_deals: deals.length }
+        });
+      } catch (err) {
+        return apiError(res, err);
+      }
+    }
+
     // GET /api/calendar — monthly or weekly calendar
     if (pathname === '/api/calendar' && method === 'GET') {
       const content = readJSON('content.json');

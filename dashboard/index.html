@@ -11762,6 +11762,7 @@ function renderPipelinePage() {
   const clients = health.clients || [];
   const filter = state.pipelineFilter;
   const filtered = filter === 'all' ? clients : clients.filter(c => c.health_status === filter);
+  const winProbs = state._winProbabilities || {};
 
   const green = clients.filter(c => c.health_status === 'green').length;
   const yellow = clients.filter(c => c.health_status === 'yellow').length;
@@ -11769,6 +11770,23 @@ function renderPipelinePage() {
 
   const proposals = (state.meetings || []).filter(m => m.meeting_type === 'discovery').length;
   const stale = clients.filter(c => c.days_since_contact >= 5).length;
+
+  // Auto-load win probabilities on first visit
+  if (!state._winProbLoaded && clients.length > 0) {
+    state._winProbLoaded = true;
+    api('/api/pipeline/win-probability').then(r => {
+      if (r && r.probabilities) {
+        const map = {};
+        for (const p of r.probabilities) map[p.client_id] = p;
+        state._winProbabilities = map;
+        state._winBenchmarks = r.benchmarks;
+        render();
+      }
+    }).catch(() => {});
+  }
+
+  const winProbColor = (pct) => pct >= 60 ? 'var(--green)' : pct >= 35 ? 'var(--amber)' : 'var(--red)';
+  const winProbBg = (pct) => pct >= 60 ? 'var(--green-light)' : pct >= 35 ? 'var(--amber-light)' : 'var(--red-light)';
 
   return h('div', { className: 'page-content' },
     // Stats
@@ -11788,6 +11806,13 @@ function renderPipelinePage() {
       ),
       meetingStatCard('Stale (5d+)', stale)
     ),
+    // Win probability benchmarks bar
+    state._winBenchmarks ? h('div', { className: 'card', style: { padding: '12px 18px', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '20px', fontSize: '13px', color: 'var(--gray-500)' } },
+      h('span', { style: { fontWeight: '600', color: 'var(--gray-700)' } }, 'Win Probability'),
+      h('span', {}, `Base rate: ${state._winBenchmarks.base_win_rate}%`),
+      h('span', {}, `Avg meetings to close: ${state._winBenchmarks.avg_meetings_to_close}`),
+      h('span', {}, `${state._winBenchmarks.total_deals} historical deals`)
+    ) : null,
     // Pipeline list
     filtered.length === 0
       ? h('div', { className: 'card', style: { textAlign: 'center', padding: '40px', color: 'var(--gray-400)' } },
@@ -11796,9 +11821,16 @@ function renderPipelinePage() {
           h('p', { style: { fontSize: '13px', marginTop: '8px' } }, 'Sync meetings from Fireflies to populate')
         )
       : h('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px' } },
-          ...filtered.sort((a, b) => b.days_since_contact - a.days_since_contact).map(c => {
+          ...filtered.sort((a, b) => {
+            // Sort by win probability if available, else by days since contact
+            const aProb = (winProbs[a.client_id] || {}).win_probability;
+            const bProb = (winProbs[b.client_id] || {}).win_probability;
+            if (aProb != null && bProb != null) return bProb - aProb;
+            return b.days_since_contact - a.days_since_contact;
+          }).map(c => {
             const colors = { red: 'var(--red)', yellow: 'var(--amber)', green: 'var(--green)' };
             const bgColors = { red: 'var(--red-light)', yellow: 'var(--amber-light)', green: 'var(--green-light)' };
+            const wp = winProbs[c.client_id];
             return h('div', {
               className: 'card',
               style: { padding: '14px 18px', display: 'flex', alignItems: 'center', gap: '14px',
@@ -11807,7 +11839,6 @@ function renderPipelinePage() {
                 try {
                   const detail = await api(`/api/clients/${c.client_id}`);
                   state.clientDetail = detail;
-                  // Load latest brief if available from server
                   if (detail.latest_brief) {
                     state.clientBrief = { ...detail.latest_brief, client_id: detail.id };
                   } else {
@@ -11824,13 +11855,22 @@ function renderPipelinePage() {
               } }),
               h('div', { style: { flex: 1, minWidth: 0 } },
                 h('div', { style: { fontWeight: '600', fontSize: '14px' } }, c.client_name || 'Unknown'),
-                h('div', { style: { fontSize: '12px', color: 'var(--gray-500)', display: 'flex', gap: '12px', marginTop: '2px' } },
+                h('div', { style: { fontSize: '12px', color: 'var(--gray-500)', display: 'flex', gap: '12px', marginTop: '2px', flexWrap: 'wrap' } },
                   c.firm_name ? h('span', {}, c.firm_name) : null,
                   h('span', {}, `${c.days_since_contact}d since contact`),
                   h('span', {}, `${c.meeting_count || 0} meetings`),
-                  h('span', {}, `${c.open_actions || 0} open actions`)
+                  h('span', {}, `${c.open_actions || 0} open actions`),
+                  wp ? h('span', {}, wp.factors.has_proposal ? 'Has proposal' : null) : null
                 )
               ),
+              // Win probability badge
+              wp ? h('span', { style: {
+                background: winProbBg(wp.win_probability), color: winProbColor(wp.win_probability),
+                padding: '4px 10px', borderRadius: '12px', fontSize: '12px', fontWeight: '600', whiteSpace: 'nowrap',
+                minWidth: '52px', textAlign: 'center'
+              }, title: `Win: ${wp.win_probability}% | Health: ${wp.factors.health} | Meetings: ${wp.factors.meetings} | Silent: ${wp.factors.days_silent}d` },
+                `${wp.win_probability}% win`
+              ) : null,
               h('span', { style: {
                 background: bgColors[c.health_status], color: colors[c.health_status],
                 padding: '4px 10px', borderRadius: '12px', fontSize: '12px', fontWeight: '600', whiteSpace: 'nowrap'

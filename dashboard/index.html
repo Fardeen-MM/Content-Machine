@@ -1894,6 +1894,9 @@ const pageDataMap = {
     ['settings', '/api/settings', {}],
     ['trending', '/api/trending', { trending_topics: [], trending_phrases: [], categories: {}, source_velocity: {} }],
     ['nextBestActions', '/api/next-best-actions', { actions: {}, summary: {} }],
+    ['contentHealth', '/api/content-health', null],
+    ['authorityScore', '/api/authority-score', null],
+    ['commentStrategy', '/api/comment-strategy', null],
   ],
   content: [
     ['series', '/api/series', []],
@@ -1909,6 +1912,7 @@ const pageDataMap = {
     ['perfAnalytics', '/api/analytics/performance', null],
     ['funnel', '/api/funnel', { funnel: [], queue: {}, totals: {} }],
     ['trending', '/api/trending', { trending_topics: [], trending_phrases: [], categories: {}, source_velocity: {} }],
+    ['brandVoiceConsistency', '/api/brand-voice-consistency', null],
   ],
   meetings: [
     ['meetings', '/api/meetings', []],
@@ -1936,6 +1940,7 @@ const pageDataMap = {
   ],
   deals: [
     ['deals', '/api/deals', []],
+    ['winLossAnalysis', '/api/win-loss-analysis', null],
   ],
   performance: [
     ['performance', '/api/performance', []],
@@ -3395,6 +3400,56 @@ function renderDashboardPage() {
         )
       );
     })(),
+    // CONTENT HEALTH + AUTHORITY (auto-loaded)
+    h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '20px' } },
+      // Content Health Card
+      state.contentHealth ? h('div', { className: 'card', style: { padding: '16px' } },
+        h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' } },
+          h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)' } }, 'CONTENT HEALTH'),
+          state.contentHealth.queue ? h('span', { style: {
+            fontSize: '11px', fontWeight: '600', padding: '3px 10px', borderRadius: '6px',
+            background: state.contentHealth.queue.health === 'healthy' ? '#dcfce7' : state.contentHealth.queue.health === 'low' ? '#fef3c7' : '#fee2e2',
+            color: state.contentHealth.queue.health === 'healthy' ? '#059669' : state.contentHealth.queue.health === 'low' ? '#d97706' : '#dc2626'
+          }}, state.contentHealth.queue.health === 'healthy' ? 'Healthy' : state.contentHealth.queue.health === 'low' ? 'Low' : 'Critical') : null
+        ),
+        state.contentHealth.queue ? h('div', { style: { fontSize: '12px', color: 'var(--gray-600)', marginBottom: '8px' } },
+          `${state.contentHealth.queue.approved_formats} approved formats \u2022 ${state.contentHealth.queue.days_remaining}d of content left`
+        ) : null,
+        h('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap' } },
+          ...['excellent', 'good', 'fair', 'poor'].map(tier => {
+            const count = state.contentHealth.quality?.[tier] || 0;
+            const colors = { excellent: '#059669', good: '#2563eb', fair: '#d97706', poor: '#dc2626' };
+            const bgs = { excellent: '#dcfce7', good: '#dbeafe', fair: '#fef3c7', poor: '#fee2e2' };
+            return count > 0 ? h('span', { style: { fontSize: '10px', fontWeight: '600', padding: '2px 8px', borderRadius: '8px', background: bgs[tier], color: colors[tier] } }, `${count} ${tier}`) : null;
+          })
+        ),
+        state.contentHealth.series?.some(s => !s.on_track) ? h('div', { style: { marginTop: '8px', fontSize: '11px', color: '#d97706' } },
+          `${state.contentHealth.series.filter(s => !s.on_track).length} series off track`
+        ) : null
+      ) : h('div', { className: 'card', style: { padding: '16px', color: 'var(--gray-400)', fontSize: '12px' } }, 'Loading content health...'),
+      // Authority Score Card
+      state.authorityScore ? h('div', { className: 'card', style: { padding: '16px' } },
+        h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' } },
+          h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)' } }, 'AUTHORITY SCORE'),
+          h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } },
+            h('span', { style: { fontSize: '24px', fontWeight: '800', color: state.authorityScore.authority_score >= 60 ? '#059669' : state.authorityScore.authority_score >= 40 ? '#d97706' : '#dc2626', fontFamily: "'Fraunces', serif" } }, String(state.authorityScore.authority_score)),
+            h('span', { style: { fontSize: '11px', fontWeight: '600', padding: '2px 8px', borderRadius: '8px', background: '#faf5ff', color: '#7c3aed' } }, state.authorityScore.level)
+          )
+        ),
+        h('div', { style: { display: 'flex', flexDirection: 'column', gap: '4px' } },
+          ...(state.authorityScore.breakdown || []).map(b =>
+            h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } },
+              h('div', { style: { flex: 1, fontSize: '11px', color: 'var(--gray-600)' } }, b.category),
+              h('div', { style: { width: '60px', height: '6px', background: '#f1f5f9', borderRadius: '3px', overflow: 'hidden' } },
+                h('div', { style: { width: `${(b.score / b.max) * 100}%`, height: '100%', background: b.score >= b.max * 0.7 ? '#059669' : b.score >= b.max * 0.4 ? '#d97706' : '#dc2626', borderRadius: '3px' } })
+              ),
+              h('span', { style: { fontSize: '10px', color: 'var(--gray-500)', minWidth: '30px', textAlign: 'right' } }, `${b.score}/${b.max}`)
+            )
+          )
+        ),
+        state.authorityScore.next_milestone ? h('div', { style: { marginTop: '8px', fontSize: '11px', color: '#2563eb', fontStyle: 'italic', padding: '4px 10px', background: '#eff6ff', borderRadius: '6px' } }, state.authorityScore.next_milestone) : null
+      ) : h('div', { className: 'card', style: { padding: '16px', color: 'var(--gray-400)', fontSize: '12px' } }, 'Loading authority score...')
+    ),
     // Priorities per person
     h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '20px' } },
       // Yaseer
@@ -9104,6 +9159,54 @@ function renderAnalyticsPage() {
           `${state.trending.total_recent || 0} new triggers this week from ${Object.keys(state.trending.source_velocity || {}).length} sources`)
       )
     ) : null,
+    // Brand Voice Consistency (auto-loaded)
+    state.brandVoiceConsistency?.avg_consistency != null ? h('div', { className: 'chart-card', style: { marginTop: '16px' } },
+      h('h4', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
+        'Brand Voice Consistency',
+        h('span', { style: {
+          fontSize: '14px', fontWeight: '700', padding: '4px 12px', borderRadius: '8px',
+          background: state.brandVoiceConsistency.avg_consistency >= 60 ? '#dcfce7' : state.brandVoiceConsistency.avg_consistency >= 40 ? '#fef3c7' : '#fee2e2',
+          color: state.brandVoiceConsistency.avg_consistency >= 60 ? '#059669' : state.brandVoiceConsistency.avg_consistency >= 40 ? '#d97706' : '#dc2626'
+        }}, `${state.brandVoiceConsistency.avg_consistency}%`)
+      ),
+      h('div', { style: { display: 'flex', gap: '16px', marginTop: '12px', marginBottom: '12px' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', gap: '6px' } },
+          h('span', { style: { width: '10px', height: '10px', borderRadius: '50%', background: '#059669' } }),
+          h('span', { style: { fontSize: '13px' } }, `${state.brandVoiceConsistency.on_brand || 0} on-brand`)
+        ),
+        h('div', { style: { display: 'flex', alignItems: 'center', gap: '6px' } },
+          h('span', { style: { width: '10px', height: '10px', borderRadius: '50%', background: '#ef4444' } }),
+          h('span', { style: { fontSize: '13px' } }, `${state.brandVoiceConsistency.off_brand || 0} off-brand`)
+        ),
+        h('span', { style: { fontSize: '12px', color: 'var(--gray-500)' } }, `${state.brandVoiceConsistency.total_analyzed || 0} analyzed`)
+      ),
+      // Tone breakdown bars
+      h('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap' } },
+        ...Object.entries(state.brandVoiceConsistency.tone_breakdown || {}).map(([tone, count]) => {
+          const total = state.brandVoiceConsistency.total_analyzed || 1;
+          const pct = Math.round((count / total) * 100);
+          return h('div', { style: { flex: '1', minWidth: '80px' } },
+            h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: '11px', marginBottom: '4px' } },
+              h('span', { style: { fontWeight: '600', textTransform: 'capitalize' } }, tone),
+              h('span', { style: { color: 'var(--gray-500)' } }, `${count} (${pct}%)`)
+            ),
+            h('div', { style: { height: '6px', background: '#f1f5f9', borderRadius: '3px', overflow: 'hidden' } },
+              h('div', { style: { width: `${pct}%`, height: '100%', background: tone === 'professional' ? '#059669' : tone === 'casual' ? '#d97706' : '#94a3b8', borderRadius: '3px' } })
+            )
+          );
+        })
+      ),
+      // Top consistent content
+      state.brandVoiceConsistency.top_consistent?.length ? h('div', { style: { marginTop: '12px' } },
+        h('div', { style: { fontSize: '11px', fontWeight: '600', color: 'var(--gray-500)', marginBottom: '6px' } }, 'TOP ON-BRAND CONTENT'),
+        ...(state.brandVoiceConsistency.top_consistent || []).slice(0, 3).map(c =>
+          h('div', { style: { fontSize: '12px', display: 'flex', justifyContent: 'space-between', padding: '4px 0', borderBottom: '1px solid var(--gray-100)' } },
+            h('span', { style: { color: 'var(--gray-700)' } }, (c.title || '').slice(0, 60) + ((c.title || '').length > 60 ? '...' : '')),
+            h('span', { style: { fontSize: '11px', fontWeight: '600', color: '#059669' } }, `${c.consistency_score}%`)
+          )
+        )
+      ) : null
+    ) : null,
     // Seventh row — AI Insights
     renderInsightsSection()
   );
@@ -13109,6 +13212,35 @@ function renderDealsPage() {
         h('div', { style: { fontSize: '12px', color: 'var(--gray-500)', marginTop: '4px' } }, 'MRR Won')
       )
     ),
+    // Win/Loss Analysis (auto-loaded)
+    state.winLossAnalysis ? h('div', { className: 'card', style: { padding: '18px', marginBottom: '20px', borderLeft: '3px solid #9333ea' } },
+      h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' } },
+        h('h4', { style: { fontFamily: "'Fraunces', serif", fontSize: '14px' } }, 'Win/Loss Intelligence'),
+        h('div', { style: { display: 'flex', gap: '8px', alignItems: 'center' } },
+          h('span', { style: { fontSize: '12px', fontWeight: '700', padding: '3px 10px', borderRadius: '8px', background: '#dcfce7', color: '#059669' } }, `${state.winLossAnalysis.total_wins || 0} Won`),
+          state.winLossAnalysis.total_losses > 0 ? h('span', { style: { fontSize: '12px', fontWeight: '700', padding: '3px 10px', borderRadius: '8px', background: '#fee2e2', color: '#dc2626' } }, `${state.winLossAnalysis.total_losses} Lost`) : null,
+          h('span', { style: { fontSize: '11px', color: 'var(--gray-500)' } }, `Rate: ${state.winLossAnalysis.win_rate || 'N/A'}`)
+        )
+      ),
+      state.winLossAnalysis.win_patterns?.length ? h('div', { style: { marginBottom: '8px' } },
+        h('div', { style: { fontSize: '11px', fontWeight: '600', color: '#059669', marginBottom: '4px' } }, 'WIN PATTERNS'),
+        ...(state.winLossAnalysis.win_patterns || []).slice(0, 3).map(p =>
+          h('div', { style: { fontSize: '12px', color: 'var(--gray-600)', padding: '2px 0' } }, '\u2022 ' + p)
+        )
+      ) : null,
+      state.winLossAnalysis.loss_patterns?.length ? h('div', { style: { marginBottom: '8px' } },
+        h('div', { style: { fontSize: '11px', fontWeight: '600', color: '#dc2626', marginBottom: '4px' } }, 'LOSS PATTERNS'),
+        ...(state.winLossAnalysis.loss_patterns || []).slice(0, 3).map(p =>
+          h('div', { style: { fontSize: '12px', color: 'var(--gray-600)', padding: '2px 0' } }, '\u2022 ' + p)
+        )
+      ) : null,
+      state.winLossAnalysis.recommendations?.length ? h('div', {},
+        h('div', { style: { fontSize: '11px', fontWeight: '600', color: '#2563eb', marginBottom: '4px' } }, 'RECOMMENDATIONS'),
+        ...(state.winLossAnalysis.recommendations || []).slice(0, 3).map(r =>
+          h('div', { style: { fontSize: '12px', color: 'var(--gray-600)', padding: '2px 0' } }, '\u2022 ' + r)
+        )
+      ) : null
+    ) : null,
     // Portfolio Analysis
     deals.length >= 2 ? h('div', { className: 'card', style: { padding: '18px', marginBottom: '20px', borderLeft: '3px solid var(--purple)' } },
       h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: state._portfolioAnalysis ? '14px' : '0' } },

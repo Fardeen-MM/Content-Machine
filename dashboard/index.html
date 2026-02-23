@@ -3398,6 +3398,62 @@ function renderDashboardPage() {
         )
       );
     })(),
+    // Content Pulse
+    (() => {
+      if (!state._contentPulse && !state._loadingPulse) {
+        state._loadingPulse = true;
+        api('/api/content-pulse').then(r => { state._contentPulse = r; state._loadingPulse = false; render(); }).catch(() => { state._loadingPulse = false; });
+      }
+      const pulse = state._contentPulse;
+      if (!pulse) return null;
+      const healthColors = { green: 'var(--green)', yellow: 'var(--amber)', red: 'var(--red)' };
+      return h('div', { className: 'card', style: { padding: '16px', marginBottom: '16px', borderLeft: `4px solid ${healthColors[pulse.health] || 'var(--gray-300)'}` } },
+        h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' } },
+          h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } },
+            h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)' } }, 'CONTENT PULSE'),
+            h('span', { style: {
+              width: '8px', height: '8px', borderRadius: '50%', display: 'inline-block',
+              background: healthColors[pulse.health] || 'var(--gray-300)',
+              animation: pulse.health === 'red' ? 'pulse 2s infinite' : 'none'
+            } })
+          ),
+          h('span', { style: { fontSize: '11px', color: 'var(--gray-400)' } },
+            `${pulse.week_progress?.published || 0}/${pulse.week_progress?.target || 5} this week`
+          )
+        ),
+        // Progress bar
+        h('div', { style: { background: 'var(--gray-100)', borderRadius: '8px', height: '8px', marginBottom: '10px', overflow: 'hidden' } },
+          h('div', { style: {
+            width: `${Math.min(100, pulse.week_progress?.percent || 0)}%`, height: '100%',
+            borderRadius: '8px',
+            background: pulse.week_progress?.percent >= 80 ? 'var(--green)' : pulse.week_progress?.percent >= 40 ? 'var(--amber)' : 'var(--red)',
+            transition: 'width 0.5s ease'
+          } })
+        ),
+        // Velocity sparkline (4 weeks)
+        pulse.velocity?.length ? h('div', { style: { display: 'flex', gap: '4px', alignItems: 'flex-end', height: '24px', marginBottom: '8px' } },
+          ...pulse.velocity.map((w, i) => {
+            const max = Math.max(1, ...pulse.velocity.map(v => v.published));
+            return h('div', { style: {
+              flex: 1, height: `${Math.max(4, (w.published / max) * 24)}px`,
+              background: i === pulse.velocity.length - 1 ? 'var(--blue)' : 'var(--gray-200)',
+              borderRadius: '2px'
+            }, title: `${w.week}: ${w.published} posts` });
+          })
+        ) : null,
+        // Pipeline depth
+        h('div', { style: { display: 'flex', gap: '16px', fontSize: '11px', color: 'var(--gray-500)' } },
+          h('span', {}, `${pulse.pipeline?.review || 0} review`),
+          h('span', {}, `${pulse.pipeline?.approved || 0} approved`),
+          h('span', {}, `${pulse.pipeline?.pub_queue || 0} ready`),
+          h('span', {}, `${pulse.pipeline?.pending_triggers || 0} triggers`)
+        ),
+        // Alerts
+        pulse.alerts?.length ? h('div', { style: { marginTop: '8px' } },
+          ...pulse.alerts.map(a => h('div', { style: { fontSize: '11px', color: 'var(--amber)', padding: '2px 0' } }, '! ' + a))
+        ) : null
+      );
+    })(),
     // AI Morning Brief inline
     h('div', { style: { marginBottom: '16px' } },
       h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },

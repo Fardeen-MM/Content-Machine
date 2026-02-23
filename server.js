@@ -842,6 +842,164 @@ async function handleRequest(req, res) {
       return json(res, { items: queue, total: queue.length });
     }
 
+    // GET /api/content-pulse — weekly content health indicator
+    if (pathname === '/api/content-pulse' && method === 'GET') {
+      try {
+        const content = readJSON('content.json');
+        const published = readJSON('published.json', []);
+        const perfData = readJSON('performance.json');
+        const triggers = readJSON('trigger-queue.json');
+        const velocity = readJSON('content-velocity.json', {});
+
+        const now = new Date();
+        const weekStart = new Date(now); weekStart.setDate(now.getDate() - now.getDay());
+        weekStart.setHours(0, 0, 0, 0);
+        const weekEnd = new Date(weekStart); weekEnd.setDate(weekStart.getDate() + 7);
+
+        // This week's publishing
+        const thisWeekPublished = published.filter(p => {
+          const d = new Date(p.published_at);
+          return d >= weekStart && d < weekEnd;
+        });
+
+        // Format coverage this week
+        const formatCounts = {};
+        for (const p of thisWeekPublished) {
+          formatCounts[p.format] = (formatCounts[p.format] || 0) + 1;
+        }
+
+        // Pipeline health
+        const review = content.filter(c => c.status === 'review').length;
+        const approved = content.filter(c => c.status === 'approved').length;
+        const pendingTriggers = triggers.filter(t => t.status === 'pending').length;
+
+        // Publishing queue depth
+        const pubQueue = content.reduce((sum, c) => {
+          return sum + Object.values(c.formats || {}).filter(f => f.status === 'approved' && !f.published_at).length;
+        }, 0);
+
+        // Velocity trend (last 4 weeks)
+        const weeklyHistory = [];
+        for (let w = 3; w >= 0; w--) {
+          const ws = new Date(weekStart); ws.setDate(ws.getDate() - w * 7);
+          const we = new Date(ws); we.setDate(ws.getDate() + 7);
+          const count = published.filter(p => {
+            const d = new Date(p.published_at);
+            return d >= ws && d < we;
+          }).length;
+          weeklyHistory.push({ week: ws.toISOString().slice(0, 10), published: count });
+        }
+
+        // Content health score
+        const TARGET_WEEKLY = 5; // target 5 posts/week
+        const weekProgress = Math.min(100, Math.round((thisWeekPublished.length / TARGET_WEEKLY) * 100));
+        const pipelineDepth = review + approved + pubQueue;
+
+        // Stale content
+        const thirtyDaysAgo = new Date(now - 30 * 24 * 60 * 60 * 1000).toISOString();
+        const staleApproved = content.filter(c => c.status === 'approved' && c.generated_at < thirtyDaysAgo).length;
+
+        let healthStatus = 'green';
+        if (thisWeekPublished.length === 0 && now.getDay() >= 3) healthStatus = 'red';
+        else if (thisWeekPublished.length < 2 && now.getDay() >= 4) healthStatus = 'yellow';
+        else if (pipelineDepth < 3) healthStatus = 'yellow';
+
+        return json(res, {
+          health: healthStatus,
+          week_progress: { published: thisWeekPublished.length, target: TARGET_WEEKLY, percent: weekProgress },
+          format_coverage: formatCounts,
+          pipeline: { review, approved, pub_queue: pubQueue, pending_triggers: pendingTriggers, total_depth: pipelineDepth },
+          velocity: weeklyHistory,
+          alerts: [
+            ...(staleApproved > 0 ? [`${staleApproved} approved posts are 30+ days old`] : []),
+            ...(pipelineDepth < 3 ? ['Pipeline running dry — trigger more content generation'] : []),
+            ...(review > 10 ? [`${review} pieces waiting for review — approve or reject`] : []),
+            ...(thisWeekPublished.length === 0 && now.getDay() >= 2 ? ['No posts published this week yet'] : [])
+          ]
+        });
+      } catch (err) {
+        return apiError(res, err);
+      }
+    }
+
+    // POST /api/events/correlate — analyze external events vs deal outcomes
+    if (pathname === '/api/events/correlate' && method === 'POST') {
+      try {
+        const events = db.getEvents({ limit: 500 });
+        const deals = db.getDealOutcomes({});
+        const clients = db.getClients({ limit: 200 });
+
+        if (events.length < 3) return json(res, { error: 'Need at least 3 external events to correlate' }, 400);
+
+        // Group events by client email
+        const eventsByClient = {};
+        for (const e of events) {
+          const key = (e.client_email || e.client_name || 'unknown').toLowerCase();
+          if (!eventsByClient[key]) eventsByClient[key] = [];
+          eventsByClient[key].push(e);
+        }
+
+        // Map deals to clients
+        const dealsByClient = {};
+        for (const d of deals) {
+          const client = clients.find(c => c.id === d.client_id);
+          const key = (client?.email || d.client_name || 'unknown').toLowerCase();
+          dealsByClient[key] = d;
+        }
+
+        // Correlate: which event types appear more for won vs lost deals
+        const eventTypeStats = {};
+        for (const [clientKey, clientEvents] of Object.entries(eventsByClient)) {
+          const deal = dealsByClient[clientKey];
+          for (const e of clientEvents) {
+            const type = `${e.source}:${e.event_type || 'unknown'}`;
+            if (!eventTypeStats[type]) eventTypeStats[type] = { total: 0, with_deal: 0, won: 0, lost: 0 };
+            eventTypeStats[type].total++;
+            if (deal) {
+              eventTypeStats[type].with_deal++;
+              if (deal.outcome === 'won') eventTypeStats[type].won++;
+              if (deal.outcome === 'lost') eventTypeStats[type].lost++;
+            }
+          }
+        }
+
+        // Sort by correlation strength (win rate)
+        const correlations = Object.entries(eventTypeStats)
+          .filter(([, s]) => s.with_deal > 0)
+          .map(([type, s]) => ({
+            event_type: type,
+            total_events: s.total,
+            deals_with_event: s.with_deal,
+            won: s.won,
+            lost: s.lost,
+            win_rate: s.with_deal > 0 ? Math.round(s.won / s.with_deal * 100) : 0,
+            signal_strength: s.with_deal >= 3 ? 'strong' : s.with_deal >= 2 ? 'moderate' : 'weak'
+          }))
+          .sort((a, b) => b.win_rate - a.win_rate);
+
+        // Summary by source
+        const bySource = {};
+        for (const e of events) {
+          if (!bySource[e.source]) bySource[e.source] = { total: 0, types: new Set() };
+          bySource[e.source].total++;
+          bySource[e.source].types.add(e.event_type || 'unknown');
+        }
+        const sourceSummary = Object.entries(bySource).map(([source, s]) => ({
+          source, total: s.total, unique_types: s.types.size
+        }));
+
+        return json(res, {
+          correlations,
+          source_summary: sourceSummary,
+          total_events: events.length,
+          total_deals: deals.length,
+          clients_with_events: Object.keys(eventsByClient).length
+        });
+      } catch (err) {
+        return apiError(res, err);
+      }
+    }
+
     // GET /api/calendar — monthly or weekly calendar
     if (pathname === '/api/calendar' && method === 'GET') {
       const content = readJSON('content.json');

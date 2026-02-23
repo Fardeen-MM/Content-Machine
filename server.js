@@ -281,6 +281,80 @@ function buildChatContext(question) {
     }
   }
 
+  // Proposal questions
+  if (q.includes('proposal') || q.includes('quote') || q.includes('pricing') || q.includes('sent')) {
+    try {
+      const proposals = db.getProposals({ limit: 15 });
+      if (proposals.length > 0) {
+        parts.push(`PROPOSALS (${proposals.length}):`);
+        for (const p of proposals.slice(0, 10)) {
+          parts.push(`- ${p.client_name || 'Unknown'}: ${p.title} | $${p.monthly_value || 0}/mo | Status: ${p.status} | ${p.created_at?.slice(0, 10) || '?'}`);
+        }
+      }
+    } catch {}
+  }
+
+  // Health / priority questions
+  if (q.includes('health') || q.includes('red') || q.includes('at risk') || q.includes('churn') || q.includes('score')) {
+    try {
+      const healthOverview = db.getHealthOverview();
+      const summary = healthOverview.summary || {};
+      parts.push(`HEALTH: ${summary.total || 0} prospects — ${summary.green || 0} green, ${summary.yellow || 0} yellow, ${summary.red || 0} red`);
+      const redClients = (healthOverview.clients || []).filter(c => c.health_status === 'red');
+      if (redClients.length > 0) {
+        parts.push('RED CLIENTS:');
+        for (const c of redClients.slice(0, 5)) {
+          parts.push(`- ${c.client_name} | Score: ${c.score}/100 | ${c.days_since_contact}d silent`);
+        }
+      }
+    } catch {}
+  }
+
+  // Follow-up / pestering questions
+  if (q.includes('follow up') || q.includes('followup') || q.includes('pester') || q.includes('outreach') || q.includes('sequence')) {
+    try {
+      const conn = db.getDb();
+      const pending = conn.prepare("SELECT p.*, c.name as client_name FROM pestering_log p LEFT JOIN clients c ON p.client_id = c.id WHERE p.status = 'pending' ORDER BY p.scheduled_for ASC LIMIT 10").all();
+      if (pending.length > 0) {
+        parts.push(`PENDING FOLLOW-UPS (${pending.length}):`);
+        for (const p of pending) {
+          parts.push(`- ${p.client_name || 'Unknown'}: ${p.channel} ${p.message_type} | Due: ${p.scheduled_for?.slice(0, 10) || '?'}`);
+        }
+      }
+    } catch {}
+  }
+
+  // Publishing / what was posted questions
+  if (q.includes('publish') || q.includes('posted') || q.includes('what did we') || q.includes('recent post') || q.includes('social media')) {
+    try {
+      const published = readJSON('published.json', []);
+      if (published.length > 0) {
+        const recent = published.sort((a, b) => new Date(b.published_at || 0) - new Date(a.published_at || 0)).slice(0, 10);
+        parts.push(`PUBLISHED CONTENT (${published.length} total, last 10):`);
+        for (const p of recent) {
+          parts.push(`- ${p.published_at?.slice(0, 10) || '?'} | ${p.platform || p.format || '?'} | ${(p.title || '').slice(0, 60)}`);
+        }
+      }
+    } catch {}
+  }
+
+  // Deal / won / lost questions
+  if (q.includes('deal') || q.includes('won') || q.includes('lost') || q.includes('revenue') || q.includes('mrr') || q.includes('close') || q.includes('win rate')) {
+    try {
+      const deals = db.getDealOutcomes({ limit: 20 });
+      if (deals.length > 0) {
+        const won = deals.filter(d => d.outcome === 'won');
+        const lost = deals.filter(d => d.outcome === 'lost' || d.outcome === 'ghosted');
+        const totalMRR = won.reduce((s, d) => s + (d.monthly_value || 0), 0);
+        parts.push(`DEALS: ${deals.length} total — ${won.length} won ($${totalMRR}/mo MRR), ${lost.length} lost`);
+        for (const d of deals.slice(0, 8)) {
+          const icon = d.outcome === 'won' ? 'WON' : 'LOST';
+          parts.push(`- [${icon}] ${d.client_name || 'Unknown'}${d.monthly_value ? ' $' + d.monthly_value + '/mo' : ''} | ${d.loss_reason || d.what_worked || ''}`);
+        }
+      }
+    } catch {}
+  }
+
   // "What should I/we do" or general overview — include everything relevant
   if (q.includes('what should') || q.includes('priority') || q.includes('urgent') || q.includes('overview') || q.includes('status') || q.includes('how are') || q.includes('morning')) {
     const clients = db.getClients({ limit: 30 });

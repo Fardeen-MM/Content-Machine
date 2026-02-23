@@ -2721,6 +2721,7 @@ function renderSidebar() {
     { section: 'Manage', items: [
       { id: 'actions', icon: icons.actions, label: 'Actions', key: '5' },
       { id: 'pestering', icon: icons.pestering, label: 'Follow-ups', key: '6' },
+      { id: 'deals', icon: icons.pipeline, label: 'Deals', key: '8' },
       { id: 'series', icon: icons.calendar, label: 'Series', key: 'S' },
       { id: 'publish-tracker', icon: icons.analytics, label: 'Publish Tracker' },
     ]},
@@ -3284,6 +3285,65 @@ function renderDashboardPage() {
         h('div', { style: { fontSize: '11px', color: 'var(--gray-500)' } }, 'Pestering Due')
       )
     ),
+    // NEEDS ATTENTION — urgent action items across all systems
+    (() => {
+      const items = [];
+      // Red health clients
+      for (const c of clients.filter(cl => cl.health_status === 'red').slice(0, 3)) {
+        items.push({ type: 'health', priority: 'critical', icon: '\u{1F534}', label: `${c.client_name || 'Unknown'} — RED (score ${c.score})`, detail: `${c.days_since_contact}d silent`, action: 'Call now', client_id: c.client_id });
+      }
+      // Pestering due
+      for (const p of pesteringDue.slice(0, 3)) {
+        items.push({ type: 'pester', priority: 'high', icon: '\u{1F4CB}', label: `Follow-up due: ${p.client_name || 'Unknown'}`, detail: `${p.channel} — ${p.message_type}`, action: 'Send' });
+      }
+      // Overdue actions (>3 days old)
+      const overdueActions = openActions.filter(a => a.due_date && new Date(a.due_date) < new Date()).slice(0, 3);
+      for (const a of overdueActions) {
+        items.push({ type: 'action', priority: 'high', icon: '\u26A0\uFE0F', label: `Overdue: ${a.description?.slice(0, 60)}`, detail: a.client_name ? `Client: ${a.client_name}` : `Owner: ${a.owner || '?'}`, action: 'Complete' });
+      }
+      // Stale deals (>7 days)
+      for (const c of stale.filter(s => s.days_since_contact >= 7).slice(0, 2)) {
+        items.push({ type: 'stale', priority: 'medium', icon: '\u{1F9CA}', label: `${c.client_name} going cold`, detail: `${c.days_since_contact}d silent, score ${c.score}`, action: 'Follow up' });
+      }
+      // Content needing review
+      if (reviewContent > 5) {
+        items.push({ type: 'content', priority: 'medium', icon: '\u{1F4DD}', label: `${reviewContent} content pieces need review`, detail: 'Monty: approve or reject in Content page', action: 'Review' });
+      }
+      if (items.length === 0) return null;
+      items.sort((a, b) => { const p = { critical: 4, high: 3, medium: 2, low: 1 }; return (p[b.priority] || 0) - (p[a.priority] || 0); });
+      const prioColors = { critical: '#dc2626', high: '#ea580c', medium: '#d97706', low: '#6b7280' };
+      const prioBg = { critical: '#fef2f2', high: '#fff7ed', medium: '#fffbeb', low: '#f8fafc' };
+      return h('div', { style: { marginBottom: '20px', padding: '16px', background: 'linear-gradient(135deg, #fef2f2, #fff7ed)', borderRadius: '12px', border: '1px solid #fecaca' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' } },
+          h('span', { style: { fontSize: '16px' } }, '\u{1F6A8}'),
+          h('div', { style: { fontSize: '14px', fontWeight: '700', color: '#991b1b' } }, `NEEDS ATTENTION (${items.length})`),
+          h('span', { style: { fontSize: '11px', color: '#b91c1c', marginLeft: 'auto' } },
+            `${items.filter(i => i.priority === 'critical').length} critical, ${items.filter(i => i.priority === 'high').length} high`
+          )
+        ),
+        h('div', { style: { display: 'grid', gap: '6px' } },
+          ...items.slice(0, 8).map(item =>
+            h('div', {
+              style: { display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 14px', background: 'white', borderRadius: '8px', border: '1px solid #fee2e2', borderLeft: `3px solid ${prioColors[item.priority]}`, cursor: item.client_id ? 'pointer' : 'default' },
+              onclick: item.client_id ? async () => {
+                try {
+                  const detail = await api(`/api/clients/${item.client_id}`);
+                  state.clientDetail = detail; state.page = 'clients'; render();
+                } catch (err) { toast('Failed: ' + err.message, 'error'); }
+              } : item.type === 'content' ? () => { state.page = 'content'; state.filter.status = 'review'; render(); }
+              : item.type === 'pester' ? () => { state.page = 'pestering'; render(); } : null
+            },
+              h('span', { style: { fontSize: '16px', flexShrink: 0 } }, item.icon),
+              h('div', { style: { flex: 1, minWidth: 0 } },
+                h('div', { style: { fontSize: '13px', fontWeight: '600', color: '#1f2937' } }, item.label),
+                h('div', { style: { fontSize: '11px', color: '#6b7280', marginTop: '1px' } }, item.detail)
+              ),
+              h('span', { style: { padding: '2px 8px', borderRadius: '4px', fontSize: '10px', fontWeight: '600', background: prioBg[item.priority], color: prioColors[item.priority] } }, item.priority)
+            )
+          )
+        )
+      );
+    })(),
     // Priorities per person
     h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '20px' } },
       // Yaseer

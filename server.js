@@ -1448,6 +1448,76 @@ async function handleRequest(req, res) {
       }
     }
 
+    // POST /api/analytics/mine-coaching — extract content triggers from coaching missed opportunities
+    if (pathname === '/api/analytics/mine-coaching' && method === 'POST') {
+      try {
+        db.initDb();
+        const meetings = db.getMeetings({ limit: 100, type: undefined });
+        const triggers = readJSON('trigger-queue.json');
+        const existingTitles = new Set(triggers.map(t => (t.title || '').toLowerCase()));
+
+        const created = [];
+        for (const m of meetings) {
+          if (!m.coaching_notes) continue;
+          const coaching = typeof m.coaching_notes === 'string' ? JSON.parse(m.coaching_notes) : m.coaching_notes;
+          if (!coaching || (coaching.score || 0) < 40) continue;
+
+          // Extract from missed_opportunities
+          const missed = coaching.missed_opportunities || [];
+          for (const opp of missed) {
+            if (typeof opp !== 'string' || opp.length < 20) continue;
+
+            const title = `Sales coaching: ${opp.slice(0, 80)}`;
+            if (existingTitles.has(title.toLowerCase())) continue;
+
+            const trigger = {
+              id: generateId(),
+              title,
+              raw_content: `[From coaching analysis of "${m.title || 'meeting'}"]\n\nMissed opportunity: ${opp}\n\nThis is a common sales mistake that law firms can learn from. Turn this into actionable content about what to do instead.\n\nCoaching score: ${coaching.score}/100\nMeeting type: ${m.meeting_type || 'unknown'}`,
+              source: 'coaching_insight',
+              category: 'HOW_TO',
+              url: null,
+              captured_at: now(),
+              status: 'pending',
+              meeting_id: m.id
+            };
+            triggers.push(trigger);
+            existingTitles.add(title.toLowerCase());
+            created.push({ id: trigger.id, title: trigger.title, meeting: m.title });
+          }
+
+          // Extract from improvements (actionable advice)
+          const improvements = coaching.improvements || [];
+          for (const imp of improvements) {
+            if (typeof imp !== 'string' || imp.length < 30) continue;
+
+            const title = `Sales tip: ${imp.slice(0, 80)}`;
+            if (existingTitles.has(title.toLowerCase())) continue;
+
+            const trigger = {
+              id: generateId(),
+              title,
+              raw_content: `[From coaching analysis of "${m.title || 'meeting'}"]\n\nImprovement: ${imp}\n\nCoaching score: ${coaching.score}/100\nMeeting type: ${m.meeting_type || 'unknown'}\n\nTurn this into practical content: "X mistake costs law firms $Y/month. Here's the fix..."`,
+              source: 'coaching_insight',
+              category: 'PAIN_POINT',
+              url: null,
+              captured_at: now(),
+              status: 'pending',
+              meeting_id: m.id
+            };
+            triggers.push(trigger);
+            existingTitles.add(title.toLowerCase());
+            created.push({ id: trigger.id, title: trigger.title, meeting: m.title });
+          }
+        }
+
+        if (created.length > 0) writeJSON('trigger-queue.json', triggers);
+        return json(res, { ok: true, triggers_created: created.length, triggers: created });
+      } catch (err) {
+        return json(res, { error: err.message }, 500);
+      }
+    }
+
     // GET /api/analytics/content-gaps — detect practice area and topic gaps
     if (pathname === '/api/analytics/content-gaps' && method === 'GET') {
       try {

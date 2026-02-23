@@ -6246,7 +6246,14 @@ function renderContentCard(content) {
                 content.predictions.linkedin.predicted_engagement_tier === 'high' ? '#1e40af' :
                 content.predictions.linkedin.predicted_engagement_tier === 'moderate' ? '#92400e' : '#991b1b'
             }
-          }, `AI: ${content.predictions.linkedin.predicted_engagement_tier}`) : null
+          }, `AI: ${content.predictions.linkedin.predicted_engagement_tier}`) : null,
+          // Variant badges
+          content.tone_variants ? h('span', {
+            style: { fontSize: '10px', padding: '2px 6px', borderRadius: '100px', fontWeight: '500', background: '#f3e8ff', color: '#7c3aed' }
+          }, `${Object.values(content.tone_variants).reduce((s, f) => s + Object.keys(f || {}).length, 0)} tones`) : null,
+          content.audience_variants ? h('span', {
+            style: { fontSize: '10px', padding: '2px 6px', borderRadius: '100px', fontWeight: '500', background: '#fef3c7', color: '#92400e' }
+          }, `${Object.values(content.audience_variants).reduce((s, f) => s + Object.keys(f || {}).length, 0)} audiences`) : null
         );
       })()
     ),
@@ -7603,13 +7610,32 @@ function renderFormatContent(content, formatKey, fmt) {
               : null
           )
         : null,
-      // Quality flags
-      content.quality_score?.flags?.length > 0 && (formatKey === 'linkedin' || formatKey === 'x_single')
-        ? h('span', {
-            style: { fontSize: '10px', color: 'var(--amber)', cursor: 'help' },
-            title: content.quality_score.flags.filter(f => f.startsWith(formatKey)).join('\n')
-          }, content.quality_score.flags.filter(f => f.startsWith(formatKey)).length > 0 ? 'flags' : '')
-        : null,
+      // Quality flags with AI improvement hints
+      (() => {
+        const flags = (content.quality_score?.flags || []).filter(f => f.startsWith(formatKey));
+        if (flags.length === 0) return null;
+        return h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '4px', alignItems: 'center', marginBottom: '4px' } },
+          ...flags.map(flag => {
+            const label = flag.replace(formatKey + ': ', '');
+            return h('span', {
+              style: { fontSize: '10px', padding: '2px 8px', borderRadius: '10px', background: '#fef3c7', color: '#92400e', fontWeight: '500' }
+            }, label);
+          }),
+          fmt.status !== 'approved' ? h('button', {
+            className: 'btn btn-sm',
+            style: { fontSize: '9px', padding: '2px 8px', background: '#8B5CF6', color: 'white', border: 'none', borderRadius: '10px' },
+            onclick: async (e) => {
+              e.stopPropagation();
+              toast('AI improving content...', 'info');
+              try {
+                const res = await api(`/api/content/bulk-improve`, { method: 'POST', body: { ids: [content.id], format: formatKey } });
+                toast('Improvement started! Refreshing in 15s...', 'success');
+                setTimeout(() => loadData(), 15000);
+              } catch (err) { toast('Improve failed: ' + err.message, 'error'); }
+            }
+          }, 'AI Fix') : null
+        );
+      })(),
       h('span', { className: 'char-count' },
         isThread
           ? `${fmt.content.length} tweets`
@@ -8145,6 +8171,18 @@ function renderAnalyticsPage() {
           } catch (err) { toast('Mine insights failed: ' + err.message, 'error'); }
         }
       }, 'Mine Meeting Insights'),
+      h('button', {
+        className: 'btn btn-sm',
+        style: { background: '#6366f1', color: 'white', border: 'none' },
+        onclick: async () => {
+          toast('Mining coaching insights for content triggers...', 'info');
+          try {
+            const res = await api('/api/analytics/mine-coaching', { method: 'POST' });
+            toast(`Created ${res.triggers_created} triggers from coaching insights!`, res.triggers_created > 0 ? 'success' : 'info');
+            if (res.triggers_created > 0) loadData();
+          } catch (err) { toast('Mine coaching failed: ' + err.message, 'error'); }
+        }
+      }, 'Mine Coaching'),
       h('button', {
         className: 'btn btn-sm',
         style: { background: '#059669', color: 'white', border: 'none' },

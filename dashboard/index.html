@@ -1898,6 +1898,7 @@ const pageDataMap = {
   content: [
     ['series', '/api/series', []],
     ['published', '/api/published', []],
+    ['predictions', '/api/predictions', { predictions: [], has_enough_data: false }],
   ],
   triggers: [
     ['settings', '/api/settings', {}],
@@ -8929,8 +8930,61 @@ function renderTriggersPage() {
       h('button', {
         className: 'btn btn-primary btn-sm',
         onclick: () => { state.showAddTrigger = !state.showAddTrigger; render(); }
-      }, state.showAddTrigger ? 'Cancel' : '+ Add Trigger')
+      }, state.showAddTrigger ? 'Cancel' : '+ Add Trigger'),
+      h('button', {
+        className: 'btn btn-sm',
+        style: { marginLeft: '4px', background: 'var(--purple)', color: 'white', border: 'none' },
+        disabled: state._clustering,
+        onclick: async () => {
+          state._clustering = true; render();
+          try {
+            state._triggerClusters = await api('/api/triggers/cluster', { method: 'POST' });
+            state._showClusters = true;
+            toast(`Found ${(state._triggerClusters.clusters || []).length} clusters`, 'success');
+          } catch (err) { toast('Clustering failed: ' + err.message, 'error'); }
+          state._clustering = false; render();
+        }
+      }, state._clustering ? 'Clustering...' : 'AI Cluster')
     ),
+    // Cluster results panel
+    state._showClusters && state._triggerClusters ? (() => {
+      const cl = state._triggerClusters;
+      return h('div', { className: 'card', style: { padding: '16px', marginBottom: '16px', borderLeft: '4px solid var(--purple)' } },
+        h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' } },
+          h('div', {},
+            h('div', { style: { fontWeight: '700', fontSize: '14px', color: 'var(--navy)' } }, `Topic Clusters (${cl.clustered}/${cl.total_triggers} grouped)`),
+            h('div', { style: { fontSize: '12px', color: 'var(--gray-500)', marginTop: '2px' } }, cl.recommendation)
+          ),
+          h('button', { className: 'btn btn-ghost btn-sm', onclick: () => { state._showClusters = false; render(); } }, 'Close')
+        ),
+        h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '12px' } },
+          ...(cl.clusters || []).map(cluster =>
+            h('div', { style: { background: 'var(--gray-50)', borderRadius: '8px', padding: '12px', border: '1px solid var(--gray-200)' } },
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
+                h('span', { style: { fontWeight: '600', fontSize: '13px', color: 'var(--purple)' } }, cluster.theme),
+                h('span', { style: { fontSize: '11px', padding: '2px 6px', borderRadius: '4px', background: cluster.avg_score >= 60 ? 'var(--green-light)' : 'var(--amber-light)', color: cluster.avg_score >= 60 ? 'var(--green)' : 'var(--amber)', fontWeight: '600' } }, `avg ${cluster.avg_score}`)
+              ),
+              h('div', { style: { fontSize: '12px', color: 'var(--gray-500)', marginBottom: '6px' } }, cluster.suggestion),
+              ...cluster.triggers.slice(0, 4).map(t =>
+                h('div', { style: { fontSize: '11px', color: 'var(--gray-600)', padding: '2px 0', borderBottom: '1px solid var(--gray-100)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } },
+                  `${t.score || 0}pts \u2022 ${t.title}`)
+              ),
+              cluster.triggers.length > 4 ? h('div', { style: { fontSize: '11px', color: 'var(--gray-400)', marginTop: '4px' } }, `+${cluster.triggers.length - 4} more`) : null,
+              h('button', {
+                className: 'btn btn-sm', style: { marginTop: '8px', fontSize: '11px', width: '100%' },
+                onclick: () => startBatchGeneration({ triggerIds: cluster.triggers.map(t => t.id), count: cluster.triggers.length })
+              }, `Generate ${cluster.triggers.length} as batch`)
+            )
+          ),
+          ...(cl.outliers || []).map(o =>
+            h('div', { style: { background: 'var(--card-bg)', borderRadius: '8px', padding: '10px', border: '1px dashed var(--gray-300)' } },
+              h('div', { style: { fontSize: '12px', fontWeight: '600', color: 'var(--navy)' } }, o.title),
+              h('div', { style: { fontSize: '11px', color: 'var(--gray-400)', marginTop: '2px' } }, `${o.score}pts \u2022 ${o.note}`)
+            )
+          )
+        )
+      );
+    })() : null,
     // Category filter pills
     h('div', { style: { display: 'flex', gap: '6px', marginBottom: '12px', flexWrap: 'wrap' } },
       h('span', {
@@ -10215,6 +10269,20 @@ function renderSeriesPage() {
       ),
       h('div', { style: { display: 'flex', gap: '8px' } },
         h('button', {
+          className: 'btn btn-sm',
+          style: { background: 'var(--purple)', color: 'white', border: 'none' },
+          disabled: state._suggestingSeries,
+          onclick: async () => {
+            state._suggestingSeries = true; render();
+            try {
+              state._seriesSuggestions = await api('/api/series/ai-suggest', { method: 'POST' });
+              state._showSeriesSuggestions = true;
+              toast('Generated series suggestions', 'success');
+            } catch (err) { toast('Failed: ' + err.message, 'error'); }
+            state._suggestingSeries = false; render();
+          }
+        }, state._suggestingSeries ? 'Thinking...' : 'AI Suggest Series'),
+        h('button', {
           className: 'btn btn-primary btn-sm',
           disabled: state.leadMagnetGenerating,
           onclick: async () => {
@@ -10242,6 +10310,57 @@ function renderSeriesPage() {
         }, state.leadMagnetGenerating ? 'Generating Lead Magnets...' : 'Generate Lead Magnets')
       )
     ),
+    // AI Series Suggestions panel
+    state._showSeriesSuggestions && state._seriesSuggestions ? (() => {
+      const sugg = state._seriesSuggestions;
+      const items = sugg.suggestions || [];
+      const pillarColors = { growth: 'var(--green)', trust: 'var(--blue)', educate: 'var(--amber)', convert: 'var(--red)' };
+      return h('div', { className: 'card', style: { padding: '20px', marginBottom: '20px', borderLeft: '4px solid var(--purple)' } },
+        h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' } },
+          h('div', {},
+            h('div', { style: { fontWeight: '700', fontSize: '16px', color: 'var(--navy)', fontFamily: "'Fraunces', serif" } }, 'AI Series Suggestions'),
+            h('div', { style: { fontSize: '12px', color: 'var(--gray-500)', marginTop: '2px' } },
+              `Based on ${sugg.context?.trigger_count || 0} triggers and ${sugg.context?.pattern_count || 0} client patterns`)
+          ),
+          h('button', { className: 'btn btn-ghost btn-sm', onclick: () => { state._showSeriesSuggestions = false; render(); } }, 'Close')
+        ),
+        h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '16px' } },
+          ...items.map(s =>
+            h('div', { style: { background: 'var(--gray-50)', borderRadius: '10px', padding: '16px', border: '1px solid var(--gray-200)' } },
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
+                h('div', { style: { fontWeight: '700', fontSize: '15px', color: 'var(--navy)' } }, s.name || 'Untitled'),
+                h('div', { style: { display: 'flex', gap: '6px' } },
+                  s.day ? h('span', { style: { fontSize: '10px', padding: '2px 6px', borderRadius: '4px', background: `${dayColors[s.day] || 'var(--gray-400)'}20`, color: dayColors[s.day] || 'var(--gray-400)', fontWeight: '600' } }, s.day) : null,
+                  s.pillar ? h('span', { style: { fontSize: '10px', padding: '2px 6px', borderRadius: '4px', background: `${pillarColors[s.pillar] || 'var(--gray-400)'}15`, color: pillarColors[s.pillar] || 'var(--gray-400)', fontWeight: '600' } }, s.pillar) : null
+                )
+              ),
+              h('p', { style: { fontSize: '13px', color: 'var(--gray-500)', marginBottom: '8px' } }, s.description || ''),
+              s.hashtag ? h('div', { style: { fontSize: '11px', color: 'var(--blue)', marginBottom: '8px' } }, s.hashtag) : null,
+              s.first_5_episodes ? h('div', { style: { marginBottom: '10px' } },
+                h('div', { style: { fontSize: '11px', fontWeight: '600', color: 'var(--gray-500)', marginBottom: '4px' } }, 'Episode Ideas:'),
+                ...(s.first_5_episodes || []).slice(0, 5).map((ep, i) =>
+                  h('div', { style: { fontSize: '12px', color: 'var(--gray-600)', padding: '2px 0' } }, `${i + 1}. ${ep}`)
+                )
+              ) : null,
+              s.reasoning ? h('div', { style: { fontSize: '11px', color: 'var(--gray-400)', fontStyle: 'italic', marginBottom: '10px' } }, s.reasoning) : null,
+              h('button', {
+                className: 'btn btn-primary btn-sm', style: { width: '100%' },
+                onclick: async () => {
+                  try {
+                    await api('/api/series', { method: 'POST', body: {
+                      name: s.name, description: s.description, day: s.day,
+                      pillar: s.pillar, format: s.format, hashtag: s.hashtag, active: true
+                    }});
+                    toast(`Created series: ${s.name}`, 'success');
+                    loadData();
+                  } catch (err) { toast('Failed: ' + err.message, 'error'); }
+                }
+              }, 'Create This Series')
+            )
+          )
+        )
+      );
+    })() : null,
     // Week view — show which series goes on which day
     series.length === 0 ? renderEmpty('\uD83D\uDCC5', 'No content series yet', 'Create recurring content series to maintain a consistent publishing schedule.') : null,
     series.length > 0 ? h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '8px', marginBottom: '24px' } },

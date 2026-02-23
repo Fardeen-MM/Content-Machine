@@ -2881,6 +2881,150 @@ Return JSON:
       });
     }
 
+    // POST /api/triggers/cluster — AI-powered trigger clustering + recommendations
+    if (pathname === '/api/triggers/cluster' && method === 'POST') {
+      try {
+        const triggers = readJSON('trigger-queue.json').filter(t => t.status === 'pending');
+        if (triggers.length < 3) return json(res, { clusters: [], recommendation: 'Need 3+ pending triggers to cluster' });
+
+        // Build keyword-based clusters without AI
+        const stopwords = new Set(['the','a','an','and','or','but','in','on','at','to','for','of','with','by','from','is','are','was','were','be','been','have','has','had','do','does','did','will','would','can','could','this','that','it','its','not','all','any','some','how','why','what','when','where','who','about','new','more','most','than','very','too','so','if','just','also','get','make','go','know','take','use','law','firm','legal','marketing','lawyer','attorney','client','your','you','they','we','our','my']);
+
+        // Extract keywords per trigger
+        const trigKeywords = triggers.map(t => {
+          const words = (t.title || '').toLowerCase().replace(/[^a-z0-9\s]/g, '').split(/\s+/)
+            .filter(w => w.length > 3 && !stopwords.has(w));
+          return { trigger: t, keywords: new Set(words) };
+        });
+
+        // Build similarity clusters using Jaccard similarity
+        const clusters = [];
+        const used = new Set();
+        for (let i = 0; i < trigKeywords.length; i++) {
+          if (used.has(i)) continue;
+          const cluster = [i];
+          for (let j = i + 1; j < trigKeywords.length; j++) {
+            if (used.has(j)) continue;
+            const intersection = [...trigKeywords[i].keywords].filter(w => trigKeywords[j].keywords.has(w));
+            const union = new Set([...trigKeywords[i].keywords, ...trigKeywords[j].keywords]);
+            const similarity = union.size > 0 ? intersection.length / union.size : 0;
+            if (similarity >= 0.25 || intersection.length >= 2) {
+              cluster.push(j);
+            }
+          }
+          if (cluster.length >= 2) {
+            for (const idx of cluster) used.add(idx);
+            // Find common theme
+            const allWords = {};
+            for (const idx of cluster) {
+              for (const w of trigKeywords[idx].keywords) { allWords[w] = (allWords[w] || 0) + 1; }
+            }
+            const theme = Object.entries(allWords)
+              .filter(([, c]) => c >= Math.ceil(cluster.length * 0.5))
+              .sort((a, b) => b[1] - a[1])
+              .slice(0, 3)
+              .map(([w]) => w)
+              .join(' + ');
+
+            clusters.push({
+              theme: theme || 'related topics',
+              size: cluster.length,
+              triggers: cluster.map(idx => ({
+                id: triggers[idx].id,
+                title: triggers[idx].title,
+                score: triggers[idx].score || 0,
+                source: triggers[idx].source
+              })),
+              avg_score: Math.round(cluster.reduce((s, idx) => s + (triggers[idx].score || 0), 0) / cluster.length),
+              suggestion: cluster.length >= 3 ? 'Could become a content series' : 'Batch generate together'
+            });
+          }
+        }
+
+        // Unclustered high-scoring outliers
+        const outliers = trigKeywords
+          .filter((_, i) => !used.has(i) && (triggers[i].score || 0) >= 60)
+          .slice(0, 5)
+          .map((tk, i) => ({
+            id: tk.trigger.id,
+            title: tk.trigger.title,
+            score: tk.trigger.score || 0,
+            note: 'Unique topic — standalone content'
+          }));
+
+        clusters.sort((a, b) => b.avg_score - a.avg_score);
+
+        return json(res, {
+          clusters: clusters.slice(0, 10),
+          outliers,
+          total_triggers: triggers.length,
+          clustered: [...used].length,
+          recommendation: clusters.length > 0
+            ? `Found ${clusters.length} topic clusters. ${clusters.filter(c => c.size >= 3).length} could become series.`
+            : 'Triggers are diverse — generate individually for variety.'
+        });
+      } catch (err) { return apiError(res, err); }
+    }
+
+    // POST /api/series/ai-suggest — AI suggests new series from triggers + patterns
+    if (pathname === '/api/series/ai-suggest' && method === 'POST') {
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not configured' }, 503);
+      try {
+        const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+        db.initDb();
+        const triggers = readJSON('trigger-queue.json').filter(t => t.status === 'pending');
+        const existingSeries = readJSON('series.json', []);
+        const patterns = db.getPatterns({ limit: 20 });
+        const content = readJSON('content.json');
+
+        // Build context
+        const topTriggers = triggers.sort((a, b) => (b.score || 0) - (a.score || 0)).slice(0, 30);
+        const categoryDist = {};
+        for (const t of triggers) { categoryDist[t.category || 'unknown'] = (categoryDist[t.category || 'unknown'] || 0) + 1; }
+
+        const existingNames = existingSeries.map(s => s.name).join(', ');
+
+        const prompt = `Analyze these content signals and suggest 3 NEW recurring content series for a legal marketing agency.
+
+EXISTING SERIES (don't duplicate): ${existingNames || 'None'}
+
+TOP TRIGGERS (${triggers.length} total):
+${topTriggers.slice(0, 15).map(t => `- [${t.category}] ${t.title}`).join('\n')}
+
+CATEGORY DISTRIBUTION: ${JSON.stringify(categoryDist)}
+
+CLIENT PATTERNS FROM SALES CALLS:
+${patterns.slice(0, 8).map(p => `- [${p.type}] ${p.description} (${p.frequency}x)`).join('\n')}
+
+PUBLISHED CONTENT FORMATS: ${[...new Set(content.flatMap(c => Object.keys(c.formats || {})))].join(', ')}
+
+Suggest 3 series. For each:
+- name: catchy series name
+- day: best weekday (avoid ${existingSeries.map(s => s.day).join(', ') || 'none'})
+- description: 1-sentence description
+- pillar: content pillar (growth/trust/educate/convert)
+- format: best format (linkedin/x_thread/blog/carousel/short_video)
+- hashtag: branded hashtag
+- first_5_episodes: array of 5 episode title ideas
+- reasoning: why this series fills a gap
+
+Return JSON array of 3 series objects.`;
+
+        const result = await callClaude({ model: HAIKU, system: 'You suggest content series for a legal marketing agency. Return ONLY valid JSON array.', prompt, maxTokens: 1500 });
+        const suggestions = parseJsonResponse(result);
+
+        return json(res, {
+          suggestions: Array.isArray(suggestions) ? suggestions : [],
+          context: {
+            trigger_count: triggers.length,
+            existing_series: existingSeries.length,
+            pattern_count: patterns.length,
+            categories: categoryDist
+          }
+        });
+      } catch (err) { return apiError(res, err); }
+    }
+
     // POST /api/triggers/bulk-delete — delete rejected triggers
     if (pathname === '/api/triggers/bulk-delete' && method === 'POST') {
       const body = await parseBody(req);

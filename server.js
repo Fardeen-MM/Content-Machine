@@ -3770,6 +3770,64 @@ Extract patterns and return JSON (no fences):
       return json(res, { ok: true, new_content: content[idx].formats[body.format].content });
     }
 
+    // GET /api/hook-performance — aggregate hook variant performance data
+    if (pathname === '/api/hook-performance' && method === 'GET') {
+      try {
+        const memory = readJSON('memory.json', {});
+        const perfData = readJSON('performance.json', []);
+        const content = readJSON('content.json');
+        const hookPrefs = memory.hook_preferences || [];
+
+        // Count hook swaps by type (index 0=failure/data, 1=data/contrarian, 2=contrarian/story)
+        const hookLabels = {
+          linkedin: ['Failure Story', 'Data Bomb', 'Contrarian'],
+          x: ['Data Angle', 'Contrarian', 'Story Hook']
+        };
+        const swapCounts = { linkedin: [0, 0, 0], x: [0, 0, 0] };
+        for (const pref of hookPrefs) {
+          const fmt = pref.format === 'x_single' || pref.format === 'x_thread' ? 'x' : 'linkedin';
+          if (pref.hook_index >= 0 && pref.hook_index < 3) swapCounts[fmt][pref.hook_index]++;
+        }
+
+        // Track which hook styles have best performance
+        const hookEngagement = {};
+        for (const perf of perfData) {
+          if (!perf.content_id) continue;
+          const item = content.find(c => c.id === perf.content_id);
+          if (!item) continue;
+          const selectedHook = item.formats?.linkedin?.selected_hook ?? item.formats?.x_single?.selected_hook;
+          if (selectedHook !== undefined) {
+            hookEngagement[selectedHook] = hookEngagement[selectedHook] || { count: 0, total_engagement: 0, total_impressions: 0 };
+            hookEngagement[selectedHook].count++;
+            hookEngagement[selectedHook].total_engagement += perf.engagement || 0;
+            hookEngagement[selectedHook].total_impressions += perf.impressions || 0;
+          }
+        }
+
+        // Content with hook variants vs without
+        const withVariants = content.filter(c => c.hook_variants && ((c.hook_variants.linkedin || []).length > 0 || (c.hook_variants.x || []).length > 0));
+        const withoutVariants = content.filter(c => !c.hook_variants || ((c.hook_variants.linkedin || []).length === 0 && (c.hook_variants.x || []).length === 0));
+
+        return json(res, {
+          total_swaps: hookPrefs.length,
+          swap_counts: Object.entries(swapCounts).map(([platform, counts]) => ({
+            platform,
+            variants: counts.map((count, i) => ({
+              label: hookLabels[platform]?.[i] || `Variant ${i + 1}`,
+              swaps: count,
+              engagement: hookEngagement[i] || null
+            }))
+          })),
+          content_with_variants: withVariants.length,
+          content_without_variants: withoutVariants.length,
+          recent_swaps: hookPrefs.slice(-10).reverse(),
+          winning_style: hookPrefs.length > 5
+            ? hookLabels.linkedin[swapCounts.linkedin.indexOf(Math.max(...swapCounts.linkedin))] || 'Unknown'
+            : 'Not enough data'
+        });
+      } catch (err) { return apiError(res, err); }
+    }
+
     // POST /api/content/:id/repurpose — repurpose content to a different format
     const repurposeMatch = pathname.match(/^\/api\/content\/([a-f0-9]+)\/repurpose$/);
     if (repurposeMatch && method === 'POST') {
@@ -7196,14 +7254,14 @@ Return JSON (raw, no fences):
       return json(res, { ok: true, ...config });
     }
 
-    // POST /api/autopilot/run — manually trigger an auto-pilot cycle (for testing)
+    // POST /api/autopilot/run — trigger an auto-pilot cycle with recommendation-driven priority queue
     if (pathname === '/api/autopilot/run' && method === 'POST') {
       const config = readJSON('autopilot-config.json', { enabled: false, settings: {} });
       if (!config.enabled) return json(res, { error: 'Auto-pilot is not enabled. POST /api/autopilot/enable first.' }, 400);
       if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'ANTHROPIC_API_KEY not configured' }, 503);
 
       const log = readJSON('autopilot-log.json', []);
-      const results = { scrape: null, generate: null, ctas: 0, swipes: 0 };
+      const results = { scrape: null, generate: null, ctas: 0, swipes: 0, priority_queue: [] };
 
       // Step 1: Scrape
       try {
@@ -7215,24 +7273,57 @@ Return JSON (raw, no fences):
         log.push({ action: 'scrape', error: err.message, timestamp: now() });
       }
 
-      // Step 2: Generate from top triggers
+      // Step 2: Build priority queue using recommendations + trigger scores
       try {
-        const { scoreTrigger, selectTopTriggers } = require('./generator/score-triggers');
+        const { scoreTrigger, selectTopTriggers, getQualityTier } = require('./generator/score-triggers');
         const triggers = readJSON('trigger-queue.json');
-        const top = selectTopTriggers(triggers, config.settings.max_daily_generates || 5);
+        const content = readJSON('content.json');
+        const maxGen = config.settings.max_daily_generates || 5;
+
+        // Build recommendations context for smarter selection
+        const pillarCounts = {};
+        const pillarTargets = { hot_take: 0.10, how_to: 0.25, insight: 0.35, social_proof: 0.30 };
+        for (const c of content.filter(x => x.status !== 'archived' && x.status !== 'rejected')) {
+          const p = (c.trigger_category || '').toLowerCase();
+          const pillar = p.includes('pain') || p.includes('question') ? 'insight'
+            : p.includes('data') || p.includes('social') ? 'social_proof'
+            : p.includes('hot') || p.includes('contrarian') ? 'hot_take' : 'how_to';
+          pillarCounts[pillar] = (pillarCounts[pillar] || 0) + 1;
+        }
+        const total = Object.values(pillarCounts).reduce((s, v) => s + v, 0) || 1;
+        const pillarGaps = {};
+        for (const [p, target] of Object.entries(pillarTargets)) {
+          pillarGaps[p] = target - ((pillarCounts[p] || 0) / total);
+        }
+
+        // Score triggers with gap-aware boost
+        const scored = triggers.filter(t => t.status === 'pending').map(t => {
+          let score = scoreTrigger(t, triggers);
+          const tier = getQualityTier(score);
+          // Boost triggers that fill pillar gaps
+          const cat = (t.category || '').toLowerCase();
+          const triggerPillar = cat.includes('pain') || cat.includes('question') ? 'insight'
+            : cat.includes('data') || cat.includes('social') ? 'social_proof'
+            : cat.includes('hot') || cat.includes('contrarian') ? 'hot_take' : 'how_to';
+          const gap = pillarGaps[triggerPillar] || 0;
+          if (gap > 0.05) score += Math.round(gap * 20); // Up to +6 for biggest gaps
+          return { ...t, score, tier: tier.tier, pillar: triggerPillar, gap_boost: gap > 0.05 };
+        }).sort((a, b) => b.score - a.score);
+
+        const top = scored.slice(0, maxGen);
+        results.priority_queue = top.map(t => ({ id: t.id, title: t.title, score: t.score, tier: t.tier, pillar: t.pillar, gap_boost: t.gap_boost }));
 
         if (top.length > 0) {
-          const { generateSocialContent, HAIKU } = require('./lib/claude');
+          const { generateSocialContent } = require('./lib/claude');
           const { buildSystemPromptWithMemory } = require('./generator/content-writer');
-          const content = readJSON('content.json');
           let generated = 0;
 
-          for (const trigger of top.slice(0, 5)) {
+          for (const trigger of top) {
             try {
               const systemPrompt = buildSystemPromptWithMemory();
               const formats = await generateSocialContent(trigger, systemPrompt);
               if (formats) {
-                content.push({
+                const contentItem = {
                   id: generateId(),
                   trigger_title: trigger.title,
                   trigger_source: trigger.source,
@@ -7241,18 +7332,22 @@ Return JSON (raw, no fences):
                   formats,
                   status: 'review',
                   generated_at: now(),
-                  generation_mode: 'autopilot'
-                });
+                  generation_mode: 'autopilot',
+                  autopilot_meta: { score: trigger.score, tier: trigger.tier, pillar: trigger.pillar, gap_boost: trigger.gap_boost }
+                };
+                content.push(contentItem);
                 // Mark trigger as used
-                const allTriggers = readJSON('trigger-queue.json');
-                const tIdx = allTriggers.findIndex(t => t.id === trigger.id);
-                if (tIdx !== -1) { allTriggers[tIdx].status = 'used'; writeJSON('trigger-queue.json', allTriggers); }
+                const tIdx = triggers.findIndex(t => t.id === trigger.id);
+                if (tIdx !== -1) { triggers[tIdx].status = 'used'; triggers[tIdx].used_at = now(); }
+                // Auto-schedule
+                autoScheduleContent(contentItem);
                 generated++;
               }
             } catch (err) { /* skip failed generation */ }
           }
           writeJSON('content.json', content);
-          results.generate = { generated, from_triggers: top.length };
+          writeJSON('trigger-queue.json', triggers);
+          results.generate = { generated, from_triggers: top.length, gap_driven: top.filter(t => t.gap_boost).length };
           log.push({ action: 'generate', result: results.generate, timestamp: now() });
         }
       } catch (err) {
@@ -21936,6 +22031,80 @@ cron.schedule('0 */4 * * *', async () => {
   } catch (err) {
     console.error('[cron] Queue auto-generation failed:', err.message);
     try { db.logError('cron', 'queue_auto_gen', err.message); } catch {}
+  }
+});
+
+// Autopilot cron — run full autopilot cycle at configured time when enabled (default 7AM EST = 12 UTC)
+cron.schedule('0 12 * * *', async () => {
+  try {
+    const config = readJSON('autopilot-config.json', { enabled: false, settings: {} });
+    if (!config.enabled) return;
+    if (!process.env.ANTHROPIC_API_KEY) return;
+    console.log('[cron] Running autopilot cycle...');
+
+    const log = readJSON('autopilot-log.json', []);
+    const today = new Date().toISOString().split('T')[0];
+    const todayGens = log.filter(l => l.timestamp?.startsWith(today) && l.action === 'generate')
+      .reduce((s, l) => s + (l.result?.generated || 0), 0);
+    const maxGen = config.settings.max_daily_generates || 10;
+    if (todayGens >= maxGen) { console.log(`[cron] Autopilot: already generated ${todayGens}/${maxGen} today`); return; }
+
+    const remaining = maxGen - todayGens;
+    const { scoreTrigger, getQualityTier } = require('./generator/score-triggers');
+    const { generateSocialContent } = require('./lib/claude');
+    const { buildSystemPromptWithMemory } = require('./generator/content-writer');
+    const triggers = readJSON('trigger-queue.json');
+    const content = readJSON('content.json');
+
+    // Priority queue: score + gap boost
+    const pillarCounts = {};
+    for (const c of content.filter(x => x.status !== 'archived' && x.status !== 'rejected')) {
+      const cat = (c.trigger_category || '').toLowerCase();
+      const pillar = cat.includes('pain') || cat.includes('question') ? 'insight'
+        : cat.includes('data') || cat.includes('social') ? 'social_proof'
+        : cat.includes('hot') || cat.includes('contrarian') ? 'hot_take' : 'how_to';
+      pillarCounts[pillar] = (pillarCounts[pillar] || 0) + 1;
+    }
+    const total = Object.values(pillarCounts).reduce((s, v) => s + v, 0) || 1;
+    const gaps = { hot_take: 0.10 - (pillarCounts.hot_take || 0) / total, how_to: 0.25 - (pillarCounts.how_to || 0) / total, insight: 0.35 - (pillarCounts.insight || 0) / total, social_proof: 0.30 - (pillarCounts.social_proof || 0) / total };
+
+    const scored = triggers.filter(t => t.status === 'pending').map(t => {
+      let score = scoreTrigger(t, triggers);
+      const cat = (t.category || '').toLowerCase();
+      const pillar = cat.includes('pain') || cat.includes('question') ? 'insight'
+        : cat.includes('data') || cat.includes('social') ? 'social_proof'
+        : cat.includes('hot') || cat.includes('contrarian') ? 'hot_take' : 'how_to';
+      if ((gaps[pillar] || 0) > 0.05) score += Math.round(gaps[pillar] * 20);
+      return { ...t, score, tier: getQualityTier(score).tier, pillar };
+    }).sort((a, b) => b.score - a.score).filter(t => t.tier !== 'low');
+
+    const top = scored.slice(0, remaining);
+    if (top.length === 0) { console.log('[cron] Autopilot: no quality triggers available'); return; }
+
+    let generated = 0;
+    const systemPrompt = buildSystemPromptWithMemory();
+    for (const trigger of top) {
+      try {
+        const formats = await generateSocialContent(trigger, systemPrompt);
+        if (formats) {
+          const item = { id: generateId(), trigger_title: trigger.title, trigger_source: trigger.source, trigger_category: trigger.category || 'CONTENT_PIECE', trigger_url: trigger.url, formats, status: 'review', generated_at: now(), generation_mode: 'autopilot', autopilot_meta: { score: trigger.score, tier: trigger.tier, pillar: trigger.pillar } };
+          content.push(item);
+          const tIdx = triggers.findIndex(t => t.id === trigger.id);
+          if (tIdx !== -1) { triggers[tIdx].status = 'used'; triggers[tIdx].used_at = now(); }
+          autoScheduleContent(item);
+          generated++;
+        }
+      } catch (err) { console.error('[cron] Autopilot gen error:', err.message); }
+    }
+    writeJSON('content.json', content);
+    writeJSON('trigger-queue.json', triggers);
+    log.push({ action: 'generate', result: { generated, from_triggers: top.length }, timestamp: now() });
+    writeJSON('autopilot-log.json', log);
+    console.log(`[cron] Autopilot complete: ${generated}/${top.length} generated`);
+    sendTelegramAlert(`\u{1F916} Autopilot: generated ${generated} content pieces from ${top.length} priority triggers`);
+  } catch (err) {
+    console.error('[cron] Autopilot failed:', err.message);
+    try { db.logError('cron', 'autopilot', err.message); } catch {}
   }
 });
 

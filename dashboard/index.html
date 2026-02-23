@@ -3127,7 +3127,9 @@ function renderContentActions() {
           try {
             const res = await api('/api/autopilot/run', { method: 'POST' });
             const r = res.results;
-            toast(`Autopilot: ${r.generate?.generated || 0} generated`, 'success');
+            const gapDriven = r.generate?.gap_driven || 0;
+            toast(`Autopilot: ${r.generate?.generated || 0} generated (${gapDriven} gap-driven)`, 'success');
+            state._autopilotQueue = r.priority_queue || [];
             await loadData();
           } catch (err) { toast('Autopilot run failed: ' + err.message, 'error'); }
         }
@@ -5591,6 +5593,54 @@ function renderDashboardPage() {
         )
       )
     ) : null,
+
+    // Priority Queue (shows after autopilot run)
+    (state._autopilotQueue || []).length > 0 ? h('div', { style: { marginBottom: '20px' } },
+      h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
+        h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)' } }, 'PRIORITY QUEUE'),
+        h('button', { className: 'btn btn-ghost btn-sm', style: { fontSize: '10px' }, onclick: () => { state._autopilotQueue = []; render(); } }, 'Dismiss')
+      ),
+      h('div', { style: { display: 'grid', gap: '4px' } },
+        ...(state._autopilotQueue || []).map((t, i) =>
+          h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 10px', background: i === 0 ? '#fef3c7' : 'var(--card-bg)', borderRadius: '6px', border: '1px solid ' + (i === 0 ? '#fde68a' : 'var(--gray-200)'), fontSize: '12px' } },
+            h('span', { style: { fontWeight: '700', color: 'var(--gray-400)', minWidth: '16px' } }, `#${i + 1}`),
+            h('span', { style: { flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, t.title || 'Untitled'),
+            h('span', { style: { padding: '1px 6px', borderRadius: '4px', fontSize: '10px', fontWeight: '600', background: t.tier === 'exceptional' ? '#dcfce7' : t.tier === 'high' ? '#dbeafe' : '#f1f5f9', color: t.tier === 'exceptional' ? '#059669' : t.tier === 'high' ? '#2563eb' : '#64748b' } }, t.tier),
+            t.gap_boost ? h('span', { style: { padding: '1px 6px', borderRadius: '4px', fontSize: '9px', background: '#fef3c7', color: '#92400e' } }, 'Gap Fill') : null,
+            h('span', { style: { fontSize: '11px', fontWeight: '600', color: 'var(--gray-500)' } }, String(t.score))
+          )
+        )
+      )
+    ) : null,
+
+    // Hook Performance Panel
+    (() => {
+      if (!state._hookPerfLoaded && state.page === 'settings') {
+        state._hookPerfLoaded = true;
+        api('/api/hook-performance').then(r => { state._hookPerf = r; render(); }).catch(() => {});
+      }
+      return null;
+    })(),
+    state._hookPerf?.total_swaps > 0 ? h('div', { style: { marginBottom: '20px' } },
+      h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)', marginBottom: '8px' } }, 'HOOK PERFORMANCE'),
+      h('div', { style: { fontSize: '11px', color: 'var(--gray-500)', marginBottom: '8px' } },
+        `${state._hookPerf.total_swaps} swaps | Winning: ${state._hookPerf.winning_style} | ${state._hookPerf.content_with_variants} content w/ variants`
+      ),
+      ...(state._hookPerf.swap_counts || []).map(platform =>
+        h('div', { style: { marginBottom: '6px' } },
+          h('div', { style: { fontSize: '11px', fontWeight: '600', textTransform: 'uppercase', marginBottom: '4px' } }, platform.platform),
+          h('div', { style: { display: 'flex', gap: '6px' } },
+            ...platform.variants.map((v, i) =>
+              h('div', { style: { flex: 1, padding: '6px', borderRadius: '6px', textAlign: 'center', background: v.swaps > 0 ? ['#fef3c7', '#dbeafe', '#fce7f3'][i] || '#f1f5f9' : '#f8fafc', border: '1px solid ' + (v.swaps > 0 ? ['#fde68a', '#bfdbfe', '#fbcfe8'][i] || '#e2e8f0' : '#e2e8f0') } },
+                h('div', { style: { fontSize: '14px', fontWeight: '700' } }, String(v.swaps)),
+                h('div', { style: { fontSize: '9px', color: 'var(--gray-500)' } }, v.label)
+              )
+            )
+          )
+        )
+      )
+    ) : null,
+
     // Leads
     state.contentLeads?.length > 0 ? h('div', { style: { marginBottom: '20px' } },
       h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },

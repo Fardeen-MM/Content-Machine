@@ -9843,6 +9843,81 @@ function renderMemoryPage() {
       )
     ),
 
+    // AI Memory Optimizer
+    h('div', { className: 'card', style: { padding: '18px', maxWidth: '900px', marginBottom: '20px', borderLeft: '3px solid var(--purple)' } },
+      h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: state._memoryOpt ? '14px' : '0' } },
+        h('h4', { style: { fontFamily: "'Fraunces', serif", fontSize: '14px' } }, 'AI Memory Optimizer'),
+        h('div', { style: { display: 'flex', gap: '8px' } },
+          h('button', {
+            className: 'btn btn-sm',
+            style: { background: 'var(--purple)', color: 'white', fontSize: '11px', padding: '4px 14px' },
+            disabled: state._loadingMemOpt,
+            onclick: async () => {
+              state._loadingMemOpt = true; render();
+              try {
+                const result = await api('/api/memory/optimize', { method: 'POST' });
+                state._memoryOpt = result.analysis;
+                toast('Memory analysis complete', 'success');
+              } catch (err) { toast('Failed: ' + err.message, 'error'); }
+              state._loadingMemOpt = false; render();
+            }
+          }, state._loadingMemOpt ? 'Analyzing...' : 'Optimize Memory'),
+          h('button', {
+            className: 'btn btn-sm',
+            style: { background: 'var(--green)', color: 'white', fontSize: '11px', padding: '4px 14px' },
+            disabled: state._loadingLearn,
+            onclick: async () => {
+              state._loadingLearn = true; render();
+              try {
+                const result = await api('/api/published/learn', { method: 'POST' });
+                state._learnResult = result.learning;
+                toast(`Learned! ${result.notes_added} style notes added`, 'success');
+                await loadData();
+              } catch (err) { toast('Failed: ' + err.message, 'error'); }
+              state._loadingLearn = false; render();
+            }
+          }, state._loadingLearn ? 'Learning...' : 'Learn from Performance')
+        )
+      ),
+      state._memoryOpt ? (() => {
+        const opt = state._memoryOpt;
+        return h('div', {},
+          h('div', { style: { display: 'flex', gap: '12px', marginBottom: '10px' } },
+            h('span', { style: {
+              fontSize: '18px', fontWeight: '700', fontFamily: "'Fraunces', serif",
+              color: opt.health_score >= 70 ? 'var(--green)' : opt.health_score >= 40 ? 'var(--amber)' : 'var(--red)'
+            } }, `Health: ${opt.health_score || '?'}/100`),
+            h('span', { style: { fontSize: '12px', color: 'var(--gray-500)', alignSelf: 'center' } }, opt.summary || '')
+          ),
+          opt.remove_examples?.length ? h('div', { style: { fontSize: '12px', color: 'var(--red)', marginBottom: '6px' } },
+            `Remove ${opt.remove_examples.length} weak examples (indices: ${opt.remove_examples.join(', ')})`
+          ) : null,
+          opt.contradicting_notes?.length ? h('div', { style: { fontSize: '12px', color: 'var(--amber)', marginBottom: '6px' } },
+            ...opt.contradicting_notes.map(c => h('div', {}, `Conflict: ${c.conflict}`))
+          ) : null,
+          opt.suggested_notes?.length ? h('div', { style: { fontSize: '12px', color: 'var(--green)', marginBottom: '6px' } },
+            h('div', { style: { fontWeight: '600', marginBottom: '2px' } }, 'Suggested style notes:'),
+            ...opt.suggested_notes.map(n => h('div', {}, '+ ' + n))
+          ) : null,
+          opt.format_balance ? h('div', { style: { fontSize: '12px', color: 'var(--blue)' } },
+            `Format balance: ${opt.format_balance.assessment}${opt.format_balance.needs_more?.length ? ' | Needs more: ' + opt.format_balance.needs_more.join(', ') : ''}`
+          ) : null
+        );
+      })() : null,
+      state._learnResult ? h('div', { style: { marginTop: '12px', paddingTop: '12px', borderTop: '1px solid var(--gray-100)' } },
+        h('div', { style: { fontSize: '12px', fontWeight: '600', color: 'var(--green)', marginBottom: '6px' } }, 'LEARNING RESULTS'),
+        state._learnResult.summary ? h('div', { style: { fontSize: '12px', color: 'var(--gray-600)', marginBottom: '6px' } }, state._learnResult.summary) : null,
+        state._learnResult.hook_patterns?.winners?.length ? h('div', { style: { fontSize: '12px', marginBottom: '4px' } },
+          h('span', { style: { fontWeight: '500', color: 'var(--green)' } }, 'Winning hooks: '),
+          state._learnResult.hook_patterns.winners.join('; ')
+        ) : null,
+        state._learnResult.content_to_avoid?.length ? h('div', { style: { fontSize: '12px' } },
+          h('span', { style: { fontWeight: '500', color: 'var(--red)' } }, 'Avoid: '),
+          state._learnResult.content_to_avoid.join('; ')
+        ) : null
+      ) : null
+    ),
+
     h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', maxWidth: '900px' } },
       // Style Notes panel
       h('div', { className: 'card', style: { padding: '24px' } },

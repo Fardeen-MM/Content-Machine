@@ -2591,6 +2591,161 @@ Return JSON:
       return json(res, { ok: true, ...memory });
     }
 
+    // POST /api/memory/optimize — AI analyzes and optimizes memory.json
+    if (pathname === '/api/memory/optimize' && method === 'POST') {
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'API key not set' }, 500);
+      try {
+        const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+        const memory = readJSON('memory.json', {});
+        const perfData = readJSON('performance.json');
+        const content = readJSON('content.json');
+        const examples = memory.approved_examples || [];
+        const notes = memory.style_notes || [];
+
+        if (examples.length < 2 && notes.length === 0) {
+          return json(res, { error: 'Need at least 2 examples or notes to optimize' }, 400);
+        }
+
+        // Map examples to performance
+        const examplesWithPerf = examples.map((ex, idx) => {
+          // Try to match by content text
+          const matchedContent = content.find(c => {
+            const fmtData = c.formats?.[ex.format];
+            if (!fmtData) return false;
+            const cText = typeof fmtData.content === 'string' ? fmtData.content : fmtData.content?.content;
+            return cText && ex.content && cText.includes(ex.content.slice(0, 50));
+          });
+          const perf = matchedContent ? perfData.find(p => p.content_id === matchedContent.id && p.format === ex.format) : null;
+          return { index: idx, format: ex.format, title: ex.trigger_title || 'Unknown', perf_score: perf ? perf.impressions + perf.engagement * 2 + perf.clicks * 5 + perf.leads * 20 : null };
+        });
+
+        const exWithPerf = examplesWithPerf.filter(e => e.perf_score !== null);
+        const exWithoutPerf = examplesWithPerf.filter(e => e.perf_score === null);
+
+        const prompt = `Analyze this AI content memory and suggest optimizations.
+
+APPROVED EXAMPLES (${examples.length} total):
+${examplesWithPerf.map(e => `[${e.index}] ${e.format}: "${e.title}" ${e.perf_score !== null ? '(perf: ' + e.perf_score + ')' : '(no perf data)'}`).join('\n')}
+
+STYLE NOTES (${notes.length} total):
+${notes.map((n, i) => `[${i}] "${typeof n === 'string' ? n : n.note}"`).join('\n')}
+
+PERFORMANCE OVERVIEW: ${exWithPerf.length} examples have performance data, ${exWithoutPerf.length} don't.
+${exWithPerf.length > 0 ? 'Top performer: ' + exWithPerf.sort((a, b) => b.perf_score - a.perf_score)[0]?.title + ' (score: ' + exWithPerf[0]?.perf_score + ')' : ''}
+
+Analyze and return JSON (no fences):
+{
+  "health_score": 0-100,
+  "remove_examples": [indices of low-quality or duplicate examples to remove],
+  "contradicting_notes": [{"note_indices": [i, j], "conflict": "description of contradiction"}],
+  "suggested_notes": ["new style notes to add based on what performs well"],
+  "format_balance": {"assessment": "...", "needs_more": ["formats needing more examples"]},
+  "summary": "1-2 sentence summary"
+}`;
+
+        const text = await callClaude({
+          model: HAIKU,
+          system: 'You optimize AI content memory for a B2B legal marketing agency. Be specific about what to keep, remove, or change.',
+          prompt,
+          maxTokens: 1000
+        });
+        const analysis = parseJsonResponse(text) || {};
+        return json(res, { ok: true, analysis, total_examples: examples.length, total_notes: notes.length, examples_with_perf: exWithPerf.length });
+      } catch (err) {
+        return apiError(res, err);
+      }
+    }
+
+    // POST /api/published/learn — retrospective learning from published content performance
+    if (pathname === '/api/published/learn' && method === 'POST') {
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'API key not set' }, 500);
+      try {
+        const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+        const perfData = readJSON('performance.json');
+        const content = readJSON('content.json');
+        const published = readJSON('published.json', []);
+
+        if (perfData.length < 3) return json(res, { error: 'Need at least 3 performance entries to learn' }, 400);
+
+        // Sort by performance score
+        const scored = perfData.map(p => {
+          const item = content.find(c => c.id === p.content_id);
+          return {
+            ...p,
+            title: item?.trigger_title || 'Unknown',
+            category: item?.trigger_category || 'unknown',
+            source: item?.trigger_source || 'unknown',
+            score: p.impressions + p.engagement * 2 + p.clicks * 5 + p.leads * 20,
+            hook: (() => {
+              const fmt = item?.formats?.[p.format];
+              if (!fmt) return '';
+              const text = typeof fmt.content === 'string' ? fmt.content : fmt.content?.content || '';
+              return text.split('\n')[0]?.slice(0, 100) || '';
+            })()
+          };
+        }).sort((a, b) => b.score - a.score);
+
+        const top20pct = scored.slice(0, Math.max(2, Math.ceil(scored.length * 0.2)));
+        const bottom20pct = scored.slice(-Math.max(2, Math.ceil(scored.length * 0.2)));
+
+        // Track untracked published content
+        const untrackedPublished = published.filter(p => !perfData.find(d => d.content_id === p.content_id));
+
+        const prompt = `Analyze top vs bottom performing content and extract learning.
+
+TOP PERFORMERS (${top20pct.length}):
+${top20pct.map(p => `- "${p.title}" (${p.format}, ${p.category}) — Score: ${p.score} | Hook: "${p.hook}"`).join('\n')}
+
+BOTTOM PERFORMERS (${bottom20pct.length}):
+${bottom20pct.map(p => `- "${p.title}" (${p.format}, ${p.category}) — Score: ${p.score} | Hook: "${p.hook}"`).join('\n')}
+
+UNTRACKED: ${untrackedPublished.length} published posts have no performance data logged.
+
+Extract patterns and return JSON (no fences):
+{
+  "hook_patterns": {"winners": ["patterns in successful hooks"], "losers": ["patterns in failing hooks"]},
+  "format_insights": [{"format": "...", "insight": "..."}],
+  "category_insights": [{"category": "...", "insight": "..."}],
+  "style_notes_to_add": ["2-3 specific style rules based on what top content does differently"],
+  "content_to_avoid": ["specific topics or angles that consistently underperform"],
+  "summary": "key learning in 2-3 sentences"
+}`;
+
+        const text = await callClaude({
+          model: HAIKU,
+          system: 'You extract content performance patterns for a B2B marketing agency. Be specific about hooks, formats, and topics. Reference actual content.',
+          prompt,
+          maxTokens: 1200
+        });
+        const learning = parseJsonResponse(text) || {};
+
+        // Auto-add suggested style notes to memory
+        if (learning.style_notes_to_add?.length) {
+          await jsonStore.update('memory.json', {}, mem => {
+            if (!mem.style_notes) mem.style_notes = [];
+            for (const note of learning.style_notes_to_add) {
+              // Don't add duplicates
+              const exists = mem.style_notes.some(n => (typeof n === 'string' ? n : n.note)?.toLowerCase() === note.toLowerCase());
+              if (!exists) {
+                mem.style_notes.push({ note, added_at: now(), source: 'performance_learning' });
+              }
+            }
+            return mem;
+          });
+        }
+
+        return json(res, {
+          ok: true,
+          learning,
+          notes_added: (learning.style_notes_to_add || []).length,
+          data_points: perfData.length,
+          untracked_published: untrackedPublished.length
+        });
+      } catch (err) {
+        return apiError(res, err);
+      }
+    }
+
     // GET /api/settings
     if (pathname === '/api/settings' && method === 'GET') {
       const triggers = readJSON('trigger-queue.json');

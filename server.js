@@ -1805,6 +1805,248 @@ async function handleRequest(req, res) {
       }
     }
 
+    // GET /api/next-best-actions — AI-powered prioritized recommendations for each team member
+    if (pathname === '/api/next-best-actions' && method === 'GET') {
+      try {
+        db.initDb();
+        const conn = db.getDb();
+        const now = new Date();
+        const weekAgo = new Date(now - 7 * 24 * 60 * 60 * 1000).toISOString();
+
+        // Gather all context
+        const healthOverview = db.getHealthOverview();
+        const openActions = db.getActions({ status: 'open', limit: 50 });
+        const duePestering = db.getPesterEntries({ status: 'pending', due_before: now.toISOString(), limit: 20 });
+        const pendingProposals = conn.prepare("SELECT p.*, c.name as client_name FROM proposals p LEFT JOIN clients c ON p.client_id = c.id WHERE p.status = 'draft'").all();
+        const recentDeals = db.getDealOutcomes({ limit: 10 });
+        const content = readJSON('content.json');
+        const reviewContent = content.filter(c => c.status === 'review');
+        const approvedContent = content.filter(c => c.status === 'approved');
+        const triggers = readJSON('trigger-queue.json');
+        const pendingTriggers = triggers.filter(t => t.status === 'pending');
+        const staleClients = (healthOverview.clients || []).filter(c => c.days_since_contact >= 5);
+        const redClients = (healthOverview.clients || []).filter(c => c.health_status === 'red');
+
+        // Build actions per person based on rules
+        const actions = { yaseer: [], monty: [], fardeen: [], system: [] };
+
+        // YASEER: Sales + follow-ups
+        for (const client of redClients.slice(0, 3)) {
+          actions.yaseer.push({
+            priority: 'critical',
+            action: `Call ${client.client_name || 'Unknown'} NOW`,
+            reason: `Health score ${client.score}/100, ${client.days_since_contact}d silent`,
+            type: 'call'
+          });
+        }
+        for (const entry of duePestering.slice(0, 5)) {
+          actions.yaseer.push({
+            priority: 'high',
+            action: `${entry.channel} ${entry.message_type} to ${entry.client_name || 'Unknown'}`,
+            reason: `Pestering scheduled for ${entry.scheduled_for?.slice(0, 10)}`,
+            type: 'pestering'
+          });
+        }
+        for (const p of pendingProposals.slice(0, 3)) {
+          actions.yaseer.push({
+            priority: 'high',
+            action: `Send proposal to ${p.client_name || 'Unknown'}`,
+            reason: `$${p.monthly_value || 0}/mo draft waiting since ${p.created_at?.slice(0, 10)}`,
+            type: 'proposal'
+          });
+        }
+        for (const client of staleClients.filter(c => c.health_status !== 'red').slice(0, 3)) {
+          actions.yaseer.push({
+            priority: 'medium',
+            action: `Check in with ${client.client_name}`,
+            reason: `${client.days_since_contact}d since last contact`,
+            type: 'follow_up'
+          });
+        }
+
+        // MONTY: Content
+        if (reviewContent.length > 0) {
+          actions.monty.push({
+            priority: 'high',
+            action: `Review & approve ${reviewContent.length} content pieces`,
+            reason: 'Pending in content queue',
+            type: 'content_review'
+          });
+        }
+        const pubQueue = content.reduce((sum, c) => {
+          return sum + Object.values(c.formats || {}).filter(f => f.status === 'approved' && !f.published_at).length;
+        }, 0);
+        if (pubQueue > 0) {
+          actions.monty.push({
+            priority: 'high',
+            action: `Publish ${pubQueue} approved posts`,
+            reason: 'Ready-to-post content waiting',
+            type: 'publish'
+          });
+        }
+        if (pendingTriggers.length < 20) {
+          actions.monty.push({
+            priority: 'medium',
+            action: 'Run a scrape cycle for fresh triggers',
+            reason: `Only ${pendingTriggers.length} pending triggers`,
+            type: 'scrape'
+          });
+        }
+
+        // FARDEEN: Strategy + system
+        if (recentDeals.length > 0) {
+          const lostRecent = recentDeals.filter(d => d.outcome === 'lost' || d.outcome === 'ghosted');
+          if (lostRecent.length > 0) {
+            actions.fardeen.push({
+              priority: 'high',
+              action: `Analyze ${lostRecent.length} recent deal losses for patterns`,
+              reason: 'Lost deals need post-mortem to prevent recurrence',
+              type: 'analysis'
+            });
+          }
+        }
+        const wonDeals = recentDeals.filter(d => d.outcome === 'won');
+        if (wonDeals.length > 0 && !wonDeals.some(d => d.what_worked)) {
+          actions.fardeen.push({
+            priority: 'medium',
+            action: 'Document what_worked on recent won deals',
+            reason: 'Win data feeds content + patterns',
+            type: 'documentation'
+          });
+        }
+        if (healthOverview.summary?.avg_score < 50) {
+          actions.fardeen.push({
+            priority: 'high',
+            action: 'Pipeline health declining — review system',
+            reason: `Average health ${healthOverview.summary.avg_score}/100`,
+            type: 'strategy'
+          });
+        }
+
+        // SYSTEM: Auto-actions
+        if (pendingTriggers.length > 50) {
+          actions.system.push({ action: 'Auto-generate batch from triggers', type: 'auto' });
+        }
+        if (approvedContent.length > 10) {
+          actions.system.push({ action: 'Auto-schedule approved content', type: 'auto' });
+        }
+
+        // Sort each person's actions by priority
+        const priorityOrder = { critical: 0, high: 1, medium: 2, low: 3 };
+        for (const person of Object.keys(actions)) {
+          actions[person].sort((a, b) => (priorityOrder[a.priority] || 3) - (priorityOrder[b.priority] || 3));
+        }
+
+        return json(res, {
+          generated_at: now.toISOString(),
+          summary: {
+            red_clients: redClients.length,
+            stale_clients: staleClients.length,
+            pending_pestering: duePestering.length,
+            review_content: reviewContent.length,
+            pub_queue: pubQueue,
+            pending_triggers: pendingTriggers.length
+          },
+          actions
+        });
+      } catch (err) {
+        return apiError(res, err);
+      }
+    }
+
+    // GET /api/dashboard-brief — cached morning brief for inline dashboard display (no Telegram)
+    if (pathname === '/api/dashboard-brief' && method === 'GET') {
+      try {
+        // Return cached brief if < 2 hours old
+        const cached = readJSON('dashboard-brief-cache.json', null);
+        if (cached && cached.generated_at) {
+          const age = Date.now() - new Date(cached.generated_at).getTime();
+          if (age < 2 * 60 * 60 * 1000) return json(res, cached);
+        }
+        // Generate fresh brief
+        const { generateBrief } = require('./generator/daily-brief');
+        const briefHtml = await generateBrief();
+        const result = {
+          generated_at: new Date().toISOString(),
+          html: briefHtml,
+          stale: false
+        };
+        writeJSON('dashboard-brief-cache.json', result);
+        return json(res, result);
+      } catch (err) {
+        // Return stale cache if generation fails
+        const cached = readJSON('dashboard-brief-cache.json', null);
+        if (cached) return json(res, { ...cached, stale: true });
+        return apiError(res, err);
+      }
+    }
+
+    // POST /api/deals/:id/ai-analyze — AI analysis of a specific deal outcome
+    const dealAnalyzeMatch = pathname.match(/^\/api\/deals\/(\d+)\/ai-analyze$/);
+    if (dealAnalyzeMatch && method === 'POST') {
+      try {
+        db.initDb();
+        const dealId = parseInt(dealAnalyzeMatch[1]);
+        const deal = db.getDb().prepare('SELECT d.*, c.name as client_name, c.firm_name FROM deal_outcomes d LEFT JOIN clients c ON d.client_id = c.id WHERE d.id = ?').get(dealId);
+        if (!deal) return json(res, { error: 'Deal not found' }, 404);
+
+        // Get all deals for comparison
+        const allDeals = db.getDealOutcomes({ limit: 50 });
+        const wonDeals = allDeals.filter(d => d.outcome === 'won');
+        const lostDeals = allDeals.filter(d => d.outcome === 'lost' || d.outcome === 'ghosted');
+
+        // Get meeting history for this client
+        let meetingContext = '';
+        if (deal.client_name) {
+          const meetings = db.getMeetings({ client: deal.client_name, limit: 5 });
+          meetingContext = meetings.map(m => `${m.date?.slice(0, 10)}: ${m.meeting_type} — ${m.summary || m.title}`).join('\n');
+        }
+
+        const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+        const text = await callClaude({
+          model: HAIKU,
+          system: 'You analyze deal outcomes for a legal marketing agency. Provide actionable insights. Return JSON only.',
+          prompt: `Analyze this deal outcome and provide insights.
+
+DEAL:
+- Client: ${deal.client_name || 'Unknown'}${deal.firm_name ? ' (' + deal.firm_name + ')' : ''}
+- Outcome: ${deal.outcome}
+- Value: $${deal.monthly_value || 0}/mo
+- Practice area: ${deal.practice_area || 'Unknown'}
+- Source: ${deal.source_channel || 'Unknown'}
+- Close time: ${deal.close_time_days || '?'} days
+- Loss reason: ${deal.loss_reason || 'N/A'}
+- What worked: ${deal.what_worked || 'N/A'}
+- What failed: ${deal.what_failed || 'N/A'}
+
+MEETING HISTORY:
+${meetingContext || '(none)'}
+
+PORTFOLIO CONTEXT:
+- ${wonDeals.length} won deals, avg $${wonDeals.length > 0 ? Math.round(wonDeals.reduce((s, d) => s + (d.monthly_value || 0), 0) / wonDeals.length) : 0}/mo
+- ${lostDeals.length} lost deals
+- Win rate: ${allDeals.length > 0 ? Math.round(wonDeals.length / allDeals.length * 100) : 0}%
+
+Return JSON:
+{
+  "verdict": "1-sentence summary of what happened and why",
+  "key_factors": ["factor 1", "factor 2", "factor 3"],
+  "could_have_saved": ${deal.outcome !== 'won' ? 'true/false — was this recoverable?' : 'null'},
+  "recovery_actions": ${deal.outcome !== 'won' ? '["specific action 1", "action 2"]' : 'null'},
+  "pattern_match": "Does this match a known pattern from other deals?",
+  "content_opportunity": "What content could address this scenario?",
+  "process_improvement": "What should change in the sales process?"
+}`,
+          maxTokens: 800
+        });
+
+        const analysis = parseJsonResponse(text) || { verdict: text, key_factors: [] };
+        return json(res, { deal_id: dealId, outcome: deal.outcome, analysis });
+      } catch (err) {
+        return apiError(res, err);
+      }
+    }
+
     // POST /api/save-url — scrape a URL and create trigger
     if (pathname === '/api/save-url' && method === 'POST') {
       const body = await parseBody(req);

@@ -1893,6 +1893,7 @@ const pageDataMap = {
     ['meetingStats', '/api/meetings/stats', {}],
     ['settings', '/api/settings', {}],
     ['trending', '/api/trending', { trending_topics: [], trending_phrases: [], categories: {}, source_velocity: {} }],
+    ['nextBestActions', '/api/next-best-actions', { actions: {}, summary: {} }],
   ],
   content: [
     ['series', '/api/series', []],
@@ -3200,6 +3201,57 @@ function renderDashboardPage() {
         )
       )
     ),
+    // AI Next Best Actions
+    (() => {
+      const nba = state.nextBestActions || {};
+      const acts = nba.actions || {};
+      const personColors = { yaseer: 'var(--green)', monty: 'var(--amber)', fardeen: 'var(--purple)' };
+      const priorityColors = { critical: '#dc2626', high: '#ea580c', medium: '#2563eb', low: '#6b7280' };
+      const hasActions = Object.values(acts).some(a => a && a.length > 0);
+      if (!hasActions) return null;
+      return h('div', { style: { marginBottom: '20px' } },
+        h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' } },
+          h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)' } }, 'NEXT BEST ACTIONS'),
+          h('button', {
+            className: 'btn btn-ghost btn-sm',
+            style: { fontSize: '11px', padding: '4px 10px' },
+            onclick: async () => {
+              toast('Refreshing recommendations...', 'info');
+              try {
+                state.nextBestActions = await api('/api/next-best-actions');
+                toast('Updated', 'success');
+                render();
+              } catch (err) { toast('Failed: ' + err.message, 'error'); }
+            }
+          }, 'Refresh')
+        ),
+        h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' } },
+          ...['yaseer', 'monty', 'fardeen'].map(person => {
+            const items = (acts[person] || []).slice(0, 4);
+            return h('div', { className: 'card', style: { padding: '14px' } },
+              h('div', { style: { fontSize: '12px', fontWeight: '700', color: personColors[person], marginBottom: '8px', textTransform: 'uppercase' } }, person),
+              items.length === 0
+                ? h('div', { style: { fontSize: '12px', color: 'var(--gray-400)' } }, 'All clear')
+                : h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
+                    ...items.map(a =>
+                      h('div', { style: { display: 'flex', gap: '6px', alignItems: 'flex-start' } },
+                        h('span', { style: {
+                          fontSize: '9px', padding: '1px 5px', borderRadius: '3px', fontWeight: '700', flexShrink: '0', marginTop: '2px',
+                          background: a.priority === 'critical' ? '#fef2f2' : a.priority === 'high' ? '#fff7ed' : '#eff6ff',
+                          color: priorityColors[a.priority] || '#6b7280'
+                        } }, (a.priority || 'med').slice(0, 4).toUpperCase()),
+                        h('div', {},
+                          h('div', { style: { fontSize: '12px', fontWeight: '500', color: 'var(--navy)' } }, a.action),
+                          a.reason ? h('div', { style: { fontSize: '10px', color: 'var(--gray-400)', marginTop: '1px' } }, a.reason) : null
+                        )
+                      )
+                    )
+                  )
+            );
+          })
+        )
+      );
+    })(),
     // Pipeline summary
     h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '12px', marginBottom: '20px' } },
       h('div', { className: 'card', style: { textAlign: 'center', padding: '14px', cursor: 'pointer' }, onclick: () => { state.page = 'pipeline'; loadPageData('pipeline'); } },
@@ -3346,6 +3398,48 @@ function renderDashboardPage() {
         )
       );
     })(),
+    // AI Morning Brief inline
+    h('div', { style: { marginBottom: '16px' } },
+      h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
+        h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)' } }, 'AI MORNING BRIEF'),
+        h('div', { style: { display: 'flex', gap: '6px' } },
+          state.dashboardBrief ? h('span', { style: { fontSize: '10px', color: state.dashboardBrief.stale ? 'var(--amber)' : 'var(--gray-400)' } },
+            (state.dashboardBrief.stale ? 'Stale \u2022 ' : '') + (state.dashboardBrief.generated_at?.slice(0, 16)?.replace('T', ' ') || '')
+          ) : null,
+          h('button', {
+            className: 'btn btn-sm',
+            style: { background: '#4f46e5', color: 'white', fontSize: '11px', padding: '4px 10px', border: 'none' },
+            disabled: state._loadingBrief,
+            onclick: async () => {
+              state._loadingBrief = true; render();
+              toast('Generating brief...', 'info');
+              try {
+                state.dashboardBrief = await api('/api/dashboard-brief');
+                state.showDashBrief = true;
+                toast('Brief ready', 'success');
+              } catch (err) { toast('Brief failed: ' + err.message, 'error'); }
+              state._loadingBrief = false; render();
+            }
+          }, state._loadingBrief ? 'Generating...' : state.dashboardBrief ? 'Refresh Brief' : 'Generate Brief')
+        )
+      ),
+      state.dashboardBrief && state.showDashBrief ? h('div', {
+        className: 'card',
+        style: { padding: '16px', fontSize: '13px', lineHeight: '1.6', borderLeft: '4px solid #4f46e5', maxHeight: '300px', overflowY: 'auto' }
+      },
+        h('div', { innerHTML: state.dashboardBrief.html || '<em>No brief content</em>' }),
+        h('div', { style: { textAlign: 'right', marginTop: '8px' } },
+          h('button', {
+            className: 'btn btn-ghost btn-sm',
+            style: { fontSize: '11px', padding: '2px 8px' },
+            onclick: () => { state.showDashBrief = false; render(); }
+          }, 'Collapse')
+        )
+      ) : state.dashboardBrief ? h('div', {
+        style: { cursor: 'pointer', padding: '8px 12px', background: '#f8fafc', borderRadius: 'var(--radius-sm)', fontSize: '12px', color: 'var(--gray-500)', border: '1px solid var(--gray-200)' },
+        onclick: () => { state.showDashBrief = true; render(); }
+      }, 'Click to expand brief...') : null
+    ),
     h('div', { style: { textAlign: 'center', padding: '8px 0', margin: '4px 0 8px' } },
       h('button', {
         className: 'btn btn-ghost btn-sm',
@@ -11824,10 +11918,60 @@ function renderDealsPage() {
                   } catch (err) { toast('Update failed: ' + err.message, 'error'); }
                 }
               }, d.outcome),
+              h('button', {
+                className: 'btn btn-sm',
+                style: { background: '#7c3aed', color: 'white', border: 'none', fontSize: '10px', padding: '3px 8px' },
+                onclick: async (e) => {
+                  e.stopPropagation();
+                  toast('Analyzing deal...', 'info');
+                  try {
+                    const result = await api(`/api/deals/${d.id}/ai-analyze`, { method: 'POST' });
+                    state._dealAnalysis = result;
+                    toast('Analysis complete', 'success');
+                    render();
+                  } catch (err) { toast('Analysis failed: ' + err.message, 'error'); }
+                }
+              }, 'AI'),
               d.recorded_at ? h('span', { style: { fontSize: '11px', color: 'var(--gray-400)' } }, new Date(d.recorded_at).toLocaleDateString()) : null
             )
           )
-        )
+        ),
+    // Deal AI Analysis result panel
+    state._dealAnalysis ? h('div', { className: 'card', style: { padding: '18px', marginTop: '16px', borderLeft: '4px solid #7c3aed' } },
+      h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' } },
+        h('div', { style: { fontSize: '14px', fontWeight: '700', color: '#7c3aed' } },
+          `AI Analysis: ${state._dealAnalysis.outcome === 'won' ? 'Won' : 'Lost'} Deal`
+        ),
+        h('button', {
+          className: 'btn btn-ghost btn-sm',
+          style: { fontSize: '11px', padding: '2px 8px' },
+          onclick: () => { state._dealAnalysis = null; render(); }
+        }, 'Dismiss')
+      ),
+      (() => {
+        const a = state._dealAnalysis.analysis || {};
+        return h('div', { style: { display: 'flex', flexDirection: 'column', gap: '10px' } },
+          a.verdict ? h('div', { style: { fontSize: '13px', fontWeight: '500', color: 'var(--navy)', lineHeight: '1.5' } }, a.verdict) : null,
+          a.key_factors && a.key_factors.length > 0 ? h('div', {},
+            h('div', { style: { fontSize: '11px', fontWeight: '700', color: 'var(--gray-500)', marginBottom: '4px' } }, 'KEY FACTORS'),
+            ...a.key_factors.map(f => h('div', { style: { fontSize: '12px', color: 'var(--gray-600)', paddingLeft: '8px', borderLeft: '2px solid #7c3aed', marginBottom: '3px' } }, f))
+          ) : null,
+          a.recovery_actions && a.recovery_actions.length > 0 ? h('div', {},
+            h('div', { style: { fontSize: '11px', fontWeight: '700', color: '#dc2626', marginBottom: '4px' } }, 'RECOVERY ACTIONS'),
+            ...a.recovery_actions.map(r => h('div', { style: { fontSize: '12px', color: 'var(--gray-600)', paddingLeft: '8px', borderLeft: '2px solid #dc2626', marginBottom: '3px' } }, r))
+          ) : null,
+          a.content_opportunity ? h('div', {},
+            h('div', { style: { fontSize: '11px', fontWeight: '700', color: '#059669', marginBottom: '4px' } }, 'CONTENT OPPORTUNITY'),
+            h('div', { style: { fontSize: '12px', color: 'var(--gray-600)' } }, a.content_opportunity)
+          ) : null,
+          a.process_improvement ? h('div', {},
+            h('div', { style: { fontSize: '11px', fontWeight: '700', color: '#d97706', marginBottom: '4px' } }, 'PROCESS IMPROVEMENT'),
+            h('div', { style: { fontSize: '12px', color: 'var(--gray-600)' } }, a.process_improvement)
+          ) : null,
+          a.pattern_match ? h('div', { style: { fontSize: '11px', color: 'var(--gray-400)', fontStyle: 'italic', marginTop: '4px' } }, a.pattern_match) : null
+        );
+      })()
+    ) : null
   );
 }
 

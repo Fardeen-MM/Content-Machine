@@ -1608,7 +1608,7 @@
       "comments": 4
     },
     "captured_at": "2026-02-20T23:13:20.022Z",
-    "status": "pending",
+    "status": "used",
     "score": 0
   },
   {
@@ -7510,5 +7510,248 @@
     "url": null,
     "captured_at": "2026-02-22T01:37:25.264Z",
     "status": "pending"
+  },
+  {
+    "id": "url-57939540bd6caa85",
+    "source": "url",
+    "source_detail": "example.com",
+    "title": "https://example.com",
+    "raw_content": "https://example.com",
+    "url": "https://example.com",
+    "category": "CONTENT_PIECE",
+    "captured_at": "2026-02-22T02:17:52.660Z",
+    "status": "used",
+    "score": 0,
+    "requested_formats": null
+  },
+  {
+    "id": "manual-fe1553673cb4b938",
+    "source": "manual",
+    "source_detail": "Hand-curated",
+    "title": "Test trigger",
+    "raw_content": "Testing manual trigger addition",
+    "url": null,
+    "category": "INDUSTRY_NEWS",
+    "captured_at": "2026-02-22T02:17:53.801Z",
+    "status": "pending",
+    "score": 0
+  },
+  {
+    "id": "deal-b8688eb747f3bc41",
+    "source": "deal_insight",
+    "title": "Win story: Good pitch",
+    "raw_content": "What worked: Good pitch\n\nPractice area: unknown",
+    "category": "DATA_POINT",
+    "tags": [
+      "case-study-candidate"
+    ],
+    "url": null,
+    "captured_at": "2026-02-22T02:46:22.898Z",
+    "status": "pending"
+  },
+  {
+    "id": "manual-63001f7887314986",
+    "source": "manual",
+    "source_detail": "Hand-curated",
+    "title": "Test trigger",
+    "raw_content": "Test trigger",
+    "url": "https://example.com/test",
+    "category": "CONTENT_PIECE",
+    "captured_at": "2026-02-22T04:09:57.764Z",
+    "status": "pending",
+    "score": 0
+  },
+  {
+    "id": "deal-acebefe146e52315",
+    "source": "deal_insight",
+    "title": "Win story: Great pitch",
+    "raw_content": "What worked: Great pitch\n\nPractice area: unknown",
+    "category": "DATA_POINT",
+    "tags": [
+      "case-study-candidate"
+    ],
+    "url": null,
+    "captured_at": "2026-02-22T04:17:54.452Z",
+    "status": "pending"
+  },
+  {
+    "id": "manual-b6d5ae6998b01788",
+    "source": "manual",
+    "source_detail": "Hand-curated",
+    "title": "Test: Law firm SEO audit workflow",
+    "raw_content": "Many law firms struggle with SEO audits and dont know where to start",
+    "url": "https://example.com/test",
+    "category": "PAIN_POINT",
+    "captured_at": "2026-02-22T04:43:24.760Z",
+    "status": "used",
+    "score": 0
+  },
+  {
+    "id": "deal-11d59f85c257cebd",
+    "source": "deal_insight",
+    "title": "Win story: Strong case studies",
+    "raw_content": "What worked: Strong case studies\n\nPractice area: unknown",
+    "category": "DATA_POINT",
+    "tags": [
+      "case-study-candidate"
+    ],
+    "url": null,
+    "captured_at": "2026-02-22T04:43:43.581Z",
+    "status": "pending"
+  },
+  {
+    "id": "b28929d0c9f9cf62",
+    "title": "Marketing technique: Positive sentiment with multiple service discussions (AI Voice Agent, CRM/Automa",
+    "raw_content": "[From 2x sales calls] Positive sentiment with multiple service discussions (AI Voice Agent, CRM/Automation, Lead Gen optimization) indicates receptiveness to comprehensive solution bundling\n\nCategory: technique\nConfidence: 50%\nFirst seen: 2026-02-20 23:01:02\nLast seen: 2026-02-20 23:03:41",
+    "source": "meeting_insight",
+    "category": "HOW_TO",
+    "url": null,
+    "captured_at": "2026-02-22T23:58:35.613Z",
+    "status": "pending",
+    "insight_id": 5,
+    "insight_frequency": 2
+  },
+  {
+    "id": "4ea7a2ff34b2047d",
+    "title": "Sales coaching: Quantify the pain in dollars — Haris handed Yaseer gold: '5,000 leads, 20% waste",
+    "raw_content": "[From coaching analysis of \"Mortar Metrics Discovery call - Haris Amir and Yaseer Choudhury\"]\n\nMissed opportunity: Quantify the pain in dollars — Haris handed Yaseer gold: '5,000 leads, 20% wasted, $0.70 CPM'. That's 1,000 wasted leads/month = $700/month in ad spend alone. Then multiply by conversion rate and average client value (LMIA cases are worth thousands). Should have said: 'So if you're wasting 1,000 leads at even a 10% close rate and $2K average case value, that's $200K/year leaving the table. What if we cut that waste in half in 60 days?'\n\nThis is a common sales mistake that law firms can learn from. Turn this into actionable content about what to do instead.\n\nCoaching score: 42/100\nMeeting type: discovery",
+    "source": "coaching_insight",
+    "category": "HOW_TO",
+    "url": null,
+    "captured_at": "2026-02-23T00:04:27.372Z",
+    "status": "pending",
+    "meeting_id": 2
+  },
+  {
+    "id": "144fe60d9c931bd1",
+    "title": "Sales coaching: Tie pain to Mortar's AI voice agent — Haris explicitly said 'IVR system, AI is b",
+    "raw_content": "[From coaching analysis of \"Mortar Metrics Discovery call - Haris Amir and Yaseer Choudhury\"]\n\nMissed opportunity: Tie pain to Mortar's AI voice agent — Haris explicitly said 'IVR system, AI is better than basic IVR'. That's a direct buying signal for the AI voice agent. Should have said: 'We built an AI voice agent for law firms that calls leads back in under 60 seconds, qualifies them, books consultations. We can adapt that for immigration intake. Want to see a demo?'\n\nThis is a common sales mistake that law firms can learn from. Turn this into actionable content about what to do instead.\n\nCoaching score: 42/100\nMeeting type: discovery",
+    "source": "coaching_insight",
+    "category": "HOW_TO",
+    "url": null,
+    "captured_at": "2026-02-23T00:04:27.374Z",
+    "status": "pending",
+    "meeting_id": 2
+  },
+  {
+    "id": "258b07ca5d4cc1e1",
+    "title": "Sales coaching: Map the current process — 'Walk me through what happens when a lead fills out a ",
+    "raw_content": "[From coaching analysis of \"Mortar Metrics Discovery call - Haris Amir and Yaseer Choudhury\"]\n\nMissed opportunity: Map the current process — 'Walk me through what happens when a lead fills out a form. Does it go to a CRM? Who calls them? How fast? What's the script? Where do people drop off?' This would reveal the exact automation gaps\n\nThis is a common sales mistake that law firms can learn from. Turn this into actionable content about what to do instead.\n\nCoaching score: 42/100\nMeeting type: discovery",
+    "source": "coaching_insight",
+    "category": "HOW_TO",
+    "url": null,
+    "captured_at": "2026-02-23T00:04:27.374Z",
+    "status": "pending",
+    "meeting_id": 2
+  },
+  {
+    "id": "ef4c53c8f0196a3f",
+    "title": "Sales coaching: Get a commitment before showing anything — Instead of letting Haris show his web",
+    "raw_content": "[From coaching analysis of \"Mortar Metrics Discovery call - Haris Amir and Yaseer Choudhury\"]\n\nMissed opportunity: Get a commitment before showing anything — Instead of letting Haris show his website, should have said: 'Before we look at that, let me ask — if we can show you a system that cuts your lead waste from 20% to 5% in 90 days, is that something you'd move forward on this quarter?'\n\nThis is a common sales mistake that law firms can learn from. Turn this into actionable content about what to do instead.\n\nCoaching score: 42/100\nMeeting type: discovery",
+    "source": "coaching_insight",
+    "category": "HOW_TO",
+    "url": null,
+    "captured_at": "2026-02-23T00:04:27.374Z",
+    "status": "pending",
+    "meeting_id": 2
+  },
+  {
+    "id": "77cb5563f3d7e731",
+    "title": "Sales tip: No agenda set at the start — jumped straight from pleasantries to 'what's your p",
+    "raw_content": "[From coaching analysis of \"Mortar Metrics Discovery call - Haris Amir and Yaseer Choudhury\"]\n\nImprovement: No agenda set at the start — jumped straight from pleasantries to 'what's your pain?' without explaining 'Here's what we'll cover in the next 30 minutes, then we'll decide next steps'. The call feels aimless\n\nCoaching score: 42/100\nMeeting type: discovery\n\nTurn this into practical content: \"X mistake costs law firms $Y/month. Here's the fix...\"",
+    "source": "coaching_insight",
+    "category": "PAIN_POINT",
+    "url": null,
+    "captured_at": "2026-02-23T00:04:27.374Z",
+    "status": "pending",
+    "meeting_id": 2
+  },
+  {
+    "id": "120cb77519796f89",
+    "title": "Sales tip: Terrible follow-up questions — Haris says '20% of leads are wasted due to poor f",
+    "raw_content": "[From coaching analysis of \"Mortar Metrics Discovery call - Haris Amir and Yaseer Choudhury\"]\n\nImprovement: Terrible follow-up questions — Haris says '20% of leads are wasted due to poor follow-up' and Yaseer just says 'I hear you' then changes topics. Should have asked: 'Walk me through what happens when a lead comes in today. Who touches it? Where does it break down? What does that 20% cost you in actual dollars?'\n\nCoaching score: 42/100\nMeeting type: discovery\n\nTurn this into practical content: \"X mistake costs law firms $Y/month. Here's the fix...\"",
+    "source": "coaching_insight",
+    "category": "PAIN_POINT",
+    "url": null,
+    "captured_at": "2026-02-23T00:04:27.374Z",
+    "status": "pending",
+    "meeting_id": 2
+  },
+  {
+    "id": "e95cfccc3259e28a",
+    "title": "Sales tip: No budget qualification — Haris mentions spending $2-3K/month on ads, but Yaseer",
+    "raw_content": "[From coaching analysis of \"Mortar Metrics Discovery call - Haris Amir and Yaseer Choudhury\"]\n\nImprovement: No budget qualification — Haris mentions spending $2-3K/month on ads, but Yaseer never asks 'What's your budget for automation/marketing services?' or 'If we could recover that 20%, what's that worth to you monthly?'\n\nCoaching score: 42/100\nMeeting type: discovery\n\nTurn this into practical content: \"X mistake costs law firms $Y/month. Here's the fix...\"",
+    "source": "coaching_insight",
+    "category": "PAIN_POINT",
+    "url": null,
+    "captured_at": "2026-02-23T00:04:27.374Z",
+    "status": "pending",
+    "meeting_id": 2
+  },
+  {
+    "id": "641c2f3b6279cbe4",
+    "title": "Sales tip: No timeline or urgency questions — Never asked 'When do you need this solved by?",
+    "raw_content": "[From coaching analysis of \"Mortar Metrics Discovery call - Haris Amir and Yaseer Choudhury\"]\n\nImprovement: No timeline or urgency questions — Never asked 'When do you need this solved by?' or 'What happens if you don't fix this in the next 3 months?'\n\nCoaching score: 42/100\nMeeting type: discovery\n\nTurn this into practical content: \"X mistake costs law firms $Y/month. Here's the fix...\"",
+    "source": "coaching_insight",
+    "category": "PAIN_POINT",
+    "url": null,
+    "captured_at": "2026-02-23T00:04:27.374Z",
+    "status": "pending",
+    "meeting_id": 2
+  },
+  {
+    "id": "5c45a7c34c6135a7",
+    "title": "Sales tip: No decision-maker mapping — Never asked 'Who else is involved in this decision?'",
+    "raw_content": "[From coaching analysis of \"Mortar Metrics Discovery call - Haris Amir and Yaseer Choudhury\"]\n\nImprovement: No decision-maker mapping — Never asked 'Who else is involved in this decision?' or 'Is Piyush part of the final call on this?' (Piyush was mentioned at the start but never clarified)\n\nCoaching score: 42/100\nMeeting type: discovery\n\nTurn this into practical content: \"X mistake costs law firms $Y/month. Here's the fix...\"",
+    "source": "coaching_insight",
+    "category": "PAIN_POINT",
+    "url": null,
+    "captured_at": "2026-02-23T00:04:27.374Z",
+    "status": "pending",
+    "meeting_id": 2
+  },
+  {
+    "id": "799f4275a714ae1f",
+    "title": "Sales tip: Let the prospect ramble about TikTok and website redesigns — these are distracti",
+    "raw_content": "[From coaching analysis of \"Mortar Metrics Discovery call - Haris Amir and Yaseer Choudhury\"]\n\nImprovement: Let the prospect ramble about TikTok and website redesigns — these are distractions. Should have redirected: 'Love that you're crushing it on TikTok — let's park that for now. Back to the 5,000 leads and the 20% waste…'\n\nCoaching score: 42/100\nMeeting type: discovery\n\nTurn this into practical content: \"X mistake costs law firms $Y/month. Here's the fix...\"",
+    "source": "coaching_insight",
+    "category": "PAIN_POINT",
+    "url": null,
+    "captured_at": "2026-02-23T00:04:27.375Z",
+    "status": "pending",
+    "meeting_id": 2
+  },
+  {
+    "id": "776b14dec2370a2b",
+    "title": "Sales tip: No presentation or solution positioning — the call ends mid-conversation (Haris ",
+    "raw_content": "[From coaching analysis of \"Mortar Metrics Discovery call - Haris Amir and Yaseer Choudhury\"]\n\nImprovement: No presentation or solution positioning — the call ends mid-conversation (Haris is showing his screen). Yaseer never transitioned to 'Here's how we solve this' or painted a picture of the future state\n\nCoaching score: 42/100\nMeeting type: discovery\n\nTurn this into practical content: \"X mistake costs law firms $Y/month. Here's the fix...\"",
+    "source": "coaching_insight",
+    "category": "PAIN_POINT",
+    "url": null,
+    "captured_at": "2026-02-23T00:04:27.375Z",
+    "status": "pending",
+    "meeting_id": 2
+  },
+  {
+    "id": "f326e7dadb8279a7",
+    "title": "Sales tip: Zero urgency creation — never quantified the cost of inaction ('You're losing 1,",
+    "raw_content": "[From coaching analysis of \"Mortar Metrics Discovery call - Haris Amir and Yaseer Choudhury\"]\n\nImprovement: Zero urgency creation — never quantified the cost of inaction ('You're losing 1,000 leads a month at $0.70 each — that's $700/month going to waste, $8,400/year')\n\nCoaching score: 42/100\nMeeting type: discovery\n\nTurn this into practical content: \"X mistake costs law firms $Y/month. Here's the fix...\"",
+    "source": "coaching_insight",
+    "category": "PAIN_POINT",
+    "url": null,
+    "captured_at": "2026-02-23T00:04:27.375Z",
+    "status": "pending",
+    "meeting_id": 2
+  },
+  {
+    "id": "b6d938cf75c39d06",
+    "title": "Sales tip: No clear next step — the transcript ends with Haris showing a website. Where's t",
+    "raw_content": "[From coaching analysis of \"Mortar Metrics Discovery call - Haris Amir and Yaseer Choudhury\"]\n\nImprovement: No clear next step — the transcript ends with Haris showing a website. Where's the CTA? 'Let's book 30 minutes next week to walk through a custom automation plan for your intake process'?\n\nCoaching score: 42/100\nMeeting type: discovery\n\nTurn this into practical content: \"X mistake costs law firms $Y/month. Here's the fix...\"",
+    "source": "coaching_insight",
+    "category": "PAIN_POINT",
+    "url": null,
+    "captured_at": "2026-02-23T00:04:27.375Z",
+    "status": "pending",
+    "meeting_id": 2
   }
 ]

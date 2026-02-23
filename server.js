@@ -1024,6 +1024,86 @@ async function handleRequest(req, res) {
       return json(res, perfData);
     }
 
+    // POST /api/performance/ai-insights — AI-powered performance analysis and recommendations
+    if (pathname === '/api/performance/ai-insights' && method === 'POST') {
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'API key not set' }, 500);
+      try {
+        const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+        const perfData = readJSON('performance.json');
+        const content = readJSON('content.json');
+        const published = readJSON('published.json', []);
+
+        if (perfData.length < 2) return json(res, { error: 'Need at least 2 performance entries to analyze' }, 400);
+
+        // Enrich performance data with content details
+        const enriched = perfData.map(p => {
+          const item = content.find(c => c.id === p.content_id);
+          return {
+            ...p,
+            title: item?.trigger_title || 'Unknown',
+            category: item?.trigger_category || 'unknown',
+            source: item?.trigger_source || 'unknown',
+            score: p.impressions + p.engagement * 2 + p.clicks * 5 + p.leads * 20
+          };
+        }).sort((a, b) => b.score - a.score);
+
+        // Format breakdown
+        const byFormat = {};
+        for (const e of enriched) {
+          if (!byFormat[e.format]) byFormat[e.format] = [];
+          byFormat[e.format].push(e);
+        }
+        const formatSummary = Object.entries(byFormat).map(([f, entries]) => {
+          const avg = entries.reduce((s, e) => s + e.score, 0) / entries.length;
+          return `${f}: ${entries.length} posts, avg score ${Math.round(avg)}, best "${entries[0]?.title?.slice(0, 40)}"`;
+        }).join('\n');
+
+        const top5 = enriched.slice(0, 5).map((e, i) =>
+          `${i + 1}. "${e.title}" (${e.format}) — ${e.impressions} imp, ${e.engagement} eng, ${e.clicks} clicks, ${e.leads} leads`
+        ).join('\n');
+
+        const bottom5 = enriched.slice(-5).reverse().map((e, i) =>
+          `${i + 1}. "${e.title}" (${e.format}) — ${e.impressions} imp, ${e.engagement} eng`
+        ).join('\n');
+
+        const prompt = `Analyze this content performance data for a legal marketing agency and provide actionable recommendations.
+
+PERFORMANCE SUMMARY (${enriched.length} tracked posts):
+${formatSummary}
+
+TOP 5 PERFORMERS:
+${top5}
+
+BOTTOM 5 PERFORMERS:
+${bottom5}
+
+PUBLISHED BUT NO PERFORMANCE DATA: ${published.filter(p => !perfData.find(d => d.content_id === p.content_id)).length} posts
+
+Analyze and return JSON (no fences):
+{
+  "overall_grade": "A/B/C/D/F",
+  "key_finding": "one-sentence main insight",
+  "what_works": ["3 specific patterns from top performers"],
+  "what_doesnt": ["2-3 specific issues from bottom performers"],
+  "recommendations": ["4-5 specific, actionable recommendations"],
+  "format_ranking": ["formats ranked best to worst with one-line reasoning"],
+  "content_gaps": ["topics or angles not yet explored based on what performs well"],
+  "quick_wins": ["2-3 things to do this week"]
+}`;
+
+        const text = await callClaude({
+          model: HAIKU,
+          system: 'You are a content performance analyst for a B2B legal marketing agency. Be specific and data-driven. Reference actual numbers and titles.',
+          prompt,
+          maxTokens: 1500
+        });
+        const insights = parseJsonResponse(text) || { error: 'Failed to parse' };
+        return json(res, { ok: true, insights, data_points: enriched.length, analyzed_at: new Date().toISOString() });
+      } catch (err) {
+        return apiError(res, err);
+      }
+    }
+
     // GET /api/analytics/performance — aggregated performance analytics
     if (pathname === '/api/analytics/performance' && method === 'GET') {
       const perfData = readJSON('performance.json');
@@ -3581,6 +3661,65 @@ ${context}`;
       }
     }
 
+    // POST /api/deals/portfolio-analysis — AI portfolio-wide win/loss pattern analysis
+    if (pathname === '/api/deals/portfolio-analysis' && method === 'POST') {
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'API key not set' }, 500);
+      try {
+        const { callClaude, parseJsonResponse, SONNET } = require('./lib/claude');
+        const deals = db.getDealOutcomes({});
+        if (deals.length < 2) return json(res, { error: 'Need at least 2 deals to analyze' }, 400);
+
+        const won = deals.filter(d => d.outcome === 'won');
+        const lost = deals.filter(d => d.outcome === 'lost');
+
+        // Build deal summaries
+        const dealSummaries = deals.map(d =>
+          `${d.outcome?.toUpperCase()} | ${d.client_name || 'Unknown'}${d.firm_name ? ' (' + d.firm_name + ')' : ''} | ${d.practice_area || 'unknown practice'} | $${d.monthly_value || 0}/mo | ${d.source_channel || 'unknown channel'}${d.loss_reason ? ' | Lost: ' + d.loss_reason : ''}${d.what_worked ? ' | Worked: ' + d.what_worked : ''}${d.what_failed ? ' | Failed: ' + d.what_failed : ''}`
+        ).join('\n');
+
+        // Get meeting context for deeper analysis
+        const meetings = db.getMeetings({ limit: 30 });
+        const coachingScores = meetings.filter(m => m.coaching_notes).map(m => {
+          const cn = m.coaching_notes;
+          return `${m.title}: Score ${cn.score}/100`;
+        }).slice(0, 10);
+
+        const prompt = `Analyze this deal portfolio for a legal marketing agency. Find patterns that predict wins vs losses.
+
+DEALS (${deals.length} total, ${won.length} won, ${lost.length} lost):
+${dealSummaries}
+
+RECENT COACHING SCORES:
+${coachingScores.join('\n') || '(none)'}
+
+WIN RATE: ${deals.length > 0 ? Math.round(won.length / deals.length * 100) : 0}%
+TOTAL MRR WON: $${won.reduce((s, d) => s + (d.monthly_value || 0), 0)}
+
+Analyze deeply and return JSON (no fences):
+{
+  "win_rate_assessment": "sentence about whether win rate is healthy",
+  "ideal_client_profile": { "practice_areas": ["top practice areas that close"], "characteristics": ["3-4 traits of clients who close"], "avg_deal_size": number },
+  "loss_patterns": [{ "pattern": "...", "frequency": N, "fix": "..." }],
+  "win_patterns": [{ "pattern": "...", "frequency": N, "replicate_how": "..." }],
+  "pipeline_recommendations": ["4-5 specific recommendations to increase close rate"],
+  "content_opportunities": ["2-3 content pieces that could help close more deals based on common objections/pain points"],
+  "discovery_tips": ["2-3 things to do differently on discovery calls based on won vs lost patterns"],
+  "risk_flags": ["current pipeline risks based on recent deal patterns"]
+}`;
+
+        const text = await callClaude({
+          model: SONNET,
+          system: 'You are a B2B sales analyst for a legal marketing agency. Be brutally honest about what is and is not working. Use specific data from the deals.',
+          prompt,
+          maxTokens: 2000
+        });
+        const analysis = parseJsonResponse(text) || { error: 'Failed to parse' };
+        return json(res, { ok: true, analysis, deal_count: deals.length, won: won.length, lost: lost.length, analyzed_at: new Date().toISOString() });
+      } catch (err) {
+        return apiError(res, err);
+      }
+    }
+
     // GET /api/deals — get deal outcomes
     if (pathname === '/api/deals' && method === 'GET') {
       const outcome = url.searchParams.get('outcome') || undefined;
@@ -3706,11 +3845,150 @@ Return JSON array (no fences):
       }
     }
 
+    // POST /api/insights/to-triggers — convert insights into content triggers
+    if (pathname === '/api/insights/to-triggers' && method === 'POST') {
+      try {
+        const body = await parseBody(req);
+        const insightIds = body.insight_ids || [];
+        const allInsights = db.getInsights({});
+        const toConvert = insightIds.length > 0
+          ? allInsights.filter(i => insightIds.includes(i.id))
+          : allInsights.filter(i => i.status === 'active' || i.status === 'confirmed');
+
+        if (toConvert.length === 0) return json(res, { error: 'No insights to convert' }, 400);
+
+        const triggers = readJSON('trigger-queue.json');
+        const existingTitles = new Set(triggers.map(t => t.title?.toLowerCase()));
+        const created = [];
+
+        for (const insight of toConvert) {
+          // Build trigger title from insight
+          const title = insight.insight.length > 100 ? insight.insight.slice(0, 97) + '...' : insight.insight;
+          if (existingTitles.has(title.toLowerCase())) continue;
+
+          const catMap = {
+            objection: 'PAIN_POINT',
+            pricing: 'DATA_POINT',
+            technique: 'HOW_TO',
+            pain_point: 'PAIN_POINT',
+            process_gap: 'HOW_TO'
+          };
+
+          const trigger = {
+            id: require('crypto').randomBytes(8).toString('hex'),
+            title,
+            raw_content: `Insight from meetings (seen ${insight.frequency || 1}x): ${insight.insight}`,
+            source: 'insight',
+            url: '',
+            category: catMap[insight.category] || 'THOUGHT_LEADERSHIP',
+            status: 'pending',
+            score: 50 + (insight.frequency || 1) * 5,
+            scraped_at: new Date().toISOString(),
+            tags: [insight.category, 'from-insight'].filter(Boolean)
+          };
+          triggers.push(trigger);
+          existingTitles.add(title.toLowerCase());
+          created.push({ insight_id: insight.id, trigger_id: trigger.id, title });
+        }
+
+        if (created.length > 0) {
+          await jsonStore.update('trigger-queue.json', [], () => triggers);
+        }
+
+        return json(res, { ok: true, created: created.length, skipped: toConvert.length - created.length, triggers: created });
+      } catch (err) {
+        return apiError(res, err);
+      }
+    }
+
     // GET /api/team-inputs — get team inputs
     if (pathname === '/api/team-inputs' && method === 'GET') {
       const category = url.searchParams.get('category') || undefined;
       const unanswered = url.searchParams.get('unanswered') === 'true';
       return json(res, db.getTeamInputs({ category, unanswered }));
+    }
+
+    // POST /api/team-inputs — create team input question
+    if (pathname === '/api/team-inputs' && method === 'POST') {
+      const body = await parseBody(req);
+      if (!body.question) return json(res, { error: 'question required' }, 400);
+      const input = db.insertTeamInput({
+        question: body.question,
+        answer: body.answer || null,
+        asked_by: body.asked_by || 'system',
+        answered_by: body.answered_by || null,
+        category: body.category || 'general'
+      });
+      return json(res, { ok: true, input });
+    }
+
+    // PUT /api/team-inputs/:id — answer a team input question
+    const teamInputMatch = pathname.match(/^\/api\/team-inputs\/(\d+)$/);
+    if (teamInputMatch && method === 'PUT') {
+      const body = await parseBody(req);
+      const result = db.answerTeamInput(parseInt(teamInputMatch[1]), body.answer, body.answered_by || 'user');
+      return json(res, { ok: true, input: result });
+    }
+
+    // POST /api/team-inputs/ai-generate — AI generates questions based on data gaps
+    if (pathname === '/api/team-inputs/ai-generate' && method === 'POST') {
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'API key not set' }, 500);
+      try {
+        const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+
+        // Detect gaps in data
+        const clients = db.getClients({ limit: 50 });
+        const deals = db.getDealOutcomes({});
+        const content = readJSON('content.json');
+        const perf = readJSON('performance.json');
+        const existing = db.getTeamInputs({ unanswered: true });
+
+        const gapContext = [];
+        // Clients without practice areas
+        const noPractice = clients.filter(c => !c.practice_areas || c.practice_areas === '[]');
+        if (noPractice.length > 0) gapContext.push(`${noPractice.length} clients have no practice area recorded`);
+        // Deals without loss reasons
+        const noReason = deals.filter(d => d.outcome === 'lost' && !d.loss_reason);
+        if (noReason.length > 0) gapContext.push(`${noReason.length} lost deals have no loss reason`);
+        // Low performance tracking
+        if (perf.length < content.filter(c => c.status === 'approved').length / 2)
+          gapContext.push(`Only ${perf.length} of ${content.filter(c => c.status === 'approved').length} approved posts have performance data`);
+        // Content with no engagement
+        const noEngagement = perf.filter(p => p.engagement === 0 && p.impressions > 50);
+        if (noEngagement.length > 0) gapContext.push(`${noEngagement.length} posts with impressions but 0 engagement — why?`);
+
+        const prompt = `Generate 3-5 specific questions to ask the team to improve our data and decision-making.
+
+DATA GAPS:
+${gapContext.join('\n') || 'No obvious data gaps detected'}
+
+ALREADY ASKED (avoid duplicates):
+${existing.map(e => e.question).join('\n') || '(none)'}
+
+Return JSON array (no fences):
+[{ "question": "specific question", "category": "strategy|content|sales|operations", "asked_by": "ai", "priority": "high|medium|low", "context": "why this matters" }]`;
+
+        const text = await callClaude({
+          model: HAIKU,
+          system: 'You generate specific, actionable questions for a small legal marketing agency team. Questions should be answerable in 1-2 sentences.',
+          prompt,
+          maxTokens: 800
+        });
+        const questions = parseJsonResponse(text) || [];
+        const created = [];
+        for (const q of questions) {
+          if (!q.question) continue;
+          const input = db.insertTeamInput({
+            question: q.question,
+            asked_by: 'ai',
+            category: q.category || 'general'
+          });
+          created.push({ ...input, priority: q.priority, context: q.context });
+        }
+        return json(res, { ok: true, created: created.length, questions: created });
+      } catch (err) {
+        return apiError(res, err);
+      }
     }
 
     // --- Advisory Endpoints ---

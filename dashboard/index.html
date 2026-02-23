@@ -9574,6 +9574,55 @@ function renderPerformancePage() {
       )
     ) : null,
 
+    // AI Performance Insights
+    analytics && perf.length >= 2 ? h('div', { className: 'card', style: { padding: '18px', marginBottom: '20px', borderLeft: '3px solid var(--purple)' } },
+      h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: state._perfInsights ? '14px' : '0' } },
+        h('h4', { style: { fontFamily: "'Fraunces', serif", fontSize: '14px' } }, 'AI Performance Analysis'),
+        h('button', {
+          className: 'btn btn-sm',
+          style: { background: 'var(--purple)', color: 'white', fontSize: '11px', padding: '4px 14px' },
+          disabled: state._loadingPerfInsights,
+          onclick: async () => {
+            state._loadingPerfInsights = true; render();
+            try {
+              const result = await api('/api/performance/ai-insights', { method: 'POST' });
+              state._perfInsights = result.insights;
+              toast('AI analysis complete', 'success');
+            } catch (err) { toast('AI analysis failed: ' + err.message, 'error'); }
+            state._loadingPerfInsights = false; render();
+          }
+        }, state._loadingPerfInsights ? 'Analyzing...' : state._perfInsights ? 'Refresh Analysis' : 'Analyze Performance')
+      ),
+      state._perfInsights ? (() => {
+        const ins = state._perfInsights;
+        return h('div', {},
+          h('div', { style: { display: 'flex', gap: '12px', marginBottom: '12px' } },
+            h('span', { style: {
+              fontSize: '20px', fontWeight: '700', fontFamily: "'Fraunces', serif",
+              color: ins.overall_grade === 'A' ? 'var(--green)' : ins.overall_grade === 'B' ? 'var(--blue)' : ins.overall_grade === 'C' ? 'var(--amber)' : 'var(--red)'
+            } }, 'Grade: ' + (ins.overall_grade || '?')),
+            h('span', { style: { fontSize: '13px', color: 'var(--gray-500)', alignSelf: 'center' } }, ins.key_finding || '')
+          ),
+          ins.what_works?.length ? h('div', { style: { marginBottom: '10px' } },
+            h('div', { style: { fontSize: '11px', fontWeight: '600', color: 'var(--green)', marginBottom: '4px' } }, 'WHAT WORKS'),
+            ...ins.what_works.map(w => h('div', { style: { fontSize: '12px', padding: '2px 0', color: 'var(--gray-600)' } }, '+ ' + w))
+          ) : null,
+          ins.what_doesnt?.length ? h('div', { style: { marginBottom: '10px' } },
+            h('div', { style: { fontSize: '11px', fontWeight: '600', color: 'var(--red)', marginBottom: '4px' } }, 'WHAT DOESN\'T WORK'),
+            ...ins.what_doesnt.map(w => h('div', { style: { fontSize: '12px', padding: '2px 0', color: 'var(--gray-600)' } }, '- ' + w))
+          ) : null,
+          ins.quick_wins?.length ? h('div', { style: { marginBottom: '10px' } },
+            h('div', { style: { fontSize: '11px', fontWeight: '600', color: 'var(--blue)', marginBottom: '4px' } }, 'QUICK WINS THIS WEEK'),
+            ...ins.quick_wins.map(w => h('div', { style: { fontSize: '12px', padding: '2px 0', color: 'var(--gray-600)' } }, '> ' + w))
+          ) : null,
+          ins.recommendations?.length ? h('div', {},
+            h('div', { style: { fontSize: '11px', fontWeight: '600', color: 'var(--purple)', marginBottom: '4px' } }, 'RECOMMENDATIONS'),
+            ...ins.recommendations.map(r => h('div', { style: { fontSize: '12px', padding: '2px 0', color: 'var(--gray-600)' } }, '> ' + r))
+          ) : null
+        );
+      })() : null
+    ) : null,
+
     // Format performance breakdown
     analytics && Object.keys(analytics.by_format || {}).length > 0
       ? h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '24px' } },
@@ -10451,6 +10500,91 @@ function renderSettingsPage() {
             )
           )
         )
+      ),
+      // Team Inputs — AI asks, team answers
+      h('div', { className: 'card', style: { padding: '24px', gridColumn: '1 / -1', borderLeft: '3px solid var(--purple)' } },
+        h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' } },
+          h('h3', { style: { fontSize: '16px', color: 'var(--navy)' } }, 'Team Inputs'),
+          h('button', {
+            className: 'btn btn-sm',
+            style: { background: 'var(--purple)', color: 'white', fontSize: '11px', padding: '4px 14px' },
+            disabled: state._genTeamQ,
+            onclick: async () => {
+              state._genTeamQ = true; render();
+              try {
+                const result = await api('/api/team-inputs/ai-generate', { method: 'POST' });
+                toast(`AI generated ${result.created} questions`, 'success');
+                state._teamInputs = null; // force reload
+                const inputs = await api('/api/team-inputs');
+                state._teamInputs = inputs;
+              } catch (err) { toast('Failed: ' + err.message, 'error'); }
+              state._genTeamQ = false; render();
+            }
+          }, state._genTeamQ ? 'Generating...' : 'AI Generate Questions')
+        ),
+        (() => {
+          // Load team inputs on first render
+          if (!state._teamInputs && !state._loadingTeamInputs) {
+            state._loadingTeamInputs = true;
+            api('/api/team-inputs').then(inputs => {
+              state._teamInputs = inputs;
+              state._loadingTeamInputs = false;
+              render();
+            }).catch(() => { state._loadingTeamInputs = false; });
+          }
+          const inputs = state._teamInputs || [];
+          const unanswered = inputs.filter(i => !i.answer);
+          const answered = inputs.filter(i => i.answer);
+          return h('div', {},
+            unanswered.length > 0 ? h('div', { style: { marginBottom: '16px' } },
+              h('div', { style: { fontSize: '11px', fontWeight: '600', color: 'var(--amber)', marginBottom: '8px' } },
+                `${unanswered.length} UNANSWERED QUESTION${unanswered.length > 1 ? 'S' : ''}`
+              ),
+              ...unanswered.map(q => h('div', { style: { padding: '10px', background: 'var(--amber)08', borderRadius: 'var(--radius-sm)', marginBottom: '8px' } },
+                h('div', { style: { fontSize: '13px', fontWeight: '500', marginBottom: '6px' } }, q.question),
+                h('div', { style: { display: 'flex', gap: '8px', alignItems: 'center' } },
+                  h('input', {
+                    type: 'text',
+                    placeholder: 'Type your answer...',
+                    id: `team-input-${q.id}`,
+                    style: { flex: 1, padding: '6px 10px', border: '1px solid var(--gray-200)', borderRadius: 'var(--radius-sm)', fontSize: '12px' }
+                  }),
+                  h('button', {
+                    className: 'btn btn-sm',
+                    style: { background: 'var(--green)', color: 'white', fontSize: '11px', padding: '4px 10px' },
+                    onclick: async () => {
+                      const input = document.getElementById(`team-input-${q.id}`);
+                      if (!input?.value) return;
+                      try {
+                        await api(`/api/team-inputs/${q.id}`, { method: 'PUT', body: { answer: input.value } });
+                        toast('Answer saved', 'success');
+                        const inputs = await api('/api/team-inputs');
+                        state._teamInputs = inputs;
+                        render();
+                      } catch (err) { toast('Failed: ' + err.message, 'error'); }
+                    }
+                  }, 'Answer')
+                ),
+                h('div', { style: { fontSize: '10px', color: 'var(--gray-400)', marginTop: '4px' } },
+                  `Asked by ${q.asked_by || 'system'} | ${q.category || 'general'}`
+                )
+              ))
+            ) : null,
+            answered.length > 0 ? h('div', {},
+              h('div', { style: { fontSize: '11px', fontWeight: '600', color: 'var(--green)', marginBottom: '8px' } }, 'ANSWERED'),
+              ...answered.slice(0, 5).map(q => h('div', { style: { padding: '8px', background: 'var(--gray-50)', borderRadius: 'var(--radius-sm)', marginBottom: '6px' } },
+                h('div', { style: { fontSize: '12px', fontWeight: '500' } }, q.question),
+                h('div', { style: { fontSize: '12px', color: 'var(--gray-600)', marginTop: '2px' } }, q.answer),
+                h('div', { style: { fontSize: '10px', color: 'var(--gray-400)', marginTop: '2px' } },
+                  `By ${q.answered_by || 'user'} | ${q.category || 'general'}`
+                )
+              ))
+            ) : null,
+            inputs.length === 0 && !state._loadingTeamInputs ? h('div', { style: { fontSize: '13px', color: 'var(--gray-400)', textAlign: 'center', padding: '20px' } },
+              'No team inputs yet. Click "AI Generate Questions" to get started.'
+            ) : null
+          );
+        })()
       )
     )
   );
@@ -11685,8 +11819,8 @@ function renderInsightsPage() {
         )
       )
     ),
-    // Playbook button
-    h('div', { style: { marginBottom: '20px' } },
+    // Action buttons
+    h('div', { style: { display: 'flex', gap: '8px', marginBottom: '20px', flexWrap: 'wrap' } },
       h('button', {
         className: 'btn btn-primary btn-sm',
         disabled: state.generatingPlaybook,
@@ -11699,7 +11833,20 @@ function renderInsightsPage() {
           } catch (err) { toast('Failed: ' + err.message, 'error'); }
           state.generatingPlaybook = false; render();
         }
-      }, state.generatingPlaybook ? 'Generating...' : 'Generate Objection Playbook')
+      }, state.generatingPlaybook ? 'Generating...' : 'Generate Objection Playbook'),
+      h('button', {
+        className: 'btn btn-sm',
+        style: { background: 'var(--purple)', color: 'white' },
+        disabled: state._convertingInsights,
+        onclick: async () => {
+          state._convertingInsights = true; render();
+          try {
+            const result = await api('/api/insights/to-triggers', { method: 'POST' });
+            toast(`Created ${result.created} triggers from insights (${result.skipped} skipped)`, 'success');
+          } catch (err) { toast('Failed: ' + err.message, 'error'); }
+          state._convertingInsights = false; render();
+        }
+      }, state._convertingInsights ? 'Converting...' : 'Convert All to Triggers')
     ),
     // Playbook display
     state.playbook ? h('div', { className: 'card', style: { padding: '18px', marginBottom: '20px' } },
@@ -11797,8 +11944,54 @@ function renderDealsPage() {
         h('div', { style: { fontSize: '12px', color: 'var(--gray-500)', marginTop: '4px' } }, 'MRR Won')
       )
     ),
+    // Portfolio Analysis
+    deals.length >= 2 ? h('div', { className: 'card', style: { padding: '18px', marginBottom: '20px', borderLeft: '3px solid var(--purple)' } },
+      h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: state._portfolioAnalysis ? '14px' : '0' } },
+        h('h4', { style: { fontFamily: "'Fraunces', serif", fontSize: '14px' } }, 'AI Portfolio Analysis'),
+        h('button', {
+          className: 'btn btn-sm',
+          style: { background: 'var(--purple)', color: 'white', fontSize: '11px', padding: '4px 14px' },
+          disabled: state._loadingPortfolio,
+          onclick: async () => {
+            state._loadingPortfolio = true; render();
+            try {
+              const result = await api('/api/deals/portfolio-analysis', { method: 'POST' });
+              state._portfolioAnalysis = result.analysis;
+              toast('Portfolio analysis complete', 'success');
+            } catch (err) { toast('Analysis failed: ' + err.message, 'error'); }
+            state._loadingPortfolio = false; render();
+          }
+        }, state._loadingPortfolio ? 'Analyzing...' : state._portfolioAnalysis ? 'Refresh' : 'Analyze Portfolio')
+      ),
+      state._portfolioAnalysis ? (() => {
+        const a = state._portfolioAnalysis;
+        return h('div', {},
+          a.win_rate_assessment ? h('div', { style: { fontSize: '13px', color: 'var(--gray-600)', marginBottom: '12px', fontStyle: 'italic' } }, a.win_rate_assessment) : null,
+          a.ideal_client_profile ? h('div', { style: { marginBottom: '12px', padding: '10px', background: 'var(--green)08', borderRadius: 'var(--radius-sm)' } },
+            h('div', { style: { fontSize: '11px', fontWeight: '600', color: 'var(--green)', marginBottom: '4px' } }, 'IDEAL CLIENT PROFILE'),
+            a.ideal_client_profile.characteristics?.map(c => h('div', { style: { fontSize: '12px', color: 'var(--gray-600)' } }, '+ ' + c)),
+            a.ideal_client_profile.practice_areas?.length ? h('div', { style: { fontSize: '11px', color: 'var(--gray-400)', marginTop: '4px' } }, 'Practice areas: ' + a.ideal_client_profile.practice_areas.join(', ')) : null
+          ) : null,
+          a.loss_patterns?.length ? h('div', { style: { marginBottom: '12px' } },
+            h('div', { style: { fontSize: '11px', fontWeight: '600', color: 'var(--red)', marginBottom: '4px' } }, 'LOSS PATTERNS'),
+            ...a.loss_patterns.map(p => h('div', { style: { fontSize: '12px', padding: '2px 0' } },
+              h('span', { style: { color: 'var(--red)' } }, p.pattern),
+              h('span', { style: { color: 'var(--gray-400)', marginLeft: '8px' } }, '| Fix: ' + p.fix)
+            ))
+          ) : null,
+          a.pipeline_recommendations?.length ? h('div', { style: { marginBottom: '12px' } },
+            h('div', { style: { fontSize: '11px', fontWeight: '600', color: 'var(--blue)', marginBottom: '4px' } }, 'RECOMMENDATIONS'),
+            ...a.pipeline_recommendations.map(r => h('div', { style: { fontSize: '12px', padding: '2px 0', color: 'var(--gray-600)' } }, '> ' + r))
+          ) : null,
+          a.discovery_tips?.length ? h('div', {},
+            h('div', { style: { fontSize: '11px', fontWeight: '600', color: 'var(--amber)', marginBottom: '4px' } }, 'DISCOVERY CALL TIPS'),
+            ...a.discovery_tips.map(t => h('div', { style: { fontSize: '12px', padding: '2px 0', color: 'var(--gray-600)' } }, '> ' + t))
+          ) : null
+        );
+      })() : null
+    ) : null,
     // Add deal button + form
-    h('div', { style: { marginBottom: '20px' } },
+    h('div', { style: { display: 'flex', gap: '8px', marginBottom: '20px' } },
       h('button', {
         className: 'btn btn-primary btn-sm',
         onclick: () => { state.showAddDeal = !state.showAddDeal; render(); }

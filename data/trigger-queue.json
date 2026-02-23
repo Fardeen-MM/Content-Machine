@@ -7753,5 +7753,245 @@
     "captured_at": "2026-02-23T00:04:27.375Z",
     "status": "pending",
     "meeting_id": 2
+  },
+  {
+    "id": "2057b4602b2fee71",
+    "title": "Positive sentiment with multiple service discussions (AI Voice Agent, CRM/Automation, Lead Gen op...",
+    "raw_content": "Insight from meetings (seen 2x): Positive sentiment with multiple service discussions (AI Voice Agent, CRM/Automation, Lead Gen optimization) indicates receptiveness to comprehensive solution bundling",
+    "source": "insight",
+    "url": "",
+    "category": "HOW_TO",
+    "status": "pending",
+    "score": 60,
+    "scraped_at": "2026-02-23T00:27:18.356Z",
+    "tags": [
+      "technique",
+      "from-insight"
+    ]
+  },
+  {
+    "id": "1aa15322f0484551",
+    "title": "20% lead loss rate due to inadequate follow-up and response systems is a critical conversion leak",
+    "raw_content": "Insight from meetings (seen 1x): 20% lead loss rate due to inadequate follow-up and response systems is a critical conversion leak",
+    "source": "insight",
+    "url": "",
+    "category": "PAIN_POINT",
+    "status": "pending",
+    "score": 55,
+    "scraped_at": "2026-02-23T00:27:18.357Z",
+    "tags": [
+      "pain_point",
+      "from-insight"
+    ]
+  },
+  {
+    "id": "9379ee75dfb427bb",
+    "title": "Manual intake processes create bottlenecks that prevent scaling with high monthly lead volumes (5...",
+    "raw_content": "Insight from meetings (seen 1x): Manual intake processes create bottlenecks that prevent scaling with high monthly lead volumes (5,000+)",
+    "source": "insight",
+    "url": "",
+    "category": "PAIN_POINT",
+    "status": "pending",
+    "score": 55,
+    "scraped_at": "2026-02-23T00:27:18.357Z",
+    "tags": [
+      "pain_point",
+      "from-insight"
+    ]
+  },
+  {
+    "id": "492cfb021fb58dd4",
+    "title": "Organizations aware of AI importance but lagging in implementation due to operational constraints",
+    "raw_content": "Insight from meetings (seen 1x): Organizations aware of AI importance but lagging in implementation due to operational constraints",
+    "source": "insight",
+    "url": "",
+    "category": "HOW_TO",
+    "status": "pending",
+    "score": 55,
+    "scraped_at": "2026-02-23T00:27:18.357Z",
+    "tags": [
+      "process_gap",
+      "from-insight"
+    ]
+  },
+  {
+    "id": "7bbce1feadeae7f5",
+    "title": "Current ad spend of $2,000-3,000/month with poor efficiency ($0.70 CPM) indicates budget availabl...",
+    "raw_content": "Insight from meetings (seen 1x): Current ad spend of $2,000-3,000/month with poor efficiency ($0.70 CPM) indicates budget available for conversion optimization solutions",
+    "source": "insight",
+    "url": "",
+    "category": "DATA_POINT",
+    "status": "pending",
+    "score": 55,
+    "scraped_at": "2026-02-23T00:27:18.357Z",
+    "tags": [
+      "pricing",
+      "from-insight"
+    ]
+  },
+  {
+    "id": "7dc2f9d1d082d526",
+    "title": "After-hours and weekend call handling gaps result in missed revenue opportunities for service-bas...",
+    "raw_content": "Insight from meetings (seen 1x): After-hours and weekend call handling gaps result in missed revenue opportunities for service-based businesses with extended customer needs",
+    "source": "insight",
+    "url": "",
+    "category": "PAIN_POINT",
+    "status": "pending",
+    "score": 55,
+    "scraped_at": "2026-02-23T00:27:18.358Z",
+    "tags": [
+      "pain_point",
+      "from-insight"
+    ]
+  },
+  {
+    "id": "9626ea94d2a9fde6",
+    "title": "Unclear distinction between AI-powered direct appointment booking vs. booking link generation cre...",
+    "raw_content": "Insight from meetings (seen 1x): Unclear distinction between AI-powered direct appointment booking vs. booking link generation creates confusion in solution evaluation and decision-making",
+    "source": "insight",
+    "url": "",
+    "category": "PAIN_POINT",
+    "status": "pending",
+    "score": 55,
+    "scraped_at": "2026-02-23T00:27:18.358Z",
+    "tags": [
+      "objection",
+      "from-insight"
+    ]
+  },
+  {
+    "id": "c6b66737c0008d62",
+    "title": "Long discovery cycles (months of searching) for AI receptionist solutions indicate poor organic d...",
+    "raw_content": "Insight from meetings (seen 1x): Long discovery cycles (months of searching) for AI receptionist solutions indicate poor organic discoverability and fragmented market awareness among target buyers",
+    "source": "insight",
+    "url": "",
+    "category": "HOW_TO",
+    "status": "pending",
+    "score": 55,
+    "scraped_at": "2026-02-23T00:27:18.358Z",
+    "tags": [
+      "process_gap",
+      "from-insight"
+    ]
+  },
+  {
+    "id": "06614d720a707f3f",
+    "title": "Concern about vendor SEO visibility and online presence signals buyer skepticism about solution c...",
+    "raw_content": "Insight from meetings (seen 1x): Concern about vendor SEO visibility and online presence signals buyer skepticism about solution credibility and market viability",
+    "source": "insight",
+    "url": "",
+    "category": "PAIN_POINT",
+    "status": "pending",
+    "score": 55,
+    "scraped_at": "2026-02-23T00:27:18.358Z",
+    "tags": [
+      "objection",
+      "from-insight"
+    ]
+  },
+  {
+    "id": "f16cb3aea54aafe6",
+    "title": "Positive sentiment with AI Voice Agent + CRM dual service discussion indicates receptiveness to c...",
+    "raw_content": "Insight from meetings (seen 1x): Positive sentiment with AI Voice Agent + CRM dual service discussion indicates receptiveness to comprehensive solution bundling",
+    "source": "insight",
+    "url": "",
+    "category": "HOW_TO",
+    "status": "pending",
+    "score": 55,
+    "scraped_at": "2026-02-23T00:27:18.358Z",
+    "tags": [
+      "technique",
+      "from-insight"
+    ]
+  },
+  {
+    "id": "f21af30fdeaa9828",
+    "title": "Lead qualification inconsistency across multiple case types creates coordination challenges that ...",
+    "raw_content": "Insight from meetings (seen 1x): Lead qualification inconsistency across multiple case types creates coordination challenges that delay attorney consultation scheduling",
+    "source": "insight",
+    "url": "",
+    "category": "PAIN_POINT",
+    "status": "pending",
+    "score": 55,
+    "scraped_at": "2026-02-23T00:27:18.358Z",
+    "tags": [
+      "pain_point",
+      "from-insight"
+    ]
+  },
+  {
+    "id": "df6bc1206d43f971",
+    "title": "Lack of standardized qualification framework across different case types prevents efficient triag...",
+    "raw_content": "Insight from meetings (seen 1x): Lack of standardized qualification framework across different case types prevents efficient triage and attorney calendar optimization",
+    "source": "insight",
+    "url": "",
+    "category": "HOW_TO",
+    "status": "pending",
+    "score": 55,
+    "scraped_at": "2026-02-23T00:27:18.358Z",
+    "tags": [
+      "process_gap",
+      "from-insight"
+    ]
+  },
+  {
+    "id": "5359273c373b9706",
+    "title": "Attorney calendar availability coordination bottleneck directly impacts consultation booking rate...",
+    "raw_content": "Insight from meetings (seen 1x): Attorney calendar availability coordination bottleneck directly impacts consultation booking rates and lead-to-case conversion velocity",
+    "source": "insight",
+    "url": "",
+    "category": "PAIN_POINT",
+    "status": "pending",
+    "score": 55,
+    "scraped_at": "2026-02-23T00:27:18.358Z",
+    "tags": [
+      "pain_point",
+      "from-insight"
+    ]
+  },
+  {
+    "id": "2f63a4299dba15db",
+    "title": "Neutral sentiment with Voice Agent and CRM service discussion indicates baseline receptiveness to...",
+    "raw_content": "Insight from meetings (seen 1x): Neutral sentiment with Voice Agent and CRM service discussion indicates baseline receptiveness to multi-service solutions despite lack of explicit pain point articulation",
+    "source": "insight",
+    "url": "",
+    "category": "HOW_TO",
+    "status": "pending",
+    "score": 55,
+    "scraped_at": "2026-02-23T00:27:18.358Z",
+    "tags": [
+      "technique",
+      "from-insight"
+    ]
+  },
+  {
+    "id": "27d28514a45545b9",
+    "title": "Absence of budget discussion despite service interest suggests prospect in early evaluation stage...",
+    "raw_content": "Insight from meetings (seen 1x): Absence of budget discussion despite service interest suggests prospect in early evaluation stage or budget approval pending - requires follow-up qualification on decision timeline and budget authority",
+    "source": "insight",
+    "url": "",
+    "category": "HOW_TO",
+    "status": "pending",
+    "score": 55,
+    "scraped_at": "2026-02-23T00:27:18.358Z",
+    "tags": [
+      "process_gap",
+      "from-insight"
+    ]
+  },
+  {
+    "id": "125b4b51a3b33471",
+    "title": "No objections raised in neutral sentiment call may indicate insufficient discovery depth or prosp...",
+    "raw_content": "Insight from meetings (seen 1x): No objections raised in neutral sentiment call may indicate insufficient discovery depth or prospect withholding concerns - consider deeper needs assessment required",
+    "source": "insight",
+    "url": "",
+    "category": "PAIN_POINT",
+    "status": "pending",
+    "score": 55,
+    "scraped_at": "2026-02-23T00:27:18.358Z",
+    "tags": [
+      "objection",
+      "from-insight"
+    ]
   }
 ]

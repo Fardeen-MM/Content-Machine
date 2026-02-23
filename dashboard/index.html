@@ -3159,6 +3159,12 @@ function renderDashboardPage() {
   const deals = state.deals || [];
   const insights = state.insights || [];
 
+  // Auto-load cached weekly report
+  if (!state._weeklyReport && !state._loadedWeekly) {
+    state._loadedWeekly = true;
+    api('/api/weekly-report').then(r => { if (r && !r.error) { state._weeklyReport = r; render(); } }).catch(() => {});
+  }
+
   const green = clients.filter(c => c.health_status === 'green').length;
   const yellow = clients.filter(c => c.health_status === 'yellow').length;
   const red = clients.filter(c => c.health_status === 'red').length;
@@ -3495,6 +3501,66 @@ function renderDashboardPage() {
         style: { cursor: 'pointer', padding: '8px 12px', background: '#f8fafc', borderRadius: 'var(--radius-sm)', fontSize: '12px', color: 'var(--gray-500)', border: '1px solid var(--gray-200)' },
         onclick: () => { state.showDashBrief = true; render(); }
       }, 'Click to expand brief...') : null
+    ),
+    // Weekly Report
+    h('div', { style: { marginBottom: '16px' } },
+      h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } },
+          h('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--navy)' } }, 'WEEKLY REPORT'),
+          state._weeklyReport?.metrics ? h('span', { style: { fontSize: '10px', color: 'var(--gray-400)' } },
+            `${state._weeklyReport.metrics.won || 0}W/${state._weeklyReport.metrics.lost || 0}L | ${state._weeklyReport.metrics.published || 0} published | ${state._weeklyReport.metrics.meetings || 0} meetings`
+          ) : null
+        ),
+        h('div', { style: { display: 'flex', gap: '6px' } },
+          state._weeklyReport ? h('span', { style: { fontSize: '10px', color: state._weeklyReport.stale ? 'var(--amber)' : 'var(--gray-400)', alignSelf: 'center' } },
+            state._weeklyReport.stale ? 'Stale' : state._weeklyReport.generated_at?.slice(0, 10)
+          ) : null,
+          h('button', {
+            className: 'btn btn-sm',
+            style: { background: '#059669', color: 'white', fontSize: '11px', padding: '4px 10px', border: 'none' },
+            disabled: state._loadingWeekly,
+            onclick: async () => {
+              state._loadingWeekly = true; render();
+              toast('Generating weekly report...', 'info');
+              try {
+                state._weeklyReport = await api('/api/weekly-report', { method: 'POST', body: {} });
+                state._showWeekly = true;
+                toast('Weekly report ready', 'success');
+              } catch (err) { toast('Failed: ' + err.message, 'error'); }
+              state._loadingWeekly = false; render();
+            }
+          }, state._loadingWeekly ? 'Generating...' : state._weeklyReport ? 'Regenerate' : 'Generate Weekly Report'),
+          state._weeklyReport ? h('button', {
+            className: 'btn btn-sm',
+            style: { background: '#0ea5e9', color: 'white', fontSize: '11px', padding: '4px 10px', border: 'none' },
+            disabled: state._sendingWeekly,
+            onclick: async () => {
+              state._sendingWeekly = true; render();
+              try {
+                await api('/api/weekly-report', { method: 'POST', body: { send_telegram: true } });
+                toast('Report sent to Telegram', 'success');
+              } catch (err) { toast('Failed: ' + err.message, 'error'); }
+              state._sendingWeekly = false; render();
+            }
+          }, state._sendingWeekly ? 'Sending...' : 'Send to Telegram') : null
+        )
+      ),
+      state._weeklyReport && state._showWeekly ? h('div', {
+        className: 'card',
+        style: { padding: '16px', fontSize: '13px', lineHeight: '1.6', borderLeft: '4px solid #059669', maxHeight: '400px', overflowY: 'auto' }
+      },
+        h('div', { innerHTML: state._weeklyReport.html || '<em>No report content</em>' }),
+        h('div', { style: { textAlign: 'right', marginTop: '8px' } },
+          h('button', {
+            className: 'btn btn-ghost btn-sm',
+            style: { fontSize: '11px', padding: '2px 8px' },
+            onclick: () => { state._showWeekly = false; render(); }
+          }, 'Collapse')
+        )
+      ) : state._weeklyReport ? h('div', {
+        style: { cursor: 'pointer', padding: '8px 12px', background: '#f0fdf4', borderRadius: 'var(--radius-sm)', fontSize: '12px', color: 'var(--gray-500)', border: '1px solid #bbf7d0' },
+        onclick: () => { state._showWeekly = true; render(); }
+      }, 'Click to expand weekly report...') : null
     ),
     h('div', { style: { textAlign: 'center', padding: '8px 0', margin: '4px 0 8px' } },
       h('button', {

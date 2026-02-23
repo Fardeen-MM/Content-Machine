@@ -344,4 +344,4 @@ if (require.main === module) {
   run();
 }
 
-module.exports = { generateBrief, sendTelegram };
+module.exports = { generateBrief, gatherBriefData, sendTelegram };

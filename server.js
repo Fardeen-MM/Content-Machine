@@ -2043,6 +2043,122 @@ Analyze and return JSON (no fences):
       }
     }
 
+    // POST /api/weekly-report — AI-generated comprehensive weekly summary
+    if (pathname === '/api/weekly-report' && method === 'POST') {
+      if (!process.env.ANTHROPIC_API_KEY) return json(res, { error: 'API key not set' }, 500);
+      try {
+        const { callClaude, SONNET } = require('./lib/claude');
+        const { gatherBriefData, sendTelegram } = require('./generator/daily-brief');
+        const { buildIntelligenceContext } = require('./lib/intelligence');
+
+        db.initDb();
+        const conn = db.getDb();
+        const now = new Date();
+        const weekAgo = new Date(now - 7 * 24 * 60 * 60 * 1000).toISOString();
+
+        // Gather comprehensive data
+        const briefData = gatherBriefData();
+        const intelligence = buildIntelligenceContext();
+        const content = readJSON('content.json');
+        const published = readJSON('published.json', []);
+        const triggers = readJSON('trigger-queue.json');
+        const deals = db.getDealOutcomes({});
+
+        // Week-specific metrics
+        const weekPublished = published.filter(p => p.published_at >= weekAgo);
+        const weekContent = content.filter(c => c.generated_at >= weekAgo);
+        const weekTriggers = triggers.filter(t => t.scraped_at >= weekAgo);
+        const weekDeals = deals.filter(d => d.recorded_at >= weekAgo);
+        const wonDeals = weekDeals.filter(d => d.outcome === 'won');
+        const lostDeals = weekDeals.filter(d => d.outcome === 'lost');
+        const weekMRR = wonDeals.reduce((s, d) => s + (d.monthly_value || 0), 0);
+
+        // Meetings this week
+        const weekMeetings = (briefData.recentMeetings || []).length;
+
+        const prompt = `Generate a comprehensive weekly report for Mortar Metrics (legal marketing agency).
+
+WEEK: ${new Date(weekAgo).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+
+PIPELINE:
+- ${(briefData.health.total || 0)} total prospects (${briefData.health.green || 0} green, ${briefData.health.yellow || 0} yellow, ${briefData.health.red || 0} red)
+- ${briefData.staleClients?.length || 0} stale deals going cold
+- ${briefData.duePestering?.length || 0} follow-ups overdue
+
+DEALS THIS WEEK:
+- ${weekDeals.length} deals recorded (${wonDeals.length} won, ${lostDeals.length} lost)
+- $${weekMRR} new MRR
+${wonDeals.map(d => `  WON: ${d.client_name || 'Unknown'} $${d.monthly_value || 0}/mo`).join('\n')}
+${lostDeals.map(d => `  LOST: ${d.client_name || 'Unknown'} — ${d.loss_reason || 'no reason'}`).join('\n')}
+
+MEETINGS: ${weekMeetings} external meetings
+${(briefData.recentMeetings || []).map(m => `  - ${m.title} (${m.meeting_type}): ${m.summary?.slice(0, 80) || 'no summary'}`).join('\n')}
+
+CONTENT:
+- ${weekPublished.length} posts published
+- ${weekContent.length} pieces generated
+- ${weekTriggers.length} new triggers scraped
+- ${briefData.pendingContent?.length || 0} pieces pending review
+
+ACTIONS:
+- ${(briefData.teamActions || []).filter(a => a.owner === 'us' || a.owner === 'yaseer').length} open for Yaseer
+- ${(briefData.teamActions || []).filter(a => a.owner === 'monty').length} open for Monty
+- ${(briefData.teamActions || []).filter(a => a.owner === 'fardeen').length} open for Fardeen
+
+${intelligence ? 'INTELLIGENCE CONTEXT:\n' + intelligence.slice(0, 500) : ''}
+
+Write a clear, structured weekly report in HTML (for Telegram parse_mode=HTML). Include:
+1. Executive Summary (2-3 sentences — the headline of the week)
+2. Pipeline Health (prospects, deal status, revenue)
+3. Content Performance (published, engagement if available, pipeline depth)
+4. Meeting Highlights (key meetings and outcomes)
+5. Wins & Losses (celebrate wins, learn from losses)
+6. Next Week Priorities (3-5 specific actions for the team)
+
+Use <b> for headers, bullet points, and keep it under 3500 chars.`;
+
+        const report = await callClaude({
+          model: SONNET,
+          system: 'You write concise, data-driven weekly business reports for a small marketing agency. Be honest about performance. Celebrate wins. Flag problems. Use HTML formatting for Telegram.',
+          prompt,
+          maxTokens: 2000
+        });
+
+        // Send to Telegram if configured
+        const body = await parseBody(req);
+        if (body.send_telegram) {
+          await sendTelegram(report);
+        }
+
+        // Cache the report
+        const reportData = {
+          generated_at: now.toISOString(),
+          html: report,
+          week_start: weekAgo,
+          metrics: {
+            deals: weekDeals.length, won: wonDeals.length, lost: lostDeals.length, mrr: weekMRR,
+            meetings: weekMeetings, published: weekPublished.length, generated: weekContent.length,
+            pipeline: briefData.health.total || 0
+          }
+        };
+        writeJSON('weekly-report-cache.json', reportData);
+
+        return json(res, reportData);
+      } catch (err) {
+        return apiError(res, err);
+      }
+    }
+
+    // GET /api/weekly-report — get cached weekly report
+    if (pathname === '/api/weekly-report' && method === 'GET') {
+      const cached = readJSON('weekly-report-cache.json', null);
+      if (!cached) return json(res, { error: 'No weekly report generated yet' }, 404);
+      // Mark as stale if > 7 days old
+      const age = Date.now() - new Date(cached.generated_at).getTime();
+      cached.stale = age > 7 * 24 * 60 * 60 * 1000;
+      return json(res, cached);
+    }
+
     // GET /api/next-best-actions — AI-powered prioritized recommendations for each team member
     if (pathname === '/api/next-best-actions' && method === 'GET') {
       try {

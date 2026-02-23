@@ -842,6 +842,165 @@ async function handleRequest(req, res) {
       return json(res, { items: queue, total: queue.length });
     }
 
+    // GET /api/recommendations — smart "what to create next" engine
+    if (pathname === '/api/recommendations' && method === 'GET') {
+      try {
+        const content = readJSON('content.json');
+        const triggers = readJSON('trigger-queue.json');
+        const perfData = readJSON('performance.json', []);
+        const series = readJSON('series.json', []);
+        const calendarData = readJSON('calendar.json', {});
+        db.initDb();
+        const patterns = db.getPatterns({ limit: 20 });
+
+        const recs = [];
+
+        // 1. Pillar balance check
+        const pillarMap = { PAIN_POINT: 'hot_take', QUESTION: 'how_to', DATA_POINT: 'insight', NEWS: 'insight', CONTENT_PIECE: 'social_proof', CLIENT_WIN: 'social_proof' };
+        const pillarCounts = { hot_take: 0, how_to: 0, insight: 0, social_proof: 0 };
+        for (const c of content) {
+          const p = pillarMap[c.trigger_category] || 'insight';
+          pillarCounts[p]++;
+        }
+        const totalPillars = Object.values(pillarCounts).reduce((s, c) => s + c, 0) || 1;
+        const targetMix = { hot_take: 0.1, how_to: 0.25, insight: 0.35, social_proof: 0.3 };
+        for (const [pillar, target] of Object.entries(targetMix)) {
+          const actual = pillarCounts[pillar] / totalPillars;
+          if (actual < target - 0.1) {
+            const deficit = Math.round((target - actual) * totalPillars);
+            const matchingTriggers = triggers.filter(t => t.status === 'pending' && pillarMap[t.category] === pillar)
+              .sort((a, b) => (b.score || 0) - (a.score || 0)).slice(0, 3);
+            recs.push({
+              type: 'pillar_gap',
+              priority: 'high',
+              title: `Create more ${pillar.replace(/_/g, ' ')} content`,
+              detail: `${pillar} is ${Math.round(actual * 100)}% of content (target: ${Math.round(target * 100)}%). Need ~${deficit} more pieces.`,
+              suggested_triggers: matchingTriggers.map(t => ({ id: t.id, title: t.title, score: t.score }))
+            });
+          }
+        }
+
+        // 2. Format diversity check
+        const formatCounts = {};
+        for (const c of content) {
+          for (const f of Object.keys(c.formats || {})) {
+            if (c.formats[f]?.content) formatCounts[f] = (formatCounts[f] || 0) + 1;
+          }
+        }
+        const underused = ['carousel', 'short_video', 'x_thread', 'newsletter'].filter(f => (formatCounts[f] || 0) < 3);
+        if (underused.length > 0) {
+          recs.push({
+            type: 'format_gap',
+            priority: 'medium',
+            title: `Try underused formats: ${underused.join(', ')}`,
+            detail: `These formats have <3 pieces each. Diversify to reach different audiences.`,
+            action: 'generate_formats'
+          });
+        }
+
+        // 3. Best performing format — double down
+        if (perfData.length >= 3) {
+          const fmtPerf = {};
+          for (const p of perfData) {
+            if (!fmtPerf[p.format]) fmtPerf[p.format] = { total: 0, count: 0 };
+            fmtPerf[p.format].total += (p.engagement || 0) + (p.impressions || 0) / 10;
+            fmtPerf[p.format].count++;
+          }
+          const best = Object.entries(fmtPerf).sort((a, b) => (b[1].total / b[1].count) - (a[1].total / a[1].count))[0];
+          if (best) {
+            recs.push({
+              type: 'double_down',
+              priority: 'high',
+              title: `Double down on ${best[0]}`,
+              detail: `${best[0]} averages ${Math.round(best[1].total / best[1].count)} engagement — your best format. Create more.`,
+              action: 'generate_format'
+            });
+          }
+        }
+
+        // 4. Calendar gaps — empty upcoming slots
+        const today = new Date().toISOString().split('T')[0];
+        const month = today.slice(0, 7);
+        const monthCal = calendarData[month] || {};
+        let emptySlots = 0;
+        const dayOfWeek = new Date().getDay();
+        for (let i = 0; i < 7; i++) {
+          const d = new Date(Date.now() + i * 24 * 60 * 60 * 1000);
+          const key = d.toISOString().split('T')[0];
+          const daySlots = monthCal[key] || [];
+          if (daySlots.length === 0) emptySlots++;
+        }
+        if (emptySlots >= 3) {
+          recs.push({
+            type: 'calendar_gap',
+            priority: 'high',
+            title: `${emptySlots} empty calendar slots this week`,
+            detail: 'Generate content or auto-fill calendar to maintain consistency.',
+            action: 'auto_fill_calendar'
+          });
+        }
+
+        // 5. Client pain points not yet addressed in content
+        const contentTitles = content.map(c => (c.trigger_title || '').toLowerCase()).join(' ');
+        const unaddressedPatterns = patterns.filter(p => {
+          const keywords = p.description.toLowerCase().split(/\s+/).filter(w => w.length > 4);
+          return keywords.some(k => !contentTitles.includes(k)) && p.frequency >= 3;
+        }).slice(0, 3);
+        if (unaddressedPatterns.length > 0) {
+          recs.push({
+            type: 'pattern_gap',
+            priority: 'medium',
+            title: 'Client pain points not in content',
+            detail: `${unaddressedPatterns.length} patterns from sales calls haven't been addressed: ${unaddressedPatterns.map(p => p.description.slice(0, 60)).join('; ')}`,
+            patterns: unaddressedPatterns.map(p => ({ description: p.description, frequency: p.frequency }))
+          });
+        }
+
+        // 6. Trigger queue freshness
+        const pending = triggers.filter(t => t.status === 'pending');
+        const fresh = pending.filter(t => (Date.now() - new Date(t.captured_at || t.scraped_at || 0).getTime()) < 3 * 24 * 60 * 60 * 1000);
+        if (fresh.length < 10) {
+          recs.push({
+            type: 'trigger_stale',
+            priority: fresh.length === 0 ? 'high' : 'medium',
+            title: `Only ${fresh.length} fresh triggers (<3 days)`,
+            detail: 'Run scrapers to replenish the trigger queue.',
+            action: 'scrape'
+          });
+        }
+
+        // 7. Series episodes due
+        const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+        const todayDay = dayNames[new Date().getDay()];
+        const dueSeries = series.filter(s => s.active && s.day === todayDay);
+        if (dueSeries.length > 0) {
+          recs.push({
+            type: 'series_due',
+            priority: 'high',
+            title: `${dueSeries.length} series episode(s) due today`,
+            detail: dueSeries.map(s => s.name).join(', '),
+            series: dueSeries.map(s => ({ id: s.id, name: s.name }))
+          });
+        }
+
+        recs.sort((a, b) => {
+          const p = { high: 3, medium: 2, low: 1 };
+          return (p[b.priority] || 0) - (p[a.priority] || 0);
+        });
+
+        return json(res, {
+          recommendations: recs,
+          summary: {
+            total_content: content.length,
+            pending_triggers: pending.length,
+            fresh_triggers: fresh.length,
+            pillar_balance: Object.fromEntries(Object.entries(pillarCounts).map(([k, v]) => [k, Math.round((v / totalPillars) * 100) + '%'])),
+            format_diversity: Object.keys(formatCounts).length
+          }
+        });
+      } catch (err) { return apiError(res, err); }
+    }
+
     // GET /api/content-pulse — weekly content health indicator
     if (pathname === '/api/content-pulse' && method === 'GET') {
       try {

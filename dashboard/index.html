@@ -8729,7 +8729,56 @@ function renderAnalyticsPage() {
         })()
       )
     ),
-    // Sixth row — AI Insights
+    // Sixth row — Trending Topics
+    state.trending && (state.trending.trending_topics || []).length > 0 ? h('div', { className: 'analytics-grid', style: { marginTop: '16px' } },
+      h('div', { className: 'chart-card' },
+        h('h4', {}, `Trending Topics (${state.trending.period || '7 days'})`),
+        h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '12px', alignItems: 'center' } },
+          ...(state.trending.trending_topics || []).map(t => {
+            const maxCount = Math.max(...(state.trending.trending_topics || []).map(x => x.count), 1);
+            const ratio = t.count / maxCount;
+            const size = 11 + Math.round(ratio * 10);
+            const opacity = 0.4 + ratio * 0.6;
+            const colors = ['#2563eb', '#059669', '#dc2626', '#d97706', '#7c3aed', '#0891b2'];
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            return h('span', {
+              style: { fontSize: `${size}px`, fontWeight: ratio > 0.5 ? '700' : '500', color, opacity: String(opacity), cursor: 'pointer', padding: '2px 4px', transition: 'transform 0.2s' },
+              title: `${t.word}: ${t.count} triggers`,
+              onclick: () => { state.page = 'triggers'; state.searchQuery = t.word; render(); }
+            }, t.word);
+          })
+        ),
+        (state.trending.trending_phrases || []).length > 0 ? h('div', { style: { marginTop: '16px', paddingTop: '12px', borderTop: '1px solid var(--gray-100)' } },
+          h('div', { style: { fontSize: '11px', fontWeight: '600', color: 'var(--gray-500)', marginBottom: '8px' } }, 'TRENDING PHRASES'),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '6px' } },
+            ...(state.trending.trending_phrases || []).map(p =>
+              h('span', { style: { fontSize: '12px', padding: '3px 8px', background: 'var(--gray-50)', borderRadius: '6px', color: 'var(--gray-600)', border: '1px solid var(--gray-200)' } },
+                `"${p.phrase}" (${p.count}x)`)
+            )
+          )
+        ) : null
+      ),
+      h('div', { className: 'chart-card' },
+        h('h4', {}, 'Source Velocity'),
+        h('div', { style: { display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '8px' } },
+          ...Object.entries(state.trending.source_velocity || {}).sort((a, b) => b[1] - a[1]).map(([src, count]) => {
+            const maxVel = Math.max(...Object.values(state.trending.source_velocity || {}), 1);
+            const sourceColors = { reddit: '#ff4500', rss: '#2563eb', youtube: '#dc2626', 'google-news': '#4285f4', hackernews: '#ff6600', competitor: '#0891b2' };
+            return h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px' } },
+              h('span', { style: { fontSize: '12px', fontWeight: '600', width: '90px', color: sourceColors[src] || 'var(--gray-500)' } }, sourceLabel(src)),
+              h('div', { style: { flex: '1', height: '18px', background: 'var(--gray-100)', borderRadius: '9px', overflow: 'hidden' } },
+                h('div', { style: { width: `${(count / maxVel) * 100}%`, height: '100%', background: sourceColors[src] || 'var(--gray-400)', borderRadius: '9px', display: 'flex', alignItems: 'center', paddingLeft: '8px', transition: 'width 0.5s ease' } },
+                  h('span', { style: { fontSize: '10px', fontWeight: '700', color: 'white' } }, `${count}/wk`)
+                )
+              )
+            );
+          })
+        ),
+        h('div', { style: { marginTop: '16px', padding: '10px 12px', background: 'var(--gray-50)', borderRadius: '8px', fontSize: '12px', color: 'var(--gray-500)' } },
+          `${state.trending.total_recent || 0} new triggers this week from ${Object.keys(state.trending.source_velocity || {}).length} sources`)
+      )
+    ) : null,
+    // Seventh row — AI Insights
     renderInsightsSection()
   );
 }
@@ -10528,8 +10577,68 @@ function renderPublishTrackerPage() {
   }
 
   return h('div', { className: 'page-content' },
-    h('h2', { style: { fontFamily: "'Fraunces', serif", fontSize: '24px', marginBottom: '4px' } }, 'Publish Tracker'),
-    h('p', { style: { color: 'var(--gray-500)', fontSize: '14px', marginBottom: '20px' } }, `${totalPublished} of ${totalContent} pieces published across platforms`),
+    h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' } },
+      h('div', {},
+        h('h2', { style: { fontFamily: "'Fraunces', serif", fontSize: '24px', marginBottom: '4px' } }, 'Publish Tracker'),
+        h('p', { style: { color: 'var(--gray-500)', fontSize: '14px' } }, `${totalPublished} of ${totalContent} pieces published across platforms`)
+      ),
+      h('button', {
+        className: 'btn btn-sm',
+        style: { background: 'var(--purple)', color: 'white', border: 'none' },
+        disabled: state._loadingPubInsights,
+        onclick: async () => {
+          state._loadingPubInsights = true; render();
+          try {
+            state._pubInsights = await api('/api/publish-tracker/insights');
+            state._showPubInsights = true;
+          } catch (err) { toast('Failed: ' + err.message, 'error'); }
+          state._loadingPubInsights = false; render();
+        }
+      }, state._loadingPubInsights ? 'Analyzing...' : 'Distribution Insights')
+    ),
+    // Distribution insights panel
+    state._showPubInsights && state._pubInsights ? (() => {
+      const pi = state._pubInsights;
+      return h('div', { className: 'card', style: { padding: '16px', marginBottom: '20px', borderLeft: '4px solid var(--purple)' } },
+        h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' } },
+          h('div', { style: { fontWeight: '700', fontSize: '14px', color: 'var(--navy)' } }, 'Distribution Intelligence'),
+          h('button', { className: 'btn btn-ghost btn-sm', onclick: () => { state._showPubInsights = false; render(); } }, 'Close')
+        ),
+        // Recommendations
+        (pi.recommendations || []).length > 0 ? h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '16px' } },
+          ...(pi.recommendations || []).map(r => {
+            const bg = r.priority === 'high' ? '#fef2f2' : '#fffbeb';
+            const border = r.priority === 'high' ? '#dc2626' : '#d97706';
+            return h('div', { style: { padding: '8px 12px', background: bg, borderLeft: `3px solid ${border}`, borderRadius: '0 6px 6px 0', fontSize: '12px', color: 'var(--gray-700)' } },
+              r.platform ? h('strong', {}, `${r.platform}: `) : null,
+              r.message
+            );
+          })
+        ) : null,
+        // Waiting counts
+        h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '8px', marginBottom: '16px' } },
+          ...Object.entries(pi.waiting || {}).map(([p, count]) =>
+            h('div', { style: { textAlign: 'center', padding: '8px', background: 'var(--gray-50)', borderRadius: '8px' } },
+              h('div', { style: { fontSize: '18px', fontWeight: '700', color: count > 0 ? 'var(--amber)' : 'var(--gray-300)', fontFamily: "'Fraunces', serif" } }, String(count)),
+              h('div', { style: { fontSize: '10px', color: 'var(--gray-500)', textTransform: 'uppercase' } }, `${p} waiting`)
+            )
+          )
+        ),
+        // Repurpose opportunities
+        (pi.repurpose_opportunities || []).length > 0 ? h('div', {},
+          h('div', { style: { fontSize: '12px', fontWeight: '600', color: 'var(--gray-500)', marginBottom: '8px' } }, 'REPURPOSE OPPORTUNITIES'),
+          h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
+            ...(pi.repurpose_opportunities || []).map(o =>
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 12px', background: 'var(--gray-50)', borderRadius: '8px', fontSize: '12px' } },
+                h('span', { style: { fontWeight: '600', color: 'var(--navy)', flex: '1', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, o.title),
+                h('span', { style: { color: 'var(--green)', fontWeight: '600', flexShrink: '0' } }, `${o.engagement} eng`),
+                h('span', { style: { color: 'var(--gray-400)', flexShrink: '0' } }, `\u2192 ${o.missing_formats.join(', ')}`)
+              )
+            )
+          )
+        ) : null
+      );
+    })() : null,
     // Platform stats bar
     h('div', { style: { display: 'grid', gridTemplateColumns: `repeat(${platforms.length}, 1fr)`, gap: '8px', marginBottom: '24px' } },
       ...platforms.map(p =>

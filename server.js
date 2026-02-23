@@ -10342,6 +10342,100 @@ Add the series hashtag ${s.hashtag || ''} naturally at the end of social posts.`
       return json(res, { items: tracker, platforms });
     }
 
+    // GET /api/publish-tracker/insights — distribution gaps and recommendations
+    if (pathname === '/api/publish-tracker/insights' && method === 'GET') {
+      try {
+        const content = readJSON('content.json');
+        const perfData = readJSON('performance.json', []);
+        const platforms = ['linkedin', 'x', 'youtube', 'blog', 'newsletter'];
+
+        // Count publishes per platform
+        const platformCounts = {};
+        const formatToPlatform = { linkedin: 'linkedin', carousel: 'linkedin', poll: 'linkedin', x_single: 'x', x_thread: 'x', blog: 'blog', newsletter: 'newsletter', short_video: 'youtube', youtube_script: 'youtube' };
+        for (const p of platforms) platformCounts[p] = 0;
+
+        const publishedItems = content.filter(c =>
+          c.publish_tracking && c.publish_tracking.length > 0
+        );
+        for (const item of publishedItems) {
+          for (const track of item.publish_tracking || []) {
+            if (platformCounts[track.platform] != null) platformCounts[track.platform]++;
+          }
+        }
+
+        // Gap analysis: which platforms are underserved
+        const total = Object.values(platformCounts).reduce((s, c) => s + c, 0) || 1;
+        const gaps = platforms
+          .map(p => ({ platform: p, count: platformCounts[p] || 0, pct: Math.round(((platformCounts[p] || 0) / total) * 100) }))
+          .sort((a, b) => a.count - b.count);
+
+        // Content waiting per platform (approved but not published there)
+        const waiting = {};
+        for (const p of platforms) {
+          waiting[p] = content.filter(c => {
+            const formats = Object.entries(c.formats || {});
+            const hasApproved = formats.some(([, f]) => f.status === 'approved');
+            if (!hasApproved) return false;
+            const published = (c.publish_tracking || []).some(t => t.platform === p);
+            return !published;
+          }).length;
+        }
+
+        // Best performing content not yet repurposed
+        const repurposeOpportunities = [];
+        for (const perf of perfData.sort((a, b) => (b.engagement || 0) - (a.engagement || 0)).slice(0, 10)) {
+          const item = content.find(c => c.id === perf.content_id);
+          if (!item) continue;
+          const existingFormats = Object.keys(item.formats || {});
+          const allFormats = ['linkedin', 'x_single', 'x_thread', 'blog', 'short_video', 'carousel'];
+          const missing = allFormats.filter(f => !existingFormats.includes(f));
+          if (missing.length > 0 && (perf.engagement || 0) > 0) {
+            repurposeOpportunities.push({
+              content_id: item.id,
+              title: item.trigger_title,
+              engagement: perf.engagement,
+              existing_formats: existingFormats.length,
+              missing_formats: missing.slice(0, 3),
+              suggestion: `High engagement (${perf.engagement}) — repurpose to ${missing.slice(0, 2).join(', ')}`
+            });
+          }
+        }
+
+        // Days since last publish per platform
+        const lastPublish = {};
+        for (const p of platforms) {
+          const dates = content.flatMap(c => (c.publish_tracking || []).filter(t => t.platform === p).map(t => t.published_at)).filter(Boolean);
+          if (dates.length > 0) {
+            const latest = new Date(Math.max(...dates.map(d => new Date(d).getTime())));
+            lastPublish[p] = Math.floor((Date.now() - latest.getTime()) / (24 * 60 * 60 * 1000));
+          } else {
+            lastPublish[p] = null;
+          }
+        }
+
+        // Generate recommendations
+        const recommendations = [];
+        for (const g of gaps) {
+          if (g.count === 0) recommendations.push({ type: 'gap', platform: g.platform, message: `No content published on ${g.platform} yet`, priority: 'high' });
+          else if (lastPublish[g.platform] > 7) recommendations.push({ type: 'stale', platform: g.platform, message: `${lastPublish[g.platform]} days since last ${g.platform} post`, priority: 'medium' });
+        }
+        if (repurposeOpportunities.length > 0) {
+          recommendations.push({ type: 'repurpose', message: `${repurposeOpportunities.length} high-performing pieces can be repurposed`, priority: 'medium' });
+        }
+
+        return json(res, {
+          platform_counts: platformCounts,
+          gaps,
+          waiting,
+          last_publish: lastPublish,
+          repurpose_opportunities: repurposeOpportunities.slice(0, 5),
+          recommendations,
+          total_published: publishedItems.length,
+          total_content: content.length
+        });
+      } catch (err) { return apiError(res, err); }
+    }
+
     // --- Batch 49: YouTube Pipeline + Carousel Generator + Content Matrix + Hook Analyzer + CTA Strategy ---
 
     // POST /api/youtube/pipeline — full YouTube video pipeline (script + thumbnail + SEO + Shorts)

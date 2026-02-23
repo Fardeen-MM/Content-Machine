@@ -8100,6 +8100,51 @@ function renderContentPage() {
             : null
         )
       : null,
+    // Remix Recommendations
+    h('div', { style: { marginBottom: '12px' } },
+      h('div', { style: { display: 'flex', gap: '8px', alignItems: 'center' } },
+        h('button', {
+          className: 'btn btn-sm',
+          style: { background: 'linear-gradient(135deg, #f59e0b, #d97706)', color: 'white', border: 'none', fontSize: '12px' },
+          onclick: async () => {
+            state._loadingRemix = true; render();
+            try {
+              const r = await api('/api/remix-recommendations');
+              state._remixRecs = r;
+            } catch (err) { toast('Failed: ' + err.message, 'error'); }
+            state._loadingRemix = false; render();
+          }
+        }, state._loadingRemix ? 'Analyzing...' : 'Remix Opportunities'),
+        state._remixRecs?.summary ? h('span', { style: { fontSize: '11px', color: 'var(--gray-500)' } },
+          `${state._remixRecs.summary.cross_platform_opportunities} cross-platform | ${state._remixRecs.summary.sitting_content} sitting`
+        ) : null
+      ),
+      state._remixRecs?.recommendations?.length > 0 ? h('div', { style: { marginTop: '10px', display: 'grid', gap: '8px' } },
+        ...state._remixRecs.recommendations.slice(0, 8).map(r => {
+          const colors = { cross_platform: '#2563eb', refresh: '#7c3aed', sitting_content: '#d97706', double_down: '#059669' };
+          const icons = { cross_platform: '\u{1F504}', refresh: '\u{2728}', sitting_content: '\u{1F4E6}', double_down: '\u{1F525}' };
+          return h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 14px', background: 'var(--card-bg)', borderRadius: '8px', border: '1px solid var(--gray-200)', borderLeft: `3px solid ${colors[r.type] || '#64748b'}` } },
+            h('span', { style: { fontSize: '16px' } }, icons[r.type] || '\u{1F4A1}'),
+            h('div', { style: { flex: 1, minWidth: 0 } },
+              h('div', { style: { fontSize: '12px', fontWeight: '600', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, r.title || r.reason),
+              h('div', { style: { fontSize: '11px', color: 'var(--gray-500)', marginTop: '2px' } }, r.reason)
+            ),
+            h('span', { style: { padding: '2px 8px', borderRadius: '4px', fontSize: '10px', fontWeight: '600', background: r.priority === 'high' ? '#fef2f2' : r.priority === 'medium' ? '#fffbeb' : '#f0fdf4', color: r.priority === 'high' ? '#dc2626' : r.priority === 'medium' ? '#d97706' : '#059669' } }, r.priority),
+            r.content_id ? h('button', {
+              className: 'btn btn-sm btn-outline',
+              style: { fontSize: '10px', flexShrink: 0 },
+              onclick: async () => {
+                toast('Remixing...', 'info');
+                try {
+                  await api(`/api/content/${r.content_id}/remix`, { method: 'POST', body: { mode: r.suggested_remix || 'new-angle' } });
+                  toast('Remix created', 'success'); loadData();
+                } catch (err) { toast('Failed: ' + err.message, 'error'); }
+              }
+            }, 'Remix') : null
+          );
+        })
+      ) : null
+    ),
     // Filter bar with search and export
     h('div', { className: 'filter-bar' },
       ...['all', 'review', 'approved', 'rejected'].map(s =>
@@ -8521,8 +8566,49 @@ function renderAnalyticsPage() {
             render();
           } catch (err) { toast('Gap analysis failed: ' + err.message, 'error'); }
         }
-      }, 'Detect Content Gaps')
+      }, 'Detect Content Gaps'),
+      h('button', {
+        className: 'btn btn-sm',
+        style: { background: '#ea580c', color: 'white', border: 'none' },
+        onclick: async () => {
+          state._loadingCadence = true; render();
+          try {
+            const res = await api('/api/cadence-optimizer');
+            state._cadenceData = res;
+          } catch (err) { toast('Cadence analysis failed: ' + err.message, 'error'); }
+          state._loadingCadence = false; render();
+        }
+      }, state._loadingCadence ? 'Analyzing...' : 'Cadence Optimizer')
     ),
+    // Cadence Optimizer results
+    state._cadenceData ? h('div', { className: 'chart-card', style: { marginBottom: '12px' } },
+      h('h4', { style: { display: 'flex', alignItems: 'center', gap: '8px' } },
+        'Publishing Cadence',
+        h('span', { style: { fontSize: '11px', padding: '2px 8px', background: state._cadenceData.overall_health === 'optimal' ? '#059669' : state._cadenceData.overall_health === 'over_posting' ? '#dc2626' : '#d97706', color: 'white', borderRadius: '10px' } },
+          state._cadenceData.overall_health?.replace('_', ' ') || 'unknown'),
+        h('span', { style: { fontSize: '11px', padding: '2px 8px', background: state._cadenceData.queue_health?.status === 'healthy' ? '#dcfce7' : state._cadenceData.queue_health?.status === 'low' ? '#fef3c7' : '#fef2f2', color: state._cadenceData.queue_health?.status === 'healthy' ? '#059669' : '#d97706', borderRadius: '10px' } },
+          `${state._cadenceData.queue_health?.days_of_content || 0}d content left`)
+      ),
+      h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '10px', marginTop: '10px' } },
+        ...(state._cadenceData.recommendations || []).map(r => {
+          const statusColors = { optimal: '#059669', under: '#d97706', over: '#dc2626' };
+          const statusBg = { optimal: '#f0fdf4', under: '#fffbeb', over: '#fef2f2' };
+          const trendIcons = { rising: '\u2197\uFE0F', declining: '\u2198\uFE0F', stable: '\u27A1\uFE0F', insufficient_data: '\u2753' };
+          return h('div', { style: { padding: '14px', background: statusBg[r.status] || '#f8fafc', borderRadius: '10px', border: `1px solid ${statusColors[r.status] || '#e2e8f0'}22`, borderLeft: `4px solid ${statusColors[r.status] || '#64748b'}` } },
+            h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
+              h('div', { style: { fontWeight: '700', fontSize: '14px' } }, r.label),
+              h('span', { style: { padding: '2px 8px', borderRadius: '6px', fontSize: '11px', fontWeight: '600', background: statusColors[r.status] + '22', color: statusColors[r.status] } }, r.status)
+            ),
+            h('div', { style: { fontSize: '12px', color: 'var(--gray-600)', marginBottom: '6px' } }, r.recommendation),
+            h('div', { style: { display: 'flex', gap: '12px', fontSize: '11px', color: 'var(--gray-500)' } },
+              h('span', {}, `${r.weekly_avg}/wk (target ${r.target})`),
+              h('span', {}, `Best: ${r.best_day}`),
+              h('span', {}, `Trend: ${trendIcons[r.engagement_trend] || ''} ${r.engagement_trend}`)
+            )
+          );
+        })
+      )
+    ) : null,
     // Content gaps display (if loaded)
     state._contentGaps ? h('div', { className: 'chart-card', style: { marginBottom: '12px' } },
       h('h4', { style: { display: 'flex', alignItems: 'center', gap: '8px' } },

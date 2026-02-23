@@ -673,6 +673,39 @@ async function handleRequest(req, res) {
       }
       writeJSON('memory.json', memory);
 
+      // Fire-and-forget: auto-create A/B test variants for approved content with hook variants
+      if (process.env.ANTHROPIC_API_KEY && content[idx].status === 'approved') {
+        setImmediate(async () => {
+          try {
+            const contentId = content[idx].id;
+            const latestContent = readJSON('content.json');
+            const latestIdx = latestContent.findIndex(c => c.id === contentId);
+            if (latestIdx === -1) return;
+            if (latestContent[latestIdx].ab_tests && Object.keys(latestContent[latestIdx].ab_tests).length > 0) return; // already has tests
+            const linkedinFmt = latestContent[latestIdx].formats?.linkedin;
+            if (!linkedinFmt?.content || typeof linkedinFmt.content !== 'string') return;
+            const { callClaude, parseJsonResponse, HAIKU } = require('./lib/claude');
+            const contentStr = linkedinFmt.content.slice(0, 2000);
+            const prompt = `Create 2 alternative hook variants for this LinkedIn post. Keep the body the same but write completely different opening hooks.\n\nORIGINAL:\n${contentStr}\n\nReturn JSON (raw, no fences):\n{\n  "variant_a": { "hook_type": "data_bomb", "hook": "2-3 line opening", "full_content": "Complete rewritten post" },\n  "variant_b": { "hook_type": "story", "hook": "2-3 line opening", "full_content": "Complete rewritten post" }\n}`;
+            const text = await callClaude({ model: HAIKU, system: 'Legal marketing content writer. Create punchy, specific hook variants.', prompt, maxTokens: 2500 });
+            const parsed = parseJsonResponse(text);
+            if (!parsed?.variant_a) return;
+            const freshContent = readJSON('content.json');
+            const fIdx = freshContent.findIndex(c => c.id === contentId);
+            if (fIdx === -1) return;
+            if (!freshContent[fIdx].ab_tests) freshContent[fIdx].ab_tests = {};
+            freshContent[fIdx].ab_tests.linkedin = {
+              original: contentStr.slice(0, 200),
+              variant_a: { hook_type: parsed.variant_a.hook_type, hook: parsed.variant_a.hook, content: parsed.variant_a.full_content },
+              variant_b: { hook_type: parsed.variant_b.hook_type, hook: parsed.variant_b.hook, content: parsed.variant_b.full_content },
+              created_at: now(), winner: null, auto_generated: true
+            };
+            writeJSON('content.json', freshContent);
+            console.log(`[auto-ab] Created A/B test variants for ${contentId}`);
+          } catch (err) { console.error('[auto-ab] Error:', err.message); }
+        });
+      }
+
       return json(res, { ok: true, ...content[idx] });
     }
 
@@ -997,6 +1030,245 @@ async function handleRequest(req, res) {
             pillar_balance: Object.fromEntries(Object.entries(pillarCounts).map(([k, v]) => [k, Math.round((v / totalPillars) * 100) + '%'])),
             format_diversity: Object.keys(formatCounts).length
           }
+        });
+      } catch (err) { return apiError(res, err); }
+    }
+
+    // GET /api/remix-recommendations — AI-powered remix opportunity detector
+    if (pathname === '/api/remix-recommendations' && method === 'GET') {
+      try {
+        const content = readJSON('content.json');
+        const perfData = readJSON('performance.json', []);
+        const published = readJSON('published.json', []);
+
+        const recs = [];
+        const publishedIds = new Set(published.map(p => p.content_id));
+
+        // Find high-performing content that could be remixed
+        const scored = content
+          .filter(c => c.status === 'approved' || c.status === 'published')
+          .map(c => {
+            const perf = perfData.find(p => p.content_id === c.id);
+            const qualityScore = c.quality_score?.score || c.quality_scores?.linkedin?.score || 0;
+            const engagement = perf?.engagement || 0;
+            const impressions = perf?.impressions || 0;
+            const formats = Object.entries(c.formats || {}).filter(([, f]) => f.content && f.status !== 'rejected');
+            const formatKeys = formats.map(([k]) => k);
+            return { ...c, perf, qualityScore, engagement, impressions, formatCount: formats.length, formatKeys };
+          });
+
+        // 1. High engagement content missing formats (cross-platform remix)
+        const allFormats = ['linkedin', 'x_single', 'x_thread', 'blog', 'carousel', 'short_video'];
+        for (const c of scored.filter(x => x.engagement > 0 || x.qualityScore >= 70)) {
+          const missing = allFormats.filter(f => !c.formatKeys.includes(f));
+          if (missing.length >= 2) {
+            recs.push({
+              type: 'cross_platform',
+              priority: c.engagement > 5 ? 'high' : 'medium',
+              content_id: c.id,
+              title: (c.trigger_title || '').slice(0, 80),
+              reason: c.engagement > 0
+                ? `${c.engagement} engagements — repurpose to ${missing.slice(0, 3).join(', ')}`
+                : `Quality score ${c.qualityScore} — missing ${missing.length} formats`,
+              missing_formats: missing.slice(0, 4),
+              engagement: c.engagement,
+              quality: c.qualityScore
+            });
+          }
+        }
+
+        // 2. Old high-quality content worth refreshing (>30 days old, quality >= 60)
+        const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
+        for (const c of scored.filter(x => x.qualityScore >= 60)) {
+          const age = Date.now() - new Date(c.generated_at || 0).getTime();
+          if (age > thirtyDaysAgo) {
+            recs.push({
+              type: 'refresh',
+              priority: 'low',
+              content_id: c.id,
+              title: (c.trigger_title || '').slice(0, 80),
+              reason: `${Math.round(age / (24 * 60 * 60 * 1000))}d old, quality ${c.qualityScore} — refresh with new data/angle`,
+              quality: c.qualityScore,
+              age_days: Math.round(age / (24 * 60 * 60 * 1000))
+            });
+          }
+        }
+
+        // 3. Approved but never published (sitting content)
+        const approvedUnpublished = scored.filter(c => c.status === 'approved' && !publishedIds.has(c.id));
+        if (approvedUnpublished.length >= 3) {
+          const top3 = approvedUnpublished.sort((a, b) => b.qualityScore - a.qualityScore).slice(0, 3);
+          for (const c of top3) {
+            recs.push({
+              type: 'sitting_content',
+              priority: 'medium',
+              content_id: c.id,
+              title: (c.trigger_title || '').slice(0, 80),
+              reason: `Approved but never published. Quality ${c.qualityScore}. Consider new-angle remix to re-energize.`,
+              quality: c.qualityScore,
+              suggested_remix: 'new-angle'
+            });
+          }
+        }
+
+        // 4. Best performing category → suggest more like it
+        const categoryPerf = {};
+        for (const c of scored) {
+          if (!c.trigger_category) continue;
+          if (!categoryPerf[c.trigger_category]) categoryPerf[c.trigger_category] = { count: 0, total_eng: 0, total_quality: 0 };
+          categoryPerf[c.trigger_category].count++;
+          categoryPerf[c.trigger_category].total_eng += c.engagement;
+          categoryPerf[c.trigger_category].total_quality += c.qualityScore;
+        }
+        const topCategory = Object.entries(categoryPerf)
+          .map(([cat, data]) => ({ cat, avg_eng: data.total_eng / data.count, avg_quality: data.total_quality / data.count, count: data.count }))
+          .filter(c => c.count >= 2)
+          .sort((a, b) => (b.avg_eng + b.avg_quality) - (a.avg_eng + a.avg_quality))[0];
+        if (topCategory) {
+          recs.push({
+            type: 'double_down',
+            priority: 'medium',
+            title: `${topCategory.cat} content performs best`,
+            reason: `Avg engagement ${topCategory.avg_eng.toFixed(1)}, avg quality ${topCategory.avg_quality.toFixed(0)} across ${topCategory.count} pieces. Create more or remix existing.`,
+            category: topCategory.cat
+          });
+        }
+
+        recs.sort((a, b) => {
+          const p = { high: 3, medium: 2, low: 1 };
+          return (p[b.priority] || 0) - (p[a.priority] || 0);
+        });
+
+        return json(res, {
+          recommendations: recs.slice(0, 15),
+          summary: {
+            total_analyzed: scored.length,
+            cross_platform_opportunities: recs.filter(r => r.type === 'cross_platform').length,
+            refresh_candidates: recs.filter(r => r.type === 'refresh').length,
+            sitting_content: approvedUnpublished.length
+          }
+        });
+      } catch (err) { return apiError(res, err); }
+    }
+
+    // GET /api/cadence-optimizer — recommend optimal posting frequency per platform
+    if (pathname === '/api/cadence-optimizer' && method === 'GET') {
+      try {
+        const published = readJSON('published.json', []);
+        const perfData = readJSON('performance.json', []);
+        const content = readJSON('content.json');
+
+        // Analyze publishing history by platform and day-of-week
+        const platformStats = {};
+        const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        const platformTargets = {
+          linkedin: { min: 3, max: 5, label: 'LinkedIn' },
+          x: { min: 5, max: 14, label: 'X/Twitter' },
+          blog: { min: 1, max: 2, label: 'Blog' },
+          youtube: { min: 1, max: 2, label: 'YouTube' },
+          email: { min: 1, max: 2, label: 'Newsletter' }
+        };
+
+        const now = Date.now();
+        const fourWeeksAgo = now - 28 * 24 * 60 * 60 * 1000;
+
+        for (const pub of published) {
+          const pubDate = new Date(pub.published_at || 0);
+          if (pubDate.getTime() < fourWeeksAgo) continue;
+          const platform = pub.platform || pub.format || 'unknown';
+          const normalizedPlatform = platform.includes('linkedin') || platform.includes('carousel') || platform.includes('poll') ? 'linkedin'
+            : platform.includes('x_') || platform.includes('tweet') ? 'x'
+            : platform.includes('blog') || platform.includes('case_study') ? 'blog'
+            : platform.includes('youtube') ? 'youtube'
+            : platform.includes('email') || platform.includes('newsletter') ? 'email'
+            : 'other';
+
+          if (!platformStats[normalizedPlatform]) platformStats[normalizedPlatform] = { total: 0, by_day: new Array(7).fill(0), by_week: {}, engagements: [] };
+          platformStats[normalizedPlatform].total++;
+          platformStats[normalizedPlatform].by_day[pubDate.getDay()]++;
+          const weekKey = Math.floor((now - pubDate.getTime()) / (7 * 24 * 60 * 60 * 1000));
+          platformStats[normalizedPlatform].by_week[weekKey] = (platformStats[normalizedPlatform].by_week[weekKey] || 0) + 1;
+
+          // Match to performance data
+          const perf = perfData.find(p => p.content_id === pub.content_id);
+          if (perf) platformStats[normalizedPlatform].engagements.push(perf.engagement || 0);
+        }
+
+        // Generate recommendations
+        const recommendations = [];
+        for (const [platform, target] of Object.entries(platformTargets)) {
+          const stats = platformStats[platform] || { total: 0, by_day: new Array(7).fill(0), by_week: {}, engagements: [] };
+          const weeklyAvg = stats.total / 4; // 4 weeks
+          const avgEngagement = stats.engagements.length > 0 ? stats.engagements.reduce((s, v) => s + v, 0) / stats.engagements.length : 0;
+
+          // Find best and worst days
+          const bestDayIdx = stats.by_day.indexOf(Math.max(...stats.by_day));
+          const worstDayIdx = stats.by_day.indexOf(Math.min(...stats.by_day));
+
+          let status, recommendation;
+          if (weeklyAvg < target.min) {
+            status = 'under';
+            recommendation = `Increase ${target.label} to ${target.min}-${target.max}/week (currently ${weeklyAvg.toFixed(1)}/week)`;
+          } else if (weeklyAvg > target.max) {
+            status = 'over';
+            recommendation = `Reduce ${target.label} to ${target.max}/week max (currently ${weeklyAvg.toFixed(1)}/week). Audience fatigue risk.`;
+          } else {
+            status = 'optimal';
+            recommendation = `${target.label} cadence is good (${weeklyAvg.toFixed(1)}/week, target ${target.min}-${target.max})`;
+          }
+
+          // Engagement decay detection
+          const weeklyEngagements = {};
+          for (const pub of published.filter(p => {
+            const pf = p.platform || p.format || '';
+            const norm = pf.includes('linkedin') ? 'linkedin' : pf.includes('x_') ? 'x' : pf.includes('blog') ? 'blog' : 'other';
+            return norm === platform;
+          })) {
+            const weekKey = Math.floor((now - new Date(pub.published_at || 0).getTime()) / (7 * 24 * 60 * 60 * 1000));
+            const perf = perfData.find(p => p.content_id === pub.content_id);
+            if (perf) {
+              if (!weeklyEngagements[weekKey]) weeklyEngagements[weekKey] = [];
+              weeklyEngagements[weekKey].push(perf.engagement || 0);
+            }
+          }
+          const weekAvgs = Object.entries(weeklyEngagements)
+            .sort(([a], [b]) => Number(a) - Number(b))
+            .map(([, engs]) => engs.reduce((s, v) => s + v, 0) / engs.length);
+          const engagementTrend = weekAvgs.length >= 2
+            ? weekAvgs[weekAvgs.length - 1] > weekAvgs[0] ? 'rising' : weekAvgs[weekAvgs.length - 1] < weekAvgs[0] * 0.7 ? 'declining' : 'stable'
+            : 'insufficient_data';
+
+          recommendations.push({
+            platform,
+            label: target.label,
+            status,
+            weekly_avg: Math.round(weeklyAvg * 10) / 10,
+            target: `${target.min}-${target.max}/week`,
+            recommendation,
+            avg_engagement: Math.round(avgEngagement * 10) / 10,
+            best_day: dayNames[bestDayIdx],
+            worst_day: stats.total > 0 ? dayNames[worstDayIdx] : 'N/A',
+            engagement_trend: engagementTrend,
+            total_4_weeks: stats.total
+          });
+        }
+
+        // Queue health: approved content waiting to be published
+        const approvedFormats = content.reduce((sum, c) => {
+          return sum + Object.values(c.formats || {}).filter(f => f.status === 'approved' && !f.published_at).length;
+        }, 0);
+        const daysOfContent = Math.floor(approvedFormats / 2);
+
+        return json(res, {
+          recommendations,
+          queue_health: {
+            approved_waiting: approvedFormats,
+            days_of_content: daysOfContent,
+            status: daysOfContent < 3 ? 'critical' : daysOfContent < 7 ? 'low' : 'healthy'
+          },
+          overall_health: recommendations.every(r => r.status === 'optimal') ? 'optimal'
+            : recommendations.some(r => r.status === 'over') ? 'over_posting'
+            : 'under_posting'
         });
       } catch (err) { return apiError(res, err); }
     }
